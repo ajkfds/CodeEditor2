@@ -21,7 +21,7 @@ namespace CodeEditor2
         internal static Views.MainView mainView;
         internal static Views.NavigateView navigateView;
         internal static Views.MainWindow mainWindow;
-
+        internal static Views.LogView logView;
 
         public static CodeDrawStyle DefaultDrawStyle = new CodeDrawStyle();
         //public static IWshRuntimeLibrary.WshShell WshShell = new IWshRuntimeLibrary.WshShell();

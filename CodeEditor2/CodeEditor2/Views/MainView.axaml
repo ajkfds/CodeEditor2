@@ -59,7 +59,7 @@
 			<GridSplitter Grid.Row="1" ResizeDirection ="Rows"/>
 			
 			<!-- Log View -->
-			<TextBlock Margin="5" Grid.Row="2">boot</TextBlock>
+			<views:LogView Grid.Row="2" />
 		</Grid>
 		
 	</DockPanel>
