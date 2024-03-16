@@ -2,7 +2,6 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using CodeEditor2.Data;
-using CodeEditor2.Models.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -82,23 +81,6 @@ public partial class MainView : UserControl
         }
     }
 
-    internal void Controller_AddProject(Project project)
-    {
-        if (Global.Projects.ContainsKey(project.Name))
-        {
-            System.Diagnostics.Debugger.Break();
-            return;
-        }
-        Global.Projects.Add(project.Name, project);
-        addProject(project);
-    }
-
-    private async void addProject(Project project)
-    {
-        Global.navigateView.AddProject(project);
-        Tools.ParseProjectForm pform = new Tools.ParseProjectForm(NavigateView.GetPeojectNode(project.Name));
-        await pform.ShowDialog(Global.mainWindow);
-    }
     // View controller interface //////////////////////////////////////////
 
     //internal void Controller_AddProject(Models.Editor.Data.Project project)

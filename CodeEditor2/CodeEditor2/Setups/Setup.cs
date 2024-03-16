@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using CodeEditor2.Data;
 using AjkAvaloniaLibs.Libs.Json;
 
-namespace CodeEditor2.Models.Common
+namespace CodeEditor2.Setups
 {
     public class Setup
     {

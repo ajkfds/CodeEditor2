@@ -1,12 +1,12 @@
 ﻿using ExCSS;
 using CodeEditor2.CodeEditor;
 using CodeEditor2.Data;
-using CodeEditor2.Models.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CodeEditor2.Setups;
 
 namespace CodeEditor2
 {
@@ -18,6 +18,7 @@ namespace CodeEditor2
 
         public static Setup Setup = new Setup();
         //public static Dictionary<string, codeEditorPlugin.PluginSetup> PluginSetups = new Dictionary<string, codeEditorPlugin.PluginSetup>();
+        internal static Views.CodeView codeView;
         internal static Views.MainView mainView;
         internal static Views.NavigateView navigateView;
         internal static Views.MainWindow mainWindow;

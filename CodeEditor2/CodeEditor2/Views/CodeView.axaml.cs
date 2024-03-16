@@ -27,7 +27,6 @@ using System.Diagnostics.CodeAnalysis;
 using CodeEditor2.CodeEditor;
 using System.Threading;
 using Avalonia.Threading;
-using CodeEditor2.Models.Common;
 using System.Diagnostics;
 
 namespace CodeEditor2.Views
@@ -48,6 +47,8 @@ namespace CodeEditor2.Views
         public CodeView()
         {
             InitializeComponent();
+
+            Global.codeView = this;
 
             _textEditor = this.FindControl<TextEditor>("Editor");
             _textEditor.HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Visible;
@@ -177,10 +178,10 @@ namespace CodeEditor2.Views
                 return;
             }
 
-//            Controller.AppendLog("complete edit parse ID :" + parser.TextFile.ID);
+            Controller.AppendLog("complete edit parse ID :" + parser.TextFile.ID);
             if (codeDocument.Version != parser.ParsedDocument.Version)
             {
-//                Controller.AppendLog("edit parsed mismatch " + DateTime.Now.ToString() + "ver" + codeDocument.Version + "<-" + parser.ParsedDocument.Version);
+                Controller.AppendLog("edit parsed mismatch " + DateTime.Now.ToString() + "ver" + codeDocument.Version + "<-" + parser.ParsedDocument.Version);
                 parser.Dispose();
                 return;
             }
@@ -200,8 +201,6 @@ namespace CodeEditor2.Views
 
             //            Controller.NavigatePanel.UpdateVisibleNode();
             //            Controller.NavigatePanel.Refresh();
-            //_textEditor.BeginChange();
-            //_textEditor.BeginChange();
             _textEditor.TextArea.TextView.Redraw();
         }
 
@@ -250,11 +249,17 @@ namespace CodeEditor2.Views
             //codeTextbox.Visible = true;
 //            codeTextbox.Document = textFile.CodeDocument;
 //            TextFile = textFile;
-//            ScrollToCaret();
+            ScrollToCaret();
 //            if (TextFile != null) Controller.MessageView.Update(TextFile.ParsedDocument);
 
             entryParse();
 
+        }
+
+
+        public void ScrollToCaret()
+        {
+            _textEditor.ScrollToLine(CodeDocument.GetLineAt(_textEditor.CaretOffset));
         }
 
         CodeEditor.CodeDocument codeDocument = null;
@@ -358,7 +363,7 @@ namespace CodeEditor2.Views
             DocumentParser parser = TextFile.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse);
             if (parser != null)
             {
-//                Controller.AppendLog("entry edit parse ID :" + parser.TextFile.ID);
+                Controller.AppendLog("entry edit parse ID :" + parser.TextFile.ID);
                 backGroundParser.EntryParse(parser);
             }
         }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CodeEditor2.Data;
+using CodeEditor2.Views;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,9 +26,27 @@ namespace CodeEditor2
         //    return Global.mainForm.BackColor;
         //}
 
-        public static void AddProject(Data.Project project)
+        //public static void AddProject(Data.Project project)
+        //{
+        //    Global.mainView.Controller_AddProject(project);
+        //}
+
+        internal static void AddProject(Project project)
         {
-            Global.mainView.Controller_AddProject(project);
+            if (Global.Projects.ContainsKey(project.Name))
+            {
+                System.Diagnostics.Debugger.Break();
+                return;
+            }
+            Global.Projects.Add(project.Name, project);
+            addProject(project);
+        }
+
+        private static async void addProject(Project project)
+        {
+            Global.navigateView.AddProject(project);
+            Tools.ParseProjectForm pform = new Tools.ParseProjectForm(Global.navigateView.GetPeojectNode(project.Name));
+            await pform.ShowDialog(Global.mainWindow);
         }
 
         //public static System.Windows.Forms.MenuStrip GetMenuStrip()
@@ -84,153 +104,157 @@ namespace CodeEditor2
         //    }
         //}
 
-        //public static class CodeEditor
-        //{
-        //    public static void SetTextFile(Data.TextFile textFile)
-        //    {
-        //        if (textFile == null)
-        //        {
-        //            Global.mainForm.editorPage.CodeEditor.SetTextFile(null);
-        //            Global.mainForm.mainTab.TabPages[0].Text = "-";
-        //        }
-        //        else
-        //        {
-        //            Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
-        //            Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
-        //            Global.mainForm.mainTab.TabPages[0].Text = textFile.Name;
-        //            Global.mainForm.mainTab.SelectedTab = Global.mainForm.mainTab.TabPages[0];
-        //        }
-        //    }
-        //    public static void ForceOpenCustomSelection(EventHandler applySelection, List<codeEditor.CodeEditor.ToolItem> cantidates)
-        //    {
-        //        Global.mainForm.editorPage.CodeEditor.OpenCustomSelection(cantidates);
-        //    }
+        public static class CodeEditor
+        {
+            public static void SetTextFile(Data.TextFile textFile)
+            {
+                if (textFile == null)
+                {
+                    //Global.codeView. .mainForm.editorPage.CodeEditor.SetTextFile(null);
+                    //Global.mainForm.mainTab.TabPages[0].Text = "-";
+                }
+                else
+                {
+                    //Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
+                    Global.codeView.SetTextFile(textFile);
+                    //Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
+                    //Global.mainForm.mainTab.TabPages[0].Text = textFile.Name;
+                    //Global.mainForm.mainTab.SelectedTab = Global.mainForm.mainTab.TabPages[0];
+                }
+            }
 
-        //    public static void ForceOpenAutoComplete(List<codeEditor.CodeEditor.AutocompleteItem> autocompleteItems)
-        //    {
-        //        Global.mainForm.editorPage.CodeEditor.ForceOpenAutoComplete(autocompleteItems);
-        //    }
+            //public static void ForceOpenCustomSelection(EventHandler applySelection, List<codeEditor.CodeEditor.ToolItem> cantidates)
+            //{
+            //    Global.mainForm.editorPage.CodeEditor.OpenCustomSelection(cantidates);
+            //}
 
-        //    public static void RequestReparse()
-        //    {
-        //        Global.mainForm.editorPage.CodeEditor.RequestReparse();
-        //    }
-        //    public static Data.ITextFile GetTextFile()
-        //    {
-        //        return Global.mainForm.editorPage.CodeEditor.TextFile;
-        //    }
+            //public static void ForceOpenAutoComplete(List<codeEditor.CodeEditor.AutocompleteItem> autocompleteItems)
+            //{
+            //    Global.mainForm.editorPage.CodeEditor.ForceOpenAutoComplete(autocompleteItems);
+            //}
 
-        //    internal static void startInteractiveSnippet(Snippets.InteractiveSnippet interactiveSnippet)
-        //    {
-        //        Global.mainForm.editorPage.CodeEditor.StartInteractiveSnippet(interactiveSnippet);
-        //    }
+            public static void RequestReparse()
+            {
+                Global.codeView.RequestReparse();
+//                Global.mainForm.editorPage.CodeEditor.RequestReparse();
+            }
 
-        //    public static void AbortInteractiveSnippet()
-        //    {
-        //        Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
-        //    }
+            public static Data.ITextFile GetTextFile()
+            {
+                return Global.codeView.TextFile;
+            }
 
-        //    public static void AppendHighlight(int highlightStart, int highlightLast)
-        //    {
-        //        Global.mainForm.editorPage.CodeEditor.codeTextbox.AppendHighlight(highlightStart, highlightLast);
-        //    }
+            //internal static void startInteractiveSnippet(Snippets.InteractiveSnippet interactiveSnippet)
+            //{
+            //    Global.mainForm.editorPage.CodeEditor.StartInteractiveSnippet(interactiveSnippet);
+            //}
 
-        //    public static void GetHighlightPosition(int highlightIndex, out int highlightStart, out int highlightLast)
-        //    {
-        //        Global.mainForm.editorPage.CodeEditor.codeTextbox.GetHighlightPosition(highlightIndex, out highlightStart, out highlightLast);
-        //    }
+            //public static void AbortInteractiveSnippet()
+            //{
+            //    Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
+            //}
+
+            //public static void AppendHighlight(int highlightStart, int highlightLast)
+            //{
+            //    Global.mainForm.editorPage.CodeEditor.codeTextbox.AppendHighlight(highlightStart, highlightLast);
+            //}
+
+            //public static void GetHighlightPosition(int highlightIndex, out int highlightStart, out int highlightLast)
+            //{
+            //    Global.mainForm.editorPage.CodeEditor.codeTextbox.GetHighlightPosition(highlightIndex, out highlightStart, out highlightLast);
+            //}
 
 
-        //    public static void SelectHighlight(int highLightIndex)
-        //    {
-        //        Global.mainForm.editorPage.CodeEditor.codeTextbox.SelectHighlight(highLightIndex);
-        //    }
+            //public static void SelectHighlight(int highLightIndex)
+            //{
+            //    Global.mainForm.editorPage.CodeEditor.codeTextbox.SelectHighlight(highLightIndex);
+            //}
 
-        //    public static int GetHighlightIndex(int index)
-        //    {
-        //        return Global.mainForm.editorPage.CodeEditor.codeTextbox.GetHighlightIndex(index);
-        //    }
+            //public static int GetHighlightIndex(int index)
+            //{
+            //    return Global.mainForm.editorPage.CodeEditor.codeTextbox.GetHighlightIndex(index);
+            //}
 
-        //    public static void ClearHighlight()
-        //    {
-        //        Global.mainForm.editorPage.CodeEditor.codeTextbox.ClearHighlight();
-        //    }
-        //    public static void Refresh()
-        //    {
-        //        Global.mainForm.Controller_RefreshCodeEditor();
-        //    }
+            //public static void ClearHighlight()
+            //{
+            //    Global.mainForm.editorPage.CodeEditor.codeTextbox.ClearHighlight();
+            //}
+            //public static void Refresh()
+            //{
+            //    Global.mainForm.Controller_RefreshCodeEditor();
+            //}
 
-        //    public static void ScrollToCaret()
-        //    {
-        //        Global.mainForm.editorPage.CodeEditor.ScrollToCaret();
-        //    }
+            public static void ScrollToCaret()
+            {
+                Global.codeView.ScrollToCaret();
+            }
 
-        //}
+        }
 
-        //public static class NavigatePanel
-        //{
-        //    public static void Refresh()
-        //    {
-        //        if (Global.mainForm.InvokeRequired)
-        //        {
-        //            Global.mainForm.Invoke(new Action(() => { Global.mainForm.navigatePanel.Refresh(); }));
-        //        }
-        //        else
-        //        {
-        //            Global.mainForm.navigatePanel.Refresh();
-        //        }
-        //    }
+        public static class NavigatePanel
+        {
+            //public static void Refresh()
+            //{
+            //    if (Global.mainForm.InvokeRequired)
+            //    {
+            //        Global.mainForm.Invoke(new Action(() => { Global.mainForm.navigatePanel.Refresh(); }));
+            //    }
+            //    else
+            //    {
+            //        Global.mainForm.navigatePanel.Refresh();
+            //    }
+            //}
 
-        //    public static void UpdateVisibleNode()
-        //    {
-        //        Global.mainForm.navigatePanel.UpdateWholeVisibleNode();
-        //    }
+            //public static void UpdateVisibleNode()
+            //{
+            //    Global.mainForm.navigatePanel.UpdateWholeVisibleNode();
+            //}
 
-        //    public static void UpdateVisibleNode(codeEditor.NavigatePanel.NavigatePanelNode node)
-        //    {
-        //        Global.mainForm.navigatePanel.UpdateWholeVisibleNode(node);
-        //    }
+            //public static void UpdateVisibleNode(codeEditor.NavigatePanel.NavigatePanelNode node)
+            //{
+            //    Global.mainForm.navigatePanel.UpdateWholeVisibleNode(node);
+            //}
 
-        //    public static void GetSelectedNode(out codeEditor.NavigatePanel.NavigatePanelNode node)
-        //    {
-        //        Global.mainForm.navigatePanel.GetSelectedNode(out node);
-        //    }
+            //public static void GetSelectedNode(out codeEditor.NavigatePanel.NavigatePanelNode node)
+            //{
+            //    Global.mainForm.navigatePanel.GetSelectedNode(out node);
+            //}
 
-        //    public static System.Windows.Forms.ContextMenuStrip GetContextMenuStrip()
-        //    {
-        //        return Global.mainForm.navigatePanel.GetContextMenuStrip();
-        //    }
+            //public static System.Windows.Forms.ContextMenuStrip GetContextMenuStrip()
+            //{
+            //    return Global.mainForm.navigatePanel.GetContextMenuStrip();
+            //}
 
-        //    public static void Parse(codeEditor.NavigatePanel.NavigatePanelNode node)
-        //    {
-        //        Tools.ParseHierarchyForm form = new Tools.ParseHierarchyForm(node);
-        //        while (form.Visible)
-        //        {
-        //            System.Threading.Thread.Sleep(1);
-        //        }
-        //        Controller.ShowForm(form);
-        //    }
+            //public static void Parse(codeEditor.NavigatePanel.NavigatePanelNode node)
+            //{
+            //    Tools.ParseHierarchyForm form = new Tools.ParseHierarchyForm(node);
+            //    while (form.Visible)
+            //    {
+            //        System.Threading.Thread.Sleep(1);
+            //    }
+            //    Controller.ShowForm(form);
+            //}
 
-        //    public static void Update()
-        //    {
-        //        if (Global.mainForm.InvokeRequired)
-        //        {
-        //            Global.mainForm.Invoke(new Action(() => { Global.mainForm.navigatePanel.Update(); }));
-        //        }
-        //        else
-        //        {
-        //            Global.mainForm.navigatePanel.Update();
-        //        }
-        //    }
+            //public static void Update()
+            //{
+            //    if (Global.mainForm.InvokeRequired)
+            //    {
+            //        Global.mainForm.Invoke(new Action(() => { Global.mainForm.navigatePanel.Update(); }));
+            //    }
+            //    else
+            //    {
+            //        Global.mainForm.navigatePanel.Update();
+            //    }
+            //}
 
-        //    public static void Invalidate()
-        //    {
-        //        Global.mainForm.navigatePanel.Invalidate();
-        //    }
-        //}
+            //public static void Invalidate()
+            //{
+            //    Global.mainForm.navigatePanel.Invalidate();
+            //}
+        }
 
-        //public static class Tabs
-        //{
+        public static class Tabs
+        {
 
         //    public static void AddPage(ajkControls.TabControl.TabPage tabPage)
         //    {
@@ -245,14 +269,14 @@ namespace CodeEditor2
         //    public static void Refresh()
         //    {
         //    }
-        //}
+        }
 
-        //public static class MessageView
-        //{
+        public static class MessageView
+        {
         //    public static void Update(codeEditor.CodeEditor.ParsedDocument parsedDocument)
         //    {
         //        Global.mainForm.messageView.UpdateMessages(parsedDocument);
         //    }
-        //}
+        }
     }
 }

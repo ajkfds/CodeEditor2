@@ -1,6 +1,5 @@
 ﻿using Avalonia.Media;
 using HarfBuzzSharp;
-using CodeEditor2.Models.Common;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;

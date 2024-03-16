@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using CodeEditor2.Models.Common;
 using static System.Net.Mime.MediaTypeNames;
 using System.Collections.Generic;
 using System;

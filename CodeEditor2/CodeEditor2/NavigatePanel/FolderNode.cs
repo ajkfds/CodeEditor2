@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using Avalonia.Media;
-using CodeEditor2.Models.Common;
 using CodeEditor2.Data;
 
 namespace CodeEditor2.NavigatePanel
