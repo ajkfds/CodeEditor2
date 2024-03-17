@@ -23,6 +23,12 @@ namespace CodeEditor2.Views
             pNode.Update();
         }
 
+        public NavigatePanelNode? GetSelectedNode()
+        {
+            NavigatePanelNode? node = TreeControl.GetSelectedNode() as NavigatePanelNode;
+            return node;
+        }
+
         public ProjectNode GetPeojectNode(string projectName)
         {
             ProjectNode ret = null;

@@ -30,9 +30,9 @@ namespace CodeEditor2.FileTypes
         }
         public void WriteJson(JsonWriter writer)
         {
-            using (var blockWriter = writer.GetObjectWriter("codeEditor"))
+            using (var blockWriter = writer.GetObjectWriter("CodeEditor2"))
             {
-                blockWriter.writeKeyValue("ApplicationName", "codeEditor");
+                blockWriter.writeKeyValue("ApplicationName", "CodeEditor2");
                 blockWriter.writeKeyValue("LastUpdate", DateTime.Now.ToString());
             }
 

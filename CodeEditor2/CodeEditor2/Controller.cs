@@ -1,10 +1,13 @@
-﻿using CodeEditor2.Data;
+﻿using Avalonia.LogicalTree;
+using Avalonia.Threading;
+using CodeEditor2.Data;
 using CodeEditor2.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static CodeEditor2.CodeEditor.ParsedDocument;
 using static CodeEditor2.Controller;
 
 namespace CodeEditor2
@@ -26,10 +29,6 @@ namespace CodeEditor2
         //    return Global.mainForm.BackColor;
         //}
 
-        //public static void AddProject(Data.Project project)
-        //{
-        //    Global.mainView.Controller_AddProject(project);
-        //}
 
         internal static void AddProject(Project project)
         {
@@ -63,28 +62,20 @@ namespace CodeEditor2
         //    return System.Windows.Forms.MessageBox.Show(text, caption, buttons);
         //}
 
-        //public static void ShowForm(System.Windows.Forms.Form form)
-        //{
-        //    if (Global.mainForm.InvokeRequired)
-        //    {
-        //        Global.mainForm.Invoke(new Action(() => { form.Show(Global.mainForm); }));
-        //    }
-        //    else
-        //    {
-        //        form.Show(Global.mainForm);
-        //    }
-        //}
-        //public static void ShowDialogForm(System.Windows.Forms.Form form)
-        //{
-        //    if (form.InvokeRequired)
-        //    {
-        //        form.Invoke(new Action(() => { form.ShowDialog(Global.mainForm); }));
-        //    }
-        //    else
-        //    {
-        //        form.ShowDialog(Global.mainForm);
-        //    }
-        //}
+        public static void ShowForm(Avalonia.Controls.Window form)
+        {
+            Dispatcher.UIThread.Invoke(new Action(() => {
+                form.Show(Global.mainWindow);
+            }));
+        }
+
+        public static void ShowDialogForm(Avalonia.Controls.Window form)
+        {
+            Dispatcher.UIThread.Invoke(new Action(() => {
+                form.ShowDialog(Global.mainWindow);
+            }));
+        }
+
         //public static System.Windows.Forms.DialogResult ShowDialogForm(System.Windows.Forms.CommonDialog dialog)
         //{
         //    return dialog.ShowDialog(Global.mainForm);
@@ -123,12 +114,12 @@ namespace CodeEditor2
                 }
             }
 
-            //public static void ForceOpenCustomSelection(EventHandler applySelection, List<codeEditor.CodeEditor.ToolItem> cantidates)
+            //public static void ForceOpenCustomSelection(EventHandler applySelection, List<CodeEditor2.CodeEditor.ToolItem> cantidates)
             //{
             //    Global.mainForm.editorPage.CodeEditor.OpenCustomSelection(cantidates);
             //}
 
-            //public static void ForceOpenAutoComplete(List<codeEditor.CodeEditor.AutocompleteItem> autocompleteItems)
+            //public static void ForceOpenAutoComplete(List<CodeEditor2.CodeEditor.AutocompleteItem> autocompleteItems)
             //{
             //    Global.mainForm.editorPage.CodeEditor.ForceOpenAutoComplete(autocompleteItems);
             //}
@@ -210,22 +201,22 @@ namespace CodeEditor2
             //    Global.mainForm.navigatePanel.UpdateWholeVisibleNode();
             //}
 
-            //public static void UpdateVisibleNode(codeEditor.NavigatePanel.NavigatePanelNode node)
+            //public static void UpdateVisibleNode(CodeEditor2.NavigatePanel.NavigatePanelNode node)
             //{
             //    Global.mainForm.navigatePanel.UpdateWholeVisibleNode(node);
             //}
 
-            //public static void GetSelectedNode(out codeEditor.NavigatePanel.NavigatePanelNode node)
-            //{
-            //    Global.mainForm.navigatePanel.GetSelectedNode(out node);
-            //}
+            public static void GetSelectedNode(out CodeEditor2.NavigatePanel.NavigatePanelNode node)
+            {
+                node = Global.navigateView.GetSelectedNode();
+            }
 
             //public static System.Windows.Forms.ContextMenuStrip GetContextMenuStrip()
             //{
             //    return Global.mainForm.navigatePanel.GetContextMenuStrip();
             //}
 
-            //public static void Parse(codeEditor.NavigatePanel.NavigatePanelNode node)
+            //public static void Parse(CodeEditor2.NavigatePanel.NavigatePanelNode node)
             //{
             //    Tools.ParseHierarchyForm form = new Tools.ParseHierarchyForm(node);
             //    while (form.Visible)
@@ -273,7 +264,7 @@ namespace CodeEditor2
 
         public static class MessageView
         {
-        //    public static void Update(codeEditor.CodeEditor.ParsedDocument parsedDocument)
+        //    public static void Update(CodeEditor2.CodeEditor.ParsedDocument parsedDocument)
         //    {
         //        Global.mainForm.messageView.UpdateMessages(parsedDocument);
         //    }

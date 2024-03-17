@@ -51,8 +51,8 @@ namespace CodeEditor2.NavigatePanel
 
         public override void OnSelected()
         {
-            //codeEditor.Controller.NavigatePanel.GetContextMenuStrip().Items["openWithExploererTsmi"].Visible = true;
-            //codeEditor.Controller.NavigatePanel.GetContextMenuStrip().Items["ignoreTsmi"].Visible = true;
+            //CodeEditor2.Controller.NavigatePanel.GetContextMenuStrip().Items["openWithExploererTsmi"].Visible = true;
+            //CodeEditor2.Controller.NavigatePanel.GetContextMenuStrip().Items["ignoreTsmi"].Visible = true;
         }
 
         public override void Update()
@@ -116,7 +116,7 @@ namespace CodeEditor2.NavigatePanel
         //    {
         //        graphics.DrawImage(ignoreIcon.GetImage(lineHeight, ajkControls.Primitive.IconImage.ColorStyle.Gray), new Point(x, y));
         //    }
-        //    if (Link) graphics.DrawImage(codeEditor.Global.IconImages.Link.GetImage(lineHeight, ajkControls.Primitive.IconImage.ColorStyle.Blue), new Point(x, y));
+        //    if (Link) graphics.DrawImage(CodeEditor2.Global.IconImages.Link.GetImage(lineHeight, ajkControls.Primitive.IconImage.ColorStyle.Blue), new Point(x, y));
 
         //    Color bgColor = backgroundColor;
         //    if (selected) bgColor = selectedColor;

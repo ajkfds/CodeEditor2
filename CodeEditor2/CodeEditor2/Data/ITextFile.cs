@@ -54,8 +54,8 @@ namespace CodeEditor2.Data
 //        void BeforeKeyDown(System.Windows.Forms.KeyEventArgs e);
 
 //        List<CodeEditor.PopupItem> GetPopupItems(ulong Version, int index);
-//        List<codeEditor.CodeEditor.AutocompleteItem> GetAutoCompleteItems(int index, out string cantidateText);
-//        List<codeEditor.CodeEditor.ToolItem> GetToolItems(int index);
+//        List<CodeEditor2.CodeEditor.AutocompleteItem> GetAutoCompleteItems(int index, out string cantidateText);
+//        List<CodeEditor2.CodeEditor.ToolItem> GetToolItems(int index);
 
 //        ajkControls.CodeTextbox.CodeDrawStyle DrawStyle { get; }
     }

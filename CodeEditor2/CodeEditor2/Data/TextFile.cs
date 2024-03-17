@@ -1,5 +1,6 @@
 ﻿using Avalonia.Input;
 using AvaloniaEdit.Document;
+using CodeEditor2.CodeEditor;
 using CodeEditor2.NavigatePanel;
 using System;
 using System.Collections.Generic;
@@ -116,12 +117,12 @@ namespace CodeEditor2.Data
 
         public virtual void Save()
         {
-            //if (CodeDocument == null) return;
+            if (CodeDocument == null) return;
 
-            //using (System.IO.StreamWriter sw = new System.IO.StreamWriter(AbsolutePath))
-            //{
-            //    sw.Write(CodeDocument.CreateString());
-            //}
+            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(AbsolutePath))
+            {
+                sw.Write(CodeDocument.CreateString());
+            }
             //CodeDocument.Clean();
             //loadedFileLastWriteTime = System.IO.File.GetLastWriteTime(AbsolutePath);
         }
@@ -178,13 +179,13 @@ namespace CodeEditor2.Data
         //}
 
 
-        //public virtual ajkControls.CodeTextbox.CodeDrawStyle DrawStyle
-        //{
-        //    get
-        //    {
-        //        return Global.DefaultDrawStyle;
-        //    }
-        //}
+        public virtual CodeDrawStyle DrawStyle
+        {
+            get
+            {
+                return Global.DefaultDrawStyle;
+            }
+        }
 
 
 
@@ -209,7 +210,7 @@ namespace CodeEditor2.Data
         //    cantidateWord = null;
         //    return null;
         //}
-        //public virtual List<codeEditor.CodeEditor.ToolItem> GetToolItems(int index)
+        //public virtual List<CodeEditor2.CodeEditor.ToolItem> GetToolItems(int index)
         //{
         //    return null;
         //}
@@ -236,7 +237,7 @@ namespace CodeEditor2.Data
 
         public void ParseHierarchy(Action<ITextFile> action)
         {
-//            codeEditor.Controller.AppendLog("parseHier : " + Name);
+//            CodeEditor2.Controller.AppendLog("parseHier : " + Name);
 
             List<string> parsedIds = new List<string>();
             parseHierarchy(this, parsedIds, action);
@@ -246,7 +247,7 @@ namespace CodeEditor2.Data
             {
                 NavigatePanelNode.HierarchicalVisibleUpdate();
             }
-//            codeEditor.Controller.NavigatePanel.Update();
+//            CodeEditor2.Controller.NavigatePanel.Update();
         }
 
         private void parseHierarchy(Data.Item item, List<string> parsedIds, Action<ITextFile> action)

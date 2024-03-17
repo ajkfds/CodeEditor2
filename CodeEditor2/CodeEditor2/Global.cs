@@ -17,7 +17,7 @@ namespace CodeEditor2
         public static Dictionary<string, CodeEditor2Plugin.IPlugin> Plugins = new Dictionary<string, CodeEditor2Plugin.IPlugin>();
 
         public static Setup Setup = new Setup();
-        //public static Dictionary<string, codeEditorPlugin.PluginSetup> PluginSetups = new Dictionary<string, codeEditorPlugin.PluginSetup>();
+        //public static Dictionary<string, CodeEditor2Plugin.PluginSetup> PluginSetups = new Dictionary<string, CodeEditor2Plugin.PluginSetup>();
         internal static Views.CodeView codeView;
         internal static Views.MainView mainView;
         internal static Views.NavigateView navigateView;
@@ -56,6 +56,6 @@ namespace CodeEditor2
 
         //// for debug
         //public static System.Runtime.Serialization.ObjectIDGenerator IdGenerator = new System.Runtime.Serialization.ObjectIDGenerator();
-        //public static bool StopParse = false;
+        public static bool StopParse = false;
     }
 }

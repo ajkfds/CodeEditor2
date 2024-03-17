@@ -39,7 +39,7 @@ namespace CodeEditor2.NavigatePanel
         public override void OnSelected()
         {
             //Data.ITextFile textFile = FileItem as Data.ITextFile;
-            //codeEditor.Controller.NavigatePanel.GetContextMenuStrip().Items["openWithExploererTsmi"].Visible = true;
+            //CodeEditor2.Controller.NavigatePanel.GetContextMenuStrip().Items["openWithExploererTsmi"].Visible = true;
 
         }
     }

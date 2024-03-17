@@ -10,7 +10,7 @@ namespace CodeEditor2.Views;
 
 public partial class MainView : UserControl
 {
-    private const string setupFileName = "codeEditor.json";
+    private const string setupFileName = "CodeEditor2.json";
 
     public MainView()
     {
@@ -42,7 +42,7 @@ public partial class MainView : UserControl
                     {
                         registered++;
                         Global.Plugins.Add(plugin.Id, plugin);
-                        //Controller.AppendLog("Loading plugin ... " + plugin.Id);
+                        Controller.AppendLog("Loading plugin ... " + plugin.Id);
                     }
                 }
             }
@@ -64,7 +64,7 @@ public partial class MainView : UserControl
                 if (Global.Plugins[pluginName].Initialize())
                 {
                     initialized++;
-                    //Controller.AppendLog("Initializing plugin ... " + pluginName);
+                    Controller.AppendLog("Initializing plugin ... " + pluginName);
                     initilalizedPulginName.Add(pluginName);
                 }
             }

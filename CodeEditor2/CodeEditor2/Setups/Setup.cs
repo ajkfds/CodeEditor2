@@ -42,7 +42,7 @@ namespace CodeEditor2.Setups
 
                 switch (key)
                 {
-                    case "codeEditor":
+                    case "CodeEditor2":
                         readCodeEditorSetup(reader);
                         break;
                     case "PluginSetups":
@@ -71,7 +71,7 @@ namespace CodeEditor2.Setups
                     {
                         case "ApplicationName":
                             string applicationName = reader.GetNextStringValue();
-                            if (applicationName != "codeEditor") throw new Exception("illegal format");
+                            if (applicationName != "CodeEditor2") throw new Exception("illegal format");
                             break;
                         case "LastUpdate":
                             string lastUpdate = reader.GetNextStringValue();
@@ -133,9 +133,9 @@ namespace CodeEditor2.Setups
 
         private void writeJson(JsonWriter writer)
         {
-            using (var blockWriter = writer.GetObjectWriter("codeEditor"))
+            using (var blockWriter = writer.GetObjectWriter("CodeEditor2"))
             {
-                blockWriter.writeKeyValue("ApplicationName", "codeEditor");
+                blockWriter.writeKeyValue("ApplicationName", "CodeEditor2");
                 blockWriter.writeKeyValue("LastUpdate", DateTime.Now.ToString());
             }
 
