@@ -58,11 +58,7 @@ namespace CodeEditor2.CodeEditor
                     parser.ParsedDocument.LockedDocument.Add(parser.Document);
 
                     parser.Parse();
-
-                    foreach(var doc in parser.ParsedDocument.LockedDocument)
-                    {
-                        doc.UnlockThread();
-                    }
+                    parser.ParsedDocument.UnlockDocumentThread();
 
                     lock (fromBackgroundStock)
                     {

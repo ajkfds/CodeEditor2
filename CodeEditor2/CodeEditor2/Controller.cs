@@ -44,8 +44,8 @@ namespace CodeEditor2
         private static async void addProject(Project project)
         {
             Global.navigateView.AddProject(project);
-            Tools.ParseProjectForm pform = new Tools.ParseProjectForm(Global.navigateView.GetPeojectNode(project.Name));
-            await pform.ShowDialog(Global.mainWindow);
+//            Tools.ParseProjectForm pform = new Tools.ParseProjectForm(Global.navigateView.GetPeojectNode(project.Name));
+//            await pform.ShowDialog(Global.mainWindow);
         }
 
         //public static System.Windows.Forms.MenuStrip GetMenuStrip()

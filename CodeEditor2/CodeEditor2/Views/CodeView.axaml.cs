@@ -127,10 +127,10 @@ namespace CodeEditor2.Views
             timer.Tick += Timer_Tick;
             timer.Start();
 
-            for(byte i = 0; i < 16; i++)
-            {
-                SolodColorBrushes.Add(i, new SolidColorBrush(Global.DefaultDrawStyle.ColorPallet[i]));
-            }
+            //for(byte i = 0; i < 16; i++)
+            //{
+            //    SolodColorBrushes.Add(i, new SolidColorBrush(Global.DefaultDrawStyle.ColorPallet[i]));
+            //}
         }
 
         private void TextArea_DocumentChanged(object? sender, DocumentChangedEventArgs e)
@@ -155,7 +155,7 @@ namespace CodeEditor2.Views
             prevVersion = version;
         }
 
-        public static Dictionary<byte, SolidColorBrush> SolodColorBrushes = new Dictionary<byte, SolidColorBrush>();
+//        public static Dictionary<byte, SolidColorBrush> SolodColorBrushes = new Dictionary<byte, SolidColorBrush>();
 
 
         private void Timer_Tick(object? sender, EventArgs e)
@@ -206,10 +206,10 @@ namespace CodeEditor2.Views
 
         public void SetTextFile(Data.TextFile textFile)
         {
-            if(CodeDocument != null)
-            {
-                CodeDocument.UnlockThread();
-            }
+            //if(CodeDocument != null)
+            //{
+            //    CodeDocument.UnlockThread();
+            //}
 
             if (textFile == null)
             {

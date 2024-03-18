@@ -18,6 +18,13 @@ namespace CodeEditor2.CodeEditor
         public readonly DocumentParser.ParseModeEnum ParseMode;
 
         public List<CodeDocument> LockedDocument = new List<CodeDocument>();
+        public void UnlockDocumentThread()
+        {
+            foreach(CodeDocument doc in LockedDocument)
+            {
+                doc.UnlockThread();
+            }
+        }
 
         private System.WeakReference<Data.TextFile> textFileRef;
         public Data.Item Item

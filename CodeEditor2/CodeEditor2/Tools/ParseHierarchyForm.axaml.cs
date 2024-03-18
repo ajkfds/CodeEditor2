@@ -3,6 +3,8 @@ using static CodeEditor2.Controller;
 using System;
 using Avalonia.Threading;
 using System.Reflection.Emit;
+using CodeEditor2.Data;
+using CodeEditor2.CodeEditor;
 
 namespace CodeEditor2.Tools
 {
@@ -75,6 +77,7 @@ namespace CodeEditor2.Tools
             textFile.ParseHierarchy((tFile) => {
                 Dispatcher.UIThread.Invoke(new Action(() => { Message.Text = tFile.ID; }));
             });
+            textFile.ParsedDocument.UnlockDocumentThread();
 
         }
     }

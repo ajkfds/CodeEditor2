@@ -36,25 +36,25 @@ namespace CodeEditor2.Tools
 
         private void parse(Data.TextFile textFile)
         {
-            //CodeEditor.DocumentParser parser = textFile.CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum.LoadParse);
-            //if (parser == null) return;
+            CodeEditor.DocumentParser parser = textFile.CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum.LoadParse);
+            if (parser == null) return;
 
-            //if (textFile != null) startParse(textFile);
-            //parser.Parse();
+            if (textFile != null) startParse(textFile);
+            parser.Parse();
 
-            //textFile.CodeDocument.CopyFrom(parser.Document);
+            textFile.CodeDocument.CopyFrom(parser.Document);
 
-            //if (textFile.ParsedDocument != null)
-            //{
+            if (textFile.ParsedDocument != null)
+            {
 
-            //    CodeEditor.ParsedDocument oldParsedDocument = textFile.ParsedDocument;
-            //    textFile.ParsedDocument = null;
-            //    oldParsedDocument.Dispose();
-            //}
+                CodeEditor.ParsedDocument oldParsedDocument = textFile.ParsedDocument;
+                textFile.ParsedDocument = null;
+                oldParsedDocument.Dispose();
+            }
 
 
-            //textFile.AcceptParsedDocument(parser.ParsedDocument);
-            //textFile.Close();
+            textFile.AcceptParsedDocument(parser.ParsedDocument);
+            textFile.Close();
 
             //gc++;
             //if (gc > 100)
