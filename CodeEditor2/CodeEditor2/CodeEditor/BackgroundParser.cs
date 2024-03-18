@@ -15,6 +15,7 @@ namespace CodeEditor2.CodeEditor
         public void Run()
         {
             thread = new System.Threading.Thread(new System.Threading.ThreadStart(run));
+            thread.Name = "BackGroundParser";
             thread.Start();
         }
 
@@ -30,6 +31,7 @@ namespace CodeEditor2.CodeEditor
         {
             lock (toBackgroundStock)
             {
+                documentParser.Document.UnlockThread();
                 toBackgroundStock.Add(documentParser);
             }
         }
@@ -51,7 +53,17 @@ namespace CodeEditor2.CodeEditor
                 if (parser != null)
                 {
                     parsing = true;
+
+                    parser.Document.LockThead();
+                    parser.ParsedDocument.LockedDocument.Add(parser.Document);
+
                     parser.Parse();
+
+                    foreach(var doc in parser.ParsedDocument.LockedDocument)
+                    {
+                        doc.UnlockThread();
+                    }
+
                     lock (fromBackgroundStock)
                     {
                         fromBackgroundStock.Add(parser);

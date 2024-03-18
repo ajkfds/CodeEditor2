@@ -1,5 +1,7 @@
-﻿using Avalonia.Media.TextFormatting;
+﻿using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Document;
+using AvaloniaEdit.TextMate;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -20,6 +22,16 @@ namespace CodeEditor2.CodeEditor
             textDocument.TextChanged += TextDocument_TextChanged;
             textDocument.Changed += TextDocument_Changed;
             textDocument.Changing += TextDocument_Changing;
+        }
+
+        public void LockThead()
+        {
+            textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);
+        }
+
+        public void UnlockThread()
+        {
+            textDocument.SetOwnerThread(null);
         }
 
         private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
@@ -61,26 +73,6 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-
-        private ITextSourceVersion snapShotVersion = null;
-        private AvaloniaEdit.Document.ITextSource _snapShot = null;
-        private TextDocument _snapedTextDocument = null;
-
-        public TextDocument TextDocumentSnapShot
-        {
-            get
-            {
-                if (textDocument == null) return null;
-                if(textDocument.Version != snapShotVersion)
-                {
-                    System.Diagnostics.Debug.Print("#snap");
-                    _snapShot = textDocument.CreateSnapshot();
-                    snapShotVersion = _snapShot.Version;
-                    _snapedTextDocument = new TextDocument(_snapShot);
-                }
-                return _snapedTextDocument;
-            }
-        }
 
         public System.WeakReference<Data.TextFile>? textFileRef;
         public Data.TextFile TextFile
@@ -165,8 +157,7 @@ namespace CodeEditor2.CodeEditor
         {
             get
             {
-                if (TextDocumentSnapShot == null) return 0;
-                return TextDocumentSnapShot.TextLength;
+                return textDocument.TextLength;
             }
         }
 
@@ -347,9 +338,11 @@ namespace CodeEditor2.CodeEditor
         {
             textDocument.Text = document.textDocument.Text;
         }
+
         public void CopyTextOnlyFrom(CodeDocument document)
         {
-            textDocument.Text = document.textDocument.Text;
+            var snap = document.textDocument.CreateSnapshot();
+            textDocument.Text = snap.Text;
             Version = document.Version;
         }
 
@@ -395,10 +388,10 @@ namespace CodeEditor2.CodeEditor
         }
 
 
-        public void SetColorAt(int index, byte value)
+        public virtual void SetColorAt(int index, byte value)
         {
-            if (TextDocumentSnapShot == null) return;
-            DocumentLine line = TextDocumentSnapShot.GetLineByOffset(index);
+            if (TextDocument == null) return;
+            DocumentLine line = TextDocument.GetLineByOffset(index);
             LineInfomation lineInfo;
             if (LineInfomations.ContainsKey(line.LineNumber))
             {
@@ -409,9 +402,9 @@ namespace CodeEditor2.CodeEditor
                 lineInfo = new LineInfomation();
                 LineInfomations.Add(line.LineNumber, lineInfo);
             }
-            lineInfo.Colors.Add(new LineInfomation.Color(index, 1, value));
+            Color color = Global.DefaultDrawStyle.ColorPallet[value];
+            lineInfo.Colors.Add(new LineInfomation.Color(index, 1, color));
         }
-
 
 
         public void Undo()
@@ -433,18 +426,18 @@ namespace CodeEditor2.CodeEditor
 
         public void Replace(int index, int replaceLength, byte colorIndex, string text)
         {
-            if (TextDocumentSnapShot == null) return;
+            if (textDocument == null) return;
             lock (this)
             {
-                TextDocumentSnapShot.Replace(index, replaceLength, text);
+                textDocument.Replace(index, replaceLength, text);
                 // set color
             }
         }
 
         public int GetLineAt(int index)
         {
-            if (TextDocumentSnapShot == null) return 0;
-            return TextDocumentSnapShot.GetLineByOffset(index).LineNumber;
+            if (textDocument == null) return 0;
+            return textDocument.GetLineByOffset(index).LineNumber;
         }
 
         //public int GetVisibleLine(int line)
@@ -463,37 +456,37 @@ namespace CodeEditor2.CodeEditor
 
         public int GetLineStartIndex(int line)
         {
-            if (TextDocumentSnapShot == null) return 0;
+            if (textDocument == null) return 0;
             TextLocation location = new TextLocation(line, 0);
-            return TextDocumentSnapShot.GetOffset(location);
+            return textDocument.GetOffset(location);
         }
 
         public int GetLineLength(int line)
         {
-            if (TextDocumentSnapShot == null) return 0;
-            return TextDocumentSnapShot.GetLineByNumber(line).Length;
+            if (textDocument == null) return 0;
+            return textDocument.GetLineByNumber(line).Length;
         }
 
         public int Lines
         {
             get
             {
-                if (TextDocumentSnapShot == null) return 0;
-                return TextDocumentSnapShot.LineCount;
+                if (textDocument == null) return 0;
+                return textDocument.LineCount;
             }
         }
 
         public int FindIndexOf(string targetString, int startIndex)
         {
-            if (TextDocumentSnapShot == null) return -1;
+            if (textDocument == null) return -1;
             if (targetString.Length == 0) return -1;
             for (int i = startIndex; i < Length - targetString.Length; i++)
             {
-                if (targetString[0] != TextDocumentSnapShot.GetCharAt(i)) continue;
+                if (targetString[0] != textDocument.GetCharAt(i)) continue;
                 bool match = true;
                 for (int j = 1; j < targetString.Length; j++)
                 {
-                    if (targetString[j] != TextDocumentSnapShot.GetCharAt(i + j))
+                    if (targetString[j] != textDocument.GetCharAt(i + j))
                     {
                         match = false;
                         break;
@@ -531,12 +524,12 @@ namespace CodeEditor2.CodeEditor
 
         public string CreateString()
         {
-            return TextDocumentSnapShot.GetText(0, TextDocumentSnapShot.TextLength);
+            return textDocument.GetText(0, textDocument.TextLength);
         }
 
         public string CreateString(int index, int length)
         {
-            return TextDocumentSnapShot.GetText(index, length);
+            return textDocument.GetText(index, length);
         }
 
         //public char[] CreateCharArray()
@@ -546,7 +539,7 @@ namespace CodeEditor2.CodeEditor
 
         public string CreateLineString(int line)
         {
-            return TextDocumentSnapShot.GetText(GetLineStartIndex(line), GetLineLength(line));
+            return textDocument.GetText(GetLineStartIndex(line), GetLineLength(line));
         }
 
         //public char[] CreateLineArray(int line)

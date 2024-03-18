@@ -206,6 +206,11 @@ namespace CodeEditor2.Views
 
         public void SetTextFile(Data.TextFile textFile)
         {
+            if(CodeDocument != null)
+            {
+                CodeDocument.UnlockThread();
+            }
+
             if (textFile == null)
             {
 //                Global.mainForm.editorPage.CodeEditor.SetTextFile(null);
@@ -214,6 +219,7 @@ namespace CodeEditor2.Views
             else
             {
                 CodeDocument = textFile.CodeDocument;
+                CodeDocument.LockThead();
                 
                 //                Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
                 //                Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
@@ -304,15 +310,15 @@ namespace CodeEditor2.Views
                 if (!codeDocument.LineInfomations.ContainsKey(line.LineNumber)) return;
                 CodeEditor.LineInfomation lineInfo = codeDocument.LineInfomations[line.LineNumber];
 
-                foreach(var color in lineInfo.Colors)
+                foreach (var color in lineInfo.Colors)
                 {
                     if (line.Offset > color.Offset | color.Offset + color.Length > line.EndOffset) continue;
                     ChangeLinePart(
                         color.Offset,
-                        color.Offset+color.Length,
+                        color.Offset + color.Length,
                         visualLine =>
                         {
-                            visualLine.TextRunProperties.SetForegroundBrush(SolodColorBrushes[color.ColorIndex]);
+                            visualLine.TextRunProperties.SetForegroundBrush(new SolidColorBrush(color.DrawColor));
                         }
                     );
 

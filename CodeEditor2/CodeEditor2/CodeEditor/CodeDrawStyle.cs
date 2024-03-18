@@ -31,15 +31,7 @@ namespace CodeEditor2.CodeEditor
                 Color.FromRgb(100,100,  0), // 14
                 Color.FromRgb( 50, 50, 50)  // 15
             };
-
-            //for (byte i = 0; i < 16; i++)
-            //{
-            //    SolidColorBrushes.Add(i, new SolidColorBrush(colors[i]));
-            //}
         }
-
-
-        public Dictionary<byte, SolidColorBrush> SolidColorBrushes = new Dictionary<byte, SolidColorBrush>();
 
 
         protected Color[] colors;

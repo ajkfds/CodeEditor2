@@ -140,7 +140,10 @@ namespace CodeEditor2.Data
         {
             try
             {
-                if (document == null) document = new CodeEditor.CodeDocument(this);
+                if (document == null)
+                {
+                    document = new CodeEditor.CodeDocument(this);
+                }
                 using (System.IO.StreamReader sr = new System.IO.StreamReader(AbsolutePath))
                 {
                     loadedFileLastWriteTime = System.IO.File.GetLastWriteTime(AbsolutePath);

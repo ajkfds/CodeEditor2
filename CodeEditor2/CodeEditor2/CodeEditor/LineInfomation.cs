@@ -1,7 +1,6 @@
 ﻿using Avalonia.Media;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
@@ -15,15 +14,15 @@ namespace CodeEditor2.CodeEditor
 
         public class Color
         {
-            public Color(int offeset,int length,byte colorIndex)
+            public Color(int offeset,int length,Avalonia.Media.Color color)
             {
                 this.Offset = offeset;
                 this.Length = length;
-                this.ColorIndex = colorIndex;
+                this.DrawColor = color;
             }
             public int Offset;
             public int Length;
-            public byte ColorIndex;
+            public Avalonia.Media.Color DrawColor;
         }
 
         public class Effect

@@ -42,6 +42,7 @@ namespace CodeEditor2.Tools
         {
             if (thread != null) return;
             thread = new System.Threading.Thread(() => { worker(); });
+            thread.Name = "ParseProjectForm";
             thread.Start();
         }
 
