@@ -50,14 +50,14 @@ namespace CodeEditor2.CodeEditor
             {
                 return new Color[8]
                     {
-                        Color.FromArgb(128,255,0,0),    // 0
-                        Color.FromArgb(128,255,0,0),    // 1
-                        Color.FromArgb(128,255,0,0),    // 2
-                        Color.FromArgb(128,255,0,0),    // 3
-                        Color.FromArgb(128,255,0,0),    // 4
-                        Color.FromArgb(128,255,0,0),    // 5
-                        Color.FromArgb(128,255,0,0),    // 6
-                        Color.FromArgb(128,255,0,0)    // 7
+                        Color.FromRgb(212,212,212), // 0
+                        Color.FromRgb(  0,  0,255), // 1
+                        Color.FromRgb(  0,255,  0), // 2
+                        Color.FromRgb(  0,255,255), // 3
+                        Color.FromRgb(255,  0,  0), // 4
+                        Color.FromRgb(255,  0,255), // 5
+                        Color.FromRgb(255,255,  0), // 6
+                        Color.FromRgb(255,255,255), // 7
                     };
             }
         }

@@ -28,6 +28,7 @@ using CodeEditor2.CodeEditor;
 using System.Threading;
 using Avalonia.Threading;
 using System.Diagnostics;
+using AjkAvaloniaLibs.Contorls;
 
 namespace CodeEditor2.Views
 {
@@ -58,9 +59,9 @@ namespace CodeEditor2.Views
             _textEditor.Options.ShowSpaces = true;
             _textEditor.Options.EnableImeSupport = true;
             _textEditor.Options.ShowEndOfLine = true;
-            _textEditor.Options.ShowColumnRulers = true;
+            //            _textEditor.Options.ShowColumnRulers = true;
 
-
+            _textEditor.Background = new SolidColorBrush(Color.FromRgb(10, 10, 10));
 
             _textEditor.ContextMenu = new ContextMenu
             {
@@ -254,9 +255,9 @@ namespace CodeEditor2.Views
 
             //codeTextbox.Visible = true;
 //            codeTextbox.Document = textFile.CodeDocument;
-//            TextFile = textFile;
+            //TextFile = textFile;
             ScrollToCaret();
-//            if (TextFile != null) Controller.MessageView.Update(TextFile.ParsedDocument);
+            if (textFile != null) Controller.MessageView.Update(textFile.ParsedDocument);
 
             entryParse();
 
@@ -321,36 +322,22 @@ namespace CodeEditor2.Views
                             visualLine.TextRunProperties.SetForegroundBrush(new SolidColorBrush(color.DrawColor));
                         }
                     );
-
                 }
 
-
-                //SolidColorBrush cb = new SolidColorBrush(Color.FromRgb(255, 0, 0), 10.5);
-
-                //string lineText = this.CurrentContext.Document.GetText(line);
-
-                //int indexOfUnderline = lineText.IndexOf("underline");
-                //if (indexOfUnderline == -1) return;
-                //ChangeLinePart(
-                //    line.Offset + indexOfUnderline,
-                //    line.Offset + indexOfUnderline + "underline".Length,
-                //    visualLine =>
-                //    {
-                //        visualLine.TextRunProperties.SetForegroundBrush(cb);
-                //        if (visualLine.TextRunProperties.TextDecorations != null)
+                //foreach (var effect in lineInfo.Effects)
+                //{
+                //    if (line.Offset > effect.Offset | effect.Offset + effect.Length > line.EndOffset) continue;
+                //    ChangeLinePart(
+                //        effect.Offset,
+                //        effect.Offset + effect.Length,
+                //        visualLine =>
                 //        {
                 //            var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { TextDecorations.Underline[0] };
 
                 //            visualLine.TextRunProperties.SetTextDecorations(textDecorations);
                 //        }
-                //        else
-                //        {
-                //            visualLine.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
-                //        }
-                //    }
-                //);
-
-
+                //    );
+                //}
             }
 
         }

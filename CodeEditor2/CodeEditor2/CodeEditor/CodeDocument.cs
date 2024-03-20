@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using Avalonia.Controls.Shapes;
+using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.TextMate;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Reflection.Metadata;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor
@@ -64,7 +66,7 @@ namespace CodeEditor2.CodeEditor
             textFileRef = new WeakReference<Data.TextFile>(textFile);
         }
 
-        private TextDocument textDocument;
+        protected TextDocument textDocument;
         public TextDocument TextDocument
         {
             get
@@ -355,6 +357,12 @@ namespace CodeEditor2.CodeEditor
         public void SetMarkAt(int index, byte value)
         {
             if (index >= Length) return;
+            if (TextDocument == null) return;
+            DocumentLine line = TextDocument.GetLineByOffset(index);
+            LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
+            Color color = Global.DefaultDrawStyle.MarkColor[value];
+            lineInfo.Effects.Add(new LineInfomation.Effect(index, 1, color, null));
+
             //marks[index] |= (byte)(1 << value);
         }
 
@@ -392,18 +400,47 @@ namespace CodeEditor2.CodeEditor
         {
             if (TextDocument == null) return;
             DocumentLine line = TextDocument.GetLineByOffset(index);
-            LineInfomation lineInfo;
-            if (LineInfomations.ContainsKey(line.LineNumber))
+            LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
+            Color color = Global.DefaultDrawStyle.ColorPallet[value];
+            lineInfo.Colors.Add(new LineInfomation.Color(index, 1, color));
+        }
+
+        public virtual void SetColorAt(int index, byte value, int length)
+        {
+            if (TextDocument == null) return;
+
+            DocumentLine lineStart = TextDocument.GetLineByOffset(index);
+            DocumentLine lineLast = TextDocument.GetLineByOffset(index + index);
+            Color color = Global.DefaultDrawStyle.ColorPallet[value];
+
+            if (lineStart == lineLast)
             {
-                lineInfo = LineInfomations[line.LineNumber];
+                LineInfomation lineInfo = GetLineInfomation(lineStart.LineNumber);
+                lineInfo.Colors.Add(new LineInfomation.Color(index, length, color));
+            }
+            else
+            {
+                for(int line = lineStart.LineNumber; line <= lineLast.LineNumber; line++)
+                {
+                    LineInfomation lineInfo = GetLineInfomation(line);
+                    lineInfo.Colors.Add(new LineInfomation.Color(index, index + length, color));
+                }
+            }
+        }
+
+        protected LineInfomation GetLineInfomation(int lineNumber)
+        {
+            LineInfomation lineInfo;
+            if (LineInfomations.ContainsKey(lineNumber))
+            {
+                lineInfo = LineInfomations[lineNumber];
             }
             else
             {
                 lineInfo = new LineInfomation();
-                LineInfomations.Add(line.LineNumber, lineInfo);
+                LineInfomations.Add(lineNumber, lineInfo);
             }
-            Color color = Global.DefaultDrawStyle.ColorPallet[value];
-            lineInfo.Colors.Add(new LineInfomation.Color(index, 1, color));
+            return lineInfo;
         }
 
 

@@ -1,5 +1,6 @@
 using AjkAvaloniaLibs.Contorls;
 using Avalonia.Controls;
+using Avalonia.Media;
 using CodeEditor2.Data;
 using CodeEditor2.NavigatePanel;
 
@@ -12,7 +13,7 @@ namespace CodeEditor2.Views
             InitializeComponent();
 
             Global.navigateView = this;
-
+            TreeControl.Background = new SolidColorBrush(Color.FromRgb(10,10,10));
         }
 
         public void AddProject(Project project)

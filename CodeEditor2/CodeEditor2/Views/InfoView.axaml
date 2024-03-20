@@ -2,11 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Contorls;assembly=AjkAvaloniaLibs"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
              x:Class="CodeEditor2.Views.InfoView">
 	<TabControl Margin="1">
 		<TabItem Header="Error"  FontSize="12">
-			<TextBlock Margin="5">This is tab 1 content</TextBlock>
+			<ajkctrl:TreeControl Name="MessageView" FontSize="12"></ajkctrl:TreeControl>
 		</TabItem>
 	</TabControl>
 </UserControl>

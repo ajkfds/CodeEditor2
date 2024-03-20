@@ -44,8 +44,14 @@ namespace CodeEditor2
         private static async void addProject(Project project)
         {
             Global.navigateView.AddProject(project);
-//            Tools.ParseProjectForm pform = new Tools.ParseProjectForm(Global.navigateView.GetPeojectNode(project.Name));
-//            await pform.ShowDialog(Global.mainWindow);
+
+            CodeEditor2.Tools.ParseProject.Run(Global.navigateView.GetPeojectNode(project.Name));
+
+            //Tools.ProgressWindow progressWindow = new Tools.ProgressWindow(project.Name, "Loading...", 100);
+            //progressWindow.Show();
+
+            //Tools.ParseProjectForm pform = new Tools.ParseProjectForm(Global.navigateView.GetPeojectNode(project.Name));
+            //await pform.ShowDialog(Global.currentWindow);
         }
 
         //public static System.Windows.Forms.MenuStrip GetMenuStrip()
@@ -264,10 +270,10 @@ namespace CodeEditor2
 
         public static class MessageView
         {
-        //    public static void Update(CodeEditor2.CodeEditor.ParsedDocument parsedDocument)
-        //    {
-        //        Global.mainForm.messageView.UpdateMessages(parsedDocument);
-        //    }
+            public static void Update(CodeEditor2.CodeEditor.ParsedDocument parsedDocument)
+            {
+                Global.infoView.UpdateMessages(parsedDocument);
+            }
         }
     }
 }

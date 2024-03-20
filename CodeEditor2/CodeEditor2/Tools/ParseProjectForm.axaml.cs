@@ -141,7 +141,7 @@ namespace CodeEditor2.Tools
                 //}
             }
 
-            System.Diagnostics.Debug.Print(projectNode.Project.Name + ":" + sw.ElapsedMilliseconds.ToString() + "ms");
+//            System.Diagnostics.Debug.Print(projectNode.Project.Name + ":" + sw.ElapsedMilliseconds.ToString() + "ms");
             close = true;
 //            Dispatcher.UIThread.Post(new Action(() => { Close(); }));
             Dispatcher.UIThread.Invoke(new Action(()=>{ Close(); }));

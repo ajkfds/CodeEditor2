@@ -70,10 +70,10 @@ namespace CodeEditor2.CodeEditor
             public int Length { get; protected set; }
             public string Text { get; protected set; }
             public Data.Project Project { get; protected set; }
-            //public virtual MessageView.MessageNode CreateMessageNode()
-            //{
-            //    return null;
-            //}
+            public virtual MessageView.MessageNode CreateMessageNode()
+            {
+                return null;
+            }
         }
 
         //public virtual List<ajkControls.SelectionForm.SelectionItem> GetInputCandidates()

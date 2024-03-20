@@ -11,6 +11,7 @@ namespace CodeEditor2.CodeEditor
     public class LineInfomation
     {
         public List<Color> Colors = new List<Color>();
+        public List<Effect> Effects = new List<Effect>();
 
         public class Color
         {
@@ -27,8 +28,15 @@ namespace CodeEditor2.CodeEditor
 
         public class Effect
         {
+            public Effect(int offeset, int length, Avalonia.Media.Color color, TextDecoration Delocation)
+            {
+                this.Offset = offeset;
+                this.Length = length;
+                this.DrawColor = color;
+            }
             public int Offset;
             public int Length;
+            public Avalonia.Media.Color DrawColor;
             public TextDecoration Delocation;
         }
     }

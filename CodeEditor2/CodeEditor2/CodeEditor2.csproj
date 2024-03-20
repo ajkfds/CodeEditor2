@@ -33,4 +33,8 @@
     <ProjectReference Include="..\..\..\AvaloniaEdit\src\AvaloniaEdit\AvaloniaEdit.csproj" />
     <ProjectReference Include="..\..\..\CodeEditor2Plugin\CodeEditor2Plugin\CodeEditor2Plugin\CodeEditor2Plugin.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Lint\" />
+  </ItemGroup>
 </Project>

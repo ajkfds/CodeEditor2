@@ -15,33 +15,35 @@ namespace CodeEditor2.Tools
             ProgressMaxValue = 100;
         }
 
-        public ProgressWindow(string title,string message,double max)
+        public ProgressWindow(string title,string message,double maxValue)
         {
             InitializeComponent();
             Title = title;
             Message = message;
-            ProgressMaxValue = max;
+            ProgressMaxValue = maxValue;
         }
 
 
-        private string _Title;
-        public string Titile
+        private string _Title ="";
+        public new string Title
         {
             get { return _Title; }
             set { 
                 _Title = value;
+                if (TitleText == null) return;
                 TitleText.Text = _Title;
                 TitleText.InvalidateVisual();
             }
         }
 
-        private string _Message;
+        private string _Message ="";
         public string Message
         {
             get { return _Message; }
             set
             {
                 _Message = value;
+                if (MessageText == null) return;
                 MessageText.Text = _Message;
                 MessageText.InvalidateVisual();
             }

@@ -7,7 +7,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         Global.mainWindow = this;
-        System.Threading.Thread.CurrentThread.Name = "UI";
 
         InitializeComponent();
     }

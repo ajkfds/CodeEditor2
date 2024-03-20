@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CodeEditor2.Setups;
+using Avalonia.Controls;
 
 namespace CodeEditor2
 {
@@ -23,6 +24,9 @@ namespace CodeEditor2
         internal static Views.NavigateView navigateView;
         internal static Views.MainWindow mainWindow;
         internal static Views.LogView logView;
+        internal static Views.InfoView infoView;
+
+        internal static Window currentWindow;
 
         public static CodeDrawStyle DefaultDrawStyle = new CodeDrawStyle();
         //public static IWshRuntimeLibrary.WshShell WshShell = new IWshRuntimeLibrary.WshShell();
