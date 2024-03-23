@@ -15,6 +15,8 @@ public partial class App : Application
     public override void Initialize()
     {
         System.Threading.Thread.CurrentThread.Name = "UI";
+        Global.UIThread = System.Threading.Thread.CurrentThread;
+
         AvaloniaXamlLoader.Load(this);
     }
 

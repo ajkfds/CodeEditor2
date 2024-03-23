@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CodeEditor2.CodeEditor;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,12 @@ namespace CodeEditor2.Tools
 {
     internal class TextParseTask
     {
+        public TextParseTask(string name)
+        {
+            this.name = name;
+        }
+
+        private string name;
 
         public void Run(System.Collections.Concurrent.BlockingCollection<Data.TextFile> files, Action<Data.TextFile> startParse)
         {
@@ -16,6 +23,7 @@ namespace CodeEditor2.Tools
 
             if (thread != null) return;
             thread = new System.Threading.Thread(() => { worker(); });
+            thread.Name = name;
             thread.Start();
         }
 
@@ -38,20 +46,19 @@ namespace CodeEditor2.Tools
         {
             CodeEditor.DocumentParser parser = textFile.CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum.LoadParse);
             if (parser == null) return;
+            parser.Document._tag = "TextParserTask:"+textFile.Name;
 
             if (textFile != null) startParse(textFile);
             parser.Parse();
 
-            textFile.CodeDocument.CopyFrom(parser.Document);
+            textFile.CodeDocument.CopyColorMarkFrom(parser.Document);
 
             if (textFile.ParsedDocument != null)
             {
-
                 CodeEditor.ParsedDocument oldParsedDocument = textFile.ParsedDocument;
                 textFile.ParsedDocument = null;
                 oldParsedDocument.Dispose();
             }
-
 
             textFile.AcceptParsedDocument(parser.ParsedDocument);
             textFile.Close();
@@ -63,7 +70,6 @@ namespace CodeEditor2.Tools
             //    gc = 0;
             //    System.Diagnostics.Debug.Print("process memory " + (Environment.WorkingSet / 1024 / 1024).ToString() + "Mbyte");
             //}
-
         }
     }
 }

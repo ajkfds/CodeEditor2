@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
+using CodeEditor2.CodeEditor;
 using CodeEditor2.NavigatePanel;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
@@ -14,7 +15,6 @@ namespace CodeEditor2.Tools
 {
     internal class ParseProject
     {
-
         public async static void Run(NavigatePanel.ProjectNode projectNode)
         {
             Tools.ProgressWindow progressWindow = new Tools.ProgressWindow(projectNode.Name, "Loading...", 100);
@@ -43,7 +43,7 @@ namespace CodeEditor2.Tools
                 List<TextParseTask> tasks = new List<TextParseTask>();
                 for (int t = 0; t < workerThreads; t++)
                 {
-                    tasks.Add(new TextParseTask());
+                    tasks.Add(new TextParseTask("ParseProject"+t.ToString()));
                     tasks[t].Run(
                         fileQueue,
                         (
@@ -71,7 +71,6 @@ namespace CodeEditor2.Tools
 
                 while (!fileQueue.IsCompleted)
                 {
-                    System.Diagnostics.Debug.Print("## ");
                     await Task.Delay(10);
                 }
 
@@ -84,7 +83,6 @@ namespace CodeEditor2.Tools
                     }
                     if (completeTasks == tasks.Count) break;
                 }
-
 
                 //    gc++;
                 //    if (gc > 100)

@@ -124,7 +124,7 @@ namespace CodeEditor2.Data
                 sw.Write(CodeDocument.CreateString());
             }
             //CodeDocument.Clean();
-            //loadedFileLastWriteTime = System.IO.File.GetLastWriteTime(AbsolutePath);
+            loadedFileLastWriteTime = System.IO.File.GetLastWriteTime(AbsolutePath);
         }
 
         public virtual DateTime? LoadedFileLastWriteTime

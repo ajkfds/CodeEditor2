@@ -184,6 +184,8 @@ namespace CodeEditor2.Data
         public virtual void Update() { }
 
 
+
+
         protected WeakReference<NavigatePanel.NavigatePanelNode> nodeRef;
         public virtual NavigatePanel.NavigatePanelNode NavigatePanelNode
         {

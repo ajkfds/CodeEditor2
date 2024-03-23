@@ -9,6 +9,12 @@ public partial class MainWindow : Window
         Global.mainWindow = this;
 
         InitializeComponent();
+
+        Closing += MainWindow_Closing;
     }
 
+    private void MainWindow_Closing(object? sender, WindowClosingEventArgs e)
+    {
+        Global.Abort = true;
+    }
 }

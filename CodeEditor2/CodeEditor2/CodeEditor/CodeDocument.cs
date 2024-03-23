@@ -6,6 +6,7 @@ using AvaloniaEdit.TextMate;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Reflection.Metadata;
@@ -24,16 +25,6 @@ namespace CodeEditor2.CodeEditor
             textDocument.TextChanged += TextDocument_TextChanged;
             textDocument.Changed += TextDocument_Changed;
             textDocument.Changing += TextDocument_Changing;
-        }
-
-        public void LockThead()
-        {
-            textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);
-        }
-
-        public void UnlockThread()
-        {
-            textDocument.SetOwnerThread(null);
         }
 
         private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
@@ -74,6 +65,21 @@ namespace CodeEditor2.CodeEditor
                 return textDocument;
             }
         }
+
+        //public void LockThread()
+        //{
+        //    textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);
+        //}
+
+        public void LockThreadToUI()
+        {
+            textDocument.SetOwnerThread(Global.UIThread);
+        }
+
+        //public void UnlockThread()
+        //{
+        //    textDocument.SetOwnerThread(null);
+        //}
 
 
         public System.WeakReference<Data.TextFile>? textFileRef;
@@ -154,6 +160,8 @@ namespace CodeEditor2.CodeEditor
             public readonly int Length;
             public readonly string ChangedFrom;
         }
+
+        public string _tag = "";
 
         public int Length
         {
@@ -319,8 +327,12 @@ namespace CodeEditor2.CodeEditor
             set
             {
                 caretIndex = value;
+                if (CarletChanged != null) CarletChanged(this);
             }
         }
+
+        public Action<CodeDocument>? CarletChanged  = null;
+
 
         public char GetCharAt(int index)
         {
@@ -354,7 +366,7 @@ namespace CodeEditor2.CodeEditor
             return 0;
         }
 
-        public void SetMarkAt(int index, byte value)
+        public virtual void SetMarkAt(int index, byte value)
         {
             if (index >= Length) return;
             if (TextDocument == null) return;
@@ -362,8 +374,6 @@ namespace CodeEditor2.CodeEditor
             LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
             Color color = Global.DefaultDrawStyle.MarkColor[value];
             lineInfo.Effects.Add(new LineInfomation.Effect(index, 1, color, null));
-
-            //marks[index] |= (byte)(1 << value);
         }
 
         public void SetMarkAt(int index, int length, byte value)

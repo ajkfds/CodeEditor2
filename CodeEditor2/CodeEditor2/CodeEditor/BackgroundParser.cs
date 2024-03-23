@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CodeEditor2.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,32 +22,33 @@ namespace CodeEditor2.CodeEditor
 
         public void Terminate()
         {
-            abortFlag = true;
+//            abortFlag = true;
             //            thread.Abort();
         }
-        private volatile bool abortFlag = false;
+//        private volatile bool abortFlag = false;
         System.Threading.Thread thread;
 
-        public void EntryParse(DocumentParser documentParser)
+        public void EntryParse(TextFile textFile)
         {
             lock (toBackgroundStock)
             {
-                documentParser.Document.UnlockThread();
-                toBackgroundStock.Add(documentParser);
+                toBackgroundStock.Add(textFile);
             }
         }
 
         private volatile bool parsing = false;
         private void run()
         {
-            while (!abortFlag)
+            while (!Global.Abort)
             {
                 DocumentParser parser = null;
                 lock (toBackgroundStock)
                 {
                     if (toBackgroundStock.Count != 0)
                     {
-                        parser = toBackgroundStock.Last();
+                        TextFile textFile = toBackgroundStock.Last();
+                        parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse);
+//                        parser = toBackgroundStock.Last();
                         toBackgroundStock.Clear();
                     }
                 }
@@ -54,11 +56,7 @@ namespace CodeEditor2.CodeEditor
                 {
                     parsing = true;
 
-                    parser.Document.LockThead();
-                    parser.ParsedDocument.LockedDocument.Add(parser.Document);
-
                     parser.Parse();
-                    parser.ParsedDocument.UnlockDocumentThread();
 
                     lock (fromBackgroundStock)
                     {
@@ -94,7 +92,8 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        private List<DocumentParser> toBackgroundStock = new List<DocumentParser>();
+        private List<TextFile> toBackgroundStock = new List<TextFile>();
+//        private List<DocumentParser> toBackgroundStock = new List<DocumentParser>();
         private List<DocumentParser> fromBackgroundStock = new List<DocumentParser>();
 
     }

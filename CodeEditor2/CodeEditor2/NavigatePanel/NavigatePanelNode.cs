@@ -68,6 +68,10 @@ namespace CodeEditor2.NavigatePanel
         {
         }
 
+        public virtual void UpdateVisual()
+        {
+        }
+
         public virtual void Dispose()
         {
 

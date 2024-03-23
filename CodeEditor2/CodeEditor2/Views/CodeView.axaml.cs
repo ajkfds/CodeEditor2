@@ -29,6 +29,7 @@ using System.Threading;
 using Avalonia.Threading;
 using System.Diagnostics;
 using AjkAvaloniaLibs.Contorls;
+using DynamicData.Binding;
 
 namespace CodeEditor2.Views
 {
@@ -134,6 +135,15 @@ namespace CodeEditor2.Views
             //}
         }
 
+        private void TextEditor_CodeDocumentCarletChanged(CodeDocument codeDocument)
+        {
+            if (CodeDocument != codeDocument) return;
+
+            _textEditor.CaretOffset = codeDocument.CaretIndex;
+            //            _textEditor.TextArea.Selection = new Selection();
+            _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, CodeDocument.SelectionStart, CodeDocument.SelectionLast);
+        }
+
         private void TextArea_DocumentChanged(object? sender, DocumentChangedEventArgs e)
         {
 //            System.Diagnostics.Debug.Print("## TextArea_DocumentChanged");
@@ -143,8 +153,8 @@ namespace CodeEditor2.Views
         ulong prevVersion = 0;
         private void Caret_PositionChanged(object? sender, EventArgs e)
         {
-//            System.Diagnostics.Debug.Print("## Caret_PositionChanged");
             if (CodeDocument == null) return;
+
             int carletLine = _textEditor.TextArea.Caret.Line;
             ulong version = codeDocument.Version;
             Debug.Print("version "+version.ToString()+"  carletLine"+carletLine.ToString());
@@ -197,20 +207,23 @@ namespace CodeEditor2.Views
 
             // update current view
             //            codeTextbox.Invoke(new Action(codeTextbox.Refresh));
-            //            Controller.MessageView.Update(TextFile.ParsedDocument);
+            _textEditor.TextArea.TextView.Redraw();
+            Controller.MessageView.Update(TextFile.ParsedDocument);
             //            codeTextbox.ReDrawHighlight();
 
+//            Controller.NavigatePanel.
             //            Controller.NavigatePanel.UpdateVisibleNode();
             //            Controller.NavigatePanel.Refresh();
-            _textEditor.TextArea.TextView.Redraw();
+
+
         }
 
         public void SetTextFile(Data.TextFile textFile)
         {
-            //if(CodeDocument != null)
-            //{
-            //    CodeDocument.UnlockThread();
-            //}
+            if(CodeDocument != null)
+            {
+                CodeDocument.CarletChanged = null;
+            }
 
             if (textFile == null)
             {
@@ -220,7 +233,7 @@ namespace CodeEditor2.Views
             else
             {
                 CodeDocument = textFile.CodeDocument;
-                CodeDocument.LockThead();
+                CodeDocument.CarletChanged += TextEditor_CodeDocumentCarletChanged;
                 
                 //                Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
                 //                Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
@@ -324,20 +337,35 @@ namespace CodeEditor2.Views
                     );
                 }
 
-                //foreach (var effect in lineInfo.Effects)
-                //{
-                //    if (line.Offset > effect.Offset | effect.Offset + effect.Length > line.EndOffset) continue;
-                //    ChangeLinePart(
-                //        effect.Offset,
-                //        effect.Offset + effect.Length,
-                //        visualLine =>
-                //        {
-                //            var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { TextDecorations.Underline[0] };
+                foreach (var effect in lineInfo.Effects)
+                {
+                    if (line.Offset > effect.Offset | effect.Offset + effect.Length > line.EndOffset) continue;
+                    ChangeLinePart(
+                        effect.Offset,
+                        effect.Offset + effect.Length,
+                        visualLine =>
+                        {
+                            if (visualLine.TextRunProperties.TextDecorations != null)
+                            {
 
-                //            visualLine.TextRunProperties.SetTextDecorations(textDecorations);
-                //        }
-                //    );
-                //}
+                                TextDecoration underline = TextDecorations.Underline[0];
+                                underline.StrokeThickness = 2;
+                                underline.StrokeThicknessUnit = TextDecorationUnit.Pixel;
+                                underline.StrokeOffset = 2;
+                                underline.StrokeOffsetUnit = TextDecorationUnit.Pixel;
+                                underline.Stroke = new SolidColorBrush(effect.DrawColor);
+                                var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { underline };
+
+                                visualLine.TextRunProperties.SetTextDecorations(textDecorations);
+                            }
+                            else
+                            {
+                                visualLine.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
+                            }
+
+                        }
+                    );
+                }
             }
 
         }
@@ -353,19 +381,14 @@ namespace CodeEditor2.Views
         {
 //            if (Global.StopParse) return;
             if (TextFile == null) return;
-            DocumentParser parser = TextFile.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse);
-            if (parser != null)
-            {
-                Controller.AppendLog("entry edit parse ID :" + parser.TextFile.ID);
-                backGroundParser.EntryParse(parser);
-            }
+            Controller.AppendLog("entry edit parse ID :" + TextFile.ID);
+            backGroundParser.EntryParse(TextFile);
         }
 
         // -----------------------------------------------------------
 
         private void textEditor_TextArea_TextEntering(object sender, TextInputEventArgs e)
         {
-//            System.Diagnostics.Debug.Print("## TextArea_TextEntering");
             if (e.Text.Length > 0 && _completionWindow != null)
             {
                 if (!char.IsLetterOrDigit(e.Text[0]))
@@ -428,88 +451,6 @@ namespace CodeEditor2.Views
             }
         }
 
-        //class UnderlineAndStrikeThroughTransformer : DocumentColorizingTransformer
-        //{
-        //    protected override void ColorizeLine(DocumentLine line)
-        //    {
-        //        SolidColorBrush cb = new SolidColorBrush(Color.FromRgb(255, 0, 0), 10.5);
-
-        //        string lineText = this.CurrentContext.Document.GetText(line);
-
-        //        int indexOfUnderline = lineText.IndexOf("underline");
-        //        if (indexOfUnderline == -1) return;
-        //        ChangeLinePart(
-        //            line.Offset + indexOfUnderline,
-        //            line.Offset + indexOfUnderline + "underline".Length,
-        //            visualLine =>
-        //            {
-        //                visualLine.TextRunProperties.SetForegroundBrush(cb);
-        //                if (visualLine.TextRunProperties.TextDecorations != null)
-        //                {
-        //                    var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { TextDecorations.Underline[0] };
-
-        //                    visualLine.TextRunProperties.SetTextDecorations(textDecorations);
-        //                }
-        //                else
-        //                {
-        //                    visualLine.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
-        //                }
-        //            }
-        //        );
-
-
-        //        //if (line.LineNumber == 2)
-        //        //{
-        //        //    string lineText = this.CurrentContext.Document.GetText(line);
-
-        //        //    int indexOfUnderline = lineText.IndexOf("underline");
-        //        //    int indexOfStrikeThrough = lineText.IndexOf("strikethrough");
-
-        //        //    if (indexOfUnderline != -1)
-        //        //    {
-        //        //        ChangeLinePart(
-        //        //            line.Offset + indexOfUnderline,
-        //        //            line.Offset + indexOfUnderline + "underline".Length,
-        //        //            visualLine =>
-        //        //            {
-        //        //                if (visualLine.TextRunProperties.TextDecorations != null)
-        //        //                {
-        //        //                    var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { TextDecorations.Underline[0] };
-
-        //        //                    visualLine.TextRunProperties.SetTextDecorations(textDecorations);
-        //        //                }
-        //        //                else
-        //        //                {
-        //        //                    visualLine.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
-        //        //                }
-        //        //            }
-        //        //        );
-        //        //    }
-
-        //        //    if (indexOfStrikeThrough != -1)
-        //        //    {
-        //        //        ChangeLinePart(
-        //        //            line.Offset + indexOfStrikeThrough,
-        //        //            line.Offset + indexOfStrikeThrough + "strikethrough".Length,
-        //        //            visualLine =>
-        //        //            {
-        //        //                if (visualLine.TextRunProperties.TextDecorations != null)
-        //        //                {
-        //        //                    var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { TextDecorations.Strikethrough[0] };
-
-        //        //                    visualLine.TextRunProperties.SetTextDecorations(textDecorations);
-        //        //                }
-        //        //                else
-        //        //                {
-        //        //                    visualLine.TextRunProperties.SetTextDecorations(TextDecorations.Strikethrough);
-        //        //                }
-        //        //            }
-        //        //        );
-        //        //    }
-        //        //}
-        //    }
-
-        //}
 
         private class MyOverloadProvider : IOverloadProvider
         {

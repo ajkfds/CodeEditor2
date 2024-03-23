@@ -13,7 +13,6 @@ namespace CodeEditor2.CodeEditor
         {
             this.document = new CodeDocument(textFile);
             this.document.CopyTextOnlyFrom(textFile.CodeDocument);
-            this.document.UnlockThread();
             this.ParseMode = parseMode;
             this.TextFile = textFile;
         }
@@ -45,7 +44,6 @@ namespace CodeEditor2.CodeEditor
 
         public virtual void Parse()
         {
-            document.LockThead();
         }
 
         public virtual ParsedDocument ParsedDocument { get; protected set; }

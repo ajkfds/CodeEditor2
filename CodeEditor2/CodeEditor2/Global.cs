@@ -29,6 +29,11 @@ namespace CodeEditor2
         internal static Window currentWindow;
 
         public static CodeDrawStyle DefaultDrawStyle = new CodeDrawStyle();
+
+        public static System.Threading.Thread UIThread = null;
+
+        public static bool Abort = false;
+
         //public static IWshRuntimeLibrary.WshShell WshShell = new IWshRuntimeLibrary.WshShell();
 
         //public static class IconImages
