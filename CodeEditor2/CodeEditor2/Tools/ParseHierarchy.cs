@@ -29,7 +29,13 @@ namespace CodeEditor2.Tools
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
-            parseHier(rootNode.Item,progressWindow);
+            {
+                Global.ParseSemaphore.WaitOne();
+
+                parseHier(rootNode.Item, progressWindow);
+
+                Global.ParseSemaphore.Release();
+            }
             rootNode.Update();
 
             progressWindow.Close();

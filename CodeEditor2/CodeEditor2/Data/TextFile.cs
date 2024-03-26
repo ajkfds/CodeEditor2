@@ -203,10 +203,10 @@ namespace CodeEditor2.Data
             return null;
         }
 
-        //public virtual List<PopupItem> GetPopupItems(ulong Version, int index)
-        //{
-        //    return null;
-        //}
+        public virtual PopupItem GetPopupItem(ulong Version, int index)
+        {
+            return null;
+        }
 
         //public virtual List<AutocompleteItem> GetAutoCompleteItems(int index, out string cantidateWord)
         //{

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor
@@ -56,7 +57,13 @@ namespace CodeEditor2.CodeEditor
                 {
                     parsing = true;
 
-                    parser.Parse();
+                    {
+                        Global.ParseSemaphore.WaitOne();
+                        
+                        parser.Parse();
+
+                        Global.ParseSemaphore.Release();
+                    }
 
                     lock (fromBackgroundStock)
                     {

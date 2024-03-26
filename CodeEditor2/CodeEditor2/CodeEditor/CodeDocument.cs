@@ -5,6 +5,7 @@ using AvaloniaEdit.Document;
 using AvaloniaEdit.TextMate;
 using ReactiveUI;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -21,11 +22,76 @@ namespace CodeEditor2.CodeEditor
         public CodeDocument()
         {
             textDocument = new TextDocument();
+            initilize();
+        }
+
+        public CodeDocument(Data.TextFile textFile, bool textOnly) : this()
+        {
+            textDocument = new TextDocument();
+            initilize();
+        }
+        public CodeDocument(Data.TextFile textFile)
+        {
+            textFileRef = new WeakReference<Data.TextFile>(textFile);
+            textDocument = new TextDocument();
+            initilize();
+        }
+
+        public CodeDocument(Data.TextFile textFile, string text) 
+        {
+            textFileRef = new WeakReference<Data.TextFile>(textFile);
+            textDocument = new TextDocument();
+            textDocument.Text = text;
+            initilize();
+        }
+
+        private void initilize()
+        {
+            ownerThread = System.Threading.Thread.CurrentThread;
             textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);
             textDocument.TextChanged += TextDocument_TextChanged;
             textDocument.Changed += TextDocument_Changed;
             textDocument.Changing += TextDocument_Changing;
         }
+
+        System.Threading.Thread? ownerThread = null;
+
+        private void CheckThead()
+        {
+            if(!HasThread)
+            {
+                System.Diagnostics.Debugger.Break();
+            }
+        }
+
+        private bool HasThread
+        {
+            get {
+                if(System.Threading.Thread.CurrentThread == ownerThread)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        //public void LockThread()
+        //{
+        //    textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);
+        //}
+
+        public void LockThreadToUI()
+        {
+            CheckThead();
+            textDocument.SetOwnerThread(Global.UIThread);
+            ownerThread = Global.UIThread;
+        }
+
+        //public void UnlockThread()
+        //{
+        //    textDocument.SetOwnerThread(null);
+        //}
+
 
         private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
         {
@@ -43,43 +109,17 @@ namespace CodeEditor2.CodeEditor
             Version++;
         }
 
-        public CodeDocument(Data.TextFile textFile, bool textOnly) : this()
-        {
-
-        }
-        public CodeDocument(Data.TextFile textFile) : this()
-        {
-            textFileRef = new WeakReference<Data.TextFile>(textFile);
-        }
-
-        public CodeDocument(Data.TextFile textFile, string text) : this()
-        {
-            textFileRef = new WeakReference<Data.TextFile>(textFile);
-        }
 
         protected TextDocument textDocument;
         public TextDocument TextDocument
         {
             get
             {
+                CheckThead();
                 return textDocument;
             }
         }
 
-        //public void LockThread()
-        //{
-        //    textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);
-        //}
-
-        public void LockThreadToUI()
-        {
-            textDocument.SetOwnerThread(Global.UIThread);
-        }
-
-        //public void UnlockThread()
-        //{
-        //    textDocument.SetOwnerThread(null);
-        //}
 
 
         public System.WeakReference<Data.TextFile>? textFileRef;
@@ -167,6 +207,7 @@ namespace CodeEditor2.CodeEditor
         {
             get
             {
+                CheckThead();
                 return textDocument.TextLength;
             }
         }
@@ -235,6 +276,7 @@ namespace CodeEditor2.CodeEditor
         //    if (lineNo == 0) lineNo = 1;
         //    return lineNo;
         //}
+
 
         public void ClearBlock()
         {

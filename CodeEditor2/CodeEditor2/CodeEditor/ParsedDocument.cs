@@ -16,6 +16,16 @@ namespace CodeEditor2.CodeEditor
             textFileRef = new WeakReference<Data.TextFile>(textFile);
         }
 
+        public void UnlockDocument()
+        {
+            foreach(var doc in LockedDocument)
+            {
+                doc.LockThreadToUI();
+            }
+        }
+
+        public List<CodeDocument> LockedDocument = new List<CodeDocument>();
+
         public readonly DocumentParser.ParseModeEnum ParseMode;
 
         private System.WeakReference<Data.TextFile> textFileRef;

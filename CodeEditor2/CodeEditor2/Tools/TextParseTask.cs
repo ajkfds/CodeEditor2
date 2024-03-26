@@ -45,7 +45,11 @@ namespace CodeEditor2.Tools
         private void parse(Data.TextFile textFile)
         {
             CodeEditor.DocumentParser parser = textFile.CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum.LoadParse);
-            if (parser == null) return;
+            if (parser == null)
+            {
+                textFile.CodeDocument.LockThreadToUI();
+                return;
+            }
             parser.Document._tag = "TextParserTask:"+textFile.Name;
 
             if (textFile != null) startParse(textFile);

@@ -1,5 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:AvalonEdit="using:AvaloniaEdit"
+             xmlns:views="clr-namespace:CodeEditor2.Views;assembly=CodeEditor2"
+             xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Contorls;assembly=AjkAvaloniaLibs"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -8,12 +10,19 @@
 	<TabControl Margin="1">
 		<TabItem Header="Code"  FontSize="12">
 			<AvalonEdit:TextEditor Name="Editor"
-							   FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
-							   HorizontalScrollBarVisibility="Auto"
-							   VerticalScrollBarVisibility="Visible"
-							   FontWeight="Light"
-							   FontSize="10"
-							   />
+								FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
+								HorizontalScrollBarVisibility="Auto"
+								VerticalScrollBarVisibility="Visible"
+								FontWeight="Light"
+								FontSize="10"
+ 							    ToolTip.Tip="AAA"
+							    ToolTip.Placement="Pointer"
+							    ToolTip.ShowDelay="0"
+							>
+			<ToolTip.Tip>
+				<ajkctrl:ColorLabelControl FontSize="10" Name="PopupColorLabel"></ajkctrl:ColorLabelControl>
+			</ToolTip.Tip>
+			</AvalonEdit:TextEditor>
 		</TabItem>
 	</TabControl>
 </UserControl>

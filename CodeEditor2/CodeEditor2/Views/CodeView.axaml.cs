@@ -30,6 +30,7 @@ using Avalonia.Threading;
 using System.Diagnostics;
 using AjkAvaloniaLibs.Contorls;
 using DynamicData.Binding;
+using Avalonia.Controls.Primitives;
 
 namespace CodeEditor2.Views
 {
@@ -52,7 +53,8 @@ namespace CodeEditor2.Views
 
             Global.codeView = this;
 
-            _textEditor = this.FindControl<TextEditor>("Editor");
+            _textEditor = Editor;
+//            _textEditor = this.FindControl<TextEditor>("Editor");
             _textEditor.HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Visible;
             _textEditor.Background = Brushes.Transparent;
             _textEditor.ShowLineNumbers = true;
@@ -77,7 +79,8 @@ namespace CodeEditor2.Views
             _textEditor.TextArea.TextEntered += textEditor_TextArea_TextEntered;
             _textEditor.TextArea.TextEntering += textEditor_TextArea_TextEntering;
             _textEditor.TextArea.DocumentChanged += TextArea_DocumentChanged;
-//            _textEditor.TextArea.
+            _textEditor.TextArea.PointerMoved += TextArea_PointerMoved;
+
 
 
             _textEditor.Options.ShowBoxForControlCharacters = true;
@@ -129,10 +132,44 @@ namespace CodeEditor2.Views
             timer.Tick += Timer_Tick;
             timer.Start();
 
-            //for(byte i = 0; i < 16; i++)
-            //{
-            //    SolodColorBrushes.Add(i, new SolidColorBrush(Global.DefaultDrawStyle.ColorPallet[i]));
-            //}
+//            ToolTip toolTip = this.FindControl<ToolTip>();
+        }
+
+
+        //        public PopupWindow popupWindow = new PopupWindow();
+        private int popupInex = -1;
+        private void TextArea_PointerMoved(object? sender, PointerEventArgs e)
+        {
+            if (codeDocument == null) return;
+            Avalonia.Point point = e.GetPosition(_textEditor.TextArea);
+            var pos = _textEditor.GetPositionFromPoint(point);
+            if (pos == null) return;
+
+            TextViewPosition tpos = (TextViewPosition) pos;
+            int index = codeDocument.TextDocument.GetOffset(tpos.Line, tpos.Column);
+
+            int headIndex, length;
+            CodeDocument.GetWord(index, out headIndex, out length);
+
+            if (popupInex == headIndex) return;
+            popupInex = headIndex;
+
+            System.Diagnostics.Debug.Print("CodeDocument.Version : " + CodeDocument.Version.ToString());
+            System.Diagnostics.Debug.Print("TextFile.ParsedDocument.Version : " + TextFile.ParsedDocument.Version.ToString());
+
+            PopupItem pitem = TextFile.GetPopupItem(CodeDocument.Version, index);
+            if (pitem == null)
+            {
+                ToolTip.SetIsOpen(Editor, false);
+                return;
+            }
+            PopupColorLabel.Clear();
+            ToolTip.SetIsOpen(Editor, false);
+            if (pitem.GetItems().Count != 0)
+            {
+                PopupColorLabel.Add(pitem);
+                ToolTip.SetIsOpen(Editor, true);
+            }
         }
 
         private void TextEditor_CodeDocumentCarletChanged(CodeDocument codeDocument)

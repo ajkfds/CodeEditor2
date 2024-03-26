@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CodeEditor2.Setups;
 using Avalonia.Controls;
+using System.Threading;
 
 namespace CodeEditor2
 {
@@ -33,6 +34,8 @@ namespace CodeEditor2
         public static System.Threading.Thread UIThread = null;
 
         public static bool Abort = false;
+
+        public static Semaphore ParseSemaphore = new Semaphore(1, 1);
 
         //public static IWshRuntimeLibrary.WshShell WshShell = new IWshRuntimeLibrary.WshShell();
 

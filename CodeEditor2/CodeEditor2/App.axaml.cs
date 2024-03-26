@@ -37,11 +37,11 @@ public partial class App : Application
                 DataContext = new MainViewModel()
             };
 
-            for (double i = 0; i <= 100; i=i+10)
-            {
-                await Task.Delay(1);
-                progressWindow.ProgressValue = i;
-            }
+            //for (double i = 0; i <= 100; i=i+10)
+            //{
+            //    await Task.Delay(1);
+            //    progressWindow.ProgressValue = i;
+            //}
             await Task.Delay(1);
 
             initialize(progressWindow);

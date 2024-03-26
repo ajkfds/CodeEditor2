@@ -33,7 +33,10 @@ namespace CodeEditor2.Tools
                 );
             progressWindow.ProgressMaxValue = items.Count;
 
+            
             {
+                Global.ParseSemaphore.WaitOne();
+
                 // parse items
                 int i = 0;
                 int workerThreads = 1;
@@ -92,6 +95,7 @@ namespace CodeEditor2.Tools
                 //        System.Diagnostics.Debug.Print("process memory " + (Environment.WorkingSet / 1024 / 1024).ToString() + "Mbyte");
                 //    }
                 //}
+                Global.ParseSemaphore.Release();
             }
 
 
