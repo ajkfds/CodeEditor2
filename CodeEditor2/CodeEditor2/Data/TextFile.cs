@@ -208,11 +208,11 @@ namespace CodeEditor2.Data
             return null;
         }
 
-        //public virtual List<AutocompleteItem> GetAutoCompleteItems(int index, out string cantidateWord)
-        //{
-        //    cantidateWord = null;
-        //    return null;
-        //}
+        public virtual List<AutocompleteItem> GetAutoCompleteItems(int index, out string cantidateWord)
+        {
+            cantidateWord = null;
+            return null;
+        }
         //public virtual List<CodeEditor2.CodeEditor.ToolItem> GetToolItems(int index)
         //{
         //    return null;

@@ -39,7 +39,8 @@ namespace CodeEditor2.Views
         private readonly TextEditor _textEditor;
         private FoldingManager _foldingManager;
         private readonly TextMate.Installation _textMateInstallation;
-        private CompletionWindow _completionWindow;
+        private AutoCompleteWindow _completionWindow;
+
         private OverloadInsightWindow _insightWindow;
         private TextMateSharp.Grammars.RegistryOptions _registryOptions;
         private int _currentTheme = (int)ThemeName.DarkPlus;
@@ -78,8 +79,10 @@ namespace CodeEditor2.Views
             _textEditor.TextArea.Background = this.Background;
             _textEditor.TextArea.TextEntered += textEditor_TextArea_TextEntered;
             _textEditor.TextArea.TextEntering += textEditor_TextArea_TextEntering;
+            _textEditor.TextArea.KeyDown += TextArea_KeyDown;
             _textEditor.TextArea.DocumentChanged += TextArea_DocumentChanged;
             _textEditor.TextArea.PointerMoved += TextArea_PointerMoved;
+            _textEditor.TextArea.Caret.PositionChanged += Caret_PositionChanged1;
 
 
 
@@ -135,6 +138,12 @@ namespace CodeEditor2.Views
 //            ToolTip toolTip = this.FindControl<ToolTip>();
         }
 
+        private void Caret_PositionChanged1(object? sender, EventArgs e)
+        {
+            if (CodeDocument == null) return;
+            CodeDocument.CaretIndex = _textEditor.TextArea.Caret.Offset;
+        }
+
 
         //        public PopupWindow popupWindow = new PopupWindow();
         private int popupInex = -1;
@@ -154,8 +163,8 @@ namespace CodeEditor2.Views
             if (popupInex == headIndex) return;
             popupInex = headIndex;
 
-            System.Diagnostics.Debug.Print("CodeDocument.Version : " + CodeDocument.Version.ToString());
-            System.Diagnostics.Debug.Print("TextFile.ParsedDocument.Version : " + TextFile.ParsedDocument.Version.ToString());
+//            System.Diagnostics.Debug.Print("CodeDocument.Version : " + CodeDocument.Version.ToString());
+//            System.Diagnostics.Debug.Print("TextFile.ParsedDocument.Version : " + TextFile.ParsedDocument.Version.ToString());
 
             PopupItem pitem = TextFile.GetPopupItem(CodeDocument.Version, index);
             if (pitem == null)
@@ -194,7 +203,7 @@ namespace CodeEditor2.Views
 
             int carletLine = _textEditor.TextArea.Caret.Line;
             ulong version = codeDocument.Version;
-            Debug.Print("version "+version.ToString()+"  carletLine"+carletLine.ToString());
+            //Debug.Print("version "+version.ToString()+"  carletLine"+carletLine.ToString());
             if(prevVersion != version && carletLine != prevCarletLine)
             {
                 entryParse();
@@ -424,6 +433,12 @@ namespace CodeEditor2.Views
 
         // -----------------------------------------------------------
 
+        private void TextArea_KeyDown(object? sender, KeyEventArgs e)
+        {
+//            checkAutoComplete(e);
+//            throw new NotImplementedException();
+        }
+
         private void textEditor_TextArea_TextEntering(object sender, TextInputEventArgs e)
         {
             if (e.Text.Length > 0 && _completionWindow != null)
@@ -444,50 +459,94 @@ namespace CodeEditor2.Views
 
         private void textEditor_TextArea_TextEntered(object sender, TextInputEventArgs e)
         {
-//            System.Diagnostics.Debug.Print("## TextArea_TextEntered");
-            if (e.Text == ".")
-            {
-
-                _completionWindow = new CompletionWindow(_textEditor.TextArea);
-                _completionWindow.Closed += (o, args) => _completionWindow = null;
-
-                var data = _completionWindow.CompletionList.CompletionData;
-                data.Add(new MyCompletionData("Item1"));
-                data.Add(new MyCompletionData("Item2"));
-                data.Add(new MyCompletionData("Item3"));
-                data.Add(new MyCompletionData("Item4"));
-                data.Add(new MyCompletionData("Item5"));
-                data.Add(new MyCompletionData("Item6"));
-                data.Add(new MyCompletionData("Item7"));
-                data.Add(new MyCompletionData("Item8"));
-                data.Add(new MyCompletionData("Item9"));
-                data.Add(new MyCompletionData("Item10"));
-                data.Add(new MyCompletionData("Item11"));
-                data.Add(new MyCompletionData("Item12"));
-                data.Add(new MyCompletionData("Item13"));
-
-
-                _completionWindow.Show();
-            }
-            else if (e.Text == "(")
-            {
-                _insightWindow = new OverloadInsightWindow(_textEditor.TextArea);
-                _insightWindow.Closed += (o, args) => _insightWindow = null;
-
-                _insightWindow.Provider = new MyOverloadProvider(new[]
-                {
-                    ("Method1(int, string)", "Method1 description"),
-                    ("Method2(int)", "Method2 description"),
-                    ("Method3(string)", "Method3 description"),
-                });
-
-                _insightWindow.Show();
-            }else if(e.Text == "\n")
+            if (e.Text == "\n")
             {
                 entryParse();
+                return;
+            }
+            checkAutoComplete();
+        }
+
+        /// <summary>
+        /// update auto complete word text
+        /// </summary>
+        private void checkAutoComplete()
+        {
+            int prevIndex = _textEditor.CaretOffset;
+
+            //int prevIndex = CodeDocument.CaretIndex;
+
+            //if (CodeDocument.GetLineStartIndex(CodeDocument.GetLineAt(prevIndex)) != prevIndex && prevIndex != 0)
+            //{
+            //    prevIndex--;
+            //}
+            if (prevIndex != 0)
+            {
+                prevIndex--;
+            }
+            string cantidateWord;
+            List<AutocompleteItem> items = TextFile.GetAutoCompleteItems(_textEditor.CaretOffset, out cantidateWord);
+            System.Diagnostics.Debug.Print("## checkAutoComplete " + cantidateWord + " " + cantidateWord.Length);
+            System.Diagnostics.Debug.Print("## checkAutoCompleteCar _" + TextFile.CodeDocument.GetCharAt(prevIndex) + "_"+ prevIndex.ToString());
+
+            if (_completionWindow != null) return;
+            //if (CodeDocument.SelectionStart == CodeDocument.SelectionLast)
+            {
+
+
+                if (items == null || cantidateWord == null || cantidateWord == "")
+                {
+                    if (_completionWindow != null)
+                    {
+                        _completionWindow.Close();
+                    }
+                }
+                else
+                {
+                    _completionWindow = new CodeEditor2.CodeEditor.AutoCompleteWindow(_textEditor.TextArea);
+                    _completionWindow.Closed += (o, args) => _completionWindow = null;
+                    var data = _completionWindow.CompletionList.CompletionData;
+                    foreach (AutocompleteItem item in items)
+                    {
+                        item.Assign(CodeDocument);
+                        data.Add(item);
+                    }
+                    _completionWindow.Show();
+                    _completionWindow.StartOffset = prevIndex;
+                }
             }
         }
 
+        public void ForceOpenAutoComplete(List<AutocompleteItem> autocompleteItems)
+        {
+            int prevIndex = CodeDocument.CaretIndex;
+            if (CodeDocument.GetLineStartIndex(CodeDocument.GetLineAt(prevIndex)) != prevIndex && prevIndex != 0)
+            {
+                prevIndex--;
+            }
+
+            string cantidateWord;
+            List<AutocompleteItem> items = TextFile.GetAutoCompleteItems(CodeDocument.CaretIndex, out cantidateWord);
+            items = autocompleteItems;  // override items
+            if (items == null || cantidateWord == null)
+            {
+                if (_completionWindow != null) _completionWindow.Close();
+            }
+            else
+            {
+                _completionWindow = new AutoCompleteWindow(_textEditor.TextArea);
+                _completionWindow.Closed += (o, args) => _completionWindow = null;
+                var data = _completionWindow.CompletionList.CompletionData;
+                foreach (AutocompleteItem item in items)
+                {
+                    data.Add(item);
+                }
+                _completionWindow.Show();
+                //openAutoComplete();
+                //autoCompleteForm.SetAutocompleteItems(items);
+                //autoCompleteForm.UpdateVisibleItems(cantidateWord);
+            }
+        }
 
         private class MyOverloadProvider : IOverloadProvider
         {

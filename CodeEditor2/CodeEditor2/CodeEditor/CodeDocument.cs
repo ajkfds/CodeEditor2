@@ -519,6 +519,7 @@ namespace CodeEditor2.CodeEditor
             lock (this)
             {
                 textDocument.Replace(index, replaceLength, text);
+                SetColorAt(index, colorIndex, text.Length);
                 // set color
             }
         }

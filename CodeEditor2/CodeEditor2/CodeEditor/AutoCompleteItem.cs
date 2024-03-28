@@ -1,4 +1,6 @@
-﻿using Avalonia.Media;
+﻿using Avalonia.Controls;
+using Avalonia.Media;
+using AvaloniaEdit.Utils;
 using HarfBuzzSharp;
 using SkiaSharp;
 using System;
@@ -9,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor
 {
-    public class AutocompleteItem
+    public class AutocompleteItem : AvaloniaEdit.CodeCompletion.ICompletionData
     {
         public AutocompleteItem(string text, byte colorIndex, Avalonia.Media.Color color)
         {
@@ -22,8 +24,42 @@ namespace CodeEditor2.CodeEditor
             this.text = text;
             this.colorIndex = colorIndex;
             this.Color = color;
-//            this.icon = icon;
-//            this.iconColorStyle = iconColorStyle;
+            //            this.icon = icon;
+            //            this.iconColorStyle = iconColorStyle;
+        }
+
+
+        public IImage Image => null;
+        private TextBlock textBlock = null;
+
+        // Use this property if you want to show a fancy UIElement in the list.
+        public object Content => textBlock;// Text;
+
+        public object Description => "";
+
+        public double Priority { get; } = 0;
+
+        public void Complete(AvaloniaEdit.Editing.TextArea textArea, AvaloniaEdit.Document.ISegment completionSegment,
+            EventArgs insertionRequestEventArgs)
+        {
+            if (codeDocument == null)
+            {
+                textArea.Document.Replace(completionSegment, Text);
+            }
+            else
+            {
+                Apply(codeDocument);
+            }
+        }
+
+        public CodeDocument codeDocument;
+
+        public void Assign(CodeDocument codeDocument)
+        {
+            this.codeDocument = codeDocument;
+            textBlock = new TextBlock();
+            textBlock.Text = Text;
+            textBlock.Foreground = new SolidColorBrush(Color);
         }
 
         //private ajkControls.Primitive.IconImage icon = null;
@@ -42,23 +78,6 @@ namespace CodeEditor2.CodeEditor
 
         private byte colorIndex;
         private Color Color;
-
-        //public virtual void Draw(Graphics graphics, int x, int y, Font font, Color backgroundColor, out int height)
-        //{
-        //    Size tsize = System.Windows.Forms.TextRenderer.MeasureText(graphics, text, font);
-        //    if (icon != null) graphics.DrawImage(icon.GetImage(tsize.Height, iconColorStyle), new Point(x, y));
-        //    Color bgColor = backgroundColor;
-        //    System.Windows.Forms.TextRenderer.DrawText(
-        //        graphics,
-        //        text,
-        //        font,
-        //        new Point(x + tsize.Height + (tsize.Height >> 2), y),
-        //        Color,
-        //        bgColor,
-        //        System.Windows.Forms.TextFormatFlags.NoPadding
-        //        );
-        //    height = tsize.Height;
-        //}
 
         public virtual void Apply(CodeDocument codeDocument)
         {

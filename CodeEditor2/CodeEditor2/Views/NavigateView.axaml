@@ -8,5 +8,13 @@
 	<ajkctrl:TreeControl
 		Name="TreeControl"
 		FontSize="12"
-	/>
+    >
+		<ajkctrl:TreeControl.ContextMenu>
+			<ContextMenu>
+				<MenuItem Header="Add"/>
+				<MenuItem Header="Delete"/>
+				<MenuItem Header="Open in Exploerer"/>
+			</ContextMenu>			
+		</ajkctrl:TreeControl.ContextMenu>
+	</ajkctrl:TreeControl>
 </UserControl>
