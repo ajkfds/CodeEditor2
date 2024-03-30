@@ -22,14 +22,17 @@ public partial class App : Application
 
     private const string setupFileName = "CodeEditor2.json";
 
-    public override async void OnFrameworkInitializationCompleted()
+    public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             Tools.ProgressWindow progressWindow = new Tools.ProgressWindow("CodeEditor2", "Loading...", 100);
+            Global.progressWindow = progressWindow;
 
             desktop.MainWindow = progressWindow;
             Global.currentWindow = progressWindow;
+            progressWindow.ProgressMaxValue = 100;
+            progressWindow.ProgressValue = 100;
             progressWindow.Show();
 
             MainWindow mainWindow = new MainWindow
@@ -37,12 +40,7 @@ public partial class App : Application
                 DataContext = new MainViewModel()
             };
 
-            //for (double i = 0; i <= 100; i=i+10)
-            //{
-            //    await Task.Delay(1);
-            //    progressWindow.ProgressValue = i;
-            //}
-            await Task.Delay(1);
+//            await Task.Delay(1);
 
             initialize(progressWindow);
 
@@ -50,13 +48,7 @@ public partial class App : Application
             if (System.IO.File.Exists(setupFileName))
             {
                 Global.Setup.LoadSetup(setupFileName);
-                await Task.Delay(1);
             }
-
-            //var task = Task.Run(() =>
-            //{
-            //    initialize(progressWindow);
-            //});
 
             desktop.MainWindow = mainWindow;
             Global.currentWindow = mainWindow;

@@ -391,24 +391,20 @@ namespace CodeEditor2.Views
                         effect.Offset + effect.Length,
                         visualLine =>
                         {
-                            if (visualLine.TextRunProperties.TextDecorations != null)
-                            {
-
-                                TextDecoration underline = TextDecorations.Underline[0];
-                                underline.StrokeThickness = 2;
-                                underline.StrokeThicknessUnit = TextDecorationUnit.Pixel;
-                                underline.StrokeOffset = 2;
-                                underline.StrokeOffsetUnit = TextDecorationUnit.Pixel;
-                                underline.Stroke = new SolidColorBrush(effect.DrawColor);
-                                var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { underline };
-
-                                visualLine.TextRunProperties.SetTextDecorations(textDecorations);
-                            }
-                            else
+                            if (visualLine.TextRunProperties.TextDecorations == null)
                             {
                                 visualLine.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
                             }
 
+                            TextDecoration underline = TextDecorations.Underline[0];
+                            underline.StrokeThickness = 2;
+                            underline.StrokeThicknessUnit = TextDecorationUnit.Pixel;
+                            underline.StrokeOffset = 2;
+                            underline.StrokeOffsetUnit = TextDecorationUnit.Pixel;
+                            underline.Stroke = new SolidColorBrush(effect.DrawColor);
+                            var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { underline };
+
+                            visualLine.TextRunProperties.SetTextDecorations(textDecorations);
                         }
                     );
                 }

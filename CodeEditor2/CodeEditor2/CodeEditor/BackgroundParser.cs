@@ -58,11 +58,11 @@ namespace CodeEditor2.CodeEditor
                     parsing = true;
 
                     {
-                        Global.ParseSemaphore.WaitOne();
+                        Global.LockParse();
                         
                         parser.Parse();
 
-                        Global.ParseSemaphore.Release();
+                        Global.ReleaseParseLock();
                     }
 
                     lock (fromBackgroundStock)

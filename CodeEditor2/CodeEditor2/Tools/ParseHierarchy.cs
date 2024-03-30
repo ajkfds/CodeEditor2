@@ -20,21 +20,22 @@ namespace CodeEditor2.Tools
 
         public static List<ParsedDocument> unlockdPaeedsedDocument = new List<ParsedDocument>();
 
-        public async static void Run(NavigatePanel.NavigatePanelNode rootNode)
+        public static void Run(NavigatePanel.NavigatePanelNode rootNode)
         {
             Tools.ProgressWindow progressWindow = new Tools.ProgressWindow(rootNode.Name, "Loading...", 100);
-            progressWindow.Show();
+            Controller.ShowDialogForm(progressWindow);
+//            progressWindow.Show();
             progressWindow.Topmost = true;
 
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
             {
-                Global.ParseSemaphore.WaitOne();
+                Global.LockParse();
 
                 parseHier(rootNode.Item, progressWindow);
 
-                Global.ParseSemaphore.Release();
+                Global.ReleaseParseLock();
             }
             rootNode.Update();
 
@@ -48,8 +49,11 @@ namespace CodeEditor2.Tools
             if (textFile == null) return;
 
             textFile.ParseHierarchy((tFile) => {
-                Dispatcher.UIThread.Invoke(new Action(() => { progressWindow.Message = tFile.ID; }));
+                progressWindow.Message = tFile.ID; 
             });
+            //textFile.ParseHierarchy((tFile) => {
+            //    Dispatcher.UIThread.Invoke(new Action(() => { progressWindow.Message = tFile.ID; }));
+            //});
         }
 
 

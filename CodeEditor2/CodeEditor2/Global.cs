@@ -35,7 +35,22 @@ namespace CodeEditor2
 
         public static bool Abort = false;
 
-        public static Semaphore ParseSemaphore = new Semaphore(1, 1);
+        public static void LockParse()
+        {
+            lockName = System.Threading.Thread.CurrentThread.Name;
+            System.Diagnostics.Debug.Print("loacked by "+lockName);
+            parseSemaphore.Wait();
+        }
+        public static void ReleaseParseLock()
+        {
+            System.Diagnostics.Debug.Print("released");
+            lockName = "";
+            parseSemaphore.Release();
+        }
+        private static string lockName = "";
+        private static SemaphoreSlim parseSemaphore = new SemaphoreSlim(1, 1);
+
+        public static Tools.ProgressWindow progressWindow = null;
 
         //public static IWshRuntimeLibrary.WshShell WshShell = new IWshRuntimeLibrary.WshShell();
 

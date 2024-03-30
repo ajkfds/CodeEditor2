@@ -1,11 +1,13 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
 using CodeEditor2.CodeEditor;
+using CodeEditor2.Data;
 using CodeEditor2.NavigatePanel;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Quic;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,91 +17,87 @@ namespace CodeEditor2.Tools
 {
     internal class ParseProject
     {
-        public async static void Run(NavigatePanel.ProjectNode projectNode)
-        {
-            Tools.ProgressWindow progressWindow = new Tools.ProgressWindow(projectNode.Name, "Loading...", 100);
-            progressWindow.Show();
-            progressWindow.Topmost = true;
 
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-            projectNode.Project.Update();
+        // to pase thread
+        //private Tools.ProgressWindow progressWindow;
+        List<Data.Item> items;
+        private volatile bool abort = false;
+
+        public void Run(NavigatePanel.ProjectNode projectNode)
+        {
+            projectNode.Project.Update(); // must be launch on UI thread
 
             // data update
             projectNode.HierarchicalVisibleUpdate();
-            List<Data.Item> items = projectNode.Project.FindItems(
+            items = projectNode.Project.FindItems(
                 (x) => (x is Data.TextFile),
                 (x) => (false)
                 );
-            progressWindow.ProgressMaxValue = items.Count;
 
-            
+            Global.progressWindow.ProgressMaxValue = items.Count;
+
+            Global.LockParse();
+
+            runParse();
+
+            Global.ReleaseParseLock();
+
+            //progressWindow.Close();
+        }
+
+
+        private void runParse()
+        {
+            // parse items
+            int i = 0;
+            int workerThreads = 1;
+
+            System.Collections.Concurrent.BlockingCollection<Data.TextFile> fileQueue = new System.Collections.Concurrent.BlockingCollection<Data.TextFile>();
+
+            List<TextParseTask> tasks = new List<TextParseTask>();
+            for (int t = 0; t < workerThreads; t++)
             {
-                Global.ParseSemaphore.WaitOne();
-
-                // parse items
-                int i = 0;
-                int workerThreads = 1;
-
-                System.Collections.Concurrent.BlockingCollection<Data.TextFile> fileQueue = new System.Collections.Concurrent.BlockingCollection<Data.TextFile>();
-
-                List<TextParseTask> tasks = new List<TextParseTask>();
-                for (int t = 0; t < workerThreads; t++)
-                {
-                    tasks.Add(new TextParseTask("ParseProject"+t.ToString()));
-                    tasks[t].Run(
-                        fileQueue,
-                        (
-                            (f) =>
-                            {
-                                Dispatcher.UIThread.Post(
-                                    new Action(() =>
-                                    {
-                                        progressWindow.ProgressValue = i;
-                                        progressWindow.Message = f.Name;
-                                        i++;
-                                    })
-                                    );
-                            }
-                        )
-                    );
-                }
-
-                foreach (Data.Item item in items)
-                {
-                    if (!(item is Data.TextFile)) continue;
-                    fileQueue.Add(item as Data.TextFile);
-                }
-                fileQueue.CompleteAdding();
-
-                while (!fileQueue.IsCompleted)
-                {
-                    await Task.Delay(10);
-                }
-
-                while (true)
-                {
-                    int completeTasks = 0;
-                    foreach (TextParseTask task in tasks)
-                    {
-                        if (task.Complete) completeTasks++;
-                    }
-                    if (completeTasks == tasks.Count) break;
-                }
-
-                //    gc++;
-                //    if (gc > 100)
-                //    {
-                //        System.GC.Collect();
-                //        gc = 0;
-                //        System.Diagnostics.Debug.Print("process memory " + (Environment.WorkingSet / 1024 / 1024).ToString() + "Mbyte");
-                //    }
-                //}
-                Global.ParseSemaphore.Release();
+                tasks.Add(new TextParseTask("ParseProject" + t.ToString()));
+                tasks[t].Run(
+                    fileQueue,
+                    (
+                        (f) =>
+                        {
+                            Dispatcher.UIThread.Post(
+                                new Action(() =>
+                                {
+                                    Global.progressWindow.ProgressValue = i;
+                                    Global.progressWindow.Message = f.Name;
+                                    i++;
+                                })
+                                );
+                        }
+                    )
+                );
             }
 
+            foreach (Data.Item item in items)
+            {
+                if (!(item is Data.TextFile)) continue;
+                fileQueue.Add(item as Data.TextFile);
+            }
+            fileQueue.CompleteAdding();
 
-            progressWindow.Close();
+            while (!fileQueue.IsCompleted)
+            {
+                System.Threading.Thread.Sleep(10);
+            }
+
+            while (true)
+            {
+                int completeTasks = 0;
+                foreach (TextParseTask task in tasks)
+                {
+                    if (task.Complete) completeTasks++;
+                }
+                if (completeTasks == tasks.Count) break;
+            }
+            abort = true;
         }
     }
 }

@@ -108,8 +108,10 @@ namespace CodeEditor2.Setups
             }
         }
 
-        private void readProjects(JsonReader jsonReader)
+        private async Task readProjects(JsonReader jsonReader)
         {
+            List<Project> projects = new List<Project>();
+
             using (var reader = jsonReader.GetNextObjectReader())
             {
                 while (true)
@@ -124,9 +126,13 @@ namespace CodeEditor2.Setups
                     else
                     {
                         Project project = Project.Create(reader);
-                        Controller.AddProject(project);
+                        projects.Add(project);
                     }
                 }
+            }
+            foreach(Project project in projects)
+            {
+                Controller.AddProject(project);
             }
         }
 

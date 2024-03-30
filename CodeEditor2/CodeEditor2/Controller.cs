@@ -1,4 +1,5 @@
-﻿using Avalonia.LogicalTree;
+﻿using Avalonia.Controls;
+using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using CodeEditor2.Data;
 using CodeEditor2.Views;
@@ -35,17 +36,22 @@ namespace CodeEditor2
             if (Global.Projects.ContainsKey(project.Name))
             {
                 System.Diagnostics.Debugger.Break();
-                return;
+                //return null;
             }
-            Global.Projects.Add(project.Name, project);
-            addProject(project);
+            else
+            {
+                Global.Projects.Add(project.Name, project);
+                addProject(project);
+            }
         }
 
-        private static async void addProject(Project project)
+        private static void addProject(Project project)
         {
             Global.navigateView.AddProject(project);
 
-            CodeEditor2.Tools.ParseProject.Run(Global.navigateView.GetPeojectNode(project.Name));
+
+            CodeEditor2.Tools.ParseProject parser = new Tools.ParseProject();
+            parser.Run(Global.navigateView.GetPeojectNode(project.Name)); 
 
             //Tools.ProgressWindow progressWindow = new Tools.ProgressWindow(project.Name, "Loading...", 100);
             //progressWindow.Show();
@@ -70,16 +76,30 @@ namespace CodeEditor2
 
         public static void ShowForm(Avalonia.Controls.Window form)
         {
-            Dispatcher.UIThread.Invoke(new Action(() => {
+            if (System.Threading.Thread.CurrentThread == Global.UIThread)
+            {
                 form.Show(Global.mainWindow);
-            }));
+            }
+            else
+            {
+                Dispatcher.UIThread.Invoke(new Action(() => {
+                    form.Show(Global.mainWindow);
+                }));
+            }
         }
 
         public static void ShowDialogForm(Avalonia.Controls.Window form)
         {
-            Dispatcher.UIThread.Invoke(new Action(() => {
+            if(System.Threading.Thread.CurrentThread == Global.UIThread)
+            {
                 form.ShowDialog(Global.mainWindow);
-            }));
+            }
+            else
+            {
+                Dispatcher.UIThread.Invoke(new Action(() => {
+                    form.ShowDialog(Global.mainWindow);
+                }));
+            }
         }
 
         //public static System.Windows.Forms.DialogResult ShowDialogForm(System.Windows.Forms.CommonDialog dialog)
@@ -217,10 +237,10 @@ namespace CodeEditor2
                 node = Global.navigateView.GetSelectedNode();
             }
 
-            //public static System.Windows.Forms.ContextMenuStrip GetContextMenuStrip()
-            //{
-            //    return Global.mainForm.navigatePanel.GetContextMenuStrip();
-            //}
+            public static ContextMenu GetContextMenuStrip()
+            {
+                return Global.navigateView.ContextMenu;
+            }
 
             //public static void Parse(CodeEditor2.NavigatePanel.NavigatePanelNode node)
             //{

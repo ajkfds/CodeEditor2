@@ -17,18 +17,18 @@
 	<DockPanel Background="#202020" >
 		
 		<!-- Menu -->
-		<Menu DockPanel.Dock="Top">
+		<Menu DockPanel.Dock="Top" Name="Menu">
 			<MenuItem Header="_File">
-				<MenuItem Header="_Open..."/>
+				<MenuItem Header="_Open..." Click="MenuItem_Open_Click"/>
 				<Separator/>
-				<MenuItem Header="_Exit"/>
+				<MenuItem Header="_Exit" Click="MenuItem_Exit_Click"/>
 			</MenuItem>
 			<MenuItem Header="_Edit">
 				<MenuItem Header="Copy"/>
 				<MenuItem Header="Paste"/>
 			</MenuItem>
 			<MenuItem Header="_Project">
-				<MenuItem Header="Add Project"/>
+				<MenuItem Header="Add Project" Click="MenuItem_AddProject_Click"/>
 			</MenuItem>
 			<MenuItem Header="_Tools">
 			</MenuItem>

@@ -10,7 +10,7 @@
 		FontSize="12"
     >
 		<ajkctrl:TreeControl.ContextMenu>
-			<ContextMenu>
+			<ContextMenu Name="ContextMenu">
 				<MenuItem Header="Add"/>
 				<MenuItem Header="Delete"/>
 				<MenuItem Header="Open in Exploerer"/>
