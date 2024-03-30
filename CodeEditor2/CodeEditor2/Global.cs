@@ -50,8 +50,7 @@ namespace CodeEditor2
         private static string lockName = "";
         private static SemaphoreSlim parseSemaphore = new SemaphoreSlim(1, 1);
 
-        public static Tools.ProgressWindow progressWindow = null;
-
+        public static Tools.ProgressWindow ProgressWindow;
         //public static IWshRuntimeLibrary.WshShell WshShell = new IWshRuntimeLibrary.WshShell();
 
         //public static class IconImages

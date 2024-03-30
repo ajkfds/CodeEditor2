@@ -22,18 +22,18 @@ namespace CodeEditor2.Setups
             }
         }
 
-        public void LoadSetup(string path)
+        public async Task LoadSetup(string path)
         {
             using (System.IO.StreamReader sr = new System.IO.StreamReader(path))
             {
                 using (JsonReader reader = new JsonReader(sr))
                 {
-                    readJson(reader);
+                    await readJson(reader);
                 }
             }
         }
 
-        private void readJson(JsonReader reader)
+        private async Task readJson(JsonReader reader)
         {
             while (true)
             {
@@ -49,7 +49,7 @@ namespace CodeEditor2.Setups
                         readPluginSetup(reader);
                         break;
                     case "Projects":
-                        readProjects(reader);
+                        await readProjects(reader);
                         break;
                     default:
                         reader.SkipValue();
@@ -132,7 +132,7 @@ namespace CodeEditor2.Setups
             }
             foreach(Project project in projects)
             {
-                Controller.AddProject(project);
+                await Controller.AddProject(project);
             }
         }
 

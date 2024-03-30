@@ -4,6 +4,7 @@ using Avalonia.Threading;
 using CodeEditor2.Data;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.Views;
@@ -18,7 +19,40 @@ public partial class MainView : UserControl
         InitializeComponent();
         DataContext = new ViewModels.MainViewModel();
 
+        timer.Interval = new TimeSpan(1);
+        timer.Tick += Timer_Tick;
+        timer.Start();
+
     }
+    private void Timer_Tick(object? sender, EventArgs e)
+    {
+        // should launch afer mainwindow shown
+        timer.Stop();
+        // read setup file
+
+        Global.ProgressWindow = new Tools.ProgressWindow();
+//        Global.ProgressWindow.Show(Global.mainWindow);
+        var _ = initialize();
+    }
+
+    private DispatcherTimer timer = new DispatcherTimer();
+
+    private const string setupFileName = "CodeEditor2.json";
+
+    private async Task initialize()
+    {
+        try
+        {
+            await Global.Setup.LoadSetup(setupFileName);
+        }
+        catch(Exception ex)
+        {
+            throw;
+        }
+
+//        Dispatcher.UIThread.Post(() => { Global.ProgressWindow.Close(); });
+    }
+
 
     private void MenuItem_Open_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {

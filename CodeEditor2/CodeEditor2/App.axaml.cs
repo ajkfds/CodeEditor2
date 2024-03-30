@@ -20,40 +20,27 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
     }
 
-    private const string setupFileName = "CodeEditor2.json";
-
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            Tools.ProgressWindow progressWindow = new Tools.ProgressWindow("CodeEditor2", "Loading...", 100);
-            Global.progressWindow = progressWindow;
-
-            desktop.MainWindow = progressWindow;
-            Global.currentWindow = progressWindow;
-            progressWindow.ProgressMaxValue = 100;
-            progressWindow.ProgressValue = 100;
-            progressWindow.Show();
 
             MainWindow mainWindow = new MainWindow
             {
                 DataContext = new MainViewModel()
             };
 
-//            await Task.Delay(1);
-
-            initialize(progressWindow);
+            initialize();
 
             // read setup file
-            if (System.IO.File.Exists(setupFileName))
-            {
-                Global.Setup.LoadSetup(setupFileName);
-            }
+            //if (System.IO.File.Exists(setupFileName))
+            //{
+            //    Global.Setup.LoadSetup(setupFileName);
+            //}
 
             desktop.MainWindow = mainWindow;
             Global.currentWindow = mainWindow;
             mainWindow.Show();
-            progressWindow.Close();
         }
         //else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         //{
@@ -66,7 +53,7 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private void initialize(Tools.ProgressWindow progressWindow)
+    private void initialize()
     {
         // register text filetype
         FileTypes.TextFile textFileType = new FileTypes.TextFile();

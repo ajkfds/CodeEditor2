@@ -31,7 +31,7 @@ namespace CodeEditor2
         //}
 
 
-        internal static void AddProject(Project project)
+        internal static async Task AddProject(Project project)
         {
             if (Global.Projects.ContainsKey(project.Name))
             {
@@ -41,17 +41,17 @@ namespace CodeEditor2
             else
             {
                 Global.Projects.Add(project.Name, project);
-                addProject(project);
+                await addProject(project);
             }
         }
 
-        private static void addProject(Project project)
+        private static async Task addProject(Project project)
         {
             Global.navigateView.AddProject(project);
 
 
             CodeEditor2.Tools.ParseProject parser = new Tools.ParseProject();
-            parser.Run(Global.navigateView.GetPeojectNode(project.Name)); 
+            await parser.Run(Global.navigateView.GetPeojectNode(project.Name)); 
 
             //Tools.ProgressWindow progressWindow = new Tools.ProgressWindow(project.Name, "Loading...", 100);
             //progressWindow.Show();
@@ -74,33 +74,16 @@ namespace CodeEditor2
         //    return System.Windows.Forms.MessageBox.Show(text, caption, buttons);
         //}
 
-        public static void ShowForm(Avalonia.Controls.Window form)
-        {
-            if (System.Threading.Thread.CurrentThread == Global.UIThread)
-            {
-                form.Show(Global.mainWindow);
-            }
-            else
-            {
-                Dispatcher.UIThread.Invoke(new Action(() => {
-                    form.Show(Global.mainWindow);
-                }));
-            }
-        }
+        //public static async void ShowForm(Avalonia.Controls.Window form)
+        //{
+        //    form.Show(Global.mainWindow);
+        //}
 
-        public static void ShowDialogForm(Avalonia.Controls.Window form)
-        {
-            if(System.Threading.Thread.CurrentThread == Global.UIThread)
-            {
-                form.ShowDialog(Global.mainWindow);
-            }
-            else
-            {
-                Dispatcher.UIThread.Invoke(new Action(() => {
-                    form.ShowDialog(Global.mainWindow);
-                }));
-            }
-        }
+        //public static async Task ShowDialogForm(Avalonia.Controls.Window form)
+        //{
+        //    await form.ShowDialog(Global.mainWindow);
+        //}
+
 
         //public static System.Windows.Forms.DialogResult ShowDialogForm(System.Windows.Forms.CommonDialog dialog)
         //{

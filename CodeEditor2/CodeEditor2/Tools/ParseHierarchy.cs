@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
 using CodeEditor2.CodeEditor;
+using CodeEditor2.Data;
 using CodeEditor2.NavigatePanel;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -20,40 +21,43 @@ namespace CodeEditor2.Tools
 
         public static List<ParsedDocument> unlockdPaeedsedDocument = new List<ParsedDocument>();
 
-        public static void Run(NavigatePanel.NavigatePanelNode rootNode)
+        public static async Task Run(NavigatePanel.NavigatePanelNode rootNode)
         {
-            Tools.ProgressWindow progressWindow = new Tools.ProgressWindow(rootNode.Name, "Loading...", 100);
-            Controller.ShowDialogForm(progressWindow);
-//            progressWindow.Show();
-            progressWindow.Topmost = true;
 
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
+            Dispatcher.UIThread.Post(() => {
+                Global.ProgressWindow.Title = "Reparse " + rootNode.Text;
+                Global.ProgressWindow.ProgressMaxValue = 100;
+                Global.ProgressWindow.ShowDialog(Global.mainWindow);
+            });
 
             {
                 Global.LockParse();
 
-                parseHier(rootNode.Item, progressWindow);
+                parseHier(rootNode.Item);
 
                 Global.ReleaseParseLock();
             }
             rootNode.Update();
 
-            progressWindow.Close();
+
+
+            Dispatcher.UIThread.Post(() => {
+                Global.ProgressWindow.Hide();
+            });
         }
 
-        private static void parseHier(Data.Item item, ProgressWindow progressWindow)
+        private static void parseHier(Data.Item item)
         {
             if (item == null) return;
             Data.ITextFile textFile = item as Data.TextFile;
             if (textFile == null) return;
 
             textFile.ParseHierarchy((tFile) => {
-                progressWindow.Message = tFile.ID; 
+                textFile.ParseHierarchy((tFile) =>
+                {
+                    Dispatcher.UIThread.Invoke(new Action(() => { Global.ProgressWindow.Message = tFile.ID; }));
+                });
             });
-            //textFile.ParseHierarchy((tFile) => {
-            //    Dispatcher.UIThread.Invoke(new Action(() => { progressWindow.Message = tFile.ID; }));
-            //});
         }
 
 

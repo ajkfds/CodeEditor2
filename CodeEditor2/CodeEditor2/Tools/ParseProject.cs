@@ -23,7 +23,7 @@ namespace CodeEditor2.Tools
         List<Data.Item> items;
         private volatile bool abort = false;
 
-        public void Run(NavigatePanel.ProjectNode projectNode)
+        public async Task Run(NavigatePanel.ProjectNode projectNode)
         {
             projectNode.Project.Update(); // must be launch on UI thread
 
@@ -34,19 +34,26 @@ namespace CodeEditor2.Tools
                 (x) => (false)
                 );
 
-            Global.progressWindow.ProgressMaxValue = items.Count;
+            Dispatcher.UIThread.Post(() => {
+                Global.ProgressWindow.Title = "Loading "+projectNode.Text;
+                Global.ProgressWindow.ProgressMaxValue = items.Count;
+                Global.ProgressWindow.ShowDialog(Global.mainWindow);
+            });
 
             Global.LockParse();
 
-            runParse();
+            
+            await runParse();
 
             Global.ReleaseParseLock();
 
-            //progressWindow.Close();
+            Dispatcher.UIThread.Post(() => {
+                Global.ProgressWindow.Hide();
+            });
         }
 
 
-        private void runParse()
+        private async Task runParse()
         {
             // parse items
             int i = 0;
@@ -66,8 +73,8 @@ namespace CodeEditor2.Tools
                             Dispatcher.UIThread.Post(
                                 new Action(() =>
                                 {
-                                    Global.progressWindow.ProgressValue = i;
-                                    Global.progressWindow.Message = f.Name;
+                                    Global.ProgressWindow.ProgressValue = i;
+                                    Global.ProgressWindow.Message = f.Name;
                                     i++;
                                 })
                                 );
@@ -85,7 +92,8 @@ namespace CodeEditor2.Tools
 
             while (!fileQueue.IsCompleted)
             {
-                System.Threading.Thread.Sleep(10);
+                await Task.Delay(10);
+//                System.Threading.Thread.Sleep(10);
             }
 
             while (true)
