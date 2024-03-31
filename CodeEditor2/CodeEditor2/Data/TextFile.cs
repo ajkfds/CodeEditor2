@@ -213,10 +213,10 @@ namespace CodeEditor2.Data
             cantidateWord = null;
             return null;
         }
-        //public virtual List<CodeEditor2.CodeEditor.ToolItem> GetToolItems(int index)
-        //{
-        //    return null;
-        //}
+        public virtual List<CodeEditor.ToolItem> GetToolItems(int index)
+        {
+            return null;
+        }
 
 
         //public virtual void BeforeKeyDown(KeyEventArgs e)

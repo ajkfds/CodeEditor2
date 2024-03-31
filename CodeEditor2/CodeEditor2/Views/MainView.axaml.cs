@@ -1,7 +1,9 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CodeEditor2.Data;
+using CodeEditor2.Setups;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -62,8 +64,26 @@ public partial class MainView : UserControl
     {
     }
 
-    private void MenuItem_AddProject_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private async void MenuItem_AddProject_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        var topLevel = TopLevel.GetTopLevel(this);
+
+        var folders = await Global.mainWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Select Project Folder",
+            AllowMultiple = false
+        });
+
+        if (folders.Count != 1) return;
+
+        IStorageFolder folder = folders[0];
+
+
+        Global.StopParse = true;
+        Data.Project newProject = Project.Create(folder.Path.AbsolutePath);
+        await Controller.AddProject(newProject);
+        Global.StopParse = false;
+
     }
 
     // View controller interface //////////////////////////////////////////

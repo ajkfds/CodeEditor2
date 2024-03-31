@@ -369,11 +369,15 @@ namespace CodeEditor2.CodeEditor
             set
             {
                 caretIndex = value;
-                if (CarletChanged != null) CarletChanged(this);
+                if (CaretChanged != null) CaretChanged(this);
             }
         }
+        internal void setCarletPosition(int carletIndex)
+        {
+            this.caretIndex = caretIndex;
+        }
 
-        public Action<CodeDocument>? CarletChanged  = null;
+        public Action<CodeDocument>? CaretChanged  = null;
 
 
         public char GetCharAt(int index)
@@ -420,10 +424,12 @@ namespace CodeEditor2.CodeEditor
 
         public void SetMarkAt(int index, int length, byte value)
         {
-            for (int i = index; i < index + length; i++)
-            {
-                SetMarkAt(i, value);
-            }
+            if (index >= Length) return;
+            if (TextDocument == null) return;
+            DocumentLine line = TextDocument.GetLineByOffset(index);
+            LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
+            Color color = Global.DefaultDrawStyle.MarkColor[value];
+            lineInfo.Effects.Add(new LineInfomation.Effect(index, length, color, null));
         }
 
 

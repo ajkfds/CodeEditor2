@@ -37,9 +37,9 @@
 			</MenuItem>
 		</Menu>
 		
-		<Grid RowDefinitions="*, 4, 100">
+		<Grid RowDefinitions="*, 4, 100" Name="MainArea">
 			<Grid ColumnDefinitions="200, 4, *, 4, 200" Grid.Row="0">
-				<TabControl Name="LeftTab">
+				<TabControl Name="LeftTab" >
 					<TabItem Header="Navigate" FontSize="12">
 						<views:NavigateView Name="NavigateView"/>
 					</TabItem>

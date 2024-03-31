@@ -44,6 +44,11 @@ namespace CodeEditor2.Tools
 
         private void parse(Data.TextFile textFile)
         {
+            if (textFile.RelativePath == @"fpga\hbirdkit\src\clkdivider.v")
+            {
+                string a = "";
+            }
+
             CodeEditor.DocumentParser parser = textFile.CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum.LoadParse);
             if (parser == null)
             {

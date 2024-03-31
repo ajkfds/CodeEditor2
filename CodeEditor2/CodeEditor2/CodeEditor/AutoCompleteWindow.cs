@@ -12,7 +12,18 @@ namespace CodeEditor2.CodeEditor
     {
         public AutoCompleteWindow(TextArea textArea) : base(textArea)
         {
+            CloseWhenCaretAtBeginning = true;
         }
+
+        //public override void OnClosed()
+        //{
+        //    base.OnClosed();
+
+        //    foreach(AutocompleteItem item in CompletionList.CompletionData)
+        //    {
+        //        item.OnClosed();
+        //    }
+        //}
 
         //public new void OnKeyDown(KeyEventArgs e)
         //{

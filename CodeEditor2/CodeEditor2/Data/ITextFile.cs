@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CodeEditor2.CodeEditor;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -48,14 +49,14 @@ namespace CodeEditor2.Data
         void Save();
         DateTime? LoadedFileLastWriteTime { get; }
 
-//        void AfterKeyPressed(System.Windows.Forms.KeyPressEventArgs e);
-//        void AfterKeyDown(System.Windows.Forms.KeyEventArgs e);
-//        void BeforeKeyPressed(System.Windows.Forms.KeyPressEventArgs e);
-//        void BeforeKeyDown(System.Windows.Forms.KeyEventArgs e);
+        //        void AfterKeyPressed(System.Windows.Forms.KeyPressEventArgs e);
+        //        void AfterKeyDown(System.Windows.Forms.KeyEventArgs e);
+        //        void BeforeKeyPressed(System.Windows.Forms.KeyPressEventArgs e);
+        //        void BeforeKeyDown(System.Windows.Forms.KeyEventArgs e);
 
-//        List<CodeEditor.PopupItem> GetPopupItems(ulong Version, int index);
-//        List<CodeEditor2.CodeEditor.AutocompleteItem> GetAutoCompleteItems(int index, out string cantidateText);
-//        List<CodeEditor2.CodeEditor.ToolItem> GetToolItems(int index);
+//        PopupItem GetPopupItem(ulong Version, int index);
+        List<CodeEditor2.CodeEditor.AutocompleteItem> GetAutoCompleteItems(int index, out string cantidateText);
+        List<CodeEditor2.CodeEditor.ToolItem> GetToolItems(int index);
 
 //        ajkControls.CodeTextbox.CodeDrawStyle DrawStyle { get; }
     }

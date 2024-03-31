@@ -13,21 +13,20 @@ namespace CodeEditor2.CodeEditor
 {
     public class AutocompleteItem : AvaloniaEdit.CodeCompletion.ICompletionData
     {
-        public AutocompleteItem(string text, byte colorIndex, Avalonia.Media.Color color)
+        public AutocompleteItem(string text, byte colorIndex, Avalonia.Media.Color color) : this(text,colorIndex,color, null, AjkAvaloniaLibs.Libs.Icons.ColorStyle.Gray)
         {
-            this.text = text;
-            this.colorIndex = colorIndex;
-            this.Color = color;
         }
         public AutocompleteItem(string text, byte colorIndex, Avalonia.Media.Color color, IImage icon, AjkAvaloniaLibs.Libs.Icons.ColorStyle iconColorStyle)
         {
             this.text = text;
             this.colorIndex = colorIndex;
             this.Color = color;
-            //            this.icon = icon;
-            //            this.iconColorStyle = iconColorStyle;
         }
 
+        public void Clean()
+        {
+            textBlock = null;
+        }
 
         public IImage Image => null;
         private TextBlock textBlock = null;
@@ -59,6 +58,7 @@ namespace CodeEditor2.CodeEditor
             this.codeDocument = codeDocument;
             textBlock = new TextBlock();
             textBlock.Text = Text;
+            textBlock.FontSize = 10;
             textBlock.Foreground = new SolidColorBrush(Color);
         }
 

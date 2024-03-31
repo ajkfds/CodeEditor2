@@ -31,6 +31,8 @@ using System.Diagnostics;
 using AjkAvaloniaLibs.Contorls;
 using DynamicData.Binding;
 using Avalonia.Controls.Primitives;
+using System.Threading.Tasks;
+using Avalonia.VisualTree;
 
 namespace CodeEditor2.Views
 {
@@ -82,8 +84,6 @@ namespace CodeEditor2.Views
             _textEditor.TextArea.KeyDown += TextArea_KeyDown;
             _textEditor.TextArea.DocumentChanged += TextArea_DocumentChanged;
             _textEditor.TextArea.PointerMoved += TextArea_PointerMoved;
-            _textEditor.TextArea.Caret.PositionChanged += Caret_PositionChanged1;
-
 
 
             _textEditor.Options.ShowBoxForControlCharacters = true;
@@ -138,11 +138,6 @@ namespace CodeEditor2.Views
 //            ToolTip toolTip = this.FindControl<ToolTip>();
         }
 
-        private void Caret_PositionChanged1(object? sender, EventArgs e)
-        {
-            if (CodeDocument == null) return;
-            CodeDocument.CaretIndex = _textEditor.TextArea.Caret.Offset;
-        }
 
 
         //        public PopupWindow popupWindow = new PopupWindow();
@@ -185,10 +180,13 @@ namespace CodeEditor2.Views
         {
             if (CodeDocument != codeDocument) return;
 
+            // changed by CodeDocument Code
+            if (_textEditor.CaretOffset == codeDocument.CaretIndex) return;
             _textEditor.CaretOffset = codeDocument.CaretIndex;
-            //            _textEditor.TextArea.Selection = new Selection();
-            _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, CodeDocument.SelectionStart, CodeDocument.SelectionLast);
+
+//            _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, CodeDocument.SelectionStart, CodeDocument.SelectionLast);
         }
+
 
         private void TextArea_DocumentChanged(object? sender, DocumentChangedEventArgs e)
         {
@@ -200,6 +198,8 @@ namespace CodeEditor2.Views
         private void Caret_PositionChanged(object? sender, EventArgs e)
         {
             if (CodeDocument == null) return;
+            //CodeDocument.setCarletPosition(_textEditor.TextArea.Caret.Offset);
+            CodeDocument.CaretIndex = _textEditor.TextArea.Caret.Offset;
 
             int carletLine = _textEditor.TextArea.Caret.Line;
             ulong version = codeDocument.Version;
@@ -212,7 +212,6 @@ namespace CodeEditor2.Views
             prevVersion = version;
         }
 
-//        public static Dictionary<byte, SolidColorBrush> SolodColorBrushes = new Dictionary<byte, SolidColorBrush>();
 
 
         private void Timer_Tick(object? sender, EventArgs e)
@@ -268,7 +267,7 @@ namespace CodeEditor2.Views
         {
             if(CodeDocument != null)
             {
-                CodeDocument.CarletChanged = null;
+                CodeDocument.CaretChanged = null;
             }
 
             if (textFile == null)
@@ -279,7 +278,7 @@ namespace CodeEditor2.Views
             else
             {
                 CodeDocument = textFile.CodeDocument;
-                CodeDocument.CarletChanged += TextEditor_CodeDocumentCarletChanged;
+                CodeDocument.CaretChanged += TextEditor_CodeDocumentCarletChanged;
                 
                 //                Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
                 //                Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
@@ -431,9 +430,52 @@ namespace CodeEditor2.Views
 
         private void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
+            if(e.Key == Key.Space && e.KeyModifiers == KeyModifiers.Shift)
+            {
+                var _ = launchToolMenu();
+            }
 //            checkAutoComplete(e);
 //            throw new NotImplementedException();
         }
+
+        // tool selection form /////////////////////////////////////////////////////////////////////////
+
+        Views.SmartMenuWindow smartMenu = new SmartMenuWindow();
+        private async Task launchToolMenu()
+        {
+            List<ToolItem> tools = TextFile.GetToolItems(CodeDocument.CaretIndex);
+
+            var carletRect = _textEditor.TextArea.Caret.CalculateCaretRectangle();
+            TransformedBounds bound = (TransformedBounds)Global.codeView.Editor.GetTransformedBounds();
+
+            smartMenu.Topmost = true;
+            smartMenu.Position = new Avalonia.PixelPoint(
+                Global.mainWindow.Position.X + (int)((bound.Clip.Position.X + carletRect.Position.X) * Global.mainWindow.DesktopScaling),
+                Global.mainWindow.Position.Y + (int)((bound.Clip.Position.Y + carletRect.Position.Y) * Global.mainWindow.DesktopScaling)
+                );
+
+            await smartMenu.ShowDialog(Global.mainWindow);
+
+        }
+
+        private void openToolSelectionForm()
+        {
+            //List<ajkControls.SelectionForm.SelectionItem> items = new List<ajkControls.SelectionForm.SelectionItem>();
+            //foreach (ToolItem item in tools) { items.Add(item); }
+
+            //items.Add(new Snippets.ToLower());
+            //items.Add(new Snippets.ToUpper());
+
+            //toolSelectionForm.SetSelectionItems(items);
+            //toolSelectionForm.Font = codeTextbox.Font;
+
+            //Point screenPosition = PointToScreen(codeTextbox.GetCaretTopPoint());
+            //Controller.ShowForm(toolSelectionForm, screenPosition);
+        }
+
+
+
+
 
         private void textEditor_TextArea_TextEntering(object sender, TextInputEventArgs e)
         {
@@ -470,12 +512,6 @@ namespace CodeEditor2.Views
         {
             int prevIndex = _textEditor.CaretOffset;
 
-            //int prevIndex = CodeDocument.CaretIndex;
-
-            //if (CodeDocument.GetLineStartIndex(CodeDocument.GetLineAt(prevIndex)) != prevIndex && prevIndex != 0)
-            //{
-            //    prevIndex--;
-            //}
             if (prevIndex != 0)
             {
                 prevIndex--;
@@ -504,10 +540,14 @@ namespace CodeEditor2.Views
                     var data = _completionWindow.CompletionList.CompletionData;
                     foreach (AutocompleteItem item in items)
                     {
+                        item.Clean();
+                    }
+                    _completionWindow.Show();
+                    foreach (AutocompleteItem item in items)
+                    {
                         item.Assign(CodeDocument);
                         data.Add(item);
                     }
-                    _completionWindow.Show();
                     _completionWindow.StartOffset = prevIndex;
                 }
             }
@@ -533,10 +573,16 @@ namespace CodeEditor2.Views
                 _completionWindow = new AutoCompleteWindow(_textEditor.TextArea);
                 _completionWindow.Closed += (o, args) => _completionWindow = null;
                 var data = _completionWindow.CompletionList.CompletionData;
-                foreach (AutocompleteItem item in items)
-                {
-                    data.Add(item);
-                }
+                int machedCount = 0;
+                //foreach (AutocompleteItem item in items)
+                //{
+                //    data.Add(item);
+                //    if (item.Text.StartsWith(cantidateWord)) machedCount++;
+                //}
+                //if(machedCount != 0)
+                //{
+                //    _completionWindow.Show();
+                //}
                 _completionWindow.Show();
                 //openAutoComplete();
                 //autoCompleteForm.SetAutocompleteItems(items);

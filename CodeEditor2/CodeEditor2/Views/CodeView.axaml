@@ -8,7 +8,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="CodeEditor2.Views.CodeView">
 	<TabControl Margin="1">
-		<TabItem Header="Code"  FontSize="12">
+		<TabItem Header="Code"  FontSize="12" Name="EditorTabItem">
 			<AvalonEdit:TextEditor Name="Editor"
 								FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
 								HorizontalScrollBarVisibility="Auto"
