@@ -15,13 +15,18 @@
 								VerticalScrollBarVisibility="Visible"
 								FontWeight="Light"
 								FontSize="10"
- 							    ToolTip.Tip="AAA"
-							    ToolTip.Placement="Pointer"
-							    ToolTip.ShowDelay="0"
+								ToolTip.Tip="AAA"
+								ToolTip.Placement="Pointer"
+								ToolTip.ShowDelay="0"
 							>
 			<ToolTip.Tip>
 				<ajkctrl:ColorLabelControl FontSize="10" Name="PopupColorLabel"></ajkctrl:ColorLabelControl>
 			</ToolTip.Tip>
+			<FlyoutBase.AttachedFlyout>
+				<views:PopupMenuFlyout Placement="AnchorAndGravity">
+					<views:PopupMenuView Name="PopupMenu" Margin="0" Padding="0"/>
+				</views:PopupMenuFlyout>
+			</FlyoutBase.AttachedFlyout>
 			</AvalonEdit:TextEditor>
 		</TabItem>
 	</TabControl>

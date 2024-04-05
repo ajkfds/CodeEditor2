@@ -334,6 +334,7 @@ namespace CodeEditor2.CodeEditor
         /////////////////////////////////////////
 
         int selectionStart;
+        public Action<CodeDocument>? SelectionStartChanged = null;
         public int SelectionStart
         {
             get
@@ -343,10 +344,12 @@ namespace CodeEditor2.CodeEditor
             set
             {
                 selectionStart = value;
+                if (SelectionStartChanged != null) SelectionStartChanged(this);
             }
         }
 
         int selectionLast;
+        public Action<CodeDocument>? SelectionLastChanged = null;
         public int SelectionLast
         {
             get
@@ -356,10 +359,12 @@ namespace CodeEditor2.CodeEditor
             set
             {
                 selectionLast = value;
+                if (SelectionLastChanged != null) SelectionLastChanged(this);
             }
         }
 
         int caretIndex;
+        public Action<CodeDocument>? CaretChanged = null;
         public int CaretIndex
         {
             get
@@ -372,12 +377,7 @@ namespace CodeEditor2.CodeEditor
                 if (CaretChanged != null) CaretChanged(this);
             }
         }
-        internal void setCarletPosition(int carletIndex)
-        {
-            this.caretIndex = caretIndex;
-        }
 
-        public Action<CodeDocument>? CaretChanged  = null;
 
 
         public char GetCharAt(int index)

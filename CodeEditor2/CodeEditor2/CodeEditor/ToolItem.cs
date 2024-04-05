@@ -6,14 +6,11 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor
 {
-    public class ToolItem
+    public class ToolItem : PopupMenuItem
     {
-        public ToolItem(string text)
+        public ToolItem(string text) : base(text)
         {
-            this.text = text;
         }
-
-        private string text;
 
         public virtual void Apply(CodeDocument codeDocument)
         {

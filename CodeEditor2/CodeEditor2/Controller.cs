@@ -123,20 +123,19 @@ namespace CodeEditor2
                 }
             }
 
-            //public static void ForceOpenCustomSelection(EventHandler applySelection, List<CodeEditor2.CodeEditor.ToolItem> cantidates)
-            //{
-            //    Global.mainForm.editorPage.CodeEditor.OpenCustomSelection(cantidates);
-            //}
+            public static void ForceOpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> cantidates)
+            {
+                Global.codeView.OpenCustomSelection(cantidates);
+            }
 
-            //public static void ForceOpenAutoComplete(List<CodeEditor2.CodeEditor.AutocompleteItem> autocompleteItems)
-            //{
-            //    Global.mainForm.editorPage.CodeEditor.ForceOpenAutoComplete(autocompleteItems);
-            //}
+            public static void ForceOpenAutoComplete(List<CodeEditor2.CodeEditor.AutocompleteItem> autocompleteItems)
+            {
+                Global.codeView.ForceOpenAutoComplete(autocompleteItems);
+            }
 
             public static void RequestReparse()
             {
                 Global.codeView.RequestReparse();
-//                Global.mainForm.editorPage.CodeEditor.RequestReparse();
             }
 
             public static Data.ITextFile GetTextFile()
@@ -144,45 +143,45 @@ namespace CodeEditor2
                 return Global.codeView.TextFile;
             }
 
-            //internal static void startInteractiveSnippet(Snippets.InteractiveSnippet interactiveSnippet)
-            //{
-            //    Global.mainForm.editorPage.CodeEditor.StartInteractiveSnippet(interactiveSnippet);
-            //}
+            internal static void StartInteractiveSnippet(Snippets.InteractiveSnippet interactiveSnippet)
+            {
+                Global.codeView.StartInteractiveSnippet(interactiveSnippet);
+            }
 
-            //public static void AbortInteractiveSnippet()
-            //{
-            //    Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
-            //}
+            public static void AbortInteractiveSnippet()
+            {
+                Global.codeView.AbortInteractiveSnippet();
+            }
 
-            //public static void AppendHighlight(int highlightStart, int highlightLast)
-            //{
-            //    Global.mainForm.editorPage.CodeEditor.codeTextbox.AppendHighlight(highlightStart, highlightLast);
-            //}
+            public static void AppendHighlight(int highlightStart, int highlightLast)
+            {
+                Global.codeView.Highlighter.AppendHighlight(highlightStart, highlightLast);
+            }
 
-            //public static void GetHighlightPosition(int highlightIndex, out int highlightStart, out int highlightLast)
-            //{
-            //    Global.mainForm.editorPage.CodeEditor.codeTextbox.GetHighlightPosition(highlightIndex, out highlightStart, out highlightLast);
-            //}
+            public static void GetHighlightPosition(int highlightIndex, out int highlightStart, out int highlightLast)
+            {
+                Global.codeView.Highlighter.GetHighlightPosition(highlightIndex, out highlightStart, out highlightLast);
+            }
 
 
-            //public static void SelectHighlight(int highLightIndex)
-            //{
-            //    Global.mainForm.editorPage.CodeEditor.codeTextbox.SelectHighlight(highLightIndex);
-            //}
+            public static void SelectHighlight(int highLightIndex)
+            {
+                Global.codeView.Highlighter.SelectHighlight(highLightIndex);
+            }
 
-            //public static int GetHighlightIndex(int index)
-            //{
-            //    return Global.mainForm.editorPage.CodeEditor.codeTextbox.GetHighlightIndex(index);
-            //}
+            public static int GetHighlightIndex(int index)
+            {
+                return Global.codeView.Highlighter.GetHighlightIndex(index);
+            }
 
-            //public static void ClearHighlight()
-            //{
-            //    Global.mainForm.editorPage.CodeEditor.codeTextbox.ClearHighlight();
-            //}
-            //public static void Refresh()
-            //{
-            //    Global.mainForm.Controller_RefreshCodeEditor();
-            //}
+            public static void ClearHighlight()
+            {
+                Global.codeView.Highlighter.ClearHighlight();
+            }
+            public static void Refresh()
+            {
+                Global.codeView.Redraw();
+            }
 
             public static void ScrollToCaret()
             {
