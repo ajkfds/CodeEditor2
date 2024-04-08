@@ -219,15 +219,15 @@ namespace CodeEditor2.Data
         }
 
 
-        //public virtual void BeforeKeyDown(KeyEventArgs e)
-        //{
+        public virtual void TextEntered(TextInputEventArgs e)
+        {
 
-        //}
+        }
 
-        //public virtual void AfterKeyDown(System.Windows.Forms.KeyEventArgs e)
-        //{
+        public virtual void TextEntering(TextInputEventArgs e)
+        {
 
-        //}
+        }
 
         //public virtual void BeforeKeyPressed(KeyPressEventArgs e)
         //{

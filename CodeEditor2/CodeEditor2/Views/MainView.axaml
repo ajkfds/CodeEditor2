@@ -5,7 +5,7 @@
              xmlns:vm="clr-namespace:CodeEditor2.ViewModels;assembly=CodeEditor2"
              xmlns:views="clr-namespace:CodeEditor2.Views;assembly=CodeEditor2"
              xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Contorls;assembly=AjkAvaloniaLibs"
-             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="450"
              x:Class="CodeEditor2.Views.MainView"
              x:DataType="vm:MainViewModel">
   <Design.DataContext>
@@ -48,8 +48,16 @@
 				<GridSplitter Grid.Column="1" ResizeDirection="Columns"/>
 
 				<!-- Code View -->
-				<views:CodeView Grid.Column="2" Name="CodeView"/>
+				<TabControl Margin="1" Grid.Column="2">
+					<TabItem Header="Code"  FontSize="12" Name="EditorTabItem">
+						<views:CodeView Grid.Column="2" Name="CodeView"/>
+					</TabItem>
+					<TabItem Header="Shell"  FontSize="12" Name="ShellTabItem">
+						<views:ShellPanelView></views:ShellPanelView>
+					</TabItem>
+				</TabControl>
 				
+
 				<GridSplitter Grid.Column="3" ResizeDirection="Columns"/>
 
 				<!-- Info View -->

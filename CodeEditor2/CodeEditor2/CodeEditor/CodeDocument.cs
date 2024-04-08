@@ -418,7 +418,7 @@ namespace CodeEditor2.CodeEditor
             if (TextDocument == null) return;
             DocumentLine line = TextDocument.GetLineByOffset(index);
             LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
-            Color color = Global.DefaultDrawStyle.MarkColor[value];
+            Color color = TextFile.DrawStyle.MarkColor[value];
             lineInfo.Effects.Add(new LineInfomation.Effect(index, 1, color, null));
         }
 
@@ -428,7 +428,7 @@ namespace CodeEditor2.CodeEditor
             if (TextDocument == null) return;
             DocumentLine line = TextDocument.GetLineByOffset(index);
             LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
-            Color color = Global.DefaultDrawStyle.MarkColor[value];
+            Color color = TextFile.DrawStyle.MarkColor[value];
             lineInfo.Effects.Add(new LineInfomation.Effect(index, length, color, null));
         }
 
@@ -459,7 +459,7 @@ namespace CodeEditor2.CodeEditor
             if (TextDocument == null) return;
             DocumentLine line = TextDocument.GetLineByOffset(index);
             LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
-            Color color = Global.DefaultDrawStyle.ColorPallet[value];
+            Color color = TextFile.DrawStyle.ColorPallet[value];
             lineInfo.Colors.Add(new LineInfomation.Color(index, 1, color));
         }
 
@@ -469,7 +469,7 @@ namespace CodeEditor2.CodeEditor
 
             DocumentLine lineStart = TextDocument.GetLineByOffset(index);
             DocumentLine lineLast = TextDocument.GetLineByOffset(index + index);
-            Color color = Global.DefaultDrawStyle.ColorPallet[value];
+            Color color = TextFile.DrawStyle.ColorPallet[value];
 
             if (lineStart == lineLast)
             {

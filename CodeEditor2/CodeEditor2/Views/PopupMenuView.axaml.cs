@@ -43,7 +43,7 @@ namespace CodeEditor2.Views
             if (TextBox0.Text == null) return;
             string targetText = TextBox0.Text.ToLower();
 
-            foreach (PopupMenuItem item in Global.codeView.PopupMenuItems)
+            foreach (PopupMenuItem item in Global.codeView.codeViewPopupMenu.PopupMenuItems)
             {
                 if (item.Text == null) continue;
                 if(targetText == "")
@@ -99,7 +99,7 @@ namespace CodeEditor2.Views
             TextBox0.Text = "";
             ListBox0.Items.Clear();
 
-            foreach(PopupMenuItem item in Global.codeView.PopupMenuItems)
+            foreach(PopupMenuItem item in Global.codeView.codeViewPopupMenu.PopupMenuItems)
             {
                 ListBox0.Items.Add(item);
             }

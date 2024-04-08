@@ -3,7 +3,6 @@ using Avalonia.Threading;
 using CodeEditor2.CodeEditor;
 using CodeEditor2.Data;
 using CodeEditor2.NavigatePanel;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;

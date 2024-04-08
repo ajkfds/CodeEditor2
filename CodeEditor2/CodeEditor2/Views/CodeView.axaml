@@ -7,27 +7,23 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="CodeEditor2.Views.CodeView">
-	<TabControl Margin="1">
-		<TabItem Header="Code"  FontSize="12" Name="EditorTabItem">
-			<AvalonEdit:TextEditor Name="Editor"
-								FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
-								HorizontalScrollBarVisibility="Auto"
-								VerticalScrollBarVisibility="Visible"
-								FontWeight="Light"
-								FontSize="10"
-								ToolTip.Tip="AAA"
-								ToolTip.Placement="Pointer"
-								ToolTip.ShowDelay="0"
-							>
-			<ToolTip.Tip>
-				<ajkctrl:ColorLabelControl FontSize="10" Name="PopupColorLabel"></ajkctrl:ColorLabelControl>
-			</ToolTip.Tip>
-			<FlyoutBase.AttachedFlyout>
-				<views:PopupMenuFlyout Placement="AnchorAndGravity">
-					<views:PopupMenuView Name="PopupMenu" Margin="0" Padding="0"/>
-				</views:PopupMenuFlyout>
-			</FlyoutBase.AttachedFlyout>
-			</AvalonEdit:TextEditor>
-		</TabItem>
-	</TabControl>
+		<AvalonEdit:TextEditor Name="Editor"
+							FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
+							HorizontalScrollBarVisibility="Auto"
+							VerticalScrollBarVisibility="Visible"
+							FontWeight="Light"
+							FontSize="10"
+							ToolTip.Tip="AAA"
+							ToolTip.Placement="Pointer"
+							ToolTip.ShowDelay="0"
+						>
+		<ToolTip.Tip>
+			<ajkctrl:ColorLabelControl FontSize="10" Name="PopupColorLabel"></ajkctrl:ColorLabelControl>
+		</ToolTip.Tip>
+		<FlyoutBase.AttachedFlyout>
+			<views:PopupMenuFlyout Placement="AnchorAndGravity">
+				<views:PopupMenuView Name="PopupMenu" Margin="0" Padding="0"/>
+			</views:PopupMenuFlyout>
+		</FlyoutBase.AttachedFlyout>
+		</AvalonEdit:TextEditor>
 </UserControl>

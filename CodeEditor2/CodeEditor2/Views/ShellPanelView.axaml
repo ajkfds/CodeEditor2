@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+             x:Class="CodeEditor2.Views.ShellPanelView">
+	<ListBox Name="ListBox0" FontSize="8" FontFamily="Consolas">
+		<ListBox.Styles>
+			<Style Selector="ListBoxItem">
+				<Setter Property="Height" Value="16"/>
+				<Setter Property="MinHeight" Value="12"/>
+				<Setter Property="FontSize" Value="8"/>
+				<Setter Property="Margin" Value="0 0 0 0"/>
+			</Style>
+		</ListBox.Styles>
+	</ListBox>
+</UserControl>

@@ -41,13 +41,11 @@ namespace CodeEditor2.Views
         internal readonly TextEditor _textEditor;
         private FoldingManager _foldingManager;
         private readonly TextMate.Installation _textMateInstallation;
-        private AutoCompleteWindow _completionWindow;
+        internal AutoCompleteWindow _completionWindow;
 
         private OverloadInsightWindow _insightWindow;
         private TextMateSharp.Grammars.RegistryOptions _registryOptions;
         private int _currentTheme = (int)ThemeName.DarkPlus;
-
-        private BackroungParser backGroundParser = new BackroungParser();
 
 
         public CodeView()
@@ -57,7 +55,10 @@ namespace CodeEditor2.Views
             Global.codeView = this;
 
             codeViewPopup = new CodeViewPopup(this);
+            codeViewParser = new CodeViewParser(this);
             Highlighter = new Highlighter(this);
+            codeViewPopupMenu = new CodeViewPopupMenu(this);
+            codeViewAutoComplete = new CodeViewAutoComplete(this);
 
             _textEditor = Editor;
             _textEditor.HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Visible;
@@ -95,7 +96,6 @@ namespace CodeEditor2.Views
             _textEditor.TextArea.IndentationStrategy = new AvaloniaEdit.Indentation.CSharp.CSharpIndentationStrategy(_textEditor.Options);
             _textEditor.TextArea.Caret.PositionChanged += Caret_PositionChanged;
             _textEditor.TextArea.SelectionChanged += TextArea_SelectionChanged;
-//            _textEditor.TextArea.Caret.PositionChanged += Caret_PositionChanged;
             _textEditor.TextArea.RightClickMovesCaret = true;
 
             PopupMenu.Selected += PopupMenu_Selected;
@@ -132,9 +132,6 @@ namespace CodeEditor2.Views
                 else _textEditor.FontSize = _textEditor.FontSize > 1 ? _textEditor.FontSize - 1 : 1;
             }, RoutingStrategies.Bubble, true);
 
-            backGroundParser.Run();
-
-
             DispatcherTimer timer = new DispatcherTimer();
             timer.Interval = new TimeSpan(0, 0, 0, 0, 10);
             timer.Tick += Timer_Tick;
@@ -143,63 +140,21 @@ namespace CodeEditor2.Views
 
 
         internal CodeViewPopup codeViewPopup;
+        internal CodeViewParser codeViewParser;
+        internal CodeViewPopupMenu codeViewPopupMenu;
+        internal CodeViewAutoComplete codeViewAutoComplete;
+        public Highlighter Highlighter;
 
         private void TextArea_KeyUp(object? sender, KeyEventArgs e)
         {
         }
 
-        public Highlighter Highlighter;
-
-        #region Infomation Popup
-
-        private int popupInex = -1;
         private void TextArea_PointerMoved(object? sender, PointerEventArgs e)
         {
             codeViewPopup.TextArea_PointerMoved(sender, e);
-
-            //if (codeDocument == null || TextFile == null) return;
-            //Avalonia.Point point = e.GetPosition(_textEditor.TextArea);
-            //var pos = _textEditor.GetPositionFromPoint(point);
-            //if (pos == null) return;
-
-            //TextViewPosition tpos = (TextViewPosition)pos;
-            //int index = codeDocument.TextDocument.GetOffset(tpos.Line, tpos.Column);
-
-            //int headIndex, length;
-            //CodeDocument.GetWord(index, out headIndex, out length);
-
-            //if (popupInex == headIndex) return;
-            //popupInex = headIndex;
-
-            //PopupItem pitem = TextFile.GetPopupItem(CodeDocument.Version, index);
-            //if (pitem == null)
-            //{
-            //    ToolTip.SetIsOpen(Editor, false);
-            //    return;
-            //}
-            //ToolTip.SetIsOpen(Editor, false);
-            //if (pitem.GetItems().Count != 0)
-            //{
-            //    ToolTip.SetIsOpen(Editor, true);
-            //}
         }
 
-        #endregion
 
-
-        #region parse
-
-        // Called from CodeCdedocuent
-        private void CodeDocument_CarletChanged(CodeDocument codeDocument)
-        {
-            if (CodeDocument != codeDocument) return;
-
-            // changed by CodeDocument Code
-            if (_textEditor.CaretOffset == codeDocument.CaretIndex) return;
-            _textEditor.CaretOffset = codeDocument.CaretIndex;
-
-            //            _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, CodeDocument.SelectionStart, CodeDocument.SelectionLast);
-        }
 
         /// <summary>
         /// Called from textEditor
@@ -217,12 +172,11 @@ namespace CodeEditor2.Views
             //Debug.Print("version "+version.ToString()+"  carletLine"+carletLine.ToString());
             if (prevVersion != version && carletLine != prevCarletLine)
             {
-                entryParse();
+                codeViewParser.EntryParse();
             }
             prevCarletLine = carletLine;
             //            prevVersion = version;
         }
-
 
         private void TextArea_SelectionChanged(object? sender, EventArgs e)
         {
@@ -236,6 +190,17 @@ namespace CodeEditor2.Views
                 CodeDocument.SelectionLast = offset;
             }
         }
+
+        // Called from CodeCdedocuent. Update CodeDocument Index change to textEditor
+        private void CodeDocument_CarletChanged(CodeDocument codeDocument)
+        {
+            if (CodeDocument != codeDocument) return;
+
+            // changed by CodeDocument Code
+            if (_textEditor.CaretOffset == codeDocument.CaretIndex) return;
+            _textEditor.CaretOffset = codeDocument.CaretIndex;
+        }
+
         private void CodeDocument_SelectionStartChanged(CodeDocument codeDocument)
         {
             if (CodeDocument != codeDocument) return;
@@ -254,57 +219,14 @@ namespace CodeEditor2.Views
 
         private void Timer_Tick(object? sender, EventArgs e)
         {
-            DocumentParser parser = backGroundParser.GetResult();
-            if (parser == null) return;
-            if (parser.ParsedDocument == null) return;
-            //if (TextFile == null) return;
-            //if (TextFile != parser.TextFile)
-            //{   // return not current file
-            //    return;
-            //}
-
-            Data.TextFile textFile = parser.TextFile;
-            CodeDocument codeDocument = textFile.CodeDocument;
-
-            if (textFile == null || textFile == null)
-            {
-                parser.Dispose();
-                return;
-            }
-
-            Controller.AppendLog("complete edit parse ID :" + parser.TextFile.ID);
-            if (codeDocument.Version != parser.ParsedDocument.Version)
-            {
-                Controller.AppendLog("edit parsed mismatch " + DateTime.Now.ToString() + "ver" + codeDocument.Version + "<-" + parser.ParsedDocument.Version);
-                parser.Dispose();
-                return;
-            }
-
-            //            CodeDocument.CopyFrom(parser.Document);
-            codeDocument.CopyColorMarkFrom(parser.Document);
-
-            if (parser.ParsedDocument != null)
-            {
-                parser.TextFile.AcceptParsedDocument(parser.ParsedDocument);
-            }
-
-            // update current view
-            _textEditor.TextArea.TextView.Redraw();
-            Controller.MessageView.Update(TextFile.ParsedDocument);
+            codeViewParser.Timer_Tick(sender, e);
         }
-
-        #endregion
-
-
-
-
 
 
         public void Redraw()
         {
             _textEditor.TextArea.TextView.Redraw();
         }
-
 
         public void SetTextFile(Data.TextFile textFile)
         {
@@ -364,8 +286,7 @@ namespace CodeEditor2.Views
             ScrollToCaret();
             if (textFile != null) Controller.MessageView.Update(textFile.ParsedDocument);
 
-            entryParse();
-
+            codeViewParser.EntryParse();
         }
 
 
@@ -405,72 +326,12 @@ namespace CodeEditor2.Views
         }
 
 
-        class CodeDocumentColorTransformer : DocumentColorizingTransformer
-        {
-            protected override void ColorizeLine(DocumentLine line)
-            {
-                
-                if (Global.mainView.CodeView.CodeDocument == null) return;
-
-                CodeDocument codeDocument = Global.mainView.CodeView.CodeDocument;
-                if (!codeDocument.LineInfomations.ContainsKey(line.LineNumber)) return;
-                CodeEditor.LineInfomation lineInfo = codeDocument.LineInfomations[line.LineNumber];
-
-                foreach (var color in lineInfo.Colors)
-                {
-                    if (line.Offset > color.Offset | color.Offset + color.Length > line.EndOffset) continue;
-                    ChangeLinePart(
-                        color.Offset,
-                        color.Offset + color.Length,
-                        visualLine =>
-                        {
-                            visualLine.TextRunProperties.SetForegroundBrush(new SolidColorBrush(color.DrawColor));
-                        }
-                    );
-                }
-
-                foreach (var effect in lineInfo.Effects)
-                {
-                    if (line.Offset > effect.Offset | effect.Offset + effect.Length > line.EndOffset) continue;
-                    ChangeLinePart(
-                        effect.Offset,
-                        effect.Offset + effect.Length,
-                        visualLine =>
-                        {
-                            if (visualLine.TextRunProperties.TextDecorations == null)
-                            {
-                                visualLine.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
-                            }
-
-                            TextDecoration underline = TextDecorations.Underline[0];
-                            underline.StrokeThickness = 2;
-                            underline.StrokeThicknessUnit = TextDecorationUnit.Pixel;
-                            underline.StrokeOffset = 2;
-                            underline.StrokeOffsetUnit = TextDecorationUnit.Pixel;
-                            underline.Stroke = new SolidColorBrush(effect.DrawColor);
-                            var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { underline };
-
-                            visualLine.TextRunProperties.SetTextDecorations(textDecorations);
-                        }
-                    );
-                }
-            }
-
-        }
 
         // -----------------------------------------------------------
         // Entry Edit Parse
         public void RequestReparse()
         {
-            entryParse();
-        }
-
-        private void entryParse()
-        {
-//            if (Global.StopParse) return;
-            if (TextFile == null) return;
-            Controller.AppendLog("entry edit parse ID :" + TextFile.ID);
-            backGroundParser.EntryParse(TextFile);
+            codeViewParser.EntryParse();
         }
 
         // -----------------------------------------------------------
@@ -480,142 +341,47 @@ namespace CodeEditor2.Views
             if(e.Key == Key.Space && e.KeyModifiers == KeyModifiers.Shift)
             {
                 e.Handled = true;
-                showToolSelectionPopupMenu();
+                codeViewPopupMenu.ShowToolSelectionPopupMenu();
             }
         }
 
         // tool selection form /////////////////////////////////////////////////////////////////////////
 
-        public List<PopupMenuItem> PopupMenuItems = new List<PopupMenuItem>();
+
+
+//        public List<PopupMenuItem> PopupMenuItems = new List<PopupMenuItem>();
 
         public void OpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> cantidates)
         {
-            PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(_textEditor) as PopupMenuFlyout;
-            if (flyout == null) return;
-            if (flyout.IsOpen) return;
-            if (TextFile == null) return;
-
-            if (cantidates.Count == 0)
-            {
-                HidePopupMenu();
-                return;
-            }
-
-            TransformedBounds? tbound = Global.codeView.Editor.GetTransformedBounds();
-            if (tbound == null) return;
-            TransformedBounds transformedBound = (TransformedBounds)tbound;
-            var carletRect = _textEditor.TextArea.Caret.CalculateCaretRectangle();
-
-
-            Avalonia.Point position = transformedBound.Clip.Position;
-
-            Avalonia.PixelPoint screenPosition = new Avalonia.PixelPoint(
-                Global.mainWindow.Position.X + (int)(transformedBound.Clip.Position.X * Global.mainWindow.DesktopScaling),
-                Global.mainWindow.Position.Y + (int)(transformedBound.Clip.Position.Y * Global.mainWindow.DesktopScaling)
-                );
-
-            PopupMenuItems.Clear();
-            foreach (ToolItem item in cantidates) { PopupMenuItems.Add(item); }
-
-            flyout.Placement = PlacementMode.AnchorAndGravity;
-            flyout.VerticalOffset = carletRect.Top;
-            flyout.HorizontalOffset = carletRect.Left;
-            flyout.PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight;
-            flyout.PlacementAnchor = Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.TopLeft;
-
-            flyout.ShowAt(_textEditor); // = FlyoutBase.ShowAttachedFlyout(_textEditor);
+            codeViewPopupMenu.OpenCustomSelection(cantidates);
         }
-
-        private void showToolSelectionPopupMenu()
-        {
-            PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(_textEditor) as PopupMenuFlyout;
-            if (flyout == null) return;
-            if (flyout.IsOpen) return;
-            if (TextFile == null) return;
-
-
-            List<ToolItem> tools = TextFile.GetToolItems(CodeDocument.CaretIndex);
-            //items.Add(new Snippets.ToLower());
-            if (tools == null)
-            {
-                tools = new List<ToolItem>();
-            }
-            tools.Add(new Snippets.ToUpper());
-            tools.Add(new Snippets.ToLower());
-
-            if (tools.Count==0)
-            {
-                HidePopupMenu();
-                return;
-            }
-
-            TransformedBounds? tbound = Global.codeView.Editor.GetTransformedBounds();
-            if (tbound == null) return;
-            TransformedBounds transformedBound = (TransformedBounds)tbound;
-            var carletRect = _textEditor.TextArea.Caret.CalculateCaretRectangle();
-
-
-            Avalonia.Point position = transformedBound.Clip.Position;
-
-            Avalonia.PixelPoint screenPosition = new Avalonia.PixelPoint(
-                Global.mainWindow.Position.X + (int)(transformedBound.Clip.Position.X * Global.mainWindow.DesktopScaling),
-                Global.mainWindow.Position.Y + (int)(transformedBound.Clip.Position.Y * Global.mainWindow.DesktopScaling)
-                );
-
-            PopupMenuItems.Clear();
-            foreach (ToolItem item in tools) { PopupMenuItems.Add(item); }
-
-            flyout.Placement = PlacementMode.AnchorAndGravity;
-            flyout.VerticalOffset = carletRect.Top;
-            flyout.HorizontalOffset = carletRect.Left;
-            flyout.PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight;
-            flyout.PlacementAnchor = Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.TopLeft;
-            
-            flyout.ShowAt(_textEditor); // = FlyoutBase.ShowAttachedFlyout(_textEditor);
-        }
-
-
 
 
         public void HidePopupMenu()
         {
-            PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(_textEditor) as PopupMenuFlyout;
-            if (flyout == null) return;
-            if (!flyout.IsOpen) return;
-            flyout.Hide();
+            codeViewPopupMenu.HidePopupMenu();
         }
 
         public void PopupMenu_Selected(PopupMenuItem popUpMenuItem)
         {
-            if(popUpMenuItem is ToolItem)
-            {
-                (popUpMenuItem as ToolItem)?.Apply(CodeDocument);
-            }
-            else
-            {
-                popUpMenuItem.OnSelected();
-            }
+            codeViewPopupMenu.PopupMenu_Selected(popUpMenuItem);
         }
-
-        Snippets.InteractiveSnippet snippet = null;
 
         public void StartInteractiveSnippet(Snippets.InteractiveSnippet interactiveSnippet)
         {
-            AbortInteractiveSnippet();
-            snippet = interactiveSnippet;
+            codeViewPopupMenu.StartInteractiveSnippet(interactiveSnippet);
         }
 
         public void AbortInteractiveSnippet()
         {
-            if (snippet == null) return;
-            snippet.Aborted();
-            snippet = null;
+            codeViewPopupMenu.AbortInteractiveSnippet();
         }
 
 
 
         private void textEditor_TextArea_TextEntering(object? sender, TextInputEventArgs e)
         {
+
             if (e.Text.Length > 0 && _completionWindow != null)
             {
                 if (!char.IsLetterOrDigit(e.Text[0]))
@@ -628,6 +394,7 @@ namespace CodeEditor2.Views
 
             _insightWindow?.Hide();
 
+            TextFile?.TextEntering(e);
             // Do not set e.Handled=true.
             // We still want to insert the character that was typed.
         }
@@ -637,130 +404,16 @@ namespace CodeEditor2.Views
         {
             if (e.Text == "\n")
             {
-                entryParse();
+                codeViewParser.EntryParse();
                 return;
             }
-            checkAutoComplete();
-        }
-
-        /// <summary>
-        /// update auto complete word text
-        /// </summary>
-        private void checkAutoComplete()
-        {
-            int prevIndex = _textEditor.CaretOffset;
-
-            if (prevIndex != 0)
-            {
-                prevIndex--;
-            }
-            string cantidateWord;
-            List<AutocompleteItem> items = TextFile.GetAutoCompleteItems(_textEditor.CaretOffset, out cantidateWord);
-            System.Diagnostics.Debug.Print("## checkAutoComplete " + cantidateWord + " " + cantidateWord.Length);
-            System.Diagnostics.Debug.Print("## checkAutoCompleteCar _" + TextFile.CodeDocument.GetCharAt(prevIndex) + "_"+ prevIndex.ToString());
-
-            if (_completionWindow != null) return;
-            //if (CodeDocument.SelectionStart == CodeDocument.SelectionLast)
-            {
-
-
-                if (items == null || cantidateWord == null || cantidateWord == "")
-                {
-                    if (_completionWindow != null)
-                    {
-                        _completionWindow.Close();
-                    }
-                }
-                else
-                {
-                    _completionWindow = new CodeEditor2.CodeEditor.AutoCompleteWindow(_textEditor.TextArea);
-                    _completionWindow.Closed += (o, args) => _completionWindow = null;
-                    var data = _completionWindow.CompletionList.CompletionData;
-                    foreach (AutocompleteItem item in items)
-                    {
-                        item.Clean();
-                    }
-                    _completionWindow.Show();
-                    foreach (AutocompleteItem item in items)
-                    {
-                        item.Assign(CodeDocument);
-                        data.Add(item);
-                    }
-                    _completionWindow.StartOffset = prevIndex;
-                }
-            }
+            codeViewAutoComplete.CheckAutoComplete();
+            TextFile?.TextEntered(e);
         }
 
         public void ForceOpenAutoComplete(List<AutocompleteItem> autocompleteItems)
         {
-            int prevIndex = CodeDocument.CaretIndex;
-            if (CodeDocument.GetLineStartIndex(CodeDocument.GetLineAt(prevIndex)) != prevIndex && prevIndex != 0)
-            {
-                prevIndex--;
-            }
-
-            string cantidateWord;
-            List<AutocompleteItem> items = TextFile.GetAutoCompleteItems(CodeDocument.CaretIndex, out cantidateWord);
-            items = autocompleteItems;  // override items
-            if (items == null || cantidateWord == null)
-            {
-                if (_completionWindow != null) _completionWindow.Close();
-            }
-            else
-            {
-                _completionWindow = new AutoCompleteWindow(_textEditor.TextArea);
-                _completionWindow.Closed += (o, args) => _completionWindow = null;
-                var data = _completionWindow.CompletionList.CompletionData;
-                int machedCount = 0;
-                //foreach (AutocompleteItem item in items)
-                //{
-                //    data.Add(item);
-                //    if (item.Text.StartsWith(cantidateWord)) machedCount++;
-                //}
-                //if(machedCount != 0)
-                //{
-                //    _completionWindow.Show();
-                //}
-                _completionWindow.Show();
-            }
-        }
-
-        private class MyOverloadProvider : IOverloadProvider
-        {
-            private readonly IList<(string header, string content)> _items;
-            private int _selectedIndex;
-
-            public MyOverloadProvider(IList<(string header, string content)> items)
-            {
-                _items = items;
-                SelectedIndex = 0;
-            }
-
-            public int SelectedIndex
-            {
-                get => _selectedIndex;
-                set
-                {
-                    _selectedIndex = value;
-                    OnPropertyChanged();
-                    // ReSharper disable ExplicitCallerInfoArgument
-                    OnPropertyChanged(nameof(CurrentHeader));
-                    OnPropertyChanged(nameof(CurrentContent));
-                    // ReSharper restore ExplicitCallerInfoArgument
-                }
-            }
-
-            public int Count => _items.Count;
-            public string CurrentIndexText => $"{SelectedIndex + 1} of {Count}";
-            public object CurrentHeader => _items[SelectedIndex].header;
-            public object CurrentContent => _items[SelectedIndex].content;
-
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
+            codeViewAutoComplete.ForceOpenAutoComplete(autocompleteItems);
         }
 
 
