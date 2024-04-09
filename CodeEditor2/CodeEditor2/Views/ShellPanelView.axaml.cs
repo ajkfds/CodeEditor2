@@ -2,6 +2,7 @@ using AjkAvaloniaLibs.Contorls;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using CodeEditor2.NavigatePanel;
@@ -21,28 +22,17 @@ namespace CodeEditor2.Views
 
             {
                 inputBox = new TextBox();
-                inputBox.FontSize = 8;
+                inputBox.FontSize = 11;
                 inputBox.Margin = new Avalonia.Thickness(0, 0, 0, 0);
                 inputBox.Padding = new Avalonia.Thickness(0, 0, 0, 0);
                 inputBox.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-                inputBox.Height = 12;
-                inputBox.MinHeight = 14;
+                inputBox.Height = 11;
+                inputBox.MinHeight = 11;
 
                 ListBoxItem item = new ListBoxItem();
                 item.Content = inputBox;
                 listItems.Add(item);
             }
-
-            {
-                var textBlock = new TextBlock();
-                textBlock.Text = "AAA";
-                textBlock.FontSize = 8;
-                ListBoxItem item = new ListBoxItem();
-                item.Content = textBlock;
-                listItems.Add(item);
-            }
-
-
 
             ListBox0.ItemsSource = listItems;
 
@@ -73,6 +63,7 @@ namespace CodeEditor2.Views
         {
             if(e.Key == Avalonia.Input.Key.Return)
             {
+                appendLog(inputBox.Text, Colors.Green);
                 shell.Execute(inputBox.Text);
                 inputBox.Text = "";
             }
@@ -82,14 +73,23 @@ namespace CodeEditor2.Views
         Shells.Shell shell;
         private void Shell_LineReceived(string lineString)
         {
+            appendLog(lineString,null);
+        }
+
+        private void appendLog(string lineString,Color? color)
+        {
             Dispatcher.UIThread.Post(
                     new Action(() =>
                     {
                         TextBlock textBlock = new TextBlock();
                         textBlock.Text = lineString;
-                        textBlock.FontSize = 8;
-                        textBlock.Height = 12;
-                        textBlock.MinHeight = 12;
+                        textBlock.FontSize = 10;
+                        textBlock.Height = 11;
+                        textBlock.MinHeight = 11;
+                        if(color != null)
+                        {
+                            textBlock.Foreground = new SolidColorBrush((Color)color);
+                        }
                         textBlock.Margin = new Avalonia.Thickness(0, 0, 0, 0);
                         lock (listItems)
                         {
@@ -98,7 +98,7 @@ namespace CodeEditor2.Views
                             int i = listItems.Count - 2;
                             if (i < 0) i = 0;
                             listItems.Insert(i, item);
-                            if (listItems.Count > 100)
+                            if (listItems.Count > 1000)
                             {
                                 ListBoxItem? removeItem = listItems[0] as ListBoxItem;
                                 if (removeItem == null) return;
