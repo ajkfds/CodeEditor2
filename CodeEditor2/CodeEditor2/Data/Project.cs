@@ -15,9 +15,9 @@ namespace CodeEditor2.Data
         {
             Project project = new Project();
             project.RootPath = rootPath;
-            if (project.RootPath.Contains('\\'))
+            if (project.RootPath.Contains(Path.DirectorySeparatorChar))
             {
-                project.Name = project.RootPath.Substring(project.RootPath.LastIndexOf('\\') + 1);
+                project.Name = project.RootPath.Substring(project.RootPath.LastIndexOf(Path.DirectorySeparatorChar) + 1);
             }
             else
             {
@@ -118,7 +118,7 @@ namespace CodeEditor2.Data
         public string GetAbsolutePath(string relativaPath)
         {
             string basePath = RootPath;
-            if (!basePath.EndsWith(@"\")) basePath += @"\";
+            if (!basePath.EndsWith(Path.DirectorySeparatorChar)) basePath += Path.DirectorySeparatorChar;
             string filePath = relativaPath;
 
             basePath = basePath.Replace("%", "%25");
@@ -135,13 +135,13 @@ namespace CodeEditor2.Data
         public string GetRelativePath(string fullPath)
         {
             string basePath = RootPath;
-            if (!basePath.EndsWith(@"\")) basePath += @"\";
+            if (!basePath.EndsWith(Path.DirectorySeparatorChar)) basePath += Path.DirectorySeparatorChar;
             Uri u1 = new Uri(basePath);
             Uri u2 = new Uri(fullPath);
             Uri relativeUri = u1.MakeRelativeUri(u2);
             string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
 
-            relativePath = relativePath.Replace('/', '\\');
+            relativePath = relativePath.Replace('/', System.IO.Path.DirectorySeparatorChar);
             return relativePath;
         }
 

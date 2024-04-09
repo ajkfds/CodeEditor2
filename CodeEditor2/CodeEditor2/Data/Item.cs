@@ -132,9 +132,9 @@ namespace CodeEditor2.Data
             // hier search to get a item
             if (Name == relativePath) return this;
 
-            if (relativePath.Contains(@"\"))
+            if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
             {
-                string folderName = relativePath.Substring(0, relativePath.IndexOf(@"\"));
+                string folderName = relativePath.Substring(0, relativePath.IndexOf(System.IO.Path.DirectorySeparatorChar));
                 if (items.ContainsKey(folderName))
                 {
                     return items[folderName].GetItem(relativePath.Substring(folderName.Length + 1));

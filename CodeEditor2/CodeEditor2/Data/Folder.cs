@@ -17,9 +17,9 @@ namespace CodeEditor2.Data
             folder.Project = project;
             folder.RelativePath = relativePath;
 
-            if (relativePath.Contains('\\'))
+            if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
             {
-                folder.Name = relativePath.Substring(relativePath.LastIndexOf('\\') + 1);
+                folder.Name = relativePath.Substring(relativePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
             }
             else
             {
@@ -34,7 +34,7 @@ namespace CodeEditor2.Data
 
         public File SearchFile(string relativePath)
         {
-            string[] pathList = relativePath.Split(new char[] { '\\' });
+            string[] pathList = relativePath.Split(new char[] { System.IO.Path.DirectorySeparatorChar });
             if (pathList.Length == 0) return null;
 
             foreach (Item item in items.Values)
@@ -93,9 +93,9 @@ namespace CodeEditor2.Data
             {
                 string relativePath = Project.GetRelativePath(absoluteFilePath);
                 string name;
-                if (relativePath.Contains('\\'))
+                if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
                 {
-                    name = relativePath.Substring(relativePath.LastIndexOf('\\') + 1);
+                    name = relativePath.Substring(relativePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
                 }
                 else
                 {
@@ -127,7 +127,7 @@ namespace CodeEditor2.Data
             {
                 // skip invisiable folder
                 string body = absoluteFolderPath;
-                if (body.Contains('\\')) body = body.Substring(body.LastIndexOf('\\') + 1);
+                if (body.Contains(System.IO.Path.DirectorySeparatorChar)) body = body.Substring(body.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
                 if (body.StartsWith(".")) continue;
 
                 if (!items.ContainsKey(body))
