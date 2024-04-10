@@ -35,17 +35,19 @@ namespace CodeEditor2
 
         public static bool Abort = false;
 
+        public static int count = 0;
         public static void LockParse()
         {
             lockName = System.Threading.Thread.CurrentThread.Name;
-            System.Diagnostics.Debug.Print("loacked by "+lockName);
-            parseSemaphore.Wait();
+            System.Diagnostics.Debug.Print(count.ToString()+ " Parse locked by "+lockName+",count"+ parseSemaphore.CurrentCount.ToString());
+            count++;
+//            parseSemaphore.Wait();
         }
         public static void ReleaseParseLock()
         {
-            System.Diagnostics.Debug.Print("released");
+            System.Diagnostics.Debug.Print("Parse released");
             lockName = "";
-            parseSemaphore.Release();
+            //parseSemaphore.Release();
         }
         private static string lockName = "";
         private static SemaphoreSlim parseSemaphore = new SemaphoreSlim(1, 1);

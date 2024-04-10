@@ -21,6 +21,9 @@ namespace CodeEditor2.Tools
 
         public static async Task Run(NavigatePanel.NavigatePanelNode rootNode)
         {
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+            System.Diagnostics.Debug.Print("parse hier sw " + sw.ElapsedMilliseconds.ToString());
 
             Dispatcher.UIThread.Post(() => {
                 Global.ProgressWindow.Title = "Reparse " + rootNode.Text;
@@ -31,12 +34,14 @@ namespace CodeEditor2.Tools
             {
                 Global.LockParse();
 
-                parseHier(rootNode.Item);
+                await parseHier(rootNode.Item);
 
                 Global.ReleaseParseLock();
             }
+            System.Diagnostics.Debug.Print("parse hier sw2 " + sw.ElapsedMilliseconds.ToString());
             rootNode.Update();
 
+            System.Diagnostics.Debug.Print("parse hier sw3 " + sw.ElapsedMilliseconds.ToString());
 
 
             Dispatcher.UIThread.Post(() => {
@@ -44,7 +49,7 @@ namespace CodeEditor2.Tools
             });
         }
 
-        private static void parseHier(Data.Item item)
+        private static async Task parseHier(Data.Item item)
         {
             if (item == null) return;
             Data.ITextFile textFile = item as Data.TextFile;

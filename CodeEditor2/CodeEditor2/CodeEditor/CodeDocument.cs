@@ -8,6 +8,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Reflection.Metadata;
@@ -424,8 +425,9 @@ namespace CodeEditor2.CodeEditor
 
         public void SetMarkAt(int index, int length, byte value)
         {
-            if (index >= Length) return;
+            if (TextFile == null) return;
             if (TextDocument == null) return;
+            if (index >= Length) return;
             DocumentLine line = TextDocument.GetLineByOffset(index);
             LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
             Color color = TextFile.DrawStyle.MarkColor[value];
@@ -435,7 +437,9 @@ namespace CodeEditor2.CodeEditor
 
         public void RemoveMarkAt(int index, byte value)
         {
-//            marks[index] &= (byte)((1 << value) ^ 0xff);
+            if (TextDocument == null) return;
+            if (TextFile == null) return;
+            //            marks[index] &= (byte)((1 << value) ^ 0xff);
         }
         public void RemoveMarkAt(int index, int length, byte value)
         {
@@ -457,18 +461,24 @@ namespace CodeEditor2.CodeEditor
         public virtual void SetColorAt(int index, byte value)
         {
             if (TextDocument == null) return;
+            if (TextFile == null) return;
             DocumentLine line = TextDocument.GetLineByOffset(index);
             LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
             Color color = TextFile.DrawStyle.ColorPallet[value];
             lineInfo.Colors.Add(new LineInfomation.Color(index, 1, color));
+            if (lineInfo.Colors.Count > 2000)
+            {
+                string a = "";
+            }
         }
 
         public virtual void SetColorAt(int index, byte value, int length)
         {
             if (TextDocument == null) return;
+            if (TextFile == null) return;
 
             DocumentLine lineStart = TextDocument.GetLineByOffset(index);
-            DocumentLine lineLast = TextDocument.GetLineByOffset(index + index);
+            DocumentLine lineLast = TextDocument.GetLineByOffset(index + length);
             Color color = TextFile.DrawStyle.ColorPallet[value];
 
             if (lineStart == lineLast)
@@ -478,10 +488,16 @@ namespace CodeEditor2.CodeEditor
             }
             else
             {
-                for(int line = lineStart.LineNumber; line <= lineLast.LineNumber; line++)
+                LineInfomation lineInfo = GetLineInfomation(lineStart.LineNumber);
+                lineInfo.Colors.Add(new LineInfomation.Color(index, GetLineLength(lineStart.LineNumber), color));
+
+                lineInfo = GetLineInfomation(lineLast.LineNumber);
+                lineInfo.Colors.Add(new LineInfomation.Color(GetLineStartIndex(lineLast.LineNumber), index+length- GetLineStartIndex(lineLast.LineNumber), color));
+
+                for (int line = lineStart.LineNumber+1; line <= lineLast.LineNumber-1; line++)
                 {
-                    LineInfomation lineInfo = GetLineInfomation(line);
-                    lineInfo.Colors.Add(new LineInfomation.Color(index, index + length, color));
+                    lineInfo = GetLineInfomation(line);
+                    lineInfo.Colors.Add(new LineInfomation.Color(GetLineStartIndex(line),GetLineLength(line), color));
                 }
             }
         }
@@ -497,6 +513,10 @@ namespace CodeEditor2.CodeEditor
             {
                 lineInfo = new LineInfomation();
                 LineInfomations.Add(lineNumber, lineInfo);
+            }
+            if (lineInfo.Colors.Count > 2000)
+            {
+                string a = "";
             }
             return lineInfo;
         }

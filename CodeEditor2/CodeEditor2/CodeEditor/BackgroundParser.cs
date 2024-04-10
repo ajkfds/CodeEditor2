@@ -31,8 +31,10 @@ namespace CodeEditor2.CodeEditor
 
         public void EntryParse(TextFile textFile)
         {
+            System.Diagnostics.Debug.Print("#### BackgroundParser.EntryParse");
             lock (toBackgroundStock)
             {
+                System.Diagnostics.Debug.Print("#### BackgroundParser.EntryParse.Add toBackGround");
                 toBackgroundStock.Add(textFile);
             }
         }
@@ -42,17 +44,22 @@ namespace CodeEditor2.CodeEditor
         {
             while (!Global.Abort)
             {
-                DocumentParser parser = null;
-                lock (toBackgroundStock)
+                DocumentParser? parser = null;
+
                 {
-                    if (toBackgroundStock.Count != 0)
+                    TextFile? textFile = null;
+                    lock (toBackgroundStock)
                     {
-                        TextFile textFile = toBackgroundStock.Last();
-                        parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse);
-//                        parser = toBackgroundStock.Last();
-                        toBackgroundStock.Clear();
+                        if (toBackgroundStock.Count != 0)
+                        {
+                            textFile = toBackgroundStock.Last();
+                            toBackgroundStock.Clear();
+                        }
                     }
+                    parser = textFile?.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse);
                 }
+
+
                 if (parser != null)
                 {
                     parsing = true;

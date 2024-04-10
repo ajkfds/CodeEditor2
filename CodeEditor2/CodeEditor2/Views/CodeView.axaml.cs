@@ -151,6 +151,7 @@ namespace CodeEditor2.Views
 
         private void TextArea_PointerMoved(object? sender, PointerEventArgs e)
         {
+            if (skipEvents) return;
             codeViewPopup.TextArea_PointerMoved(sender, e);
         }
 
@@ -163,6 +164,7 @@ namespace CodeEditor2.Views
         ulong prevVersion = 0;
         private void Caret_PositionChanged(object? sender, EventArgs e)
         {
+            if (skipEvents) return;
             if (CodeDocument == null) return;
             //CodeDocument.setCarletPosition(_textEditor.TextArea.Caret.Offset);
             CodeDocument.CaretIndex = _textEditor.TextArea.Caret.Offset;
@@ -180,6 +182,7 @@ namespace CodeEditor2.Views
 
         private void TextArea_SelectionChanged(object? sender, EventArgs e)
         {
+            if (skipEvents) return;
             if (CodeDocument == null) return;
             if (_textEditor.TextArea.Selection.Segments.Count() > 0)
             {
@@ -194,6 +197,7 @@ namespace CodeEditor2.Views
         // Called from CodeCdedocuent. Update CodeDocument Index change to textEditor
         private void CodeDocument_CarletChanged(CodeDocument codeDocument)
         {
+            if (skipEvents) return;
             if (CodeDocument != codeDocument) return;
 
             // changed by CodeDocument Code
@@ -203,17 +207,20 @@ namespace CodeEditor2.Views
 
         private void CodeDocument_SelectionStartChanged(CodeDocument codeDocument)
         {
+            if (skipEvents) return;
             if (CodeDocument != codeDocument) return;
             //            if (_textEditor.CaretOffset == codeDocument.CaretIndex) return;
             //            _textEditor.CaretOffset = codeDocument.CaretIndex;
         }
         private void CodeDocument_SelectionLastChanged(CodeDocument codeDocument)
         {
+            if (skipEvents) return;
             if (CodeDocument != codeDocument) return;
         }
 
         private void TextArea_DocumentChanged(object? sender, DocumentChangedEventArgs e)
         {
+            if (skipEvents) return;
             //            System.Diagnostics.Debug.Print("## TextArea_DocumentChanged");
         }
 
@@ -228,8 +235,11 @@ namespace CodeEditor2.Views
             _textEditor.TextArea.TextView.Redraw();
         }
 
+        private bool skipEvents = false;
         public void SetTextFile(Data.TextFile textFile)
         {
+            skipEvents = true;
+            System.Diagnostics.Debug.Print("## SetTextFile");
             if(CodeDocument != null)
             {
                 CodeDocument.CaretChanged = null;
@@ -244,10 +254,13 @@ namespace CodeEditor2.Views
             }
             else
             {
+                System.Diagnostics.Debug.Print("## Change CodeDocument");
                 CodeDocument = textFile.CodeDocument;
+                System.Diagnostics.Debug.Print("## Change Events");
                 CodeDocument.CaretChanged += CodeDocument_CarletChanged;
                 CodeDocument.SelectionStartChanged += CodeDocument_SelectionStartChanged;
                 CodeDocument.SelectionLastChanged += CodeDocument_SelectionLastChanged;
+
 
                 //                Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
                 //                Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
@@ -281,12 +294,13 @@ namespace CodeEditor2.Views
             }
 
             //codeTextbox.Visible = true;
-//            codeTextbox.Document = textFile.CodeDocument;
+            //            codeTextbox.Document = textFile.CodeDocument;
             //TextFile = textFile;
             ScrollToCaret();
             if (textFile != null) Controller.MessageView.Update(textFile.ParsedDocument);
 
             codeViewParser.EntryParse();
+            skipEvents = false;
         }
 
 
@@ -381,7 +395,7 @@ namespace CodeEditor2.Views
 
         private void textEditor_TextArea_TextEntering(object? sender, TextInputEventArgs e)
         {
-
+            if (skipEvents) return;
             if (e.Text.Length > 0 && _completionWindow != null)
             {
                 if (!char.IsLetterOrDigit(e.Text[0]))
@@ -402,6 +416,7 @@ namespace CodeEditor2.Views
 
         private void textEditor_TextArea_TextEntered(object? sender, TextInputEventArgs e)
         {
+            if (skipEvents) return;
             if (e.Text == "\n")
             {
                 codeViewParser.EntryParse();
@@ -413,6 +428,7 @@ namespace CodeEditor2.Views
 
         public void ForceOpenAutoComplete(List<AutocompleteItem> autocompleteItems)
         {
+            if (skipEvents) return;
             codeViewAutoComplete.ForceOpenAutoComplete(autocompleteItems);
         }
 

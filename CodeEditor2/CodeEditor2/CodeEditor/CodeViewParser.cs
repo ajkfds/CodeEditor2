@@ -63,7 +63,8 @@ namespace CodeEditor2.CodeEditor
         {
             //            if (Global.StopParse) return;
             if (codeView.TextFile == null) return;
-            Controller.AppendLog("entry edit parse ID :" + codeView.TextFile.ID);
+            //            Controller.AppendLog("### CodeViewParser.EntryParse ID :" + codeView.TextFile.ID);
+            System.Diagnostics.Debug.Print("### CodeViewParser.EntryParse ID :\" + codeView.TextFile.ID");
             backGroundParser.EntryParse(codeView.TextFile);
         }
 
