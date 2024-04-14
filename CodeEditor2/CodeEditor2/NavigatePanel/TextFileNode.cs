@@ -16,15 +16,18 @@ namespace CodeEditor2.NavigatePanel
         {
             get
             {
-                return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/paper.svg");
+                return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                    "CodeEditor2/Assets/Icons/text.svg",
+                    Avalonia.Media.Color.FromArgb(100, 200, 200, 200)
+                    );
             }
         }
 
+        public static Action<TextFileNode> TextFileNodeCreated;
         public TextFileNode(Data.TextFile textFile) : base(textFile as Data.File)
         {
             if (TextFileNodeCreated != null) TextFileNodeCreated(this);
         }
-        public static Action<TextFileNode> TextFileNodeCreated;
 
         public Data.TextFile TextFile
         {

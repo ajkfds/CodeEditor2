@@ -396,6 +396,7 @@ namespace CodeEditor2.Views
         private void textEditor_TextArea_TextEntering(object? sender, TextInputEventArgs e)
         {
             if (skipEvents) return;
+            codeViewPopupMenu.TextEntering(sender, e);
             if (e.Text.Length > 0 && _completionWindow != null)
             {
                 if (!char.IsLetterOrDigit(e.Text[0]))
@@ -417,6 +418,7 @@ namespace CodeEditor2.Views
         private void textEditor_TextArea_TextEntered(object? sender, TextInputEventArgs e)
         {
             if (skipEvents) return;
+            codeViewPopupMenu.TextEntered(sender, e);
             if (e.Text == "\n")
             {
                 codeViewParser.EntryParse();

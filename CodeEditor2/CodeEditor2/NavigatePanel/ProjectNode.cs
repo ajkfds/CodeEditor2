@@ -39,14 +39,10 @@ namespace CodeEditor2.NavigatePanel
         {
             get
             {
-                if (IsExpanded)
-                {
-                    return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/folderOpend.svg");
-                }
-                else
-                {
-                    return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/folder.svg");
-                }
+                    return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                        "CodeEditor2/Assets/Icons/home.svg",
+                        Avalonia.Media.Color.FromArgb(100,255,100,100)
+                        );
             }
         }
 

@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+        x:Class="CodeEditor2.Tools.InputWindow"
+		Height="200"
+        Title="InputWindow">
+	<Grid RowDefinitions="50, 20,*,30">
+		<TextBlock Name="TextBlock0" Grid.Row="0" Margin="4 4 4 4">AAAA</TextBlock>
+		<TextBox Name="TextBox1" Grid.Row="1" Margin="4 0 4 0"></TextBox>
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3">
+			<Button Name="CancelButton">Cancel</Button>
+			<Button Name="OKButton">OK</Button>
+		</StackPanel>
+	</Grid>
+</Window>

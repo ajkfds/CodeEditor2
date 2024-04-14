@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Drawing;
 using Avalonia.Media;
 using CodeEditor2.Data;
 
@@ -32,14 +31,10 @@ namespace CodeEditor2.NavigatePanel
         {
             get
             {
-                if (IsExpanded)
-                {
-                    return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/folderOpend.svg");
-                }
-                else
-                {
-                    return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/folder.svg");
-                }
+                return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                    "CodeEditor2/Assets/Icons/folder.svg",
+                    Color.FromArgb(100,100,150,255)
+                    );
             }
         }
 

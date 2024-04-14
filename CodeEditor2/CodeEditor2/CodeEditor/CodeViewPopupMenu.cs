@@ -149,16 +149,21 @@ namespace CodeEditor2.CodeEditor
             snippet = null;
         }
 
-        public void TextEntering(object? sender, KeyEventArgs e)
+        public void TextEntering(object? sender, TextInputEventArgs e)
         {
             if (snippet == null) return;
             snippet.BeforeKeyDown(sender, e, codeView.PopupMenu);
         }
 
-        public void TextEntered(object? sender, KeyEventArgs e)
+        public void TextEntered(object? sender, TextInputEventArgs e)
         {
             if (snippet == null) return;
             snippet.AfterKeyDown(sender, e, codeView.PopupMenu);
+        }
+        public virtual void AfterAutoCompleteHandled(object? sender, TextInputEventArgs e, Views.PopupMenuView popupMenuView)
+        {
+            if (snippet == null) return;
+            snippet.AfterAutoCompleteHandled(sender, e, codeView.PopupMenu);
         }
 
     }

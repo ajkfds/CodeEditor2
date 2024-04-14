@@ -20,6 +20,7 @@
 		<Menu DockPanel.Dock="Top" Name="Menu">
 			<MenuItem Header="_File">
 				<MenuItem Header="_Open..." Click="MenuItem_Open_Click"/>
+				<MenuItem Header="SaveProjects" Click="MenuItem_SaveProjects_Click"/>
 				<Separator/>
 				<MenuItem Header="_Exit" Click="MenuItem_Exit_Click"/>
 			</MenuItem>
@@ -29,6 +30,7 @@
 			</MenuItem>
 			<MenuItem Header="_Project">
 				<MenuItem Header="Add Project" Click="MenuItem_AddProject_Click"/>
+				<MenuItem Header="Add ProjectPath" Click="MenuItem_AddProjectPath_Click"/>
 			</MenuItem>
 			<MenuItem Header="_Tools">
 			</MenuItem>

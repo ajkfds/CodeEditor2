@@ -22,7 +22,10 @@ namespace CodeEditor2.NavigatePanel
         {
             get
             {
-                return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/questionPaper.svg");
+                return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                    "CodeEditor2/Assets/Icons/questionDocument.svg",
+                    Avalonia.Media.Color.FromArgb(100,100,100,100)
+                    );
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Metadata;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CodeEditor2.Data;
@@ -63,6 +64,24 @@ public partial class MainView : UserControl
     private void MenuItem_Exit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
     }
+    private async void MenuItem_AddProjectPath_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        Tools.InputWindow inputWinodw = new Tools.InputWindow("New Project Name","Input Project Absolute Path");
+        await inputWinodw.ShowDialog(Global.mainWindow);
+        if (inputWinodw.Cancel) return;
+        string path = inputWinodw.InputText;
+        if (!System.IO.Directory.Exists(path))
+        {
+            Controller.AppendLog("no folders found");
+            return;
+        }
+        Global.StopParse = true;
+        Controller.AppendLog("AddProject" + path, Avalonia.Media.Colors.DarkOrange);
+        path = path.Replace('/', System.IO.Path.DirectorySeparatorChar);
+        Data.Project newProject = Project.Create(path);
+        await Controller.AddProject(newProject);
+        Global.StopParse = false;
+    }
 
     private async void MenuItem_AddProject_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
@@ -74,7 +93,11 @@ public partial class MainView : UserControl
             AllowMultiple = false
         });
 
-        if (folders.Count != 1) return;
+        if (folders.Count != 1)
+        {
+            Controller.AppendLog("no folders found");
+            return;
+        }
 
         IStorageFolder folder = folders[0];
 
@@ -86,6 +109,11 @@ public partial class MainView : UserControl
         await Controller.AddProject(newProject);
         Global.StopParse = false;
 
+    }
+
+    private void MenuItem_SaveProjects_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        Global.Setup.SaveSetup(setupFileName);
     }
 
     // View controller interface //////////////////////////////////////////
