@@ -48,6 +48,9 @@ namespace CodeEditor2.CodeEditor
                 ToolTip.SetIsOpen(codeView.Editor, false);
                 return;
             }
+            codeView.PopupColorLabel.Clear();
+            codeView.PopupColorLabel.Add(pitem);
+
             ToolTip.SetIsOpen(codeView.Editor, false);
             if (pitem.GetItems().Count != 0)
             {

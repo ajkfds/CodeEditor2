@@ -34,7 +34,6 @@ public partial class MainView : UserControl
         // read setup file
 
         Global.ProgressWindow = new Tools.ProgressWindow();
-//        Global.ProgressWindow.Show(Global.mainWindow);
         var _ = initialize();
     }
 
@@ -52,8 +51,6 @@ public partial class MainView : UserControl
         {
             throw;
         }
-
-//        Dispatcher.UIThread.Post(() => { Global.ProgressWindow.Close(); });
     }
 
 
@@ -108,7 +105,6 @@ public partial class MainView : UserControl
         Data.Project newProject = Project.Create(path);
         await Controller.AddProject(newProject);
         Global.StopParse = false;
-
     }
 
     private void MenuItem_SaveProjects_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -149,12 +145,5 @@ public partial class MainView : UserControl
     //    }
     //}
 
-    //////////////
-    //private void addProject(Models.Editor.Data.Project project)
-    //{
-    //    Models.Common.Global.navigateView.AddProject(project);
-    //    //Tools.ParseProjectForm pform = new Tools.ParseProjectForm(navigatePanel.GetPeojectNode(project.Name));
-    //    //pform.ShowDialog(this);
-    //}
 
 }

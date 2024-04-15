@@ -238,6 +238,7 @@ namespace CodeEditor2.Views
         private bool skipEvents = false;
         public void SetTextFile(Data.TextFile textFile)
         {
+            Global.StopParse = true;
             skipEvents = true;
             System.Diagnostics.Debug.Print("## SetTextFile");
             if(CodeDocument != null)
@@ -298,6 +299,7 @@ namespace CodeEditor2.Views
             //TextFile = textFile;
             ScrollToCaret();
             if (textFile != null) Controller.MessageView.Update(textFile.ParsedDocument);
+            Global.StopParse = false;
 
             codeViewParser.EntryParse();
             skipEvents = false;
