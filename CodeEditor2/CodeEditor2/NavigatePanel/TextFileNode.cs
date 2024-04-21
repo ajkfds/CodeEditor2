@@ -12,21 +12,11 @@ namespace CodeEditor2.NavigatePanel
 {
     public class TextFileNode : FileNode
     {
-        public override IImage? Image
-        {
-            get
-            {
-                return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
-                    "CodeEditor2/Assets/Icons/text.svg",
-                    Avalonia.Media.Color.FromArgb(100, 200, 200, 200)
-                    );
-            }
-        }
-
         public static Action<TextFileNode> TextFileNodeCreated;
         public TextFileNode(Data.TextFile textFile) : base(textFile as Data.File)
         {
             if (TextFileNodeCreated != null) TextFileNodeCreated(this);
+            UpdateVisual();
         }
 
         public Data.TextFile TextFile
@@ -39,7 +29,28 @@ namespace CodeEditor2.NavigatePanel
             get { return FileItem.Name; }
         }
 
-//        private static ajkControls.Primitive.IconImage icon = new ajkControls.Primitive.IconImage(Properties.Resources.text);
+        public override void UpdateVisual()
+        {
+            if (TextFile.CodeDocument.IsDirty)
+            {
+                Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                    "CodeEditor2/Assets/Icons/text.svg",
+                    Avalonia.Media.Color.FromArgb(100, 200, 200, 200),
+                    "CodeEditor2/Assets/Icons/shine.svg",
+                    Avalonia.Media.Color.FromArgb(255, 255, 255, 200)
+                    );
+            }
+            else
+            {
+                Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                    "CodeEditor2/Assets/Icons/text.svg",
+                    Avalonia.Media.Color.FromArgb(100, 200, 200, 200)
+                    );
+            }
+            Global.navigateView.InvalidateVisual();
+        }
+
+        //        private static ajkControls.Primitive.IconImage icon = new ajkControls.Primitive.IconImage(Properties.Resources.text);
         //public override void DrawNode(Graphics graphics, int x, int y, Font font, Color color, Color backgroundColor, Color selectedColor, int lineHeight, bool selected)
         //{
         //    graphics.DrawImage(icon.GetImage(lineHeight, ajkControls.Primitive.IconImage.ColorStyle.White), new Point(x, y));
@@ -63,7 +74,9 @@ namespace CodeEditor2.NavigatePanel
         public override void OnSelected()
         {
             Global.mainView.CodeView.SetTextFile(TextFile);
-//            Controller.CodeEditor.SetTextFile(TextFile);
+            Refresh();
+            Global.mainView.NavigateView.TreeControl.InvalidateVisual();
+            //            Controller.CodeEditor.SetTextFile(TextFile);
         }
 
     }

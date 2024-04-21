@@ -13,10 +13,7 @@ namespace CodeEditor2.CodeEditor
 {
     public class AutocompleteItem : AvaloniaEdit.CodeCompletion.ICompletionData
     {
-        public AutocompleteItem(string text, byte colorIndex, Avalonia.Media.Color color) : this(text,colorIndex,color, null, AjkAvaloniaLibs.Libs.Icons.ColorStyle.Gray)
-        {
-        }
-        public AutocompleteItem(string text, byte colorIndex, Avalonia.Media.Color color, IImage icon, AjkAvaloniaLibs.Libs.Icons.ColorStyle iconColorStyle)
+        public AutocompleteItem(string text, byte colorIndex, Avalonia.Media.Color color)
         {
             this.text = text;
             this.colorIndex = colorIndex;

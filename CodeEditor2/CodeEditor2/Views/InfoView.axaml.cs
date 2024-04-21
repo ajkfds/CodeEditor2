@@ -1,6 +1,9 @@
 using Avalonia.Controls;
 using CodeEditor2.MessageView;
 using System.Security.Cryptography.X509Certificates;
+using System.Collections.ObjectModel;
+using Avalonia.Styling;
+using Avalonia.Layout;
 
 namespace CodeEditor2.Views
 {
@@ -11,8 +14,18 @@ namespace CodeEditor2.Views
             InitializeComponent();
             Global.infoView = this;
 
-            //MessageView.NodeClicked += MessageView_NodeClicked;
+            InfoListBox0.DataContext = this;
+            InfoListBox0.ItemsSource = Items;
+
+            Style style = new Style();
+            style.Selector = ((Selector?)null).OfType(typeof(ListBoxItem));
+            style.Add(new Setter(Layoutable.MinHeightProperty, 8.0));
+//            style.Add(new Setter(Layoutable.HeightProperty, 11.0));
+
+            InfoListBox0.Styles.Add(style);
         }
+
+        ObservableCollection<ListBoxItem> Items = new ObservableCollection<ListBoxItem>();
 
         //public void MessageView_NodeClicked(AjkAvaloniaLibs.Contorls.TreeNode node)
         //{
@@ -23,16 +36,17 @@ namespace CodeEditor2.Views
 
         public void UpdateMessages(CodeEditor.ParsedDocument parsedDocument)
         {
-            MessageView.Nodes.Clear();
+            Items.Clear();
+
             if (parsedDocument != null)
             {
                 foreach (CodeEditor.ParsedDocument.Message message in parsedDocument.Messages)
                 {
-                    MessageView.Nodes.Add(message.CreateMessageNode());
+                    Items.Add(message.CreateMessageNode().ListBoxItem());
                 }
             }
 
-            MessageView.InvalidateVisual();
+            InfoListBox0.InvalidateVisual();
         }
 
     }

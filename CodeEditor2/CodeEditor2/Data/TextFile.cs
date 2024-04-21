@@ -123,7 +123,7 @@ namespace CodeEditor2.Data
             {
                 sw.Write(CodeDocument.CreateString());
             }
-            //CodeDocument.Clean();
+            CodeDocument.Clean();
             loadedFileLastWriteTime = System.IO.File.GetLastWriteTime(AbsolutePath);
         }
 
@@ -152,7 +152,7 @@ namespace CodeEditor2.Data
                     document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
                     //document.Replace(0, document.Length, 0, text);
                     //document.ClearHistory();
-                    //document.Clean();
+                    document.Clean();
                 }
             }
             catch
@@ -259,13 +259,14 @@ namespace CodeEditor2.Data
             Data.ITextFile textFile = item as Data.TextFile;
             if (textFile == null) return;
             if (parsedIds.Contains(textFile.ID)) return;
-
+            System.Diagnostics.Debug.Print("### ParseHier "+textFile.ID);
             action(textFile);
             parsedIds.Add(textFile.ID);
 
             if (textFile.ParseValid & !textFile.ReparseRequested)
             {
                 textFile.Update();
+                textFile.CodeDocument.LockThreadToUI();
             }
             else
             {

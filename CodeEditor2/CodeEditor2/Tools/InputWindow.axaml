@@ -5,6 +5,7 @@
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
         x:Class="CodeEditor2.Tools.InputWindow"
 		Height="200"
+		Width="800"
         Title="InputWindow">
 	<Grid RowDefinitions="50, 20,*,30">
 		<TextBlock Name="TextBlock0" Grid.Row="0" Margin="4 4 4 4">AAAA</TextBlock>

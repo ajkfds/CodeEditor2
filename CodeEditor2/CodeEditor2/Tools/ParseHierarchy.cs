@@ -17,7 +17,7 @@ namespace CodeEditor2.Tools
     {
         // All Parse executed in UI Thread
 
-        public static List<ParsedDocument> unlockdPaeedsedDocument = new List<ParsedDocument>();
+//        public static List<ParsedDocument> unlockdPaeedsedDocument = new List<ParsedDocument>();
 
         public static async Task Run(NavigatePanel.NavigatePanelNode rootNode)
         {
@@ -25,44 +25,43 @@ namespace CodeEditor2.Tools
             sw.Start();
             System.Diagnostics.Debug.Print("parse hier sw " + sw.ElapsedMilliseconds.ToString());
 
-            Dispatcher.UIThread.Post(() => {
-                Global.ProgressWindow.Title = "Reparse " + rootNode.Text;
-                Global.ProgressWindow.ProgressMaxValue = 100;
-                Global.ProgressWindow.ShowDialog(Global.mainWindow);
-            });
+            Global.ProgressWindow.Title = "Reparse " + rootNode.Text;
+            Global.ProgressWindow.ProgressMaxValue = 100;
+            Global.ProgressWindow.ShowDialog(Global.mainWindow);
 
             {
+                Global.StopParse = true;
                 Global.LockParse();
-
-                await parseHier(rootNode.Item);
+                
+                int i = 0;
+                ParseHierarchyUnit unit = new ParseHierarchyUnit("ParseHier"+rootNode.Item.Name);
+                unit.Run(rootNode.Item,
+                        (
+                            (f) =>
+                            {
+                                Dispatcher.UIThread.Post(
+                                    new Action(() =>
+                                    {
+                                        Global.ProgressWindow.ProgressValue = i;
+                                        Global.ProgressWindow.Message = f.Name;
+                                        i++;
+                                    })
+                                    );
+                            }
+                        )
+                );
+                while (!unit.Complete)
+                {
+                    await Task.Delay(10);
+                }
 
                 Global.ReleaseParseLock();
+                Global.StopParse = false;
             }
-            System.Diagnostics.Debug.Print("parse hier sw2 " + sw.ElapsedMilliseconds.ToString());
             rootNode.Update();
 
-            System.Diagnostics.Debug.Print("parse hier sw3 " + sw.ElapsedMilliseconds.ToString());
-
-
-            Dispatcher.UIThread.Post(() => {
-                Global.ProgressWindow.Hide();
-            });
+            Global.ProgressWindow.Hide();
         }
-
-        private static async Task parseHier(Data.Item item)
-        {
-            if (item == null) return;
-            Data.ITextFile textFile = item as Data.TextFile;
-            if (textFile == null) return;
-
-            textFile.ParseHierarchy((tFile) => {
-                textFile.ParseHierarchy((tFile) =>
-                {
-                    Dispatcher.UIThread.Invoke(new Action(() => { Global.ProgressWindow.Message = tFile.ID; }));
-                });
-            });
-        }
-
 
     }
 }

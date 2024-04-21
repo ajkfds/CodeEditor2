@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.Tools
 {
-    internal class TextParseTask
+    internal class TextParseUnit
     {
-        public TextParseTask(string name)
+        public TextParseUnit(string name)
         {
             this.name = name;
         }

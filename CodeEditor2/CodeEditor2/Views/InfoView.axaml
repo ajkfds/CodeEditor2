@@ -5,9 +5,11 @@
              xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Contorls;assembly=AjkAvaloniaLibs"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
              x:Class="CodeEditor2.Views.InfoView">
-	<TabControl Margin="1">
+	<ListBox Name="InfoListBox0" FontSize="12">
+	</ListBox>
+	<!--<TabControl Margin="1">
 		<TabItem Header="Error"  FontSize="12">
 			<ajkctrl:TreeControl Name="MessageView" FontSize="12"></ajkctrl:TreeControl>
 		</TabItem>
-	</TabControl>
+	</TabControl>-->
 </UserControl>

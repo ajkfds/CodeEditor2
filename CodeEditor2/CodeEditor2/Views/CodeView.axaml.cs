@@ -69,6 +69,7 @@ namespace CodeEditor2.Views
             _textEditor.Options.EnableImeSupport = true;
             _textEditor.Options.ShowEndOfLine = true;
             _textEditor.Background = new SolidColorBrush(Color.FromRgb(10, 10, 10));
+            _textEditor.Options.IndentationSize = 1;
 
             _textEditor.ContextMenu = new ContextMenu
             {
@@ -89,7 +90,7 @@ namespace CodeEditor2.Views
 
             _textEditor.TextArea.DocumentChanged += TextArea_DocumentChanged;
             _textEditor.TextArea.PointerMoved += TextArea_PointerMoved;
-
+            _textEditor.Options.HighlightCurrentLine = true;
 
             _textEditor.Options.ShowBoxForControlCharacters = true;
             _textEditor.Options.ColumnRulerPositions = new List<int>() { 80, 100 };
@@ -117,8 +118,8 @@ namespace CodeEditor2.Views
 //            string scopeName = _registryOptions.GetScopeByLanguageId(csharpLanguage.Id);
             
             _textEditor.Document = new TextDocument(
-                "// AvaloniaEdit supports displaying control chars: \a or \b or \v" + Environment.NewLine +
-                "// AvaloniaEdit supports displaying underline and strikethrough" + Environment.NewLine);
+                "// Press Ctrl + Space to force open auto-complete" + Environment.NewLine +
+                "// Press Shit + Space to open quick tool menu" + Environment.NewLine);
             //+ ResourceLoader.LoadSampleFile(scopeName));
 //            _textMateInstallation.SetGrammar(_registryOptions.GetScopeByLanguageId(csharpLanguage.Id));
             _textEditor.TextArea.TextView.LineTransformers.Add(new CodeDocumentColorTransformer());
@@ -180,18 +181,23 @@ namespace CodeEditor2.Views
             //            prevVersion = version;
         }
 
+
         private void TextArea_SelectionChanged(object? sender, EventArgs e)
         {
+            // mirror selection properties to CodeDocument
+
             if (skipEvents) return;
             if (CodeDocument == null) return;
-            if (_textEditor.TextArea.Selection.Segments.Count() > 0)
-            {
-                CodeDocument.SelectionStart = _textEditor.TextArea.Selection.Segments.First().StartOffset;
-                int offset;
-                offset = _textEditor.TextArea.Selection.Segments.First().EndOffset;
-                if (offset != 0) offset--;
-                CodeDocument.SelectionLast = offset;
-            }
+            if (_textEditor.TextArea.Selection.Segments.Count() < 1) return;
+
+            SelectionSegment segment;
+            segment = _textEditor.TextArea.Selection.Segments.First();
+
+            CodeDocument.SelectionStart = segment.StartOffset;
+            int offset;
+            offset = segment.EndOffset;
+            if (offset != 0) offset--;
+            CodeDocument.SelectionLast = offset;
         }
 
         // Called from CodeCdedocuent. Update CodeDocument Index change to textEditor
@@ -205,17 +211,12 @@ namespace CodeEditor2.Views
             _textEditor.CaretOffset = codeDocument.CaretIndex;
         }
 
-        private void CodeDocument_SelectionStartChanged(CodeDocument codeDocument)
+        private void CodeDocument_SelectionChanged(CodeDocument codeDocument)
         {
             if (skipEvents) return;
             if (CodeDocument != codeDocument) return;
-            //            if (_textEditor.CaretOffset == codeDocument.CaretIndex) return;
-            //            _textEditor.CaretOffset = codeDocument.CaretIndex;
-        }
-        private void CodeDocument_SelectionLastChanged(CodeDocument codeDocument)
-        {
-            if (skipEvents) return;
-            if (CodeDocument != codeDocument) return;
+
+            _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, CodeDocument.SelectionStart, CodeDocument.SelectionLast + 1);
         }
 
         private void TextArea_DocumentChanged(object? sender, DocumentChangedEventArgs e)
@@ -244,8 +245,7 @@ namespace CodeEditor2.Views
             if(CodeDocument != null)
             {
                 CodeDocument.CaretChanged = null;
-                CodeDocument.SelectionStartChanged = null;
-                CodeDocument.SelectionLastChanged = null;
+                CodeDocument.SelectionChanged = null;
             }
 
             if (textFile == null)
@@ -259,8 +259,7 @@ namespace CodeEditor2.Views
                 CodeDocument = textFile.CodeDocument;
                 System.Diagnostics.Debug.Print("## Change Events");
                 CodeDocument.CaretChanged += CodeDocument_CarletChanged;
-                CodeDocument.SelectionStartChanged += CodeDocument_SelectionStartChanged;
-                CodeDocument.SelectionLastChanged += CodeDocument_SelectionLastChanged;
+                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
 
 
                 //                Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
@@ -354,7 +353,16 @@ namespace CodeEditor2.Views
 
         private void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
-            if(e.Key == Key.Space && e.KeyModifiers == KeyModifiers.Shift)
+            if(e.KeyModifiers == KeyModifiers.Control)
+            {
+                if(e.Key == Key.S)
+                {
+                    Controller.CodeEditor.Save();
+                    e.Handled = true;
+                    return;
+                }
+
+            }else if(e.Key == Key.Space && e.KeyModifiers == KeyModifiers.Shift)
             {
                 e.Handled = true;
                 codeViewPopupMenu.ShowToolSelectionPopupMenu();

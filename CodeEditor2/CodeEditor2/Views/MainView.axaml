@@ -17,12 +17,13 @@
 	<DockPanel Background="#202020" >
 		
 		<!-- Menu -->
-		<Menu DockPanel.Dock="Top" Name="Menu">
-			<MenuItem Header="_File">
-				<MenuItem Header="_Open..." Click="MenuItem_Open_Click"/>
-				<MenuItem Header="SaveProjects" Click="MenuItem_SaveProjects_Click"/>
+		<Menu DockPanel.Dock="Top" Name="Menu" FontSize="12">
+			<MenuItem Header="_File" Name="MenuItem_File">
+				<MenuItem Header="_Open..." Name="MenuItem_File_Open" Click="MenuItem_File_Open_Click"/>
+				<MenuItem Header="_Save" Name="MenuItem_File_Save" Click="MenuItem_File_Save_Click"/>
+				<MenuItem Header="SaveProjects" Name="MenuItem_File_SaveProjects" Click="MenuItem_File_SaveProjects_Click"/>
 				<Separator/>
-				<MenuItem Header="_Exit" Click="MenuItem_Exit_Click"/>
+				<MenuItem Header="_Exit" Click="MenuItem_File_Exit_Click"/>
 			</MenuItem>
 			<MenuItem Header="_Edit">
 				<MenuItem Header="Copy"/>
@@ -46,8 +47,9 @@
 						<views:NavigateView Name="NavigateView"/>
 					</TabItem>
 				</TabControl>
+
+				<GridSplitter Grid.Column="1" Name="SplitterColumn1" ResizeDirection="Columns"/>
 				
-				<GridSplitter Grid.Column="1" ResizeDirection="Columns"/>
 
 				<!-- Code View -->
 				<TabControl Margin="1" Grid.Column="2">
@@ -71,6 +73,6 @@
 			<!-- Log View -->
 			<views:LogView Grid.Row="2" />
 		</Grid>
-		
+
 	</DockPanel>
 </UserControl>

@@ -56,14 +56,14 @@ namespace CodeEditor2.Tools
         {
             // parse items
             int i = 0;
-            int workerThreads = 1;
+            int workerThreads = 8;
 
             System.Collections.Concurrent.BlockingCollection<Data.TextFile> fileQueue = new System.Collections.Concurrent.BlockingCollection<Data.TextFile>();
 
-            List<TextParseTask> tasks = new List<TextParseTask>();
+            List<TextParseUnit> tasks = new List<TextParseUnit>();
             for (int t = 0; t < workerThreads; t++)
             {
-                tasks.Add(new TextParseTask("ParseProject" + t.ToString()));
+                tasks.Add(new TextParseUnit("ParseProject" + t.ToString()));
                 tasks[t].Run(
                     fileQueue,
                     (
@@ -98,7 +98,7 @@ namespace CodeEditor2.Tools
             while (true)
             {
                 int completeTasks = 0;
-                foreach (TextParseTask task in tasks)
+                foreach (TextParseUnit task in tasks)
                 {
                     if (task.Complete) completeTasks++;
                 }

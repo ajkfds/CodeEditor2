@@ -21,6 +21,7 @@ namespace CodeEditor2.CodeEditor
         /// </summary>
         public void CheckAutoComplete()
         {
+            if (codeView.TextFile == null) return;
             int prevIndex = codeView._textEditor.CaretOffset;
 
             if (prevIndex != 0)

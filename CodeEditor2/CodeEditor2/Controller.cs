@@ -123,6 +123,13 @@ namespace CodeEditor2
                 }
             }
 
+            public static void Save()
+            {
+                if (Global.codeView.CodeDocument == null) return;
+                Global.codeView.CodeDocument.TextFile.Save();
+            }
+
+
             public static void ForceOpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> cantidates)
             {
                 Global.codeView.OpenCustomSelection(cantidates);

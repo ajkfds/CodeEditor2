@@ -35,6 +35,7 @@ namespace CodeEditor2.CodeEditor
 
             TextViewPosition tpos = (TextViewPosition)pos;
             int index = codeView.CodeDocument.TextDocument.GetOffset(tpos.Line, tpos.Column);
+            if (index >= codeView.CodeDocument.Length) return;
 
             int headIndex, length;
             codeView.CodeDocument.GetWord(index, out headIndex, out length);

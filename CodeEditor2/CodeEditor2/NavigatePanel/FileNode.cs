@@ -14,21 +14,18 @@ namespace CodeEditor2.NavigatePanel
         protected FileNode() { }
         public FileNode(File file) : base(file)
         {
+            UpdateVisual();
             if (FileNodeCreated != null) FileNodeCreated(this);
         }
         public static Action<FileNode> FileNodeCreated;
 
-        public override IImage? Image
+        public override void UpdateVisual()
         {
-            get
-            {
-                return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+            Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/questionDocument.svg",
-                    Avalonia.Media.Color.FromArgb(100,100,100,100)
+                    Avalonia.Media.Color.FromArgb(100, 100, 100, 100)
                     );
-            }
         }
-
         public virtual File FileItem
         {
             get { return Item as File; }

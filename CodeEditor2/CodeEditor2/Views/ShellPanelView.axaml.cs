@@ -7,6 +7,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using CodeEditor2.NavigatePanel;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -26,12 +27,15 @@ namespace CodeEditor2.Views
                 inputBox.Margin = new Avalonia.Thickness(0, 0, 0, 0);
                 inputBox.Padding = new Avalonia.Thickness(0, 0, 0, 0);
                 inputBox.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-                inputBox.Height = 11;
-                inputBox.MinHeight = 11;
+                inputBox.Height = 20;
+                inputBox.MinHeight = 14;
 
                 ListBoxItem item = new ListBoxItem();
+                item.Height = 20;
                 item.Content = inputBox;
                 listItems.Add(item);
+
+//                ListBox0.AutoScrollToSelectedItem = true;
             }
 
             ListBox0.ItemsSource = listItems;
@@ -39,11 +43,10 @@ namespace CodeEditor2.Views
             Style style = new Style();
             style.Selector = ((Selector?)null).OfType(typeof(ListBoxItem));
             style.Add(new Setter(Layoutable.MinHeightProperty, 8.0));
-            style.Add(new Setter(Layoutable.HeightProperty, 10.0));
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                shell = new Shells.WinCmdChell();
+                shell = new Shells.WinCmdChell(new List<string> { "prompt $P$G$_" });
                 shell.LineReceived += Shell_LineReceived;
 
                 shell.Start();
@@ -95,7 +98,7 @@ namespace CodeEditor2.Views
                         {
                             ListBoxItem item = new ListBoxItem();
                             item.Content = textBlock;
-                            int i = listItems.Count - 2;
+                            int i = listItems.Count - 1;
                             if (i < 0) i = 0;
                             listItems.Insert(i, item);
                             if (listItems.Count > 1000)
@@ -104,8 +107,10 @@ namespace CodeEditor2.Views
                                 if (removeItem == null) return;
                                 listItems.Remove(removeItem);
                             }
-
+                            listItems.Last().IsSelected = true;
+                            ListBox0.ScrollIntoView(listItems.Last());
                         }
+                        ListBox0.InvalidateVisual();
                     })
                 );
         }

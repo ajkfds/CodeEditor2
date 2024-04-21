@@ -3,6 +3,7 @@ using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.TextMate;
+using CodeEditor2.NavigatePanel;
 using ReactiveUI;
 using System;
 using System.Buffers;
@@ -59,10 +60,10 @@ namespace CodeEditor2.CodeEditor
 
         private void CheckThead()
         {
-            if(!HasThread)
-            {
-                System.Diagnostics.Debugger.Break();
-            }
+            //if(!HasThread)
+            //{
+            //    System.Diagnostics.Debugger.Break();
+            //}
         }
 
         private bool HasThread
@@ -76,22 +77,12 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        //public void LockThread()
-        //{
-        //    textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);
-        //}
-
         public void LockThreadToUI()
         {
             CheckThead();
             textDocument.SetOwnerThread(Global.UIThread);
             ownerThread = Global.UIThread;
         }
-
-        //public void UnlockThread()
-        //{
-        //    textDocument.SetOwnerThread(null);
-        //}
 
 
         private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
@@ -106,8 +97,17 @@ namespace CodeEditor2.CodeEditor
 
         private void TextDocument_TextChanged(object? sender, EventArgs e)
         {
-//            System.Diagnostics.Debug.Print("## TextDocument_TextChanged");
-            Version++;
+            if (!IsDirty)
+            {
+                Version++;
+                NavigatePanel.NavigatePanelNode node;
+                Controller.NavigatePanel.GetSelectedNode(out node);
+                node?.UpdateVisual();
+            }
+            else
+            {
+                Version++;
+            }
         }
 
 
@@ -120,8 +120,6 @@ namespace CodeEditor2.CodeEditor
                 return textDocument;
             }
         }
-
-
 
         public System.WeakReference<Data.TextFile>? textFileRef;
         public Data.TextFile TextFile
@@ -165,6 +163,9 @@ namespace CodeEditor2.CodeEditor
         public void Clean()
         {
             CleanVersion = Version;
+            NavigatePanel.NavigatePanelNode node;
+            Controller.NavigatePanel.GetSelectedNode(out node);
+            node?.UpdateVisual();
         }
 
         public bool IsDirty
@@ -334,8 +335,9 @@ namespace CodeEditor2.CodeEditor
 
         /////////////////////////////////////////
 
+        public Action<CodeDocument>? SelectionChanged = null;
+
         int selectionStart;
-        public Action<CodeDocument>? SelectionStartChanged = null;
         public int SelectionStart
         {
             get
@@ -344,13 +346,13 @@ namespace CodeEditor2.CodeEditor
             }
             set
             {
+                if (selectionStart == value) return;
                 selectionStart = value;
-                if (SelectionStartChanged != null) SelectionStartChanged(this);
+                if (SelectionChanged != null) SelectionChanged(this);
             }
         }
 
         int selectionLast;
-        public Action<CodeDocument>? SelectionLastChanged = null;
         public int SelectionLast
         {
             get
@@ -359,10 +361,20 @@ namespace CodeEditor2.CodeEditor
             }
             set
             {
+                if (selectionLast == value) return;
                 selectionLast = value;
-                if (SelectionLastChanged != null) SelectionLastChanged(this);
+                if (SelectionChanged != null) SelectionChanged(this);
             }
         }
+
+        public void SetSelection(int startIndex, int lastIndex)
+        {
+            selectionStart = startIndex;
+            selectionLast = lastIndex;
+            if (SelectionChanged != null) SelectionChanged(this);
+        }
+
+
 
         int caretIndex;
         public Action<CodeDocument>? CaretChanged = null;
@@ -489,7 +501,7 @@ namespace CodeEditor2.CodeEditor
             else
             {
                 LineInfomation lineInfo = GetLineInfomation(lineStart.LineNumber);
-                lineInfo.Colors.Add(new LineInfomation.Color(index, GetLineLength(lineStart.LineNumber), color));
+                lineInfo.Colors.Add(new LineInfomation.Color(index,  GetLineLength(lineStart.LineNumber)- (index - GetLineStartIndex(lineStart.LineNumber)), color));
 
                 lineInfo = GetLineInfomation(lineLast.LineNumber);
                 lineInfo.Colors.Add(new LineInfomation.Color(GetLineStartIndex(lineLast.LineNumber), index+length- GetLineStartIndex(lineLast.LineNumber), color));

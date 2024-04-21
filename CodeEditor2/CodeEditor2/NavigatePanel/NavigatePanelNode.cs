@@ -13,19 +13,22 @@ namespace CodeEditor2.NavigatePanel
 {
     public class NavigatePanelNode : AjkAvaloniaLibs.Contorls.TreeNode
     {
-        public override IImage? Image
+        private void setImage()
         {
-            get
-            {
-                return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+            Image =  AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/document.svg",
                     Avalonia.Media.Color.FromArgb(100, 100, 100, 100)
                     );
-            }
         }
 
         protected NavigatePanelNode()
         {
+            setImage();
+        }
+
+        public virtual void Refresh()
+        {
+
         }
 
         public NavigatePanelNode(Item item)
