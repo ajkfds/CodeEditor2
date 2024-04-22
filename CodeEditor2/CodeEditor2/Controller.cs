@@ -123,6 +123,10 @@ namespace CodeEditor2
                 }
             }
 
+            public static void SetSelection(int startIndex,int lastIndex)
+            {
+                Global.codeView.SetSelection(startIndex, lastIndex);
+            }
             public static void Save()
             {
                 if (Global.codeView.CodeDocument == null) return;

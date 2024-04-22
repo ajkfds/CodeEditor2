@@ -30,8 +30,9 @@ namespace CodeEditor2.CodeEditor
             }
             string cantidateWord;
             List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out cantidateWord);
-            System.Diagnostics.Debug.Print("## checkAutoComplete " + cantidateWord + " " + cantidateWord.Length);
-            System.Diagnostics.Debug.Print("## checkAutoCompleteCar _" + codeView.TextFile.CodeDocument.GetCharAt(prevIndex) + "_" + prevIndex.ToString());
+            if (cantidateWord == null) return;
+            //System.Diagnostics.Debug.Print("## checkAutoComplete " + cantidateWord + " " + cantidateWord.Length);
+            //System.Diagnostics.Debug.Print("## checkAutoCompleteCar _" + codeView.TextFile.CodeDocument.GetCharAt(prevIndex) + "_" + prevIndex.ToString());
 
             if (codeView._completionWindow != null) return;
             //if (CodeDocument.SelectionStart == CodeDocument.SelectionLast)

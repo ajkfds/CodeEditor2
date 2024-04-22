@@ -64,12 +64,15 @@ namespace CodeEditor2.Views
             _textEditor.HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Visible;
             _textEditor.Background = Brushes.Transparent;
             _textEditor.ShowLineNumbers = true;
+
+            _textEditor.Background = new SolidColorBrush(Color.FromRgb(10, 10, 10));
+
             _textEditor.Options.ShowTabs = true;
             _textEditor.Options.ShowSpaces = true;
             _textEditor.Options.EnableImeSupport = true;
             _textEditor.Options.ShowEndOfLine = true;
-            _textEditor.Background = new SolidColorBrush(Color.FromRgb(10, 10, 10));
             _textEditor.Options.IndentationSize = 1;
+//            _textEditor.FontStyle.li
 
             _textEditor.ContextMenu = new ContextMenu
             {
@@ -193,11 +196,11 @@ namespace CodeEditor2.Views
             SelectionSegment segment;
             segment = _textEditor.TextArea.Selection.Segments.First();
 
-            CodeDocument.SelectionStart = segment.StartOffset;
+            CodeDocument.selectionStart = segment.StartOffset;
             int offset;
             offset = segment.EndOffset;
             if (offset != 0) offset--;
-            CodeDocument.SelectionLast = offset;
+            CodeDocument.selectionLast = offset;
         }
 
         // Called from CodeCdedocuent. Update CodeDocument Index change to textEditor
@@ -211,12 +214,12 @@ namespace CodeEditor2.Views
             _textEditor.CaretOffset = codeDocument.CaretIndex;
         }
 
-        private void CodeDocument_SelectionChanged(CodeDocument codeDocument)
+        public void SetSelection (int selectionStart,int selectionLast)
         {
             if (skipEvents) return;
             if (CodeDocument != codeDocument) return;
 
-            _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, CodeDocument.SelectionStart, CodeDocument.SelectionLast + 1);
+            _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, selectionStart, selectionLast + 1);
         }
 
         private void TextArea_DocumentChanged(object? sender, DocumentChangedEventArgs e)
@@ -245,7 +248,7 @@ namespace CodeEditor2.Views
             if(CodeDocument != null)
             {
                 CodeDocument.CaretChanged = null;
-                CodeDocument.SelectionChanged = null;
+//                CodeDocument.SelectionChanged = null;
             }
 
             if (textFile == null)
@@ -259,7 +262,7 @@ namespace CodeEditor2.Views
                 CodeDocument = textFile.CodeDocument;
                 System.Diagnostics.Debug.Print("## Change Events");
                 CodeDocument.CaretChanged += CodeDocument_CarletChanged;
-                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
+//                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
 
 
                 //                Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
@@ -353,7 +356,7 @@ namespace CodeEditor2.Views
 
         private void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
-            if(e.KeyModifiers == KeyModifiers.Control)
+            if (e.KeyModifiers == KeyModifiers.Control)
             {
                 if(e.Key == Key.S)
                 {
@@ -367,13 +370,14 @@ namespace CodeEditor2.Views
                 e.Handled = true;
                 codeViewPopupMenu.ShowToolSelectionPopupMenu();
             }
+            codeViewPopupMenu.TextArea_KeyDown(sender, e);
         }
 
         // tool selection form /////////////////////////////////////////////////////////////////////////
 
 
 
-//        public List<PopupMenuItem> PopupMenuItems = new List<PopupMenuItem>();
+        //        public List<PopupMenuItem> PopupMenuItems = new List<PopupMenuItem>();
 
         public void OpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> cantidates)
         {

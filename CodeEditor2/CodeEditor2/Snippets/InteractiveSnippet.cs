@@ -30,12 +30,15 @@ namespace CodeEditor2.Snippets
         public virtual void Cancel()
         {
         }
+        public virtual void KeyDown(object? sender, KeyEventArgs e, Views.PopupMenuView popupMenuView)
+        {
 
+        }
         public virtual void BeforeKeyDown(object? sender, TextInputEventArgs e, Views.PopupMenuView popupMenuView)
         {
 
         }
-        public virtual void AfterAutoCompleteHandled(object? sender, TextInputEventArgs e, Views.PopupMenuView popupMenuView)
+        public virtual void AfterAutoCompleteHandled(Views.PopupMenuView popupMenuView)
         {
 
         }

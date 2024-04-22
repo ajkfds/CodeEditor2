@@ -105,8 +105,7 @@ namespace CodeEditor2.CodeEditor
         {
             CodeDocument document = codeTextbox.CodeDocument;
             document.CaretIndex = highlightStarts[highlightIndex];
-            document.SelectionStart = highlightStarts[highlightIndex];
-            document.SelectionLast = highlighLasts[highlightIndex] + 1;
+            document.SetSelection(highlightStarts[highlightIndex],highlighLasts[highlightIndex]);
         }
 
         public int GetHighlightIndex(int index)

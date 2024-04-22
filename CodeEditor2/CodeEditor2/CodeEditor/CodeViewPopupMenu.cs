@@ -149,6 +149,11 @@ namespace CodeEditor2.CodeEditor
             snippet = null;
         }
 
+        public void TextArea_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (snippet == null) return;
+            snippet.KeyDown(sender, e, codeView.PopupMenu);
+        }
         public void TextEntering(object? sender, TextInputEventArgs e)
         {
             if (snippet == null) return;
@@ -160,10 +165,10 @@ namespace CodeEditor2.CodeEditor
             if (snippet == null) return;
             snippet.AfterKeyDown(sender, e, codeView.PopupMenu);
         }
-        public virtual void AfterAutoCompleteHandled(object? sender, TextInputEventArgs e, Views.PopupMenuView popupMenuView)
+        public virtual void AfterAutoCompleteHandled()
         {
             if (snippet == null) return;
-            snippet.AfterAutoCompleteHandled(sender, e, codeView.PopupMenu);
+            snippet.AfterAutoCompleteHandled(codeView.PopupMenu);
         }
 
     }

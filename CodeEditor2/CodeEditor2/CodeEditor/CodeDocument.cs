@@ -335,43 +335,43 @@ namespace CodeEditor2.CodeEditor
 
         /////////////////////////////////////////
 
-        public Action<CodeDocument>? SelectionChanged = null;
+//        public Action<CodeDocument>? SelectionChanged = null;
 
-        int selectionStart;
+        internal  int selectionStart;
         public int SelectionStart
         {
             get
             {
                 return selectionStart;
             }
-            set
-            {
-                if (selectionStart == value) return;
-                selectionStart = value;
-                if (SelectionChanged != null) SelectionChanged(this);
-            }
+            //set
+            //{
+            //    if (selectionStart == value) return;
+            //    selectionStart = value;
+            //    if (SelectionChanged != null) SelectionChanged(this);
+            //}
         }
 
-        int selectionLast;
+        internal int selectionLast;
         public int SelectionLast
         {
             get
             {
                 return selectionLast;
             }
-            set
-            {
-                if (selectionLast == value) return;
-                selectionLast = value;
-                if (SelectionChanged != null) SelectionChanged(this);
-            }
+            //    set
+            //    {
+            //        if (selectionLast == value) return;
+            //        selectionLast = value;
+            //        if (SelectionChanged != null) SelectionChanged(this);
+            //    }
         }
 
         public void SetSelection(int startIndex, int lastIndex)
         {
-            selectionStart = startIndex;
-            selectionLast = lastIndex;
-            if (SelectionChanged != null) SelectionChanged(this);
+            if (Global.codeView.CodeDocument != this) return;
+
+            Global.codeView.SetSelection(startIndex, lastIndex);
         }
 
 

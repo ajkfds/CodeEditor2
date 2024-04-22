@@ -8,7 +8,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="CodeEditor2.Views.CodeView">
 		<AvalonEdit:TextEditor Name="Editor"
-			FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
+			FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
 			HorizontalScrollBarVisibility="Auto"
 			VerticalScrollBarVisibility="Visible"
 			FontWeight="Light"
@@ -18,7 +18,7 @@
 			ToolTip.ShowDelay="0"
 		>
 		<ToolTip.Tip>
-			<ajkctrl:ColorLabelControl FontSize="10" Name="PopupColorLabel" FontFamily="Cascadia Code,Consolas,Menlo,Monospace"></ajkctrl:ColorLabelControl>
+			<ajkctrl:ColorLabelControl FontSize="10" Name="PopupColorLabel"></ajkctrl:ColorLabelControl>
 		</ToolTip.Tip>
 		<FlyoutBase.AttachedFlyout>
 			<views:PopupMenuFlyout Placement="AnchorAndGravity">

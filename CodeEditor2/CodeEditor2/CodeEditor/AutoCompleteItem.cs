@@ -6,6 +6,7 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -90,17 +91,23 @@ namespace CodeEditor2.CodeEditor
                 int index = codeDocument.CaretIndex;
                 codeDocument.Replace(index, 0, ColorIndex, Text);
                 codeDocument.CaretIndex = index + Text.Length;
-                codeDocument.SelectionStart = index + Text.Length;
-                codeDocument.SelectionLast = index + Text.Length;
+
+                //if(Global.codeView.CodeDocument == codeDocument)
+                //{
+                //    Controller.CodeEditor.SetSelection(index, index + Text.Length - 1);
+                //}
             }
             else
             {
                 // delete after last .
                 codeDocument.Replace(headIndex, length, ColorIndex, Text);
                 codeDocument.CaretIndex = headIndex + Text.Length;
-                codeDocument.SelectionStart = headIndex + Text.Length;
-                codeDocument.SelectionLast = headIndex + Text.Length;
+                //if (Global.codeView.CodeDocument == codeDocument)
+                //{
+                //    Controller.CodeEditor.SetSelection(headIndex, headIndex + Text.Length - 1);
+                //}
             }
+            Global.codeView.codeViewPopupMenu.AfterAutoCompleteHandled();
         }
 
     }
