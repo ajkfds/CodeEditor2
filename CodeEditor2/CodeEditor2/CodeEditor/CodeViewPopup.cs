@@ -44,7 +44,7 @@ namespace CodeEditor2.CodeEditor
             popupInex = headIndex;
 
             PopupItem pitem = codeView.TextFile.GetPopupItem(codeView.CodeDocument.Version, index);
-            if (pitem == null)
+            if (pitem == null || pitem.ItemCount == 0)
             {
                 ToolTip.SetIsOpen(codeView.Editor, false);
                 return;

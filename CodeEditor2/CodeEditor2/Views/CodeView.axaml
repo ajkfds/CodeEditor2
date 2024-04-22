@@ -18,7 +18,12 @@
 			ToolTip.ShowDelay="0"
 		>
 		<ToolTip.Tip>
-			<ajkctrl:ColorLabelControl FontSize="10" Name="PopupColorLabel"></ajkctrl:ColorLabelControl>
+			<ajkctrl:ColorLabelControl 
+				FontSize="10" 
+				Name="PopupColorLabel"
+				FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+			>
+			</ajkctrl:ColorLabelControl>
 		</ToolTip.Tip>
 		<FlyoutBase.AttachedFlyout>
 			<views:PopupMenuFlyout Placement="AnchorAndGravity">
