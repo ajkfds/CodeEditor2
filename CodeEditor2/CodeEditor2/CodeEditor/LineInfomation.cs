@@ -28,16 +28,17 @@ namespace CodeEditor2.CodeEditor
 
         public class Effect
         {
-            public Effect(int offeset, int length, Avalonia.Media.Color color, TextDecoration Delocation)
+            public Effect(int offset, int length, Avalonia.Media.Color color, CodeDocumentColorTransformer.MarkStyleEnum markStyle)
             {
-                this.Offset = offeset;
+                this.Offset = offset;
                 this.Length = length;
                 this.DrawColor = color;
+                this.MarkStyle = markStyle;
             }
             public int Offset;
             public int Length;
             public Avalonia.Media.Color DrawColor;
-            public TextDecoration Delocation;
+            public CodeDocumentColorTransformer.MarkStyleEnum MarkStyle;
         }
     }
 }

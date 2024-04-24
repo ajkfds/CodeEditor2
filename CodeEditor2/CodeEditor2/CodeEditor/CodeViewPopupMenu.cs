@@ -86,25 +86,25 @@ namespace CodeEditor2.CodeEditor
                 return;
             }
 
-            TransformedBounds? tbound = Global.codeView.Editor.GetTransformedBounds();
-            if (tbound == null) return;
-            TransformedBounds transformedBound = (TransformedBounds)tbound;
+            //TransformedBounds? tbound = Global.codeView.Editor.GetTransformedBounds();
+            //if (tbound == null) return;
+            //TransformedBounds transformedBound = (TransformedBounds)tbound;
             var carletRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
 
 
-            Avalonia.Point position = transformedBound.Clip.Position;
-
-            Avalonia.PixelPoint screenPosition = new Avalonia.PixelPoint(
-                Global.mainWindow.Position.X + (int)(transformedBound.Clip.Position.X * Global.mainWindow.DesktopScaling),
-                Global.mainWindow.Position.Y + (int)(transformedBound.Clip.Position.Y * Global.mainWindow.DesktopScaling)
-                );
+            Avalonia.Point position = carletRect.Position;// transformedBound.Clip.Position;
+            Avalonia.Vector scroll = codeView._textEditor.TextArea.TextView.ScrollOffset;
+            //Avalonia.PixelPoint screenPosition = new Avalonia.PixelPoint(
+            //    Global.mainWindow.Position.X + (int)(position.X * Global.mainWindow.DesktopScaling),
+            //    Global.mainWindow.Position.Y + (int)((position.Y-scroll.Y) * Global.mainWindow.DesktopScaling)
+            //    );
 
             PopupMenuItems.Clear();
             foreach (ToolItem item in tools) { PopupMenuItems.Add(item); }
 
             flyout.Placement = PlacementMode.AnchorAndGravity;
-            flyout.VerticalOffset = carletRect.Top;
-            flyout.HorizontalOffset = carletRect.Left;
+            flyout.VerticalOffset = position.Y-scroll.Y;
+            flyout.HorizontalOffset = position.X-scroll.X;
             flyout.PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight;
             flyout.PlacementAnchor = Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.TopLeft;
 

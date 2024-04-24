@@ -20,6 +20,14 @@ namespace CodeEditor2.CodeEditor
 {
     public class CodeDocumentColorTransformer : DocumentColorizingTransformer
     {
+        public enum MarkStyleEnum
+        {
+            ThickUnderLine,
+            ThinUnderLine,
+            DashedLine0,
+            DashedLine1,
+        }
+
         protected override void ColorizeLine(DocumentLine line)
         {
 
@@ -50,20 +58,46 @@ namespace CodeEditor2.CodeEditor
                     effect.Offset + effect.Length,
                     visualLine =>
                     {
-                        if (visualLine.TextRunProperties.TextDecorations == null)
-                        {
-                            visualLine.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
-                        }
+                        //if (visualLine.TextRunProperties.TextDecorations == null)
+                        //{
+                        //visualLine.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
+                        //}
 
-                        TextDecoration underline = TextDecorations.Underline[0];
+                        //TextDecoration underline = TextDecorations.Underline[0];
+                        //underline.StrokeThickness = 2;
+                        //underline.StrokeThicknessUnit = TextDecorationUnit.Pixel;
+                        //underline.StrokeOffset = 2;
+                        //underline.StrokeOffsetUnit = TextDecorationUnit.Pixel;
+                        //underline.Stroke = new SolidColorBrush(effect.DrawColor);
+                        //var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { underline };
+
+                        //                        visualLine.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
+                        TextDecoration underline = new TextDecoration();// TextDecorations.Underline.Last();
+                        underline.Stroke = new SolidColorBrush(effect.DrawColor);
                         underline.StrokeThickness = 2;
                         underline.StrokeThicknessUnit = TextDecorationUnit.Pixel;
                         underline.StrokeOffset = 2;
                         underline.StrokeOffsetUnit = TextDecorationUnit.Pixel;
-                        underline.Stroke = new SolidColorBrush(effect.DrawColor);
-                        var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { underline };
+                        switch (effect.MarkStyle)
+                        {
+                            case MarkStyleEnum.DashedLine0:
+                                underline.StrokeDashArray = new Avalonia.Collections.AvaloniaList<double>(2, 2);
+                                break;
+                            case MarkStyleEnum.ThinUnderLine:
+                                underline.StrokeThickness = 1;
+                                break;
+                        }
 
-                        visualLine.TextRunProperties.SetTextDecorations(textDecorations);
+                        if (visualLine.TextRunProperties.TextDecorations == null)
+                        {
+                            visualLine.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
+                            var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { underline };
+                            visualLine.TextRunProperties.SetTextDecorations(textDecorations);
+                        }
+                        else
+                        {
+                            visualLine.TextRunProperties.TextDecorations.Add(underline);
+                        }
                     }
                 );
             }

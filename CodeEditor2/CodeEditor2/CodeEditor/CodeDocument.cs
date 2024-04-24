@@ -427,23 +427,42 @@ namespace CodeEditor2.CodeEditor
 
         public virtual void SetMarkAt(int index, byte value)
         {
-            if (index >= Length) return;
-            if (TextDocument == null) return;
-            DocumentLine line = TextDocument.GetLineByOffset(index);
-            LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
-            Color color = TextFile.DrawStyle.MarkColor[value];
-            lineInfo.Effects.Add(new LineInfomation.Effect(index, 1, color, null));
+            SetMarkAt(index, 1, value);
         }
 
         public void SetMarkAt(int index, int length, byte value)
         {
-            if (TextFile == null) return;
             if (TextDocument == null) return;
+            if (TextFile == null) return;
             if (index >= Length) return;
-            DocumentLine line = TextDocument.GetLineByOffset(index);
-            LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
+
+            DocumentLine lineStart = TextDocument.GetLineByOffset(index);
+            DocumentLine lineLast = TextDocument.GetLineByOffset(index + length);
             Color color = TextFile.DrawStyle.MarkColor[value];
-            lineInfo.Effects.Add(new LineInfomation.Effect(index, length, color, null));
+            CodeDocumentColorTransformer.MarkStyleEnum markStyle = TextFile.DrawStyle.MarkStyle[value];
+
+            if (lineStart == lineLast)
+            {
+                LineInfomation lineInfo = GetLineInfomation(lineStart.LineNumber);
+                lineInfo.Effects.Add(new LineInfomation.Effect(index, length, color, markStyle));
+            }
+            else
+            {
+                LineInfomation lineInfo = GetLineInfomation(lineStart.LineNumber);
+                lineInfo.Effects.Add(new LineInfomation.Effect(index, GetLineLength(lineStart.LineNumber) - (index - GetLineStartIndex(lineStart.LineNumber)), color, markStyle));
+
+                lineInfo = GetLineInfomation(lineLast.LineNumber);
+                lineInfo.Effects.Add(new LineInfomation.Effect(GetLineStartIndex(lineLast.LineNumber), index + length - GetLineStartIndex(lineLast.LineNumber), color, markStyle));
+
+                for (int line = lineStart.LineNumber + 1; line <= lineLast.LineNumber - 1; line++)
+                {
+                    lineInfo = GetLineInfomation(line);
+                    lineInfo.Effects.Add(new LineInfomation.Effect(GetLineStartIndex(line), GetLineLength(line), color, markStyle));
+                }
+            }
+
+
+
         }
 
 

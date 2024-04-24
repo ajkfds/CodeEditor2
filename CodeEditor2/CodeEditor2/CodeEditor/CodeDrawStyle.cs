@@ -62,22 +62,22 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        //public virtual CodeTextbox.MarkStyleEnum[] MarkStyle
-        //{
-        //    get
-        //    {
-        //        return new CodeTextbox.MarkStyleEnum[8]
-        //            {
-        //                CodeTextbox.MarkStyleEnum.wave,    // 0
-        //                CodeTextbox.MarkStyleEnum.underLine,
-        //                CodeTextbox.MarkStyleEnum.underLine,
-        //                CodeTextbox.MarkStyleEnum.underLine,
-        //                CodeTextbox.MarkStyleEnum.underLine,
-        //                CodeTextbox.MarkStyleEnum.underLine,
-        //                CodeTextbox.MarkStyleEnum.underLine,
-        //                CodeTextbox.MarkStyleEnum.fill              // 7 for selection highlight
-        //            };
-        //    }
-        //}
+        public virtual CodeDocumentColorTransformer.MarkStyleEnum[] MarkStyle
+        {
+            get
+            {
+                return new CodeDocumentColorTransformer.MarkStyleEnum[8]
+                    {
+                        CodeDocumentColorTransformer.MarkStyleEnum.DashedLine0,    // 0
+                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine,
+                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine,
+                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine,
+                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine,
+                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine,
+                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine,
+                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine              // 7 for selection highlight
+                    };
+            }
+        }
     }
 }
