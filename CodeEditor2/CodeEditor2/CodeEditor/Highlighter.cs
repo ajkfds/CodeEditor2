@@ -123,14 +123,15 @@ namespace CodeEditor2.CodeEditor
             CodeDocument document = codeTextbox.CodeDocument;
 
             if (highlightStarts.Count == 0) return;
-            for (int i = 0; i < highlightStarts.Count; i++)
-            {
-                document.RemoveMarkAt(highlightStarts[i], highlighLasts[i] - highlightStarts[i] + 1, 7);
-                //for (int index = highlightStarts[i]; index <= highlighLasts[i]; index++)
-                //{
-                //    if(index < document.Length) document.RemoveMarkAt(index, 7);
-                //}
-            }
+            Global.codeView._highlightRenderer.CurrentResults.Clear();
+            //for (int i = 0; i < highlightStarts.Count; i++)
+            //{
+            //    document.RemoveMarkAt(highlightStarts[i], highlighLasts[i] - highlightStarts[i] + 1, 7);
+            //    //for (int index = highlightStarts[i]; index <= highlighLasts[i]; index++)
+            //    //{
+            //    //    if(index < document.Length) document.RemoveMarkAt(index, 7);
+            //    //}
+            //}
             highlightStarts.Clear();
             highlighLasts.Clear();
 
@@ -140,7 +141,12 @@ namespace CodeEditor2.CodeEditor
         public void AppendHighlight(int highlightStart, int highlightLast)
         {
             CodeDocument document = codeTextbox.CodeDocument;
-            document.SetMarkAt(highlightStart, highlightLast - highlightStart + 1, 7);
+
+            AvaloniaEdit.Document.TextSegment segment = new AvaloniaEdit.Document.TextSegment();
+            segment.StartOffset = highlightStart;
+            segment.Length = highlightLast - highlightStart+1;
+            Global.codeView._highlightRenderer.CurrentResults.Add(segment);
+//            document.SetMarkAt(highlightStart, highlightLast - highlightStart + 1, 7);
             //for (int index = highlightStart; index <= highlightLast; index++)
             //{
             //    document.SetMarkAt(index, 7);
@@ -154,14 +160,14 @@ namespace CodeEditor2.CodeEditor
         public void ReDrawHighlight()
         {
             CodeDocument document = codeTextbox.CodeDocument;
-            for (int j = 0; j < highlightStarts.Count; j++)
-            {
-                document.SetMarkAt(highlightStarts[j], highlighLasts[j] - highlightStarts[j] + 1, 7);
-                //for (int index = highlightStarts[j]; index <= highlighLasts[j]; index++)
-                //{
-                //    document.SetMarkAt(index, 7);
-                //}
-            }
+            //for (int j = 0; j < highlightStarts.Count; j++)
+            //{
+            //    document.SetMarkAt(highlightStarts[j], highlighLasts[j] - highlightStarts[j] + 1, 7);
+            //    //for (int index = highlightStarts[j]; index <= highlighLasts[j]; index++)
+            //    //{
+            //    //    document.SetMarkAt(index, 7);
+            //    //}
+            //}
             codeTextbox.Redraw();
         }
     }
