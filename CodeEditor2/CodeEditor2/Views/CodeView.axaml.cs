@@ -33,6 +33,7 @@ using DynamicData.Binding;
 using Avalonia.Controls.Primitives;
 using System.Threading.Tasks;
 using Avalonia.VisualTree;
+using Avalonia.Rendering;
 
 namespace CodeEditor2.Views
 {
@@ -102,10 +103,13 @@ namespace CodeEditor2.Views
             _textEditor.TextArea.SelectionChanged += TextArea_SelectionChanged;
             _textEditor.TextArea.RightClickMovesCaret = true;
 
+            _highlightRenderer = new HighlightRenderer(new SolidColorBrush(Color.FromArgb(255, 100, 100, 100)));
+            _textEditor.TextArea.TextView.BackgroundRenderers.Add(_highlightRenderer);
+
+
             PopupMenu.Selected += PopupMenu_Selected;
 
 //            _textEditor.TextArea.TextView.ElementGenerators.Add(_generator);
-
             //_registryOptions = new TextMateSharp.Grammars.RegistryOptions(
             //    (ThemeName)_currentTheme);
 
@@ -127,8 +131,6 @@ namespace CodeEditor2.Views
 //            _textMateInstallation.SetGrammar(_registryOptions.GetScopeByLanguageId(csharpLanguage.Id));
             _textEditor.TextArea.TextView.LineTransformers.Add(new CodeDocumentColorTransformer());
 
-//            _statusTextBlock = this.Find<TextBlock>("StatusText");
-
             this.AddHandler(PointerWheelChangedEvent, (o, i) =>
             {
                 if (i.KeyModifiers != KeyModifiers.Control) return;
@@ -141,8 +143,7 @@ namespace CodeEditor2.Views
             timer.Tick += Timer_Tick;
             timer.Start();
         }
-
-
+        internal CodeEditor.HighlightRenderer _highlightRenderer;
         internal CodeViewPopup codeViewPopup;
         internal CodeViewParser codeViewParser;
         internal CodeViewPopupMenu codeViewPopupMenu;
@@ -411,15 +412,17 @@ namespace CodeEditor2.Views
         {
             if (skipEvents) return;
             codeViewPopupMenu.TextEntering(sender, e);
-            if (e.Text.Length > 0 && _completionWindow != null)
-            {
-                if (!char.IsLetterOrDigit(e.Text[0]))
-                {
-                    // Whenever a non-letter is typed while the completion window is open,
-                    // insert the currently selected element.
-                    _completionWindow.CompletionList.RequestInsertion(e);
-                }
-            }
+
+
+            //if (e.Text.Length > 0 && _completionWindow != null)
+            //{
+            //    //if (!char.IsLetterOrDigit(e.Text[0]))
+            //    //{
+            //    //    // Whenever a non-letter is typed while the completion window is open,
+            //    //    // insert the currently selected element.
+            //    //    _completionWindow.CompletionList.RequestInsertion(e);
+            //    //}
+            //}
 
             _insightWindow?.Hide();
 
