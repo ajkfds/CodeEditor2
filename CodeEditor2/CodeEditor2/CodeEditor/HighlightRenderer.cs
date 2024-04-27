@@ -62,7 +62,6 @@ namespace CodeEditor2.CodeEditor
                 if (geometry != null)
                 {
                     drawingContext.DrawGeometry(_markerBrush, null, geometry);
-                    //drawingContext.DrawGeometry(null, pen, geometry);
                 }
             }
         }

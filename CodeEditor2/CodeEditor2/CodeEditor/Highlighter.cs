@@ -140,17 +140,10 @@ namespace CodeEditor2.CodeEditor
 
         public void AppendHighlight(int highlightStart, int highlightLast)
         {
-            CodeDocument document = codeTextbox.CodeDocument;
-
             AvaloniaEdit.Document.TextSegment segment = new AvaloniaEdit.Document.TextSegment();
             segment.StartOffset = highlightStart;
             segment.Length = highlightLast - highlightStart+1;
             Global.codeView._highlightRenderer.CurrentResults.Add(segment);
-//            document.SetMarkAt(highlightStart, highlightLast - highlightStart + 1, 7);
-            //for (int index = highlightStart; index <= highlightLast; index++)
-            //{
-            //    document.SetMarkAt(index, 7);
-            //}
             highlightStarts.Add(highlightStart);
             highlighLasts.Add(highlightLast);
 
@@ -159,15 +152,6 @@ namespace CodeEditor2.CodeEditor
 
         public void ReDrawHighlight()
         {
-            CodeDocument document = codeTextbox.CodeDocument;
-            //for (int j = 0; j < highlightStarts.Count; j++)
-            //{
-            //    document.SetMarkAt(highlightStarts[j], highlighLasts[j] - highlightStarts[j] + 1, 7);
-            //    //for (int index = highlightStarts[j]; index <= highlighLasts[j]; index++)
-            //    //{
-            //    //    document.SetMarkAt(index, 7);
-            //    //}
-            //}
             codeTextbox.Redraw();
         }
     }
