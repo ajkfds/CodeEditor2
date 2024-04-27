@@ -133,6 +133,13 @@ namespace CodeEditor2
                 Global.codeView.CodeDocument.TextFile.Save();
             }
 
+            public static bool IsPopupMenuOpened
+            {
+                get
+                {
+                    return Global.codeView.codeViewPopupMenu.IsOpened;
+                }
+            }
 
             public static void ForceOpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> cantidates)
             {

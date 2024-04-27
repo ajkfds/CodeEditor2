@@ -112,7 +112,16 @@ namespace CodeEditor2.CodeEditor
         }
 
 
-
+        public bool IsOpened
+        {
+            get
+            {
+                PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
+                if (flyout == null) return false;
+                if (!flyout.IsOpen) return false;
+                return true;
+            }
+        }
 
         public void HidePopupMenu()
         {
