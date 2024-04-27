@@ -70,28 +70,34 @@ namespace CodeEditor2.Views
             TreeNode? node = TreeControl.GetSelectedNode();
             if (node == null) return;
 
-            string command = "";
-            if (System.OperatingSystem.IsLinux())
-            {
-                command = "thunar&";
-            }
-            else
-            {
-                command = "EXPLORER.EXE";
-            }
-
             if (node is FolderNode)
             {
                 Data.Folder folder = (node as FolderNode).Folder;
                 if (folder == null || folder.Project == null) return;
-                System.Diagnostics.Process.Start(command, folder.Project.GetAbsolutePath(folder.RelativePath));
-
+                string folderPath = folder.Project.GetAbsolutePath(folder.RelativePath).Replace('\\',System.IO.Path.DirectorySeparatorChar);
+                
+                if (System.OperatingSystem.IsLinux())
+                {
+                    System.Diagnostics.Process.Start("thunar "+folderPath+" &");
+                }
+                else
+                {
+                    System.Diagnostics.Process.Start("EXPLORER.EXE", folderPath);
+                }
             }
             else if (node is FileNode)
             {
                 Data.File file = (node as FileNode).FileItem;
                 if (file == null || file.Project == null) return;
-                System.Diagnostics.Process.Start(command, "/select,\"" + file.Project.GetAbsolutePath(file.RelativePath) + "\"");
+                string filePath = file.Project.GetAbsolutePath(file.RelativePath).Replace('\\', System.IO.Path.DirectorySeparatorChar);
+
+                if (System.OperatingSystem.IsLinux())
+                {
+                }
+                else
+                {
+                    System.Diagnostics.Process.Start("EXPLORER.EXE", "/select,\"" + file.Project.GetAbsolutePath(file.RelativePath) + "\"");
+                }
             }
         }
 

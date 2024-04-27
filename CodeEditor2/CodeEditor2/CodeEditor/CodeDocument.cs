@@ -24,19 +24,19 @@ namespace CodeEditor2.CodeEditor
         public CodeDocument()
         {
             textDocument = new TextDocument();
-            initilize();
+            initialize();
         }
 
         public CodeDocument(Data.TextFile textFile, bool textOnly) : this()
         {
             textDocument = new TextDocument();
-            initilize();
+            initialize();
         }
         public CodeDocument(Data.TextFile textFile)
         {
             textFileRef = new WeakReference<Data.TextFile>(textFile);
             textDocument = new TextDocument();
-            initilize();
+            initialize();
         }
 
         public CodeDocument(Data.TextFile textFile, string text) 
@@ -44,10 +44,10 @@ namespace CodeEditor2.CodeEditor
             textFileRef = new WeakReference<Data.TextFile>(textFile);
             textDocument = new TextDocument();
             textDocument.Text = text;
-            initilize();
+            initialize();
         }
 
-        private void initilize()
+        private void initialize()
         {
             ownerThread = System.Threading.Thread.CurrentThread;
             textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);

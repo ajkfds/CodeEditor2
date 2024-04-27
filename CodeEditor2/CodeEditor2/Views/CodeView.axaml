@@ -6,12 +6,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+			 FontWeight="Normal"
              x:Class="CodeEditor2.Views.CodeView">
 		<AvalonEdit:TextEditor Name="Editor"
-			FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
 			HorizontalScrollBarVisibility="Auto"
 			VerticalScrollBarVisibility="Visible"
-			FontWeight="Light"
+			FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+			FontWeight="Normal"
 			FontSize="10"
 			ToolTip.Tip="AAA"
 			ToolTip.Placement="Pointer"
@@ -19,15 +21,23 @@
 		>
 		<ToolTip.Tip>
 			<ajkctrl:ColorLabelControl 
-				FontSize="10" 
 				Name="PopupColorLabel"
+				FontSize="10" 
+				FontWeight="Normal"
 				FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
 			>
 			</ajkctrl:ColorLabelControl>
 		</ToolTip.Tip>
 		<FlyoutBase.AttachedFlyout>
 			<views:PopupMenuFlyout Placement="AnchorAndGravity">
-				<views:PopupMenuView Name="PopupMenu" Margin="0" Padding="0"/>
+				<views:PopupMenuView
+					Name="PopupMenu"
+					Margin="0"
+					Padding="0"
+					FontSize="10"
+					FontWeight="Normal"
+					FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+				/>
 			</views:PopupMenuFlyout>
 		</FlyoutBase.AttachedFlyout>
 		</AvalonEdit:TextEditor>

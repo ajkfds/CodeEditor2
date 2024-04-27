@@ -8,7 +8,9 @@
 	<ajkctrl:TreeControl
 		Name="TreeControl"
 		FontSize="12"
-    >
+		FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+		FontWeight="Normal"
+	>
 		<ajkctrl:TreeControl.ContextMenu>
 			<ContextMenu Name="ContextMenu" FontSize="12">
 				<MenuItem Header="Add" FontSize="12"/>

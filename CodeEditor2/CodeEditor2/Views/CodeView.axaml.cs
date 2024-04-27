@@ -34,6 +34,7 @@ using Avalonia.Controls.Primitives;
 using System.Threading.Tasks;
 using Avalonia.VisualTree;
 using Avalonia.Rendering;
+using CodeEditor2.Data;
 
 namespace CodeEditor2.Views
 {
@@ -73,7 +74,7 @@ namespace CodeEditor2.Views
             _textEditor.Options.EnableImeSupport = true;
             _textEditor.Options.ShowEndOfLine = true;
             _textEditor.Options.IndentationSize = 1;
-//            _textEditor.FontStyle.li
+            //            _textEditor.FontStyle.li
 
             _textEditor.ContextMenu = new ContextMenu
             {
@@ -109,26 +110,26 @@ namespace CodeEditor2.Views
 
             PopupMenu.Selected += PopupMenu_Selected;
 
-//            _textEditor.TextArea.TextView.ElementGenerators.Add(_generator);
+            //            _textEditor.TextArea.TextView.ElementGenerators.Add(_generator);
             //_registryOptions = new TextMateSharp.Grammars.RegistryOptions(
             //    (ThemeName)_currentTheme);
 
-//            _textMateInstallation = _textEditor.InstallTextMate(_registryOptions);
+            //            _textMateInstallation = _textEditor.InstallTextMate(_registryOptions);
 
-//            Language csharpLanguage = _registryOptions.GetLanguageByExtension(".cs");
+            //            Language csharpLanguage = _registryOptions.GetLanguageByExtension(".cs");
 
-//            _syntaxModeCombo = this.FindControl<ComboBox>("syntaxModeCombo");
-//            _syntaxModeCombo.ItemsSource = _registryOptions.GetAvailableLanguages();
-//            _syntaxModeCombo.SelectedItem = csharpLanguage;
-//            _syntaxModeCombo.SelectionChanged += SyntaxModeCombo_SelectionChanged;
+            //            _syntaxModeCombo = this.FindControl<ComboBox>("syntaxModeCombo");
+            //            _syntaxModeCombo.ItemsSource = _registryOptions.GetAvailableLanguages();
+            //            _syntaxModeCombo.SelectedItem = csharpLanguage;
+            //            _syntaxModeCombo.SelectionChanged += SyntaxModeCombo_SelectionChanged;
 
-//            string scopeName = _registryOptions.GetScopeByLanguageId(csharpLanguage.Id);
-            
+            //            string scopeName = _registryOptions.GetScopeByLanguageId(csharpLanguage.Id);
+
             _textEditor.Document = new TextDocument(
                 "// Press Ctrl + Space to force open auto-complete" + Environment.NewLine +
                 "// Press Shit + Space to open quick tool menu" + Environment.NewLine);
             //+ ResourceLoader.LoadSampleFile(scopeName));
-//            _textMateInstallation.SetGrammar(_registryOptions.GetScopeByLanguageId(csharpLanguage.Id));
+            //            _textMateInstallation.SetGrammar(_registryOptions.GetScopeByLanguageId(csharpLanguage.Id));
             _textEditor.TextArea.TextView.LineTransformers.Add(new CodeDocumentColorTransformer());
 
             this.AddHandler(PointerWheelChangedEvent, (o, i) =>
@@ -175,7 +176,7 @@ namespace CodeEditor2.Views
             CodeDocument.CaretIndex = _textEditor.TextArea.Caret.Offset;
 
             int carletLine = _textEditor.TextArea.Caret.Line;
-            ulong version = codeDocument.Version;
+            ulong version = CodeDocument.Version;
             //Debug.Print("version "+version.ToString()+"  carletLine"+carletLine.ToString());
             if (prevVersion != version && carletLine != prevCarletLine)
             {
@@ -215,7 +216,7 @@ namespace CodeEditor2.Views
             _textEditor.CaretOffset = codeDocument.CaretIndex;
         }
 
-        public void SetSelection (int selectionStart,int selectionLast)
+        public void SetSelection(int selectionStart, int selectionLast)
         {
             if (skipEvents) return;
             if (CodeDocument != codeDocument) return;
@@ -241,10 +242,12 @@ namespace CodeEditor2.Views
         }
 
         private bool skipEvents = false;
+
         public void SetTextFile(Data.TextFile textFile)
         {
             Global.StopParse = true;
             skipEvents = true;
+
             System.Diagnostics.Debug.Print("## SetTextFile");
             if(CodeDocument != null)
             {
@@ -259,10 +262,10 @@ namespace CodeEditor2.Views
             }
             else
             {
+                TextFile = textFile;
                 System.Diagnostics.Debug.Print("## Change CodeDocument");
-                CodeDocument = textFile.CodeDocument;
                 System.Diagnostics.Debug.Print("## Change Events");
-                CodeDocument.CaretChanged += CodeDocument_CarletChanged;
+                TextFile.CodeDocument.CaretChanged += CodeDocument_CarletChanged;
 //                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
 
 
@@ -288,8 +291,7 @@ namespace CodeEditor2.Views
 
             if (textFile == null || textFile.CodeDocument == null)
             {
-                CodeDocument = null;
-                //codeTextbox.Visible = false;
+                TextFile = null;
                 return;
             }
             if (TextFile == null || TextFile.GetType() != textFile.GetType())
@@ -319,28 +321,29 @@ namespace CodeEditor2.Views
         {
             get
             {
-                return codeDocument;
-            }
-            set
-            {
-                codeDocument = value;
-                if(codeDocument == null)
-                {
-//                    _textEditor.Document = null;
-                }
-                else
-                {
-                    _textEditor.Document = codeDocument.TextDocument;
-                }
+                if (TextFile == null) return null;
+                return TextFile.CodeDocument;
             }
         }
 
+        private Data.TextFile? textFile;
         public Data.TextFile? TextFile
         {
             get
             {
-                if (codeDocument == null) return null;
-                return codeDocument.TextFile;
+                return textFile;
+            }
+            set
+            {
+                textFile = value;
+                if(CodeDocument == null)
+                {
+
+                }
+                else
+                {
+                    _textEditor.Document = CodeDocument.TextDocument;
+                }
             }
         }
 
