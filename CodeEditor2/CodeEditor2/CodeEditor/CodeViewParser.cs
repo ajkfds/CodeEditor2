@@ -55,6 +55,7 @@ namespace CodeEditor2.CodeEditor
             }
 
             // update current view
+            codeView._markerRenderer.SetMarks(codeDocument.Marks);
             codeView._textEditor.TextArea.TextView.Redraw();
             Controller.MessageView.Update(codeView.TextFile.ParsedDocument);
         }

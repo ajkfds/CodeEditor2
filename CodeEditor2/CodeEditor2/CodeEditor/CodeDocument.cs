@@ -4,6 +4,7 @@ using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.TextMate;
 using CodeEditor2.NavigatePanel;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ReactiveUI;
 using System;
 using System.Buffers;
@@ -406,6 +407,7 @@ namespace CodeEditor2.CodeEditor
         public void CopyColorMarkFrom(CodeDocument document)
         {
             LineInfomations = document.LineInfomations;
+            Marks = document.Marks;
         }
         public void CopyFrom(CodeDocument document)
         {
@@ -430,39 +432,23 @@ namespace CodeEditor2.CodeEditor
             SetMarkAt(index, 1, value);
         }
 
+        public List<CodeDrawStyle.MarkInfo> Marks = new List<CodeDrawStyle.MarkInfo>();
         public void SetMarkAt(int index, int length, byte value)
         {
             if (TextDocument == null) return;
             if (TextFile == null) return;
             if (index >= Length) return;
 
-            DocumentLine lineStart = TextDocument.GetLineByOffset(index);
-            DocumentLine lineLast = TextDocument.GetLineByOffset(index + length);
-            Color color = TextFile.DrawStyle.MarkColor[value];
-            CodeDocumentColorTransformer.MarkStyleEnum markStyle = TextFile.DrawStyle.MarkStyle[value];
-
-            if (lineStart == lineLast)
-            {
-                LineInfomation lineInfo = GetLineInfomation(lineStart.LineNumber);
-                lineInfo.Effects.Add(new LineInfomation.Effect(index, length, color, markStyle));
-            }
-            else
-            {
-                LineInfomation lineInfo = GetLineInfomation(lineStart.LineNumber);
-                lineInfo.Effects.Add(new LineInfomation.Effect(index, GetLineLength(lineStart.LineNumber) - (index - GetLineStartIndex(lineStart.LineNumber)), color, markStyle));
-
-                lineInfo = GetLineInfomation(lineLast.LineNumber);
-                lineInfo.Effects.Add(new LineInfomation.Effect(GetLineStartIndex(lineLast.LineNumber), index + length - GetLineStartIndex(lineLast.LineNumber), color, markStyle));
-
-                for (int line = lineStart.LineNumber + 1; line <= lineLast.LineNumber - 1; line++)
-                {
-                    lineInfo = GetLineInfomation(line);
-                    lineInfo.Effects.Add(new LineInfomation.Effect(GetLineStartIndex(line), GetLineLength(line), color, markStyle));
-                }
-            }
-
-
-
+            CodeDrawStyle.MarkInfo markStyle = TextFile.DrawStyle.MarkStyle[value];
+            CodeDrawStyle.MarkInfo mark = new CodeDrawStyle.MarkInfo();
+            mark.offset = index;
+            mark.endOffset = index + length;
+            mark.Color = markStyle.Color;
+            mark.Thickness = markStyle.Thickness;
+            mark.DecorationHeight = markStyle.DecorationHeight;
+            mark.DecorationWidth = markStyle.DecorationWidth;
+            mark.Style = markStyle.Style;
+            Marks.Add(mark);
         }
 
 
@@ -480,7 +466,27 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
+        #region Text Color
         public Dictionary<int, LineInfomation> LineInfomations = new Dictionary<int, LineInfomation>();
+        protected LineInfomation GetLineInfomation(int lineNumber)
+        {
+            LineInfomation lineInfo;
+            if (LineInfomations.ContainsKey(lineNumber))
+            {
+                lineInfo = LineInfomations[lineNumber];
+            }
+            else
+            {
+                lineInfo = new LineInfomation();
+                LineInfomations.Add(lineNumber, lineInfo);
+            }
+            if (lineInfo.Colors.Count > 2000)
+            {
+                string a = "";
+            }
+            return lineInfo;
+        }
+
 
         public byte GetColorAt(int index)
         {
@@ -532,25 +538,10 @@ namespace CodeEditor2.CodeEditor
                 }
             }
         }
+        #endregion
 
-        protected LineInfomation GetLineInfomation(int lineNumber)
-        {
-            LineInfomation lineInfo;
-            if (LineInfomations.ContainsKey(lineNumber))
-            {
-                lineInfo = LineInfomations[lineNumber];
-            }
-            else
-            {
-                lineInfo = new LineInfomation();
-                LineInfomations.Add(lineNumber, lineInfo);
-            }
-            if (lineInfo.Colors.Count > 2000)
-            {
-                string a = "";
-            }
-            return lineInfo;
-        }
+
+        //
 
 
         public void Undo()

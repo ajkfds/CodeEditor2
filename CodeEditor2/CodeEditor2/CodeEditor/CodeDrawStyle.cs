@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Media;
+using CodeEditor2.CodeEditor;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeEditor2.CodeEditor
 {
@@ -31,8 +33,78 @@ namespace CodeEditor2.CodeEditor
                 Color.FromRgb(100,100,  0), // 14
                 Color.FromRgb( 50, 50, 50)  // 15
             };
+
+
+            markStyle = new MarkInfo[]
+            {
+                // 0
+                new MarkInfo
+                {
+                    Color = Color.FromRgb(212, 212, 212),
+                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                },
+                // 1
+                new MarkInfo
+                {
+                    Color = Color.FromRgb(0, 0, 255),
+                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                },
+                // 2
+                new MarkInfo
+                {
+                    Color = Color.FromRgb(0, 255, 0),
+                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                },
+                // 3
+                new MarkInfo
+                {
+                    Color = Color.FromRgb(0, 255, 0),
+                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                },
+                // 4
+                new MarkInfo
+                {
+                    Color = Color.FromRgb(0, 255, 0),
+                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                },
+                // 5
+                new MarkInfo
+                {
+                    Color = Color.FromRgb(0, 255, 0),
+                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                },
+                // 6
+                new MarkInfo
+                {
+                    Color = Color.FromRgb(0, 255, 0),
+                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                },
+                // 7
+                new MarkInfo
+                {
+                    Color = Color.FromRgb(0, 255, 0),
+                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                },
+            };
         }
 
+        public class MarkInfo
+        {
+            public Color Color;
+            public double DecorationWidth = 4;
+            public double DecorationHeight = 1;
+            public double Thickness = 1;
+            public MarkStyleEnum Style;
+            public int offset;
+            public int endOffset;
+            public enum MarkStyleEnum
+            {
+                UnderLine,
+                WaveLine,
+                DotLine,
+                DashLine
+            }
+        }
 
         protected Color[] colors;
 
@@ -44,39 +116,12 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        public virtual Color[] MarkColor
+        protected MarkInfo[] markStyle;
+        public virtual MarkInfo[] MarkStyle
         {
             get
             {
-                return new Color[8]
-                    {
-                        Color.FromRgb(212,212,212), // 0
-                        Color.FromRgb(  0,  0,255), // 1
-                        Color.FromRgb(  0,255,  0), // 2
-                        Color.FromRgb(  0,255,255), // 3
-                        Color.FromRgb(255,  0,  0), // 4
-                        Color.FromRgb(255,  0,255), // 5
-                        Color.FromRgb(255,255,  0), // 6
-                        Color.FromRgb(255,255,255), // 7
-                    };
-            }
-        }
-
-        public virtual CodeDocumentColorTransformer.MarkStyleEnum[] MarkStyle
-        {
-            get
-            {
-                return new CodeDocumentColorTransformer.MarkStyleEnum[8]
-                    {
-                        CodeDocumentColorTransformer.MarkStyleEnum.DashedLine0,    // 0
-                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine,
-                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine,
-                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine,
-                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine,
-                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine,
-                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine,
-                        CodeDocumentColorTransformer.MarkStyleEnum.ThickUnderLine              // 7 for selection highlight
-                    };
+                return markStyle;
             }
         }
     }

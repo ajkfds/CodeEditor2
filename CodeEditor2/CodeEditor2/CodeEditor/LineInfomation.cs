@@ -11,7 +11,7 @@ namespace CodeEditor2.CodeEditor
     public class LineInfomation
     {
         public List<Color> Colors = new List<Color>();
-        public List<Effect> Effects = new List<Effect>();
+        //public List<Effect> Effects = new List<Effect>();
 
         public class Color
         {
@@ -26,19 +26,19 @@ namespace CodeEditor2.CodeEditor
             public Avalonia.Media.Color DrawColor;
         }
 
-        public class Effect
-        {
-            public Effect(int offset, int length, Avalonia.Media.Color color, CodeDocumentColorTransformer.MarkStyleEnum markStyle)
-            {
-                this.Offset = offset;
-                this.Length = length;
-                this.DrawColor = color;
-                this.MarkStyle = markStyle;
-            }
-            public int Offset;
-            public int Length;
-            public Avalonia.Media.Color DrawColor;
-            public CodeDocumentColorTransformer.MarkStyleEnum MarkStyle;
-        }
+        //public class Effect
+        //{
+        //    public Effect(int offset, int length, Avalonia.Media.Color color, CodeDocumentColorTransformer.MarkStyleEnum markStyle)
+        //    {
+        //        this.Offset = offset;
+        //        this.Length = length;
+        //        this.DrawColor = color;
+        //        this.MarkStyle = markStyle;
+        //    }
+        //    public int Offset;
+        //    public int Length;
+        //    public Avalonia.Media.Color DrawColor;
+        //    public CodeDocumentColorTransformer.MarkStyleEnum MarkStyle;
+        //}
     }
 }

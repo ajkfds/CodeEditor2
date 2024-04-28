@@ -27,6 +27,8 @@ namespace CodeEditor2.CodeEditor
         /// </summary>
         public double BorderThickness { get; set; }
 
+        public double HorizontalOffset { get; set; } = 2;
+
         /// <summary>
         /// Gets/Sets whether to extend the rectangles to full width at line end.
         /// </summary>
@@ -42,16 +44,21 @@ namespace CodeEditor2.CodeEditor
         /// <summary>
         /// Adds the specified segment to the geometry.
         /// </summary>
-        public void AddSegment(TextView textView, ISegment segment)
+        public void AddSegment(TextView textView, MarkerRenderer.Mark mark)
         {
             if (textView == null)
                 throw new ArgumentNullException("textView");
             Size pixelSize = PixelSnapHelpers.GetPixelSize(textView);
-            foreach (Rect r in GetRectsForSegment(textView, segment, ExtendToFullWidthAtLineEnd))
+            foreach (Rect r in GetRectsForSegment(textView, mark, ExtendToFullWidthAtLineEnd))
             {
-                AddRectangle(pixelSize, r);
+                AddRectangle(pixelSize, r,mark);
             }
         }
+
+        public double WaveWidth { get; set; } = 4;
+        public double WaveHeight { get; set; } = 1;
+
+
 
         /// <summary>
         /// Adds a rectangle to the geometry.
@@ -61,31 +68,28 @@ namespace CodeEditor2.CodeEditor
         /// <see cref="AlignToWholePixels"/>.
         /// Use the <see cref="AddRectangle(double,double,double,double)"/>-overload instead if the coordinates should not be aligned.
         /// </remarks>
-        public void AddRectangle(TextView textView, Rect rectangle)
+        public void AddRectangle(TextView textView, Rect rectangle, MarkerRenderer.Mark mark)
         {
-            AddRectangle(PixelSnapHelpers.GetPixelSize(textView), rectangle);
+            AddRectangle(PixelSnapHelpers.GetPixelSize(textView), rectangle ,mark);
         }
 
-        private void AddRectangle(Size pixelSize, Rect r)
+        private void AddRectangle(Size pixelSize, Rect r, MarkerRenderer.Mark mark)
         {
-            //if (AlignToWholePixels)
-            //{
-                
-                double halfBorder = 0.5 * BorderThickness;
-                AddWaveLine(PixelSnapHelpers.Round(r.Left - halfBorder, pixelSize.Width) + halfBorder,
-                             PixelSnapHelpers.Round(r.Bottom - halfBorder, pixelSize.Height) + halfBorder,
-                             PixelSnapHelpers.Round(r.Right + halfBorder, pixelSize.Width) - halfBorder,
-                             PixelSnapHelpers.Round(r.Bottom + halfBorder, pixelSize.Height) - halfBorder);
-                //AddRectangle(PixelSnapHelpers.Round(r.Left - halfBorder, pixelSize.Width) + halfBorder,
-                //             PixelSnapHelpers.Round(r.Bottom - halfBorder, pixelSize.Height) + halfBorder,
-                //             PixelSnapHelpers.Round(r.Right + halfBorder, pixelSize.Width) - halfBorder,
-                //             PixelSnapHelpers.Round(r.Bottom + halfBorder, pixelSize.Height) - halfBorder);
-                //Debug.WriteLine(r.ToString() + " -> " + new Rect(lastLeft, lastTop, lastRight-lastLeft, lastBottom-lastTop).ToString());
-            //}
-            //else
-            //{
-            //    AddRectangle(r.Left, r.Top, r.Right, r.Bottom);
-            //}
+            double halfBorder = 0.5 * BorderThickness;
+            switch (mark.Style)
+            {
+                case CodeDrawStyle.MarkInfo.MarkStyleEnum.WaveLine:
+                    AddWaveLine(
+                        mark,
+                        PixelSnapHelpers.Round(r.Left - halfBorder, pixelSize.Width) + halfBorder,
+                        PixelSnapHelpers.Round(r.Bottom - halfBorder, pixelSize.Height) + halfBorder - HorizontalOffset,
+                        PixelSnapHelpers.Round(r.Right + halfBorder, pixelSize.Width) - halfBorder,
+                        PixelSnapHelpers.Round(r.Bottom + halfBorder, pixelSize.Height) - halfBorder - HorizontalOffset
+                        );
+                    break;
+                case CodeDrawStyle.MarkInfo.MarkStyleEnum.UnderLine:
+                    break;
+            }
         }
 
         /// <summary>
@@ -262,10 +266,10 @@ namespace CodeEditor2.CodeEditor
 
         private List<Point> points = new List<Point>();
 
-        public void AddWaveLine(double left, double top, double right, double bottom)
+        public void AddWaveLine(MarkerRenderer.Mark mark,double left, double top, double right, double bottom)
         {
-            const double waveWidth = 4;
-            const double waveHeight = 1;
+            double waveWidth = mark.DecorationWidth;
+            double waveHeight = mark.DecorationHeight;
 
             {
                 int waveCount = (int)((right - left) / waveWidth);
@@ -278,6 +282,11 @@ namespace CodeEditor2.CodeEditor
                 }
                 points.Add(new Point(right, bottom - waveHeight));
             }
+        }
+        public void AddUnderLine(MarkerRenderer.Mark mark, double left, double top, double right, double bottom)
+        {
+            points.Add(new Point(left, bottom));
+            points.Add(new Point(right, bottom));
         }
         private static LineSegment MakeLineSegment(double x, double y)
         {

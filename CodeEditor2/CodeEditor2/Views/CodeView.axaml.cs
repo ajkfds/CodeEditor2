@@ -107,6 +107,9 @@ namespace CodeEditor2.Views
             _highlightRenderer = new HighlightRenderer(new SolidColorBrush(Color.FromArgb(255, 100, 100, 100)));
             _textEditor.TextArea.TextView.BackgroundRenderers.Add(_highlightRenderer);
 
+            _markerRenderer = new MarkerRenderer();
+            _textEditor.TextArea.TextView.BackgroundRenderers.Add(_markerRenderer);
+
 
             PopupMenu.Selected += PopupMenu_Selected;
 
@@ -145,6 +148,7 @@ namespace CodeEditor2.Views
             timer.Start();
         }
         internal CodeEditor.HighlightRenderer _highlightRenderer;
+        internal CodeEditor.MarkerRenderer _markerRenderer;
         internal CodeViewPopup codeViewPopup;
         internal CodeViewParser codeViewParser;
         internal CodeViewPopupMenu codeViewPopupMenu;
@@ -266,15 +270,16 @@ namespace CodeEditor2.Views
                 System.Diagnostics.Debug.Print("## Change CodeDocument");
                 System.Diagnostics.Debug.Print("## Change Events");
                 TextFile.CodeDocument.CaretChanged += CodeDocument_CarletChanged;
-//                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
+                //                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
 
 
                 //                Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
                 //                Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
                 //                Global.mainForm.mainTab.TabPages[0].Text = textFile.Name;
                 //                Global.mainForm.mainTab.SelectedTab = Global.mainForm.mainTab.TabPages[0];
+                _markerRenderer.ClearMark();
+                _markerRenderer.SetMarks(TextFile.CodeDocument.Marks);
             }
-
             //if (TextFile != null)
             //{
             //    if (closeCantidateTextFiles.Contains(textFile))
