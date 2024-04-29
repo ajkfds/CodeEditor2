@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.Tools
 {
-    internal class TextParseUnit
+    internal class ParseProjectUnit
     {
-        public TextParseUnit(string name)
+        public ParseProjectUnit(string name)
         {
             this.name = name;
         }
@@ -44,11 +44,6 @@ namespace CodeEditor2.Tools
 
         private void parse(Data.TextFile textFile)
         {
-            if (textFile.RelativePath == @"fpga\hbirdkit\src\clkdivider.v")
-            {
-                string a = "";
-            }
-
             CodeEditor.DocumentParser parser = textFile.CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum.LoadParse);
             if (parser == null)
             {
@@ -58,6 +53,7 @@ namespace CodeEditor2.Tools
             parser.Document._tag = "TextParserTask:"+textFile.Name;
 
             if (textFile != null) startParse(textFile);
+            System.Diagnostics.Debug.Print("# ParseProjectUnit.Parse " + textFile.ID);
             parser.Parse();
 
             textFile.CodeDocument.CopyColorMarkFrom(parser.Document);
@@ -70,7 +66,12 @@ namespace CodeEditor2.Tools
             }
 
             textFile.AcceptParsedDocument(parser.ParsedDocument);
+            System.Diagnostics.Debug.Print("# ParseProjectUnit.Accept "+textFile.ID);
             textFile.Close();
+            if(parser.ParseMode == DocumentParser.ParseModeEnum.LoadParse)
+            {
+                textFile.ReparseRequested = true;
+            }
 
             //gc++;
             //if (gc > 100)

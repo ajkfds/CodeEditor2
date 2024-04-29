@@ -21,6 +21,7 @@ namespace CodeEditor2.Tools
 
         public static async Task Run(NavigatePanel.NavigatePanelNode rootNode)
         {
+            Global.StopParse = true;
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
             System.Diagnostics.Debug.Print("parse hier sw " + sw.ElapsedMilliseconds.ToString());
@@ -30,7 +31,6 @@ namespace CodeEditor2.Tools
             Global.ProgressWindow.ShowDialog(Global.mainWindow);
 
             {
-                Global.StopParse = true;
                 Global.LockParse();
                 
                 int i = 0;
@@ -56,11 +56,11 @@ namespace CodeEditor2.Tools
                 }
 
                 Global.ReleaseParseLock();
-                Global.StopParse = false;
             }
             rootNode.Update();
 
             Global.ProgressWindow.Hide();
+            Global.StopParse = false;
         }
 
     }

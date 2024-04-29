@@ -108,6 +108,10 @@ namespace CodeEditor2
         {
             public static void SetTextFile(Data.TextFile textFile)
             {
+                SetTextFile(textFile, true);
+            }
+            public static void SetTextFile(Data.TextFile textFile,bool parseEntry)
+            {
                 if (textFile == null)
                 {
                     //Global.codeView. .mainForm.editorPage.CodeEditor.SetTextFile(null);
@@ -116,7 +120,7 @@ namespace CodeEditor2
                 else
                 {
                     //Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
-                    Global.codeView.SetTextFile(textFile);
+                    Global.codeView.SetTextFile(textFile,parseEntry);
                     //Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
                     //Global.mainForm.mainTab.TabPages[0].Text = textFile.Name;
                     //Global.mainForm.mainTab.SelectedTab = Global.mainForm.mainTab.TabPages[0];
@@ -210,6 +214,16 @@ namespace CodeEditor2
 
         public static class NavigatePanel
         {
+            public static void UpdateVisual()
+            {
+                Dispatcher.UIThread.Post(
+                    new Action(() =>
+                    {
+                        Global.navigateView.InvalidateVisual();
+                    })
+                );
+            }
+
             //public static void Refresh()
             //{
             //    if (Global.mainForm.InvokeRequired)

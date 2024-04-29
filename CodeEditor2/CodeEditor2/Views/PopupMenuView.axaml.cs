@@ -93,7 +93,6 @@ namespace CodeEditor2.Views
         public Action<PopupMenuItem?>? Selected;
 
 
-
         public void OnOpen(CancelEventArgs args)
         {
             TextBox0.Text = "";
@@ -139,7 +138,6 @@ namespace CodeEditor2.Views
         {
             cancel();
         }
-
 
         private void cancel()
         {

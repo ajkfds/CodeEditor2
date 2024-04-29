@@ -184,6 +184,7 @@ namespace CodeEditor2.Views
             //Debug.Print("version "+version.ToString()+"  carletLine"+carletLine.ToString());
             if (prevVersion != version && carletLine != prevCarletLine)
             {
+                prevVersion = version;
                 codeViewParser.EntryParse();
             }
             prevCarletLine = carletLine;
@@ -247,9 +248,8 @@ namespace CodeEditor2.Views
 
         private bool skipEvents = false;
 
-        public void SetTextFile(Data.TextFile textFile)
+        public void SetTextFile(Data.TextFile textFile,bool parseEntry)
         {
-            Global.StopParse = true;
             skipEvents = true;
 
             System.Diagnostics.Debug.Print("## SetTextFile");
@@ -267,8 +267,6 @@ namespace CodeEditor2.Views
             else
             {
                 TextFile = textFile;
-                System.Diagnostics.Debug.Print("## Change CodeDocument");
-                System.Diagnostics.Debug.Print("## Change Events");
                 TextFile.CodeDocument.CaretChanged += CodeDocument_CarletChanged;
                 //                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
 
@@ -309,9 +307,8 @@ namespace CodeEditor2.Views
             //TextFile = textFile;
             ScrollToCaret();
             if (textFile != null) Controller.MessageView.Update(textFile.ParsedDocument);
-            Global.StopParse = false;
 
-            codeViewParser.EntryParse();
+            if(parseEntry) codeViewParser.EntryParse();
             skipEvents = false;
         }
 

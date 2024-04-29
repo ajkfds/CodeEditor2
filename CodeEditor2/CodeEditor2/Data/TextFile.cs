@@ -38,7 +38,7 @@ namespace CodeEditor2.Data
             base.Dispose();
         }
 
-        public virtual bool ReparseRequested { get; protected set; } = false;
+        public virtual bool ReparseRequested { get; set; } = false;
 
         public bool IsCodeDocumentCashed
         {
@@ -259,24 +259,25 @@ namespace CodeEditor2.Data
             Data.ITextFile textFile = item as Data.TextFile;
             if (textFile == null) return;
             if (parsedIds.Contains(textFile.ID)) return;
-            System.Diagnostics.Debug.Print("### ParseHier "+textFile.ID);
+            System.Diagnostics.Debug.Print("# Try ParseHier "+textFile.ID);
             action(textFile);
             parsedIds.Add(textFile.ID);
 
             if (textFile.ParseValid & !textFile.ReparseRequested)
             {
+                System.Diagnostics.Debug.Print("# ParseHier.Skip " + textFile.ID);
                 textFile.Update();
                 textFile.CodeDocument.LockThreadToUI();
             }
             else
             {
-                CodeEditor.DocumentParser parser = item.CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum.BackgroundParse);
+                CodeEditor.DocumentParser parser = textFile.CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum.BackgroundParse);
                 if (parser != null)
                 {
-                    System.Diagnostics.Debug.Print("## parse hier " + textFile.ID);
                     parser.Parse();
                     if (parser.ParsedDocument == null) return;
                     textFile.AcceptParsedDocument(parser.ParsedDocument);
+                    System.Diagnostics.Debug.Print("# ParseHier.Accept " + textFile.ID);
                     textFile.Update();
                 }
             }
@@ -294,6 +295,11 @@ namespace CodeEditor2.Data
             foreach (Data.Item subitem in items)
             {
                 parseHierarchy(subitem, parsedIds, action);
+                //TextFile? subTextFile = subitem as TextFile;
+                //if (subTextFile == null) continue;
+                //subTextFile.
+
+
             }
 
             if (textFile.ReparseRequested)
@@ -301,10 +307,12 @@ namespace CodeEditor2.Data
                 CodeEditor.DocumentParser parser = item.CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum.BackgroundParse);
                 if (parser != null)
                 {
-                    System.Diagnostics.Debug.Print("## re-parse hier " + textFile.ID);
                     parser.Parse();
                     if (parser.ParsedDocument == null) return;
                     textFile.AcceptParsedDocument(parser.ParsedDocument);
+
+                    // textFile.Items.ParsedDocuments Disposed already
+                    System.Diagnostics.Debug.Print("# Re-ParseHier.Accept " + textFile.ID);
                     textFile.Update();
                 }
             }

@@ -31,10 +31,9 @@ namespace CodeEditor2.CodeEditor
 
         public void EntryParse(TextFile textFile)
         {
-            System.Diagnostics.Debug.Print("#### BackgroundParser.EntryParse");
             lock (toBackgroundStock)
             {
-                System.Diagnostics.Debug.Print("#### BackgroundParser.EntryParse.Add toBackGround");
+                System.Diagnostics.Debug.Print("# BackgroundParser.EntryParse.Add toBackGround:"+textFile.ID);
                 toBackgroundStock.Add(textFile);
             }
         }
