@@ -60,10 +60,10 @@ namespace CodeEditor2
             //await pform.ShowDialog(Global.currentWindow);
         }
 
-        //public static System.Windows.Forms.MenuStrip GetMenuStrip()
-        //{
-        //    return Global.mainForm.Controller_GetMenuStrip();
-        //}
+        public static Menu GetMenuStrip()
+        {
+            return Global.mainView.Menu;
+        }
 
         //public static System.Windows.Forms.DialogResult ShowMessageBox(string text, string caption, System.Windows.Forms.MessageBoxButtons buttons, System.Windows.Forms.MessageBoxIcon icon)
         //{
@@ -210,6 +210,7 @@ namespace CodeEditor2
                 Global.codeView.ScrollToCaret();
             }
 
+
         }
 
         public static class NavigatePanel
@@ -222,6 +223,11 @@ namespace CodeEditor2
                         Global.navigateView.InvalidateVisual();
                     })
                 );
+            }
+
+            public static ContextMenu GetContextMenu()
+            {
+                return Global.navigateView.ContextMenu;
             }
 
             //public static void Refresh()

@@ -53,6 +53,24 @@ namespace CodeEditor2
         private static SemaphoreSlim parseSemaphore = new SemaphoreSlim(1, 1);
 
         public static Tools.ProgressWindow ProgressWindow;
+
+        public static MenuItem CreateMenuItem (string header,string name)
+        {
+            MenuItem menuItem = new MenuItem();
+            menuItem.Header = header;
+            menuItem.Name = name;
+            menuItem.FontFamily = "Cascadia Mono,Consolas,Menlo,Monospace";
+            menuItem.FontSize = 12;
+            menuItem.FontStyle = Avalonia.Media.FontStyle.Normal;
+            menuItem.FontWeight = Avalonia.Media.FontWeight.Normal;
+            menuItem.MaxHeight = 12;
+            menuItem.Height = 12;
+            menuItem.Padding = new Avalonia.Thickness(0, 0, 0, 0);
+            menuItem.Margin = new Avalonia.Thickness(0, 0, 0, 0);
+
+            return menuItem;
+        }
+
         //public static IWshRuntimeLibrary.WshShell WshShell = new IWshRuntimeLibrary.WshShell();
 
         //public static class IconImages
