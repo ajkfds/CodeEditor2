@@ -60,11 +60,11 @@ namespace CodeEditor2
             menuItem.Header = header;
             menuItem.Name = name;
             menuItem.FontFamily = "Cascadia Mono,Consolas,Menlo,Monospace";
-            menuItem.FontSize = 12;
+            menuItem.FontSize = 11;
             menuItem.FontStyle = Avalonia.Media.FontStyle.Normal;
             menuItem.FontWeight = Avalonia.Media.FontWeight.Normal;
-            menuItem.MaxHeight = 12;
-            menuItem.Height = 12;
+            menuItem.MinHeight = 12;
+            menuItem.Height = 16;
             menuItem.Padding = new Avalonia.Thickness(0, 0, 0, 0);
             menuItem.Margin = new Avalonia.Thickness(0, 0, 0, 0);
 

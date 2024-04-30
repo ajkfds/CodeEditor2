@@ -17,6 +17,8 @@ namespace CodeEditor2.Views
 
             Global.navigateView = this;
             TreeControl.Background = new SolidColorBrush(Color.FromRgb(10,10,10));
+
+
         }
 
         public void AddProject(Project project)
@@ -52,7 +54,20 @@ namespace CodeEditor2.Views
         private void initializeMenuItes()
         {
             {
-                MenuItem_OpenInExplorer.Click += MenuItem_OpenInExplorer_Click;
+                MenuItem menuItem_Add = CodeEditor2.Global.CreateMenuItem("Add", "MenuItem_Add");
+                ContextMenu.Items.Add(menuItem_Add);
+            }
+
+            {
+                MenuItem menuItem_Delete = CodeEditor2.Global.CreateMenuItem("Delete", "MenuItem_Delete");
+                ContextMenu.Items.Add(menuItem_Delete);
+            }
+
+            {
+                MenuItem menuItem_OpenInExplorer = CodeEditor2.Global.CreateMenuItem("Open in Explorer", "MenuItem_OpenInExplorer");
+                ContextMenu.Items.Add(menuItem_OpenInExplorer);
+
+                menuItem_OpenInExplorer.Click += menuItem_OpenInExplorer_Click;
 
                 Image image = new Image();
                 image.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
@@ -61,11 +76,11 @@ namespace CodeEditor2.Views
                             );
                 image.Width = 12;
                 image.Height = 12;
-                MenuItem_OpenInExplorer.Icon = image;
+                menuItem_OpenInExplorer.Icon = image;
             }
         }
 
-        private void MenuItem_OpenInExplorer_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void menuItem_OpenInExplorer_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             TreeNode? node = TreeControl.GetSelectedNode();
             if (node == null) return;
