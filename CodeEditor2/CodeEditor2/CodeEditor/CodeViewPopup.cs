@@ -18,6 +18,8 @@ namespace CodeEditor2.CodeEditor
 {
     public class CodeViewPopup
     {
+        // Popup-Hint Handler
+        // show mouse over popup-hinting
         public CodeViewPopup(CodeView codeView)
         {
             this.codeView = codeView;

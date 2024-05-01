@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using CodeEditor2.Data;
 using Avalonia.Media;
+using Avalonia.Controls;
 
 namespace CodeEditor2.NavigatePanel
 {
@@ -38,6 +39,23 @@ namespace CodeEditor2.NavigatePanel
 
         public override void OnSelected()
         {
+            foreach(var obj in CodeEditor2.Controller.NavigatePanel.GetContextMenu().Items)
+            {
+                MenuItem? item = obj as MenuItem;
+                if (item == null) continue;
+                switch (item.Name)
+                {
+                    case "MenuItem_Add":
+                    case "MenuItem_Delete":
+                    case "MenuItem_OpenInExplorer":
+                        item.IsVisible = true;
+                        break;
+                    default:
+                        item.IsVisible = false;
+                        break;
+                }
+            }
+
             //Data.ITextFile textFile = FileItem as Data.ITextFile;
             //CodeEditor2.Controller.NavigatePanel.GetContextMenuStrip().Items["openWithExploererTsmi"].Visible = true;
 

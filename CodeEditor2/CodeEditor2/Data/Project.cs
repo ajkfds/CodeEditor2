@@ -14,7 +14,7 @@ namespace CodeEditor2.Data
         public static Project Create(string rootPath)
         {
             Project project = new Project();
-            project.RootPath = rootPath;
+            project.RootPath = System.IO.Path.GetDirectoryName(rootPath);
             if (project.RootPath.Contains(Path.DirectorySeparatorChar))
             {
                 project.Name = project.RootPath.Substring(project.RootPath.LastIndexOf(Path.DirectorySeparatorChar) + 1);

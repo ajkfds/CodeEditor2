@@ -252,14 +252,16 @@ namespace CodeEditor2
             //    Global.mainForm.navigatePanel.UpdateWholeVisibleNode(node);
             //}
 
-            public static void GetSelectedNode(out CodeEditor2.NavigatePanel.NavigatePanelNode node)
+            public static CodeEditor2.NavigatePanel.NavigatePanelNode? GetSelectedNode()
             {
-                node = Global.navigateView.GetSelectedNode();
+                return Global.navigateView.GetSelectedNode();
             }
 
-            public static ContextMenu GetContextMenuStrip()
+            public static Data.File? GetSelectedFile()
             {
-                return Global.navigateView.ContextMenu;
+                var node = Global.navigateView.GetSelectedNode();
+                Data.File? file = node?.Item as Data.File;
+                return file;
             }
 
             //public static void Parse(CodeEditor2.NavigatePanel.NavigatePanelNode node)

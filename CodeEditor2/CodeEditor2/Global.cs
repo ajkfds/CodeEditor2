@@ -71,6 +71,7 @@ namespace CodeEditor2
             return menuItem;
         }
 
+
         //public static IWshRuntimeLibrary.WshShell WshShell = new IWshRuntimeLibrary.WshShell();
 
         //public static class IconImages

@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.Shells
 {
-    public class LinuxBash : Shell
+    public class LinuxCsh : Shell
     {
 
-        public LinuxBash(List<string> commands)
+        public LinuxCsh(List<string> commands)
         {
             //            initializeCommands.Add("prompt "+prompt+"$G$_");
 
@@ -20,16 +20,16 @@ namespace CodeEditor2.Shells
                 );
         }
 
-        public LinuxBash()
+        public LinuxCsh()
         {
             initialize(
-                "bash",
+                "csh",
                 "",
                 new List<string> { }
                 );
         }
 
-        public LinuxBash(string command, string arguments)
+        public LinuxCsh(string command, string arguments)
         {
             initialize(
                 command,
@@ -38,7 +38,7 @@ namespace CodeEditor2.Shells
                 );
         }
 
-        public LinuxBash(string command, string arguments, List<string> commands)
+        public LinuxCsh(string command, string arguments, List<string> commands)
         {
             initialize(
                 command,
@@ -69,7 +69,7 @@ namespace CodeEditor2.Shells
         }
 
 
-        System.Diagnostics.Process process;
+        System.Diagnostics.Process process = null;
         public override event ReceivedHandler? LineReceived;
         private List<string> initialCommands;
 

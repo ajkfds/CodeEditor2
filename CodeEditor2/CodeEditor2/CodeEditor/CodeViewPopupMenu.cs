@@ -143,41 +143,41 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        Snippets.InteractiveSnippet snippet = null;
+        public Snippets.InteractiveSnippet Snippet = null;
 
         public void StartInteractiveSnippet(Snippets.InteractiveSnippet interactiveSnippet)
         {
             AbortInteractiveSnippet();
-            snippet = interactiveSnippet;
+            Snippet = interactiveSnippet;
         }
 
         public void AbortInteractiveSnippet()
         {
-            if (snippet == null) return;
-            snippet.Aborted();
-            snippet = null;
+            if (Snippet == null) return;
+            Snippet.Aborted();
+            Snippet = null;
         }
 
         public void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
-            if (snippet == null) return;
-            snippet.KeyDown(sender, e, codeView.PopupMenu);
+            if (Snippet == null) return;
+            Snippet.KeyDown(sender, e, codeView.PopupMenu);
         }
         public void TextEntering(object? sender, TextInputEventArgs e)
         {
-            if (snippet == null) return;
-            snippet.BeforeKeyDown(sender, e, codeView.PopupMenu);
+            if (Snippet == null) return;
+            Snippet.BeforeKeyDown(sender, e, codeView.PopupMenu);
         }
 
         public void TextEntered(object? sender, TextInputEventArgs e)
         {
-            if (snippet == null) return;
-            snippet.AfterKeyDown(sender, e, codeView.PopupMenu);
+            if (Snippet == null) return;
+            Snippet.AfterKeyDown(sender, e, codeView.PopupMenu);
         }
         public virtual void AfterAutoCompleteHandled()
         {
-            if (snippet == null) return;
-            snippet.AfterAutoCompleteHandled(codeView.PopupMenu);
+            if (Snippet == null) return;
+            Snippet.AfterAutoCompleteHandled(codeView.PopupMenu);
         }
 
     }

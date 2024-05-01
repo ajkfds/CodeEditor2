@@ -278,19 +278,10 @@ namespace CodeEditor2.Views
                 _markerRenderer.ClearMark();
                 _markerRenderer.SetMarks(TextFile.CodeDocument.Marks);
             }
-            //if (TextFile != null)
-            //{
-            //    if (closeCantidateTextFiles.Contains(textFile))
-            //    {
-            //        closeCantidateTextFiles.Remove(textFile);
-            //    }
-            //    closeCantidateTextFiles.Add(textFile);
-            //    if (closeCantidateTextFiles.Count > FilesCasheNumbers)
-            //    {
-            //        closeCantidateTextFiles[0].Close();
-            //        closeCantidateTextFiles.RemoveAt(0);
-            //    }
-            //}
+
+            if (codeViewPopupMenu.Snippet != null) codeViewPopupMenu.AbortInteractiveSnippet();
+            if (_completionWindow !=null && _completionWindow.IsVisible) _completionWindow.Hide();
+            if (codeViewPopupMenu.IsOpened) codeViewPopupMenu.HidePopupMenu();
 
             if (textFile == null || textFile.CodeDocument == null)
             {
@@ -301,14 +292,18 @@ namespace CodeEditor2.Views
             {
                 //codeTextbox.Style = textFile.DrawStyle;
             }
-
+            
             //codeTextbox.Visible = true;
             //            codeTextbox.Document = textFile.CodeDocument;
             //TextFile = textFile;
             ScrollToCaret();
-            if (textFile != null) Controller.MessageView.Update(textFile.ParsedDocument);
+            if (textFile != null)
+            {
+                Controller.MessageView.Update(textFile.ParsedDocument);
+                _textEditor.CaretOffset = textFile.CodeDocument.CaretIndex;
+            }
+            if (parseEntry) codeViewParser.EntryParse();
 
-            if(parseEntry) codeViewParser.EntryParse();
             skipEvents = false;
         }
 
@@ -362,7 +357,7 @@ namespace CodeEditor2.Views
 
         private void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.KeyModifiers == KeyModifiers.Control)
+             if (e.KeyModifiers == KeyModifiers.Control)
             {
                 if(e.Key == Key.S)
                 {

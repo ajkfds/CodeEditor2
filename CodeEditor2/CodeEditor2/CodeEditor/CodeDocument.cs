@@ -88,6 +88,7 @@ namespace CodeEditor2.CodeEditor
 
         private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
         {
+            
 //            System.Diagnostics.Debug.Print("## TextDocument_Changing");
         }
 
@@ -101,8 +102,7 @@ namespace CodeEditor2.CodeEditor
             if (!IsDirty)
             {
                 Version++;
-                NavigatePanel.NavigatePanelNode node;
-                Controller.NavigatePanel.GetSelectedNode(out node);
+                NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
                 node?.UpdateVisual();
             }
             else
@@ -164,8 +164,7 @@ namespace CodeEditor2.CodeEditor
         public void Clean()
         {
             CleanVersion = Version;
-            NavigatePanel.NavigatePanelNode node;
-            Controller.NavigatePanel.GetSelectedNode(out node);
+            NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
             node?.UpdateVisual();
         }
 
