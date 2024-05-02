@@ -64,19 +64,8 @@ namespace CodeEditor2.Views
             }
 
             {
-                MenuItem menuItem_OpenInExplorer = CodeEditor2.Global.CreateMenuItem("Open in Explorer", "MenuItem_OpenInExplorer");
+                MenuItem menuItem_OpenInExplorer = CodeEditor2.Global.CreateMenuItem("Open in Explorer", "MenuItem_OpenInExplorer","search", Avalonia.Media.Color.FromArgb(100, 200, 200, 255));
                 ContextMenu.Items.Add(menuItem_OpenInExplorer);
-
-                menuItem_OpenInExplorer.Click += menuItem_OpenInExplorer_Click;
-
-                Image image = new Image();
-                image.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
-                            "CodeEditor2/Assets/Icons/search.svg",
-                            Avalonia.Media.Color.FromArgb(100, 200, 200, 255)
-                            );
-                image.Width = 12;
-                image.Height = 12;
-                menuItem_OpenInExplorer.Icon = image;
             }
         }
 

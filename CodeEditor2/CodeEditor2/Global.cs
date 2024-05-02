@@ -71,6 +71,20 @@ namespace CodeEditor2
             return menuItem;
         }
 
+        public static MenuItem CreateMenuItem(string header, string name,string imageName,Avalonia.Media.Color iconColor)
+        {
+            MenuItem menuItem = CreateMenuItem(header, name);
+            Image image = new Image();
+            image.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                        "CodeEditor2/Assets/Icons/"+imageName+".svg",
+                        iconColor
+                        );
+            image.Width = 12;
+            image.Height = 12;
+            menuItem.Icon = image;
+
+            return menuItem;
+        }
 
         //public static IWshRuntimeLibrary.WshShell WshShell = new IWshRuntimeLibrary.WshShell();
 

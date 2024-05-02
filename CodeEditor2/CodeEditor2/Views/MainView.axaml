@@ -52,7 +52,7 @@
 				
 
 				<!-- Code View -->
-				<TabControl Margin="1" Grid.Column="2">
+				<TabControl Margin="1" Grid.Column="2" Name="TabControl0">
 					<TabItem Header="Code"  FontSize="12" Name="EditorTabItem">
 						<views:CodeView Grid.Column="2" Name="CodeView"/>
 					</TabItem>
