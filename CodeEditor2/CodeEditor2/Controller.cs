@@ -295,20 +295,17 @@ namespace CodeEditor2
         public static class Tabs
         {
 
-        //    public static void AddPage(ajkControls.TabControl.TabPage tabPage)
-        //    {
-        //        Global.mainForm.Controller_AddTabPage(tabPage);
-        //    }
+            public static void AddItem(Avalonia.Controls.TabItem tabItem)
+            {
+                Global.mainView.TabControl0.Items.Add(tabItem);
+            }
 
-        //    public static void RemovePage(ajkControls.TabControl.TabPage tabPage)
-        //    {
-        //        Global.mainForm.Controller_RemoveTabPage(tabPage);
-        //    }
-
-        //    public static void Refresh()
-        //    {
-        //    }
+            public static void RemoveItem(Avalonia.Controls.TabItem tabItem)
+            {
+                Global.mainView.TabControl0.Items.Remove(tabItem);
+            }
         }
+
 
         public static class MessageView
         {
