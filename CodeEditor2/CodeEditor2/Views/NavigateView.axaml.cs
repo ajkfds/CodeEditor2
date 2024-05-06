@@ -65,6 +65,7 @@ namespace CodeEditor2.Views
 
             {
                 MenuItem menuItem_OpenInExplorer = CodeEditor2.Global.CreateMenuItem("Open in Explorer", "MenuItem_OpenInExplorer","search", Avalonia.Media.Color.FromArgb(100, 200, 200, 255));
+                menuItem_OpenInExplorer.Click += menuItem_OpenInExplorer_Click;
                 ContextMenu.Items.Add(menuItem_OpenInExplorer);
             }
         }

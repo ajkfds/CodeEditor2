@@ -29,6 +29,7 @@ public partial class MainView : UserControl
         SplitterColumn1.BorderBrush = new SolidColorBrush(Color.FromArgb(255,50,50,50));
         SplitterColumn1.BorderThickness = new Thickness(1, 0, 1, 0);
 
+        //        TabControl0.
         initializeMenuItem_File();
 
         timer.Interval = new TimeSpan(1);

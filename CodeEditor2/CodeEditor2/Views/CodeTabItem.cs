@@ -14,11 +14,7 @@ namespace CodeEditor2.Views
 {
     public class CodeTabItem : Avalonia.Controls.TabItem, IStyleable // IStylable is need to inherit from TabItem (https://github.com/AvaloniaUI/Avalonia/issues/2566)
     {
-        internal static Bitmap ActiveCloseButtonBmp;
-        internal static Bitmap InactivecloseButtonBmp;
-
-
-        public static CodeTabItem Create(string title, string? iconName, Avalonia.Media.Color? iconColor, bool closeButtonEnable)
+        public CodeTabItem(string title, string? iconName, Avalonia.Media.Color? iconColor, bool closeButtonEnable)
         {
             if (ActiveCloseButtonBmp == null) ActiveCloseButtonBmp = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                                     "CodeEditor2/Assets/Icons/x.svg",
@@ -26,12 +22,8 @@ namespace CodeEditor2.Views
                                     );
             if (InactivecloseButtonBmp == null) InactivecloseButtonBmp = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                                     "CodeEditor2/Assets/Icons/x.svg",
-                                    Avalonia.Media.Color.FromRgb(50,50,50)
+                                    Avalonia.Media.Color.FromRgb(50, 50, 50)
                                     );
-
-
-            CodeTabItem tabItem = new CodeTabItem();
-
 
             TextBlock headerText = new TextBlock();
             if (iconName != null)
@@ -52,24 +44,27 @@ namespace CodeEditor2.Views
 
             if (closeButtonEnable)
             {
-                tabItem.CloseButton = new Image
+                CloseButton = new Image
                 {
                     Source = InactivecloseButtonBmp,
                     Width = 12,
                     Height = 12,
                     Margin = new Avalonia.Thickness(4, 0, 0, 0)
                 };
-                headerText.Inlines?.Add(tabItem.CloseButton);
-                tabItem.CloseButton.Tapped += tabItem.CloseButton_Tapped;
-                tabItem.CloseButton.PointerEntered += tabItem.CloseButton_PointerEntered;
-                tabItem.CloseButton.PointerExited += tabItem.CloseButton_PointerExited;
+                headerText.Inlines?.Add(CloseButton);
+                CloseButton.Tapped += CloseButton_Tapped;
+                CloseButton.PointerEntered += CloseButton_PointerEntered;
+                CloseButton.PointerExited += CloseButton_PointerExited;
             }
 
-            tabItem.Header = headerText;
-            tabItem.FontSize = 12.0;
-
-            return tabItem;
+            Header = headerText;
+            FontSize = 12.0;
         }
+
+        internal static Bitmap ActiveCloseButtonBmp;
+        internal static Bitmap InactivecloseButtonBmp;
+
+
 
         private void CloseButton_PointerExited(object? sender, PointerEventArgs e)
         {
@@ -83,7 +78,10 @@ namespace CodeEditor2.Views
 
         public  void CloseButton_Tapped(object? sender, TappedEventArgs e)
         {
+            if(CloseButton_Clicked != null) CloseButton_Clicked();
         }
+
+        public Action? CloseButton_Clicked;
 
         Type IStyleable.StyleKey => typeof(TabItem); // need to inherit from TabItem (https://github.com/AvaloniaUI/Avalonia/issues/2566)
         Image? CloseButton;

@@ -74,7 +74,7 @@ namespace CodeEditor2.Views
 
         TextBox inputBox;
         Shells.Shell shell;
-        private void Shell_LineReceived(string lineString)
+        public void Shell_LineReceived(string lineString)
         {
             appendLog(lineString,null);
         }
