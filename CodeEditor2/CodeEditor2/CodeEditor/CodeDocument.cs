@@ -473,6 +473,7 @@ namespace CodeEditor2.CodeEditor
             if (CurrentMarks == null) return;
 
             int change = e.InsertionLength - e.RemovalLength;
+            List<TextSegment> removeTarget = new List<TextSegment>();
 
             foreach (var mark in CurrentMarks)
             {
@@ -505,7 +506,8 @@ namespace CodeEditor2.CodeEditor
                     }
                     else
                     { // a2
-                        mark.EndOffset += change;
+                        if (mark.EndOffset + change > mark.StartOffset) mark.EndOffset += change;
+                        else removeTarget.Add(mark);
                     }
                 }
                 else if (e.Offset <= mark.EndOffset + 1) // b0 | b1
@@ -523,6 +525,11 @@ namespace CodeEditor2.CodeEditor
                 { // c0
                     // none
                 }
+            }
+
+            foreach(var removeMark in removeTarget)
+            {
+                CurrentMarks.Remove(removeMark);
             }
         }
 

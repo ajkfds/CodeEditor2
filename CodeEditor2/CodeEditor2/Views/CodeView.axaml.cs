@@ -255,7 +255,7 @@ namespace CodeEditor2.Views
             System.Diagnostics.Debug.Print("## SetTextFile");
             if(CodeDocument != null)
             {
-                detatchFromCodeDocument();
+                detachFromCodeDocument();
             }
 
             if (textFile == null)
@@ -308,7 +308,7 @@ namespace CodeEditor2.Views
             _markerRenderer.ClearMark();
             _markerRenderer.SetMarks(TextFile.CodeDocument.Marks);
         }
-        private void detatchFromCodeDocument()
+        private void detachFromCodeDocument()
         {
             CodeDocument.CaretChanged = null;
             TextFile.CodeDocument.CurrentMarks = null;
