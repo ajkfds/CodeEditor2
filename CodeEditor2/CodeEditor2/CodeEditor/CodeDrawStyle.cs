@@ -95,8 +95,8 @@ namespace CodeEditor2.CodeEditor
             public double DecorationHeight = 1;
             public double Thickness = 1;
             public MarkStyleEnum Style;
-            public int offset;
-            public int endOffset;
+            public int Offset;
+            public int LastOffset;
             public enum MarkStyleEnum
             {
                 UnderLine,

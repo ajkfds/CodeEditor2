@@ -255,8 +255,7 @@ namespace CodeEditor2.Views
             System.Diagnostics.Debug.Print("## SetTextFile");
             if(CodeDocument != null)
             {
-                CodeDocument.CaretChanged = null;
-//                CodeDocument.SelectionChanged = null;
+                detatchFromCodeDocument();
             }
 
             if (textFile == null)
@@ -267,16 +266,7 @@ namespace CodeEditor2.Views
             else
             {
                 TextFile = textFile;
-                TextFile.CodeDocument.CaretChanged += CodeDocument_CarletChanged;
-                //                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
-
-
-                //                Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
-                //                Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
-                //                Global.mainForm.mainTab.TabPages[0].Text = textFile.Name;
-                //                Global.mainForm.mainTab.SelectedTab = Global.mainForm.mainTab.TabPages[0];
-                _markerRenderer.ClearMark();
-                _markerRenderer.SetMarks(TextFile.CodeDocument.Marks);
+                attachToCodeDocument();
             }
 
             if (codeViewPopupMenu.Snippet != null) codeViewPopupMenu.AbortInteractiveSnippet();
@@ -287,10 +277,6 @@ namespace CodeEditor2.Views
             {
                 TextFile = null;
                 return;
-            }
-            if (TextFile == null || TextFile.GetType() != textFile.GetType())
-            {
-                //codeTextbox.Style = textFile.DrawStyle;
             }
             
             //codeTextbox.Visible = true;
@@ -307,6 +293,27 @@ namespace CodeEditor2.Views
             skipEvents = false;
         }
 
+        private void attachToCodeDocument()
+        {
+            TextFile.CodeDocument.CaretChanged += CodeDocument_CarletChanged;
+            //                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
+
+
+            //                Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
+            //                Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
+            //                Global.mainForm.mainTab.TabPages[0].Text = textFile.Name;
+            //                Global.mainForm.mainTab.SelectedTab = Global.mainForm.mainTab.TabPages[0];
+            TextFile.CodeDocument.CurrentMarks = _markerRenderer.marks;
+
+            _markerRenderer.ClearMark();
+            _markerRenderer.SetMarks(TextFile.CodeDocument.Marks);
+        }
+        private void detatchFromCodeDocument()
+        {
+            CodeDocument.CaretChanged = null;
+            TextFile.CodeDocument.CurrentMarks = null;
+            //                CodeDocument.SelectionChanged = null;
+        }
 
         public void ScrollToCaret()
         {

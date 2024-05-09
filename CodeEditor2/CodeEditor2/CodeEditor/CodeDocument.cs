@@ -17,6 +17,7 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.CodeEditor
 {
@@ -57,6 +58,8 @@ namespace CodeEditor2.CodeEditor
             textDocument.Changing += TextDocument_Changing;
         }
 
+        #region ThreadControl
+
         System.Threading.Thread? ownerThread = null;
 
         private void CheckThead()
@@ -69,8 +72,9 @@ namespace CodeEditor2.CodeEditor
 
         private bool HasThread
         {
-            get {
-                if(System.Threading.Thread.CurrentThread == ownerThread)
+            get
+            {
+                if (System.Threading.Thread.CurrentThread == ownerThread)
                 {
                     return true;
                 }
@@ -85,32 +89,9 @@ namespace CodeEditor2.CodeEditor
             ownerThread = Global.UIThread;
         }
 
+        #endregion
 
-        private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
-        {
-            
-//            System.Diagnostics.Debug.Print("## TextDocument_Changing");
-        }
-
-        private void TextDocument_Changed(object? sender, DocumentChangeEventArgs e)
-        {
-//            System.Diagnostics.Debug.Print("## TextDocument_Changed");
-        }
-
-        private void TextDocument_TextChanged(object? sender, EventArgs e)
-        {
-            if (!IsDirty)
-            {
-                Version++;
-                NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
-                node?.UpdateVisual();
-            }
-            else
-            {
-                Version++;
-            }
-        }
-
+        #region handle AvaloniaEdit.TextDocument
 
         protected TextDocument textDocument;
         public TextDocument TextDocument
@@ -133,6 +114,37 @@ namespace CodeEditor2.CodeEditor
                 return ret;
             }
         }
+        private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
+        {
+            fixMark(e);
+        }
+
+        private void TextDocument_Changed(object? sender, DocumentChangeEventArgs e)
+        {
+        }
+
+        private void TextDocument_TextChanged(object? sender, EventArgs e)
+        {
+            if (!IsDirty)
+            {
+                Version++;
+                NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
+                node?.UpdateVisual();
+            }
+            else
+            {
+                Version++;
+            }
+        }
+
+        #endregion
+
+        #region
+        #endregion
+
+        #region
+        #endregion
+
 
         private readonly bool textOnly = false;
         private bool disposed = false;
@@ -420,6 +432,11 @@ namespace CodeEditor2.CodeEditor
             Version = document.Version;
         }
 
+        #region
+        #endregion
+
+        #region mark handler
+
         public byte GetMarkAt(int index)
         {
             //            return marks[index];
@@ -440,8 +457,8 @@ namespace CodeEditor2.CodeEditor
 
             CodeDrawStyle.MarkInfo markStyle = TextFile.DrawStyle.MarkStyle[value];
             CodeDrawStyle.MarkInfo mark = new CodeDrawStyle.MarkInfo();
-            mark.offset = index;
-            mark.endOffset = index + length;
+            mark.Offset = index;
+            mark.LastOffset = index + length;
             mark.Color = markStyle.Color;
             mark.Thickness = markStyle.Thickness;
             mark.DecorationHeight = markStyle.DecorationHeight;
@@ -450,7 +467,130 @@ namespace CodeEditor2.CodeEditor
             Marks.Add(mark);
         }
 
+        internal TextSegmentCollection<TextSegment>? CurrentMarks = null;
+        private void fixMark(DocumentChangeEventArgs e)
+        {
+            if (CurrentMarks == null) return;
 
+            int change = e.InsertionLength - e.RemovalLength;
+
+            foreach (var mark in CurrentMarks)
+            {
+                //     start    last
+                //       +=======+
+
+                // |---|                 a0
+                // |---------|           a1
+                // |-------------------| a2
+
+                //           |---|       b0
+                //           |---------| b1
+
+                //                  |--| c0
+
+                int start = mark.StartOffset;
+                int last = mark.EndOffset;
+
+                if (e.Offset <= start) // a0 | a1 | a2
+                {
+                    if (e.Offset + e.RemovalLength < start)
+                    { // a0
+                        mark.StartOffset += change;
+//                        mark.EndOffset += change;
+                    }
+                    else if (e.Offset + e.RemovalLength <= last)
+                    { // a1
+                        mark.StartOffset = e.Offset;
+//                        mark.EndOffset = e.Offset + change;
+                    }
+                    else
+                    { // a2
+                        mark.EndOffset += change;
+                    }
+                }
+                else if (e.Offset <= mark.EndOffset + 1) // b0 | b1
+                {
+                    if (e.Offset + e.RemovalLength <= last + 1)
+                    { // b0
+                        mark.EndOffset += change;
+                    }
+                    else
+                    { // b1
+                        // none
+                    }
+                }
+                else
+                { // c0
+                    // none
+                }
+            }
+        }
+
+        #endregion
+
+
+        /*
+        public void HilightUpdateWhenDocReplaced(int index, int replaceLength, byte colorIndex, string text)
+        {
+            if (highlightStarts.Count == 0) return;
+
+            int change = text.Length - replaceLength;
+
+            for (int i = 0; i < highlightStarts.Count; i++)
+            {
+                //     start    last
+                //       +=======+
+
+                // |---|                 a0
+                // |---------|           a1
+                // |-------------------| a2
+
+                //           |---|       b0
+                //           |---------| b1
+
+                //                  |--| c0
+
+                int start = highlightStarts[i];
+                int last = highlighLasts[i];
+
+                if (index <= start) // a0 | a1 | a2
+                {
+                    if (index + replaceLength < start)
+                    { // a0
+                        highlightStarts[i] += change;
+                        highlighLasts[i] += change;
+                    }
+                    else if (index + replaceLength <= last)
+                    { // a1
+                        highlightStarts[i] = index;
+                        highlighLasts[i] = index + change;
+                    }
+                    else
+                    { // a2
+                        highlighLasts[i] += change;
+                    }
+                }
+                else if (index <= highlighLasts[i] + 1) // b0 | b1
+                {
+                    if (index + replaceLength <= last + 1)
+                    { // b0
+                        highlighLasts[i] += change;
+                    }
+                    else
+                    { // b1
+                        // none
+                    }
+                }
+                else
+                { // c0
+                    // none
+                }
+            }
+            ReDrawHighlight();
+        }
+         
+         
+         */
         public void RemoveMarkAt(int index, byte value)
         {
             if (TextDocument == null) return;
@@ -502,10 +642,6 @@ namespace CodeEditor2.CodeEditor
             LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
             Color color = TextFile.DrawStyle.ColorPallet[value];
             lineInfo.Colors.Add(new LineInfomation.Color(index, 1, color));
-            if (lineInfo.Colors.Count > 2000)
-            {
-                string a = "";
-            }
         }
 
         public virtual void SetColorAt(int index, byte value, int length)

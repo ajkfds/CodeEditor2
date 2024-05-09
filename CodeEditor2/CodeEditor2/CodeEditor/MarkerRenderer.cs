@@ -44,8 +44,8 @@ namespace CodeEditor2.CodeEditor
                 mark.DecorationWidth = markInfo.DecorationWidth;
                 mark.DecorationHeight = markInfo.DecorationHeight;
                 mark.Style = markInfo.Style;
-                mark.StartOffset = markInfo.offset;
-                mark.EndOffset = markInfo.endOffset;
+                mark.StartOffset = markInfo.Offset;
+                mark.EndOffset = markInfo.LastOffset;
                 mark.Thickness = markInfo.Thickness;
                 return mark;
             }
