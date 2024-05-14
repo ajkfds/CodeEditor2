@@ -28,9 +28,16 @@ namespace CodeEditor2.CodeEditor
             {
                 prevIndex--;
             }
+            char prevChar = codeView.CodeDocument.GetCharAt(prevIndex);
+
+
             string cantidateWord;
             List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out cantidateWord);
+            System.Diagnostics.Debug.Print("## GetAutoCompleteItems try");
             if (cantidateWord == null) return;
+
+            System.Diagnostics.Debug.Print("## GetAutoCompleteItems "+cantidateWord+","+items.Count);
+
             //System.Diagnostics.Debug.Print("## checkAutoComplete " + cantidateWord + " " + cantidateWord.Length);
             //System.Diagnostics.Debug.Print("## checkAutoCompleteCar _" + codeView.TextFile.CodeDocument.GetCharAt(prevIndex) + "_" + prevIndex.ToString());
 
@@ -39,7 +46,7 @@ namespace CodeEditor2.CodeEditor
             {
 
 
-                if (items == null || cantidateWord == null || cantidateWord == "")
+                if (items == null || cantidateWord == null || (cantidateWord == "" & prevChar != '.'))
                 {
                     if (codeView._completionWindow != null)
                     {

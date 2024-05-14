@@ -19,6 +19,7 @@ namespace CodeEditor2.CodeEditor
     public class CodeViewPopup
     {
         // Popup-Hint Handler
+        //
         // show mouse over popup-hinting
         public CodeViewPopup(CodeView codeView)
         {
@@ -54,7 +55,7 @@ namespace CodeEditor2.CodeEditor
             codeView.PopupColorLabel.Clear();
             codeView.PopupColorLabel.Add(pitem);
 
-            ToolTip.SetIsOpen(codeView.Editor, false);
+            ToolTip.SetIsOpen(codeView.Editor, false); // close once to update pop-up window position
             if (pitem.GetItems().Count != 0)
             {
                 ToolTip.SetIsOpen(codeView.Editor, true);

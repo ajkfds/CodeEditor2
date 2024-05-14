@@ -15,6 +15,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
 using AvaloniaEdit.CodeCompletion;
+using CodeEditor2.Views;
 
 namespace CodeEditor2.CodeEditor
 {
@@ -231,7 +232,10 @@ namespace CodeEditor2.CodeEditor
                 var document = TextArea.Document;
                 if (document != null)
                 {
-                    CompletionList.SelectItem(document.GetText(StartOffset, offset - StartOffset));
+                    string cantidateWord;
+                    List<AutocompleteItem> items = Global.codeView.TextFile.GetAutoCompleteItems(Global.codeView._textEditor.CaretOffset, out cantidateWord);
+                    CompletionList.SelectItem(cantidateWord);
+                    //                    CompletionList.SelectItem(document.GetText(StartOffset, offset - StartOffset));
 
                     if (CompletionList.ListBox.ItemCount == 0) IsVisible = false;
                     else IsVisible = true;

@@ -14,6 +14,8 @@ namespace CodeEditor2.CodeEditor
 {
     public class CodeViewPopupMenu
     {
+        // popup menu for in-line menu select
+
         public CodeViewPopupMenu(CodeView codeView)
         {
             this.codeView = codeView;

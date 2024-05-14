@@ -43,7 +43,25 @@ namespace CodeEditor2.Views
         internal readonly TextEditor _textEditor;
         private FoldingManager _foldingManager;
         private readonly TextMate.Installation _textMateInstallation;
-        internal AutoCompleteWindow _completionWindow;
+        //        internal AutoCompleteWindow _completionWindow;
+        internal AutoCompleteWindow ___completionWindow;
+        internal AutoCompleteWindow _completionWindow
+        {
+            get { return ___completionWindow;}
+            set { 
+                if (value == null)
+                {
+                    System.Diagnostics.Debug.Print("#### nulled");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.Print("#### new");
+                }
+                ___completionWindow = value; 
+            
+            }
+        }
+
 
         private OverloadInsightWindow _insightWindow;
         private TextMateSharp.Grammars.RegistryOptions _registryOptions;
