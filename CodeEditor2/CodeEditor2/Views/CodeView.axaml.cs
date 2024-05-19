@@ -117,7 +117,7 @@ namespace CodeEditor2.Views
 
             _textEditor.Options.ShowBoxForControlCharacters = true;
             _textEditor.Options.ColumnRulerPositions = new List<int>() { 80, 100 };
-            _textEditor.TextArea.IndentationStrategy = new AvaloniaEdit.Indentation.CSharp.CSharpIndentationStrategy(_textEditor.Options);
+//            _textEditor.TextArea.IndentationStrategy = new AvaloniaEdit.Indentation.CSharp.CSharpIndentationStrategy(_textEditor.Options);
             _textEditor.TextArea.Caret.PositionChanged += Caret_PositionChanged;
             _textEditor.TextArea.SelectionChanged += TextArea_SelectionChanged;
             _textEditor.TextArea.RightClickMovesCaret = true;
@@ -439,15 +439,15 @@ namespace CodeEditor2.Views
             codeViewPopupMenu.TextEntering(sender, e);
 
 
-            //if (e.Text.Length > 0 && _completionWindow != null)
-            //{
-            //    //if (!char.IsLetterOrDigit(e.Text[0]))
-            //    //{
-            //    //    // Whenever a non-letter is typed while the completion window is open,
-            //    //    // insert the currently selected element.
-            //    //    _completionWindow.CompletionList.RequestInsertion(e);
-            //    //}
-            //}
+            if (e.Text.Length > 0 && _completionWindow != null)
+            {
+                //if (!char.IsLetterOrDigit(e.Text[0]))
+                //{
+                //    // Whenever a non-letter is typed while the completion window is open,
+                //    // insert the currently selected element.
+                //    _completionWindow.CompletionList.RequestInsertion(e);
+                //}
+            }
 
             _insightWindow?.Hide();
 

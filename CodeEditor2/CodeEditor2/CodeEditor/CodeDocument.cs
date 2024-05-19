@@ -13,6 +13,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -117,6 +118,7 @@ namespace CodeEditor2.CodeEditor
         private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
         {
             fixMark(e);
+            fixColor(e);
         }
 
         private void TextDocument_Changed(object? sender, DocumentChangeEventArgs e)
@@ -356,12 +358,6 @@ namespace CodeEditor2.CodeEditor
             {
                 return selectionStart;
             }
-            //set
-            //{
-            //    if (selectionStart == value) return;
-            //    selectionStart = value;
-            //    if (SelectionChanged != null) SelectionChanged(this);
-            //}
         }
 
         internal int selectionLast;
@@ -371,12 +367,6 @@ namespace CodeEditor2.CodeEditor
             {
                 return selectionLast;
             }
-            //    set
-            //    {
-            //        if (selectionLast == value) return;
-            //        selectionLast = value;
-            //        if (SelectionChanged != null) SelectionChanged(this);
-            //    }
         }
 
         public void SetSelection(int startIndex, int lastIndex)
@@ -407,6 +397,10 @@ namespace CodeEditor2.CodeEditor
 
         public char GetCharAt(int index)
         {
+            if(Length <= index)
+            {
+                return ' ';
+            }
             return textDocument.GetCharAt(index);
         }
 
@@ -680,6 +674,77 @@ namespace CodeEditor2.CodeEditor
                 }
             }
         }
+
+        private void fixColor(DocumentChangeEventArgs e)
+        {
+            DocumentLine startLine = TextDocument.GetLineByOffset(e.Offset);
+            DocumentLine endLine = TextDocument.GetLineByOffset(e.Offset+e.RemovalLength);
+
+
+            if ( startLine.LineNumber == endLine.LineNumber){ // startLine = endLine
+
+                LineInfomation lineInfo = GetLineInfomation(startLine.LineNumber);
+                List<LineInfomation.Color> removeTarget = new List<LineInfomation.Color>();
+                //     start    last
+                //       +=======+
+
+                // |---|                 a0
+                // |---------|           a1
+                // |-------------------| a2
+
+                //           |---|       b0
+                //           |---------| b1
+
+                //                  |--| c0
+                foreach (var color in lineInfo.Colors)
+                {
+                    if (color == null) continue;
+
+                    int start   = color.Offset;
+                    int last    = color.Offset + color.Length;
+                    int change = e.InsertionLength - e.RemovalLength;
+
+                    if (e.Offset <= start) // a0 | a1 | a2
+                    {
+                        if (e.Offset + e.RemovalLength < start)
+                        { // a0
+                            color.Offset += change;
+                        }
+                        else if (e.Offset + e.RemovalLength <= last)
+                        { // a1
+                            color.Offset = e.Offset;
+                        }
+                        else
+                        { // a2
+                            if (color.Offset + color.Length + change > color.Offset) color.Length += change;
+                            else removeTarget.Add(color);
+                        }
+                    }
+                    else if (e.Offset <= color.Offset+color.Length) // b0 | b1
+                    {
+                        if (e.Offset + e.RemovalLength <= last)
+                        { // b0
+                            color.Length += change;
+                        }
+                        else
+                        { // b1
+                          // none
+                        }
+                    }
+                    else
+                    { // c0
+                      // none
+                    }
+
+                }
+                foreach (var removeMark in removeTarget)
+                {
+                    lineInfo.Colors.Remove(removeMark);
+                }
+            }
+
+        }
+
         #endregion
 
 

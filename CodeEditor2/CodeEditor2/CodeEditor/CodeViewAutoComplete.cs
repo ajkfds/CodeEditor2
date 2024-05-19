@@ -41,24 +41,30 @@ namespace CodeEditor2.CodeEditor
             //System.Diagnostics.Debug.Print("## checkAutoComplete " + cantidateWord + " " + cantidateWord.Length);
             //System.Diagnostics.Debug.Print("## checkAutoCompleteCar _" + codeView.TextFile.CodeDocument.GetCharAt(prevIndex) + "_" + prevIndex.ToString());
 
+            if (codeView._completionWindow != null)
+            {
+                if (codeView._completionWindow.CompletionList._listBox.ItemCount == 0)
+                {
+                    codeView._completionWindow.Close();
+                    return;
+                }
+                if (items == null || cantidateWord == null || (cantidateWord == "" & prevChar != '.'))
+                {
+                    codeView._completionWindow.Close();
+                    return;
+                }
+            }
+
             if (codeView._completionWindow != null) return;
             //if (CodeDocument.SelectionStart == CodeDocument.SelectionLast)
             {
 
 
-                if (items == null || cantidateWord == null || (cantidateWord == "" & prevChar != '.'))
-                {
-                    if (codeView._completionWindow != null)
-                    {
-                        codeView._completionWindow.Close();
-                    }
-                }
-                else
                 {
                     codeView._completionWindow = new CodeEditor2.CodeEditor.AutoCompleteWindow(codeView._textEditor.TextArea);
                     codeView._completionWindow.Closed += (o, args) => codeView._completionWindow = null;
                     var data = codeView._completionWindow.CompletionList.CompletionData;
-                    foreach (AutocompleteItem item in items)
+                   foreach (AutocompleteItem item in items)
                     {
                         item.Clean();
                     }
