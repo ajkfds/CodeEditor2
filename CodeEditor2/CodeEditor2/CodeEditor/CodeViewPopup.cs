@@ -37,6 +37,7 @@ namespace CodeEditor2.CodeEditor
             if (pos == null) return;
 
             TextViewPosition tpos = (TextViewPosition)pos;
+            if (tpos.Line > codeView.CodeDocument.Lines) return;
             int index = codeView.CodeDocument.TextDocument.GetOffset(tpos.Line, tpos.Column);
             if (index >= codeView.CodeDocument.Length) return;
 
