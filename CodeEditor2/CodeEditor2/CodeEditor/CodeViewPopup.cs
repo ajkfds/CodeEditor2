@@ -45,14 +45,26 @@ namespace CodeEditor2.CodeEditor
             }
 
             TextViewPosition tpos = (TextViewPosition)pos;
-            if (tpos.Line > codeView.CodeDocument.Lines) return;
+            if (tpos.Line > codeView.CodeDocument.Lines)
+            {
+                ToolTip.SetIsOpen(codeView.Editor, false);
+                return;
+            }
             int index = codeView.CodeDocument.TextDocument.GetOffset(tpos.Line, tpos.Column);
-            if (index >= codeView.CodeDocument.Length) return;
+            if (index >= codeView.CodeDocument.Length)
+            {
+                ToolTip.SetIsOpen(codeView.Editor, false);
+                return;
+            }
 
             int headIndex, length;
             codeView.CodeDocument.GetWord(index, out headIndex, out length);
 
-            if (popupInex == headIndex) return;
+            if (popupInex == headIndex)
+            {
+                ToolTip.SetIsOpen(codeView.Editor, false);
+                return;
+            }
             popupInex = headIndex;
 
             PopupItem pitem = codeView.TextFile.GetPopupItem(codeView.CodeDocument.Version, index);
