@@ -48,6 +48,7 @@ namespace CodeEditor2.CodeEditor
 
             //            CodeDocument.CopyFrom(parser.Document);
             codeDocument.CopyColorMarkFrom(parser.Document);
+            
 
             if (parser.ParsedDocument != null)
             {
@@ -60,6 +61,7 @@ namespace CodeEditor2.CodeEditor
             codeView._textEditor.TextArea.TextView.Redraw();
             Controller.MessageView.Update(codeView.TextFile.ParsedDocument);
         }
+
 
         public void EntryParse()
         {

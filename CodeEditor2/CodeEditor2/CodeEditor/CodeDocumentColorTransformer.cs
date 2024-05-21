@@ -50,43 +50,6 @@ namespace CodeEditor2.CodeEditor
                 );
             }
 
-            //foreach (var effect in lineInfo.Effects)
-            //{
-            //    if (line.Offset > effect.Offset | effect.Offset + effect.Length > line.EndOffset) continue;
-            //    ChangeLinePart(
-            //        effect.Offset,
-            //        effect.Offset + effect.Length,
-            //        visualLine =>
-            //        {
-            //            TextDecoration underline = new TextDecoration();// TextDecorations.Underline.Last();
-            //            underline.Stroke = new SolidColorBrush(effect.DrawColor);
-            //            underline.StrokeThickness = 2;
-            //            underline.StrokeThicknessUnit = TextDecorationUnit.Pixel;
-            //            underline.StrokeOffset = 2;
-            //            underline.StrokeOffsetUnit = TextDecorationUnit.Pixel;
-            //            switch (effect.MarkStyle)
-            //            {
-            //                case MarkStyleEnum.DashedLine0:
-            //                    underline.StrokeDashArray = new Avalonia.Collections.AvaloniaList<double>(2, 2);
-            //                    break;
-            //                case MarkStyleEnum.ThinUnderLine:
-            //                    underline.StrokeThickness = 1;
-            //                    break;
-            //            }
-
-            //            if (visualLine.TextRunProperties.TextDecorations == null)
-            //            {
-            //                visualLine.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
-            //                var textDecorations = new TextDecorationCollection(visualLine.TextRunProperties.TextDecorations) { underline };
-            //                visualLine.TextRunProperties.SetTextDecorations(textDecorations);
-            //            }
-            //            else
-            //            {
-            //                visualLine.TextRunProperties.TextDecorations.Add(underline);
-            //            }
-            //        }
-            //    );
-            //}
         }
     }
 }

@@ -188,7 +188,7 @@ namespace CodeEditor2.Views
         /// <summary>
         /// Called from textEditor
         /// </summary>
-        int prevCarletLine = 0;
+        int prevCaretLine = 0;
         ulong prevVersion = 0;
         private void Caret_PositionChanged(object? sender, EventArgs e)
         {
@@ -197,16 +197,14 @@ namespace CodeEditor2.Views
             //CodeDocument.setCarletPosition(_textEditor.TextArea.Caret.Offset);
             CodeDocument.CaretIndex = _textEditor.TextArea.Caret.Offset;
 
-            int carletLine = _textEditor.TextArea.Caret.Line;
+            int caretLine = _textEditor.TextArea.Caret.Line;
             ulong version = CodeDocument.Version;
-            //Debug.Print("version "+version.ToString()+"  carletLine"+carletLine.ToString());
-            if (prevVersion != version && carletLine != prevCarletLine)
+            if (prevVersion != version && caretLine != prevCaretLine)
             {
                 prevVersion = version;
                 codeViewParser.EntryParse();
             }
-            prevCarletLine = carletLine;
-            //            prevVersion = version;
+            prevCaretLine = caretLine;
         }
 
 
@@ -228,8 +226,8 @@ namespace CodeEditor2.Views
             CodeDocument.selectionLast = offset;
         }
 
-        // Called from CodeCdedocuent. Update CodeDocument Index change to textEditor
-        private void CodeDocument_CarletChanged(CodeDocument codeDocument)
+        // Called from CodeDocument. Update CodeDocument Index change to textEditor
+        private void CodeDocument_CaretChanged(CodeDocument codeDocument)
         {
             if (skipEvents) return;
             if (CodeDocument != codeDocument) return;
@@ -309,11 +307,13 @@ namespace CodeEditor2.Views
             if (parseEntry) codeViewParser.EntryParse();
 
             skipEvents = false;
+
+            Controller.CodeEditor.Refresh();
         }
 
         private void attachToCodeDocument()
         {
-            TextFile.CodeDocument.CaretChanged += CodeDocument_CarletChanged;
+            TextFile.CodeDocument.CaretChanged += CodeDocument_CaretChanged;
             //                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
 
 
