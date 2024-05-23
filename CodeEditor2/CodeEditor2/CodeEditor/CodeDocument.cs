@@ -388,6 +388,7 @@ namespace CodeEditor2.CodeEditor
             }
             set
             {
+                if (Length >= value) return;
                 caretIndex = value;
                 if (CaretChanged != null) CaretChanged(this);
             }
@@ -645,6 +646,11 @@ namespace CodeEditor2.CodeEditor
 
         public virtual void SetColorAt(int index, byte value, int length)
         {
+            if (value == 0)
+            {
+                string a = "";
+            }
+
             if (TextDocument == null) return;
             if (TextFile == null) return;
 

@@ -194,7 +194,6 @@ namespace CodeEditor2.Views
         {
             if (skipEvents) return;
             if (CodeDocument == null) return;
-            //CodeDocument.setCarletPosition(_textEditor.TextArea.Caret.Offset);
             CodeDocument.CaretIndex = _textEditor.TextArea.Caret.Offset;
 
             int caretLine = _textEditor.TextArea.Caret.Line;

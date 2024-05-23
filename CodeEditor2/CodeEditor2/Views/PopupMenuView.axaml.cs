@@ -43,6 +43,11 @@ namespace CodeEditor2.Views
             if (TextBox0.Text == null) return;
             string targetText = TextBox0.Text.ToLower();
 
+            if(TextBox0.Text == "mo")
+            {
+                string s = "";
+            }
+
             foreach (PopupMenuItem item in Global.codeView.codeViewPopupMenu.PopupMenuItems)
             {
                 if (item.Text == null) continue;
@@ -137,6 +142,7 @@ namespace CodeEditor2.Views
         private void PopupMenuView_LostFocus(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             cancel();
+            CodeEditor2.Controller.CodeEditor.AbortInteractiveSnippet();
         }
 
         private void cancel()

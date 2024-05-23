@@ -66,10 +66,10 @@ public partial class MainView : UserControl
 
     private async void MenuItem_AddProjectPath_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        Tools.InputWindow inputWinodw = new Tools.InputWindow("New Project Name","Input Project Absolute Path");
-        await inputWinodw.ShowDialog(Global.mainWindow);
-        if (inputWinodw.Cancel) return;
-        string path = inputWinodw.InputText;
+        Tools.InputWindow inputWindow = new Tools.InputWindow("New Project Name","Input Project Absolute Path");
+        await inputWindow.ShowDialog(Global.mainWindow);
+        if (inputWindow.Cancel) return;
+        string path = inputWindow.InputText;
         if (!System.IO.Directory.Exists(path))
         {
             Controller.AppendLog("no folders found");

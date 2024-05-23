@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Timers;
 
@@ -14,7 +15,19 @@ namespace CodeEditor2.Data
         public static Project Create(string rootPath)
         {
             Project project = new Project();
-            project.RootPath = System.IO.Path.GetDirectoryName(rootPath);
+            string path;
+            if (rootPath.EndsWith(System.IO.Path.DirectorySeparatorChar))
+            {
+                path = rootPath;
+            }
+            else
+            {
+                path = rootPath + System.IO.Path.DirectorySeparatorChar;
+            }
+            string? actualPath = System.IO.Path.GetDirectoryName(path);
+            if (actualPath == null) throw new Exception();
+
+            project.RootPath = actualPath;
             if (project.RootPath.Contains(Path.DirectorySeparatorChar))
             {
                 project.Name = project.RootPath.Substring(project.RootPath.LastIndexOf(Path.DirectorySeparatorChar) + 1);
@@ -59,7 +72,7 @@ namespace CodeEditor2.Data
             fileSystemWatcher = null;
         }
 
-        public static Action<Project> Created;
+        public static Action<Project>? Created;
 
 
         public Dictionary<string, ProjectProperty> ProjectProperties = new Dictionary<string, ProjectProperty>();
@@ -115,11 +128,11 @@ namespace CodeEditor2.Data
         }
 
         // path control
-        public string GetAbsolutePath(string relativaPath)
+        public string GetAbsolutePath(string relativePath)
         {
             string basePath = RootPath;
             if (!basePath.EndsWith(Path.DirectorySeparatorChar)) basePath += Path.DirectorySeparatorChar;
-            string filePath = relativaPath;
+            string filePath = relativePath;
 
             basePath = basePath.Replace("%", "%25");
             filePath = filePath.Replace("%", "%25");
@@ -147,7 +160,7 @@ namespace CodeEditor2.Data
 
 
         // Seve and Load Project Setups ///////////////////////////////////////////////////////////////////
-        // save and load project setups into josn file
+        // save and load project setups into json file
 
         #region
         public void SaveSetup(AjkAvaloniaLibs.Libs.Json.JsonWriter writer)
