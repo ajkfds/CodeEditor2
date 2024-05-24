@@ -35,60 +35,60 @@ namespace CodeEditor2.CodeEditor
             };
 
 
-            markStyle = new MarkInfo[]
+            markStyle = new MarkDetail[]
             {
                 // 0
-                new MarkInfo
+                new MarkDetail
                 {
                     Color = Color.FromRgb(212, 212, 212),
-                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                    Style = MarkDetail.MarkStyleEnum.WaveLine,
                 },
                 // 1
-                new MarkInfo
+                new MarkDetail
                 {
                     Color = Color.FromRgb(0, 0, 255),
-                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                    Style = MarkDetail.MarkStyleEnum.WaveLine,
                 },
                 // 2
-                new MarkInfo
+                new MarkDetail
                 {
                     Color = Color.FromRgb(0, 255, 0),
-                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                    Style = MarkDetail.MarkStyleEnum.WaveLine,
                 },
                 // 3
-                new MarkInfo
+                new MarkDetail
                 {
                     Color = Color.FromRgb(0, 255, 0),
-                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                    Style = MarkDetail.MarkStyleEnum.WaveLine,
                 },
                 // 4
-                new MarkInfo
+                new MarkDetail
                 {
                     Color = Color.FromRgb(0, 255, 0),
-                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                    Style = MarkDetail.MarkStyleEnum.WaveLine,
                 },
                 // 5
-                new MarkInfo
+                new MarkDetail
                 {
                     Color = Color.FromRgb(0, 255, 0),
-                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                    Style = MarkDetail.MarkStyleEnum.WaveLine,
                 },
                 // 6
-                new MarkInfo
+                new MarkDetail
                 {
                     Color = Color.FromRgb(0, 255, 0),
-                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                    Style = MarkDetail.MarkStyleEnum.WaveLine,
                 },
                 // 7
-                new MarkInfo
+                new MarkDetail
                 {
                     Color = Color.FromRgb(0, 255, 0),
-                    Style = MarkInfo.MarkStyleEnum.WaveLine,
+                    Style = MarkDetail.MarkStyleEnum.WaveLine,
                 },
             };
         }
 
-        public class MarkInfo
+        public class MarkDetail
         {
             public Color Color;
             public double DecorationWidth = 4;
@@ -116,8 +116,8 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        protected MarkInfo[] markStyle;
-        public virtual MarkInfo[] MarkStyle
+        protected MarkDetail[] markStyle;
+        public virtual MarkDetail[] MarkStyle
         {
             get
             {

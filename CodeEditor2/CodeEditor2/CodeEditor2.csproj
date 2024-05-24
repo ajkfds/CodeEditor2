@@ -18,6 +18,11 @@
     <None Remove="新しいフォルダー1\**" />
   </ItemGroup>
 
+  
+  <ItemGroup>
+    <Compile Remove="CodeEditor\CodeDocumentMarkHandler.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
@@ -36,5 +41,9 @@
 
   <ItemGroup>
     <Folder Include="Lint\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="CodeEditor\CodeDocument\Marks.cs" />
   </ItemGroup>
 </Project>

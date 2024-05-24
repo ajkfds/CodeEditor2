@@ -194,7 +194,7 @@ namespace CodeEditor2.Views
         {
             if (skipEvents) return;
             if (CodeDocument == null) return;
-            CodeDocument.CaretIndex = _textEditor.TextArea.Caret.Offset;
+            CodeDocument.caretIndex = _textEditor.TextArea.Caret.Offset;
 
             int caretLine = _textEditor.TextArea.Caret.Line;
             ulong version = CodeDocument.Version;
@@ -236,6 +236,13 @@ namespace CodeEditor2.Views
             _textEditor.CaretOffset = codeDocument.CaretIndex;
         }
 
+        public void SetCaretPosition(int index)
+        {
+            if (codeDocument == null) return;
+            if (_textEditor.CaretOffset == codeDocument.CaretIndex) return;
+            _textEditor.CaretOffset = index;
+            codeDocument.caretIndex = index;
+        }
         public void SetSelection(int selectionStart, int selectionLast)
         {
             if (skipEvents) return;
@@ -312,7 +319,6 @@ namespace CodeEditor2.Views
 
         private void attachToCodeDocument()
         {
-            TextFile.CodeDocument.CaretChanged += CodeDocument_CaretChanged;
             //                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
 
 
@@ -320,15 +326,14 @@ namespace CodeEditor2.Views
             //                Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
             //                Global.mainForm.mainTab.TabPages[0].Text = textFile.Name;
             //                Global.mainForm.mainTab.SelectedTab = Global.mainForm.mainTab.TabPages[0];
-            TextFile.CodeDocument.CurrentMarks = _markerRenderer.marks;
+            TextFile.CodeDocument.Marks.CurrentMarks = _markerRenderer.marks;
 
             _markerRenderer.ClearMark();
-            _markerRenderer.SetMarks(TextFile.CodeDocument.Marks);
+            _markerRenderer.SetMarks(TextFile.CodeDocument.Marks.Details);
         }
         private void detachFromCodeDocument()
         {
-            CodeDocument.CaretChanged = null;
-            TextFile.CodeDocument.CurrentMarks = null;
+            TextFile.CodeDocument.Marks.CurrentMarks = null;
             //                CodeDocument.SelectionChanged = null;
         }
 

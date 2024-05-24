@@ -90,7 +90,7 @@ namespace CodeEditor2.CodeEditor
             {
                 int index = codeDocument.CaretIndex;
                 codeDocument.Replace(index, 0, ColorIndex, Text);
-                codeDocument.CaretIndex = index + Text.Length;
+                CodeEditor2.Controller.CodeEditor.SetCaretPosition( index + Text.Length);
 
                 //if(Global.codeView.CodeDocument == codeDocument)
                 //{
@@ -101,11 +101,7 @@ namespace CodeEditor2.CodeEditor
             {
                 // delete after last .
                 codeDocument.Replace(headIndex, length, ColorIndex, Text);
-                codeDocument.CaretIndex = headIndex + Text.Length;
-                //if (Global.codeView.CodeDocument == codeDocument)
-                //{
-                //    Controller.CodeEditor.SetSelection(headIndex, headIndex + Text.Length - 1);
-                //}
+                CodeEditor2.Controller.CodeEditor.SetCaretPosition( headIndex + Text.Length);
             }
             Global.codeView.codeViewPopupMenu.AfterAutoCompleteHandled();
         }

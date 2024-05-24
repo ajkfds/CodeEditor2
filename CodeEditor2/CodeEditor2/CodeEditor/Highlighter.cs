@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
+using AvaloniaEdit.Document;
 
 namespace CodeEditor2.CodeEditor
 {
@@ -19,11 +20,15 @@ namespace CodeEditor2.CodeEditor
         private List<int> highlightStarts = new List<int>();
         private List<int> highlighLasts = new List<int>();
 
-        public void HilightUpdateWhenDocReplaced(int index, int replaceLength, byte colorIndex, string text)
+        private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
+        {
+            fixHilight(e);
+        }
+        public void fixHilight(DocumentChangeEventArgs e)
         {
             if (highlightStarts.Count == 0) return;
 
-            int change = text.Length - replaceLength;
+            int change = e.InsertionLength - e.RemovalLength;
 
             for (int i = 0; i < highlightStarts.Count; i++)
             {
@@ -42,26 +47,26 @@ namespace CodeEditor2.CodeEditor
                 int start = highlightStarts[i];
                 int last = highlighLasts[i];
 
-                if (index <= start) // a0 | a1 | a2
+                if (e.Offset <= start) // a0 | a1 | a2
                 {
-                    if (index + replaceLength < start)
+                    if (e.Offset + e.RemovalLength < start)
                     { // a0
                         highlightStarts[i] += change;
                         highlighLasts[i] += change;
                     }
-                    else if (index + replaceLength <= last)
+                    else if (e.Offset + e.RemovalLength <= last)
                     { // a1
-                        highlightStarts[i] = index;
-                        highlighLasts[i] = index + change;
+                        highlightStarts[i] = e.Offset;
+                        highlighLasts[i] = e.Offset + change;
                     }
                     else
                     { // a2
                         highlighLasts[i] += change;
                     }
                 }
-                else if (index <= highlighLasts[i] + 1) // b0 | b1
+                else if (e.Offset <= highlighLasts[i] + 1) // b0 | b1
                 {
-                    if (index + replaceLength <= last + 1)
+                    if (e.Offset + e.RemovalLength <= last + 1)
                     { // b0
                         highlighLasts[i] += change;
                     }
@@ -104,8 +109,8 @@ namespace CodeEditor2.CodeEditor
         public void SelectHighlight(int highlightIndex)
         {
             CodeDocument document = codeTextbox.CodeDocument;
-            document.CaretIndex = highlightStarts[highlightIndex];
-            document.SetSelection(highlightStarts[highlightIndex],highlighLasts[highlightIndex]);
+            CodeEditor2.Controller.CodeEditor.SetCaretPosition(highlightStarts[highlightIndex]);
+            CodeEditor2.Controller.CodeEditor.SetSelection(highlightStarts[highlightIndex],highlighLasts[highlightIndex]);
         }
 
         public int GetHighlightIndex(int index)

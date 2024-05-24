@@ -78,7 +78,7 @@ namespace CodeEditor2.CodeEditor
             double halfBorder = 0.5 * BorderThickness;
             switch (mark.Style)
             {
-                case CodeDrawStyle.MarkInfo.MarkStyleEnum.WaveLine:
+                case CodeDrawStyle.MarkDetail.MarkStyleEnum.WaveLine:
                     AddWaveLine(
                         mark,
                         PixelSnapHelpers.Round(r.Left - halfBorder, pixelSize.Width) + halfBorder,
@@ -87,7 +87,7 @@ namespace CodeEditor2.CodeEditor
                         PixelSnapHelpers.Round(r.Bottom + halfBorder, pixelSize.Height) - halfBorder - HorizontalOffset
                         );
                     break;
-                case CodeDrawStyle.MarkInfo.MarkStyleEnum.UnderLine:
+                case CodeDrawStyle.MarkDetail.MarkStyleEnum.UnderLine:
                     break;
             }
         }

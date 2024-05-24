@@ -127,6 +127,10 @@ namespace CodeEditor2
                 }
             }
 
+            public static void SetCaretPosition(int index)
+            {
+                Global.codeView.SetCaretPosition(index);
+            }
             public static void SetSelection(int startIndex,int lastIndex)
             {
                 Global.codeView.SetSelection(startIndex, lastIndex);

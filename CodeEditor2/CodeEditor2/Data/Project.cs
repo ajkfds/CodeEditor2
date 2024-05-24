@@ -203,7 +203,7 @@ namespace CodeEditor2.Data
                             RootPath = reader.GetNextStringValue();
                             break;
                         case "IgnoreList":
-                            readInnoreList(reader);
+                            readIgnoreList(reader);
                             break;
                         case "PluginProperties":
                             readProjectProperties(reader);
@@ -216,7 +216,7 @@ namespace CodeEditor2.Data
                 }
             }
         }
-        private void readInnoreList(AjkAvaloniaLibs.Libs.Json.JsonReader jsonReader)
+        private void readIgnoreList(AjkAvaloniaLibs.Libs.Json.JsonReader jsonReader)
         {
             using (var reader = jsonReader.GetNextObjectReader())
             {

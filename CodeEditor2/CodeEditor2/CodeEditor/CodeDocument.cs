@@ -50,14 +50,19 @@ namespace CodeEditor2.CodeEditor
             initialize();
         }
 
+
+        [MemberNotNull(nameof(Marks))]
         private void initialize()
         {
+            Marks = new Marks(this);
             ownerThread = System.Threading.Thread.CurrentThread;
             textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);
             textDocument.TextChanged += TextDocument_TextChanged;
             textDocument.Changed += TextDocument_Changed;
             textDocument.Changing += TextDocument_Changing;
         }
+
+        public Marks Marks;
 
         #region ThreadControl
 
@@ -117,7 +122,7 @@ namespace CodeEditor2.CodeEditor
         }
         private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
         {
-            fixMark(e);
+            Marks.FixMarkPosition(e);
             fixColor(e);
         }
 
@@ -378,19 +383,12 @@ namespace CodeEditor2.CodeEditor
 
 
 
-        int caretIndex;
-        public Action<CodeDocument>? CaretChanged = null;
+        internal int caretIndex;
         public int CaretIndex
         {
             get
             {
                 return caretIndex;
-            }
-            set
-            {
-                if (Length >= value) return;
-                caretIndex = value;
-                if (CaretChanged != null) CaretChanged(this);
             }
         }
 
@@ -413,7 +411,8 @@ namespace CodeEditor2.CodeEditor
         public void CopyColorMarkFrom(CodeDocument document)
         {
             LineInfomations = document.LineInfomations;
-            Marks = document.Marks;
+            Marks.
+            Details = document.Marks.Details;
         }
         public void CopyFrom(CodeDocument document)
         {
@@ -430,180 +429,9 @@ namespace CodeEditor2.CodeEditor
         #region
         #endregion
 
-        #region mark handler
 
-        public byte GetMarkAt(int index)
-        {
-            //            return marks[index];
-            return 0;
-        }
+        // mark
 
-        public virtual void SetMarkAt(int index, byte value)
-        {
-            SetMarkAt(index, 1, value);
-        }
-
-        public List<CodeDrawStyle.MarkInfo> Marks = new List<CodeDrawStyle.MarkInfo>();
-        public void SetMarkAt(int index, int length, byte value)
-        {
-            if (TextDocument == null) return;
-            if (TextFile == null) return;
-            if (index >= Length) return;
-
-            CodeDrawStyle.MarkInfo markStyle = TextFile.DrawStyle.MarkStyle[value];
-            CodeDrawStyle.MarkInfo mark = new CodeDrawStyle.MarkInfo();
-            mark.Offset = index;
-            mark.LastOffset = index + length;
-            mark.Color = markStyle.Color;
-            mark.Thickness = markStyle.Thickness;
-            mark.DecorationHeight = markStyle.DecorationHeight;
-            mark.DecorationWidth = markStyle.DecorationWidth;
-            mark.Style = markStyle.Style;
-            Marks.Add(mark);
-        }
-
-        internal TextSegmentCollection<TextSegment>? CurrentMarks = null;
-        private void fixMark(DocumentChangeEventArgs e)
-        {
-            if (CurrentMarks == null) return;
-
-            int change = e.InsertionLength - e.RemovalLength;
-            List<TextSegment> removeTarget = new List<TextSegment>();
-
-            foreach (var mark in CurrentMarks)
-            {
-                //     start    last
-                //       +=======+
-
-                // |---|                 a0
-                // |---------|           a1
-                // |-------------------| a2
-
-                //           |---|       b0
-                //           |---------| b1
-
-                //                  |--| c0
-
-                int start = mark.StartOffset;
-                int last = mark.EndOffset;
-
-                if (e.Offset <= start) // a0 | a1 | a2
-                {
-                    if (e.Offset + e.RemovalLength < start)
-                    { // a0
-                        mark.StartOffset += change;
-                    }
-                    else if (e.Offset + e.RemovalLength <= last)
-                    { // a1
-                        mark.StartOffset = e.Offset;
-                    }
-                    else
-                    { // a2
-                        if (mark.EndOffset + change > mark.StartOffset) mark.EndOffset += change;
-                        else removeTarget.Add(mark);
-                    }
-                }
-                else if (e.Offset <= mark.EndOffset + 1) // b0 | b1
-                {
-                    if (e.Offset + e.RemovalLength <= last + 1)
-                    { // b0
-                        mark.EndOffset += change;
-                    }
-                    else
-                    { // b1
-                        // none
-                    }
-                }
-                else
-                { // c0
-                    // none
-                }
-            }
-
-            foreach(var removeMark in removeTarget)
-            {
-                CurrentMarks.Remove(removeMark);
-            }
-        }
-
-        #endregion
-
-
-        /*
-        public void HilightUpdateWhenDocReplaced(int index, int replaceLength, byte colorIndex, string text)
-        {
-            if (highlightStarts.Count == 0) return;
-
-            int change = text.Length - replaceLength;
-
-            for (int i = 0; i < highlightStarts.Count; i++)
-            {
-                //     start    last
-                //       +=======+
-
-                // |---|                 a0
-                // |---------|           a1
-                // |-------------------| a2
-
-                //           |---|       b0
-                //           |---------| b1
-
-                //                  |--| c0
-
-                int start = highlightStarts[i];
-                int last = highlighLasts[i];
-
-                if (index <= start) // a0 | a1 | a2
-                {
-                    if (index + replaceLength < start)
-                    { // a0
-                        highlightStarts[i] += change;
-                        highlighLasts[i] += change;
-                    }
-                    else if (index + replaceLength <= last)
-                    { // a1
-                        highlightStarts[i] = index;
-                        highlighLasts[i] = index + change;
-                    }
-                    else
-                    { // a2
-                        highlighLasts[i] += change;
-                    }
-                }
-                else if (index <= highlighLasts[i] + 1) // b0 | b1
-                {
-                    if (index + replaceLength <= last + 1)
-                    { // b0
-                        highlighLasts[i] += change;
-                    }
-                    else
-                    { // b1
-                        // none
-                    }
-                }
-                else
-                { // c0
-                    // none
-                }
-            }
-            ReDrawHighlight();
-        }
-         
-         
-         */
-        public void RemoveMarkAt(int index, byte value)
-        {
-            if (TextDocument == null) return;
-            if (TextFile == null) return;
-            //            marks[index] &= (byte)((1 << value) ^ 0xff);
-        }
-        public void RemoveMarkAt(int index, int length, byte value)
-        {
-            for (int i = index; i < index + length; i++)
-            {
-                RemoveMarkAt(i, value);
-            }
-        }
 
         #region Text Color
         public Dictionary<int, LineInfomation> LineInfomations = new Dictionary<int, LineInfomation>();

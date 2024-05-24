@@ -20,7 +20,7 @@ namespace CodeEditor2.CodeEditor
         {
             marks.Clear();
         }
-        public void SetMarks(List<CodeDrawStyle.MarkInfo> marks)
+        public void SetMarks(List<CodeDrawStyle.MarkDetail> marks)
         {
             this.marks.Clear();
             foreach(var mark in marks)
@@ -35,9 +35,9 @@ namespace CodeEditor2.CodeEditor
             public double DecorationWidth = 4;
             public double DecorationHeight = 1;
             public double Thickness = 1;
-            public CodeDrawStyle.MarkInfo.MarkStyleEnum Style;
+            public CodeDrawStyle.MarkDetail.MarkStyleEnum Style;
 
-            public static Mark CloneFrom(CodeDrawStyle.MarkInfo markInfo)
+            public static Mark CloneFrom(CodeDrawStyle.MarkDetail markInfo)
             {
                 Mark mark = new Mark();
                 mark.Color = markInfo.Color;
@@ -83,7 +83,7 @@ namespace CodeEditor2.CodeEditor
                 Pen pen;
                 switch (mark.Style)
                 {
-                    case CodeDrawStyle.MarkInfo.MarkStyleEnum.DotLine:
+                    case CodeDrawStyle.MarkDetail.MarkStyleEnum.DotLine:
                         pen = new Pen(brush, mark.Thickness,DashStyle.Dash);
                         break;
                     default:
