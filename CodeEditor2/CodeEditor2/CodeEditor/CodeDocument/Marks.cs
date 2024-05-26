@@ -74,7 +74,7 @@ namespace CodeEditor2.CodeEditor
 		}
 
 		internal TextSegmentCollection<TextSegment>? CurrentMarks = null;
-		public void FixMarkPosition(DocumentChangeEventArgs e)
+		public void OnTextEdit(DocumentChangeEventArgs e)
 		{
 			if (CurrentMarks == null) return;
 

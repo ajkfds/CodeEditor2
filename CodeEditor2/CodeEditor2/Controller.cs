@@ -181,28 +181,38 @@ namespace CodeEditor2
 
             public static void AppendHighlight(int highlightStart, int highlightLast)
             {
-                Global.codeView.Highlighter.AppendHighlight(highlightStart, highlightLast);
+                if (Global.codeView.CodeDocument == null) return;
+                Global.codeView.CodeDocument.HighLights.AppendHighlight(highlightStart, highlightLast);
             }
 
             public static void GetHighlightPosition(int highlightIndex, out int highlightStart, out int highlightLast)
             {
-                Global.codeView.Highlighter.GetHighlightPosition(highlightIndex, out highlightStart, out highlightLast);
+                if (Global.codeView.CodeDocument == null)
+                {
+                    highlightStart = -1;
+                    highlightLast = -1;
+                    return;
+                }
+                Global.codeView.CodeDocument.HighLights.GetHighlightPosition(highlightIndex, out highlightStart, out highlightLast);
             }
 
 
             public static void SelectHighlight(int highLightIndex)
             {
-                Global.codeView.Highlighter.SelectHighlight(highLightIndex);
+                if (Global.codeView.CodeDocument == null) return;
+                Global.codeView.CodeDocument.HighLights.SelectHighlight(highLightIndex);
             }
 
             public static int GetHighlightIndex(int index)
             {
-                return Global.codeView.Highlighter.GetHighlightIndex(index);
+                if (Global.codeView.CodeDocument == null) return -1;
+                return Global.codeView.CodeDocument.HighLights.GetHighlightIndex(index);
             }
 
             public static void ClearHighlight()
             {
-                Global.codeView.Highlighter.ClearHighlight();
+                if (Global.codeView.CodeDocument == null) return;
+                Global.codeView.CodeDocument.HighLights.ClearHighlight();
             }
             public static void Refresh()
             {

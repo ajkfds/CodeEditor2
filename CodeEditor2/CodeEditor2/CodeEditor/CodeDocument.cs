@@ -52,9 +52,13 @@ namespace CodeEditor2.CodeEditor
 
 
         [MemberNotNull(nameof(Marks))]
+        [MemberNotNull(nameof(TextColors))]
+        [MemberNotNull(nameof(HighLights))]
         private void initialize()
         {
             Marks = new Marks(this);
+            TextColors = new Colors(this);
+            HighLights = new HIghLights(this);
             ownerThread = System.Threading.Thread.CurrentThread;
             textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);
             textDocument.TextChanged += TextDocument_TextChanged;
@@ -63,6 +67,9 @@ namespace CodeEditor2.CodeEditor
         }
 
         public Marks Marks;
+        public Colors TextColors;
+        public HIghLights HighLights;
+
 
         #region ThreadControl
 
@@ -122,8 +129,9 @@ namespace CodeEditor2.CodeEditor
         }
         private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
         {
-            Marks.FixMarkPosition(e);
-            fixColor(e);
+            Marks.OnTextEdit(e);
+            TextColors.OnTextEdit(e);
+            HighLights.OnTextEdit(e);
         }
 
         private void TextDocument_Changed(object? sender, DocumentChangeEventArgs e)
@@ -410,7 +418,7 @@ namespace CodeEditor2.CodeEditor
 
         public void CopyColorMarkFrom(CodeDocument document)
         {
-            LineInfomations = document.LineInfomations;
+            TextColors.LineInfomations = document.TextColors.LineInfomations;
             Marks.
             Details = document.Marks.Details;
         }
@@ -426,158 +434,7 @@ namespace CodeEditor2.CodeEditor
             Version = document.Version;
         }
 
-        #region
-        #endregion
 
-
-        // mark
-
-
-        #region Text Color
-        public Dictionary<int, LineInfomation> LineInfomations = new Dictionary<int, LineInfomation>();
-        protected LineInfomation GetLineInfomation(int lineNumber)
-        {
-            LineInfomation lineInfo;
-            if (LineInfomations.ContainsKey(lineNumber))
-            {
-                lineInfo = LineInfomations[lineNumber];
-            }
-            else
-            {
-                lineInfo = new LineInfomation();
-                LineInfomations.Add(lineNumber, lineInfo);
-            }
-            if (lineInfo.Colors.Count > 2000)
-            {
-                string a = "";
-            }
-            return lineInfo;
-        }
-
-
-        public byte GetColorAt(int index)
-        {
-            //            return colors[index];
-            return 0;
-        }
-
-
-        public virtual void SetColorAt(int index, byte value)
-        {
-            if (TextDocument == null) return;
-            if (TextFile == null) return;
-            DocumentLine line = TextDocument.GetLineByOffset(index);
-            LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
-            Color color = TextFile.DrawStyle.ColorPallet[value];
-            lineInfo.Colors.Add(new LineInfomation.Color(index, 1, color));
-        }
-
-        public virtual void SetColorAt(int index, byte value, int length)
-        {
-            if (value == 0)
-            {
-                string a = "";
-            }
-
-            if (TextDocument == null) return;
-            if (TextFile == null) return;
-
-            DocumentLine lineStart = TextDocument.GetLineByOffset(index);
-            DocumentLine lineLast = TextDocument.GetLineByOffset(index + length);
-            Color color = TextFile.DrawStyle.ColorPallet[value];
-
-            if (lineStart == lineLast)
-            {
-                LineInfomation lineInfo = GetLineInfomation(lineStart.LineNumber);
-                lineInfo.Colors.Add(new LineInfomation.Color(index, length, color));
-            }
-            else
-            {
-                LineInfomation lineInfo = GetLineInfomation(lineStart.LineNumber);
-                lineInfo.Colors.Add(new LineInfomation.Color(index,  GetLineLength(lineStart.LineNumber)- (index - GetLineStartIndex(lineStart.LineNumber)), color));
-
-                lineInfo = GetLineInfomation(lineLast.LineNumber);
-                lineInfo.Colors.Add(new LineInfomation.Color(GetLineStartIndex(lineLast.LineNumber), index+length- GetLineStartIndex(lineLast.LineNumber), color));
-
-                for (int line = lineStart.LineNumber+1; line <= lineLast.LineNumber-1; line++)
-                {
-                    lineInfo = GetLineInfomation(line);
-                    lineInfo.Colors.Add(new LineInfomation.Color(GetLineStartIndex(line),GetLineLength(line), color));
-                }
-            }
-        }
-
-        private void fixColor(DocumentChangeEventArgs e)
-        {
-            DocumentLine startLine = TextDocument.GetLineByOffset(e.Offset);
-            DocumentLine endLine = TextDocument.GetLineByOffset(e.Offset+e.RemovalLength);
-
-
-            if ( startLine.LineNumber == endLine.LineNumber){ // startLine = endLine
-
-                LineInfomation lineInfo = GetLineInfomation(startLine.LineNumber);
-                List<LineInfomation.Color> removeTarget = new List<LineInfomation.Color>();
-                //     start    last
-                //       +=======+
-
-                // |---|                 a0
-                // |---------|           a1
-                // |-------------------| a2
-
-                //           |---|       b0
-                //           |---------| b1
-
-                //                  |--| c0
-                foreach (var color in lineInfo.Colors)
-                {
-                    if (color == null) continue;
-
-                    int start   = color.Offset;
-                    int last    = color.Offset + color.Length;
-                    int change = e.InsertionLength - e.RemovalLength;
-
-                    if (e.Offset <= start) // a0 | a1 | a2
-                    {
-                        if (e.Offset + e.RemovalLength < start)
-                        { // a0
-                            color.Offset += change;
-                        }
-                        else if (e.Offset + e.RemovalLength <= last)
-                        { // a1
-                            color.Offset = e.Offset;
-                        }
-                        else
-                        { // a2
-                            if (color.Offset + color.Length + change > color.Offset) color.Length += change;
-                            else removeTarget.Add(color);
-                        }
-                    }
-                    else if (e.Offset <= color.Offset+color.Length) // b0 | b1
-                    {
-                        if (e.Offset + e.RemovalLength <= last)
-                        { // b0
-                            color.Length += change;
-                        }
-                        else
-                        { // b1
-                          // none
-                        }
-                    }
-                    else
-                    { // c0
-                      // none
-                    }
-
-                }
-                foreach (var removeMark in removeTarget)
-                {
-                    lineInfo.Colors.Remove(removeMark);
-                }
-            }
-
-        }
-
-        #endregion
 
 
         //
@@ -606,7 +463,7 @@ namespace CodeEditor2.CodeEditor
             lock (this)
             {
                 textDocument.Replace(index, replaceLength, text);
-                SetColorAt(index, colorIndex, text.Length);
+                TextColors.SetColorAt(index, colorIndex, text.Length);
                 // set color
             }
         }

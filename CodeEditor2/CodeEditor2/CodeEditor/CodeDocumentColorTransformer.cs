@@ -34,8 +34,8 @@ namespace CodeEditor2.CodeEditor
             if (Global.mainView.CodeView.CodeDocument == null) return;
 
             CodeDocument codeDocument = Global.mainView.CodeView.CodeDocument;
-            if (!codeDocument.LineInfomations.ContainsKey(line.LineNumber)) return;
-            CodeEditor.LineInfomation lineInfo = codeDocument.LineInfomations[line.LineNumber];
+            if (!codeDocument.TextColors.LineInfomations.ContainsKey(line.LineNumber)) return;
+            CodeEditor.LineInfomation lineInfo = codeDocument.TextColors.LineInfomations[line.LineNumber];
 
             foreach (var color in lineInfo.Colors)
             {

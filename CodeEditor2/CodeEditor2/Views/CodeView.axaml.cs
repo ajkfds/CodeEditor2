@@ -76,7 +76,7 @@ namespace CodeEditor2.Views
 
             codeViewPopup = new CodeViewPopup(this);
             codeViewParser = new CodeViewParser(this);
-            Highlighter = new Highlighter(this);
+//            Highlighter = new Highlighter(this);
             codeViewPopupMenu = new CodeViewPopupMenu(this);
             codeViewAutoComplete = new CodeViewAutoComplete(this);
 
@@ -171,7 +171,7 @@ namespace CodeEditor2.Views
         internal CodeViewParser codeViewParser;
         internal CodeViewPopupMenu codeViewPopupMenu;
         internal CodeViewAutoComplete codeViewAutoComplete;
-        public Highlighter Highlighter;
+//        public Highlighter Highlighter;
 
         private void TextArea_KeyUp(object? sender, KeyEventArgs e)
         {

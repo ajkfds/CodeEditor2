@@ -1,30 +1,41 @@
-﻿using System;
+﻿using Avalonia.Controls.Shapes;
+using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.TextMate;
+using CodeEditor2.NavigatePanel;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using ReactiveUI;
+using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using AvaloniaEdit.Document;
+using static System.Net.Mime.MediaTypeNames;
+
 
 namespace CodeEditor2.CodeEditor
 {
-    public class Highlighter
+    public class HIghLights
     {
-        public Highlighter(Views.CodeView codeTextbox)
+        public HIghLights(CodeDocument codeDocument)
         {
-            this.codeTextbox = codeTextbox;
+            this.codeDocument = codeDocument;
         }
+        CodeDocument codeDocument;
 
-        Views.CodeView codeTextbox;
 
         private List<int> highlightStarts = new List<int>();
         private List<int> highlighLasts = new List<int>();
 
-        private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
-        {
-            fixHilight(e);
-        }
-        public void fixHilight(DocumentChangeEventArgs e)
+        public void OnTextEdit(DocumentChangeEventArgs e)
         {
             if (highlightStarts.Count == 0) return;
 
@@ -80,12 +91,23 @@ namespace CodeEditor2.CodeEditor
                     // none
                 }
             }
-            ReDrawHighlight();
+
+            Global.codeView._highlightRenderer.CurrentResults.Clear();
+            for(int i = 0; i < highlightStarts.Count; i++)
+            {
+                if (highlightStarts[i] > highlighLasts[i]) continue;
+                AvaloniaEdit.Document.TextSegment segment = new AvaloniaEdit.Document.TextSegment();
+                segment.StartOffset = highlightStarts[i];
+                segment.Length = highlighLasts[i] - highlightStarts[i] + 1;
+                Global.codeView._highlightRenderer.CurrentResults.Add(segment);
+            }
+
+            //            ReDrawHighlight();
         }
         public void MoveToNextHighlight(out bool moved)
         {
             moved = false;
-            int i = GetHighlightIndex(codeTextbox.CodeDocument.CaretIndex);
+            int i = GetHighlightIndex(codeDocument.CaretIndex);
             if (i == -1) return;
             i++;
             if (i >= highlightStarts.Count) return;
@@ -108,9 +130,9 @@ namespace CodeEditor2.CodeEditor
 
         public void SelectHighlight(int highlightIndex)
         {
-            CodeDocument document = codeTextbox.CodeDocument;
+            CodeDocument document = codeDocument;
             CodeEditor2.Controller.CodeEditor.SetCaretPosition(highlightStarts[highlightIndex]);
-            CodeEditor2.Controller.CodeEditor.SetSelection(highlightStarts[highlightIndex],highlighLasts[highlightIndex]);
+            CodeEditor2.Controller.CodeEditor.SetSelection(highlightStarts[highlightIndex], highlighLasts[highlightIndex]);
         }
 
         public int GetHighlightIndex(int index)
@@ -125,7 +147,7 @@ namespace CodeEditor2.CodeEditor
 
         public void ClearHighlight()
         {
-            CodeDocument document = codeTextbox.CodeDocument;
+            CodeDocument document = codeDocument;
 
             if (highlightStarts.Count == 0) return;
             Global.codeView._highlightRenderer.CurrentResults.Clear();
@@ -140,24 +162,24 @@ namespace CodeEditor2.CodeEditor
             highlightStarts.Clear();
             highlighLasts.Clear();
 
-            codeTextbox.Redraw();
+            Controller.CodeEditor.Refresh();
         }
 
         public void AppendHighlight(int highlightStart, int highlightLast)
         {
             AvaloniaEdit.Document.TextSegment segment = new AvaloniaEdit.Document.TextSegment();
             segment.StartOffset = highlightStart;
-            segment.Length = highlightLast - highlightStart+1;
+            segment.Length = highlightLast - highlightStart + 1;
             Global.codeView._highlightRenderer.CurrentResults.Add(segment);
             highlightStarts.Add(highlightStart);
             highlighLasts.Add(highlightLast);
 
-            codeTextbox.Redraw();
+            Controller.CodeEditor.Refresh();
         }
 
         public void ReDrawHighlight()
         {
-            codeTextbox.Redraw();
+            Controller.CodeEditor.Refresh();
         }
     }
 }
