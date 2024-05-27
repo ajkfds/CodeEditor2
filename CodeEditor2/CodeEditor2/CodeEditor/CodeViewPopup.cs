@@ -60,10 +60,9 @@ namespace CodeEditor2.CodeEditor
             int headIndex, length;
             codeView.CodeDocument.GetWord(index, out headIndex, out length);
 
-            if (popupInex == headIndex)
+            if (popupInex == headIndex) // close once to move popup position
             {
                 ToolTip.SetIsOpen(codeView.Editor, false);
-                return;
             }
             popupInex = headIndex;
 
