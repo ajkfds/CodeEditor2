@@ -26,11 +26,11 @@ namespace CodeEditor2.CodeEditor
             textBlock = null;
         }
 
-        public IImage Image => null;
-        private TextBlock textBlock = null;
+        public IImage? Image => null;
+        private TextBlock? textBlock = null;
 
         // Use this property if you want to show a fancy UIElement in the list.
-        public object Content => textBlock;// Text;
+        public object? Content => textBlock;// Text;
 
         public object Description => "";
 
@@ -49,7 +49,7 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        public CodeDocument codeDocument;
+        public CodeDocument? codeDocument;
 
         public void Assign(CodeDocument codeDocument)
         {
