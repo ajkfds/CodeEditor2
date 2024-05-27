@@ -62,21 +62,21 @@ namespace CodeEditor2.CodeEditor
 
             if (popupInex == headIndex) // close once to move popup position
             {
-                ToolTip.SetIsOpen(codeView.Editor, false);
+//                ToolTip.SetIsOpen(codeView.Editor, false);
             }
             popupInex = headIndex;
 
-            PopupItem pitem = codeView.TextFile.GetPopupItem(codeView.CodeDocument.Version, index);
-            if (pitem == null || pitem.ItemCount == 0)
+            PopupItem pItem = codeView.TextFile.GetPopupItem(codeView.CodeDocument.Version, index);
+            if (pItem == null || pItem.ItemCount == 0)
             {
                 ToolTip.SetIsOpen(codeView.Editor, false);
                 return;
             }
             codeView.PopupColorLabel.Clear();
-            codeView.PopupColorLabel.Add(pitem);
+            codeView.PopupColorLabel.Add(pItem);
 
-            ToolTip.SetIsOpen(codeView.Editor, false); // close once to update pop-up window position
-            if (pitem.GetItems().Count != 0)
+//            ToolTip.SetIsOpen(codeView.Editor, false); // close once to update pop-up window position
+            if (pItem.GetItems().Count != 0)
             {
                 ToolTip.SetIsOpen(codeView.Editor, true);
             }
