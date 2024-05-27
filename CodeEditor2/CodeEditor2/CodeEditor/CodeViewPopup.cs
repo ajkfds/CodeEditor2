@@ -31,18 +31,10 @@ namespace CodeEditor2.CodeEditor
         private int popupInex = -1;
         public void TextArea_PointerMoved(object? sender, PointerEventArgs e)
         {
-            if (codeView.CodeDocument == null || codeView.TextFile == null)
-            {
-                ToolTip.SetIsOpen(codeView.Editor, false);
-                return;
-            }
+            if (codeView.CodeDocument == null || codeView.TextFile == null) return;
             Avalonia.Point point = e.GetPosition(codeView._textEditor.TextArea);
             var pos = codeView._textEditor.GetPositionFromPoint(point);
-            if (pos == null)
-            {
-                ToolTip.SetIsOpen(codeView.Editor, false);
-                return;
-            }
+            if (pos == null) return;
 
             TextViewPosition tpos = (TextViewPosition)pos;
             if (tpos.Line > codeView.CodeDocument.Lines)
