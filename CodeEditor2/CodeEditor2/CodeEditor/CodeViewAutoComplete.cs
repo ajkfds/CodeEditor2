@@ -31,12 +31,12 @@ namespace CodeEditor2.CodeEditor
             char prevChar = codeView.CodeDocument.GetCharAt(prevIndex);
 
 
-            string cantidateWord;
-            List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out cantidateWord);
+            string candidateWord;
+           List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out candidateWord);
             System.Diagnostics.Debug.Print("## GetAutoCompleteItems try");
-            if (cantidateWord == null) return;
+            if (candidateWord == null) return;
 
-            System.Diagnostics.Debug.Print("## GetAutoCompleteItems "+cantidateWord+","+items.Count);
+            System.Diagnostics.Debug.Print("## GetAutoCompleteItems "+candidateWord+","+items.Count);
 
             //System.Diagnostics.Debug.Print("## checkAutoComplete " + cantidateWord + " " + cantidateWord.Length);
             //System.Diagnostics.Debug.Print("## checkAutoCompleteCar _" + codeView.TextFile.CodeDocument.GetCharAt(prevIndex) + "_" + prevIndex.ToString());
@@ -48,7 +48,7 @@ namespace CodeEditor2.CodeEditor
                     codeView._completionWindow.Close();
                     return;
                 }
-                if (items == null || cantidateWord == null || (cantidateWord == "" & prevChar != '.'))
+                if (items == null || candidateWord == null || (candidateWord == "" & prevChar != '.'))
                 {
                     codeView._completionWindow.Close();
                     return;
@@ -81,16 +81,18 @@ namespace CodeEditor2.CodeEditor
 
         public void ForceOpenAutoComplete(List<AutocompleteItem> autocompleteItems)
         {
+            if (codeView.TextFile == null) return;
+
             int prevIndex = codeView.CodeDocument.CaretIndex;
             if (codeView.CodeDocument.GetLineStartIndex(codeView.CodeDocument.GetLineAt(prevIndex)) != prevIndex && prevIndex != 0)
             {
                 prevIndex--;
             }
 
-            string cantidateWord;
-            List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeView.CodeDocument.CaretIndex, out cantidateWord);
+            string candidateWord;
+            List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeView.CodeDocument.CaretIndex, out candidateWord);
             items = autocompleteItems;  // override items
-            if (items == null || cantidateWord == null)
+            if (items == null || candidateWord == null)
             {
                 if (codeView._completionWindow != null) codeView._completionWindow.Close();
             }
@@ -99,16 +101,6 @@ namespace CodeEditor2.CodeEditor
                 codeView._completionWindow = new AutoCompleteWindow(codeView._textEditor.TextArea);
                 codeView._completionWindow.Closed += (o, args) => codeView._completionWindow = null;
                 var data = codeView._completionWindow.CompletionList.CompletionData;
-                int machedCount = 0;
-                //foreach (AutocompleteItem item in items)
-                //{
-                //    data.Add(item);
-                //    if (item.Text.StartsWith(cantidateWord)) machedCount++;
-                //}
-                //if(machedCount != 0)
-                //{
-                //    _completionWindow.Show();
-                //}
                 codeView._completionWindow.Show();
             }
         }

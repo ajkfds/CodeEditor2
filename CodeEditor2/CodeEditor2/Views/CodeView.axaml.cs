@@ -41,32 +41,14 @@ namespace CodeEditor2.Views
     public partial class CodeView : UserControl
     {
         internal readonly TextEditor _textEditor;
-        private FoldingManager _foldingManager;
-        private readonly TextMate.Installation _textMateInstallation;
-        //        internal AutoCompleteWindow _completionWindow;
-        internal AutoCompleteWindow ___completionWindow;
-        internal AutoCompleteWindow _completionWindow
-        {
-            get { return ___completionWindow;}
-            set { 
-                if (value == null)
-                {
-                    System.Diagnostics.Debug.Print("#### nulled");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.Print("#### new");
-                }
-                ___completionWindow = value; 
-            
-            }
-        }
 
+        private FoldingManager? _foldingManager;
+        private readonly TextMate.Installation? _textMateInstallation;
+        internal AutoCompleteWindow? _completionWindow;
+        private OverloadInsightWindow? _insightWindow;
+        private TextMateSharp.Grammars.RegistryOptions? _registryOptions;
 
-        private OverloadInsightWindow _insightWindow;
-        private TextMateSharp.Grammars.RegistryOptions _registryOptions;
         private int _currentTheme = (int)ThemeName.DarkPlus;
-
 
         public CodeView()
         {
@@ -151,6 +133,7 @@ namespace CodeEditor2.Views
                 "// Press Shit + Space to open quick tool menu" + Environment.NewLine);
             //+ ResourceLoader.LoadSampleFile(scopeName));
             //            _textMateInstallation.SetGrammar(_registryOptions.GetScopeByLanguageId(csharpLanguage.Id));
+
             _textEditor.TextArea.TextView.LineTransformers.Add(new CodeDocumentColorTransformer());
 
             this.AddHandler(PointerWheelChangedEvent, (o, i) =>
@@ -321,7 +304,6 @@ namespace CodeEditor2.Views
         {
             //                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
 
-
             //                Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
             //                Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
             //                Global.mainForm.mainTab.TabPages[0].Text = textFile.Name;
@@ -334,16 +316,16 @@ namespace CodeEditor2.Views
         private void detachFromCodeDocument()
         {
             TextFile.CodeDocument.Marks.CurrentMarks = null;
-            //                CodeDocument.SelectionChanged = null;
         }
 
         public void ScrollToCaret()
         {
+            if (CodeDocument == null) return;
             _textEditor.ScrollToLine(CodeDocument.GetLineAt(_textEditor.CaretOffset));
         }
 
-        CodeEditor.CodeDocument codeDocument = null;
-        public CodeEditor.CodeDocument CodeDocument
+        CodeEditor.CodeDocument? codeDocument = null;
+        public CodeEditor.CodeDocument? CodeDocument
         {
             get
             {
