@@ -471,6 +471,7 @@ namespace CodeEditor2.CodeEditor
         public int GetLineAt(int index)
         {
             if (textDocument == null) return 0;
+            if (index > Length) return 0;
             return textDocument.GetLineByOffset(index).LineNumber;
         }
 
