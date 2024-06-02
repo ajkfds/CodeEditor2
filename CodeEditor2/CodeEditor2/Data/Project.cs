@@ -26,6 +26,10 @@ namespace CodeEditor2.Data
             }
             string? actualPath = System.IO.Path.GetDirectoryName(path);
             if (actualPath == null) throw new Exception();
+            if (!System.IO.Directory.Exists(actualPath))
+            {
+                throw new Exception();
+            }
 
             project.RootPath = actualPath;
             if (project.RootPath.Contains(Path.DirectorySeparatorChar))

@@ -104,7 +104,13 @@ public partial class MainView : UserControl
 
         Global.StopParse = true;
         Controller.AppendLog("AddProject" + folder.Path.AbsolutePath,Avalonia.Media.Colors.DarkOrange);
-        string path = folder.Path.AbsolutePath.Replace('/', System.IO.Path.DirectorySeparatorChar);
+        string path;
+        {
+            path = folder.Path.AbsolutePath;
+            path = System.Web.HttpUtility.UrlDecode(path);
+            path = path.Replace('/', System.IO.Path.DirectorySeparatorChar);
+        }
+
         Data.Project newProject = Project.Create(path);
         await Controller.AddProject(newProject);
         Global.StopParse = false;
