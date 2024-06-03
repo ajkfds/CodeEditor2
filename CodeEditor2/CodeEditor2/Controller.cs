@@ -65,6 +65,11 @@ namespace CodeEditor2
             return Global.mainView.Menu;
         }
 
+        public static void ShellExecute(string command)
+        {
+            Global.mainView.ShellPanelView.Execute(command);
+        }
+
         //public static System.Windows.Forms.DialogResult ShowMessageBox(string text, string caption, System.Windows.Forms.MessageBoxButtons buttons, System.Windows.Forms.MessageBoxIcon icon)
         //{
         //    return System.Windows.Forms.MessageBox.Show(text, caption, buttons, icon);

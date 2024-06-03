@@ -7,11 +7,10 @@
              xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Contorls;assembly=AjkAvaloniaLibs"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="450"
              x:Class="CodeEditor2.Views.MainView"
-             x:DataType="vm:MainViewModel">
+             >
   <Design.DataContext>
     <!-- This only sets the DataContext for the previewer in an IDE,
          to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-    <vm:MainViewModel />
   </Design.DataContext>
 
 	<DockPanel Background="#202020" >
@@ -57,7 +56,7 @@
 						<views:CodeView Grid.Column="2" Name="CodeView"/>
 					</TabItem>
 					<TabItem Header="Shell"  FontSize="12" Name="ShellTabItem">
-						<views:ShellPanelView></views:ShellPanelView>
+						<views:ShellPanelView Name="ShellPanelView"></views:ShellPanelView>
 					</TabItem>
 				</TabControl>
 				

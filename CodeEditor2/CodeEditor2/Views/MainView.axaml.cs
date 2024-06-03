@@ -24,7 +24,7 @@ public partial class MainView : UserControl
     {
         Global.mainView = this;
         InitializeComponent();
-        DataContext = new ViewModels.MainViewModel();
+//        DataContext = new ViewModels.MainViewModel();
 
         SplitterColumn1.BorderBrush = new SolidColorBrush(Color.FromArgb(255,50,50,50));
         SplitterColumn1.BorderThickness = new Thickness(1, 0, 1, 0);

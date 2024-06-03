@@ -72,6 +72,11 @@ namespace CodeEditor2.Views
             }
         }
 
+        public void Execute(string command)
+        {
+            shell.Execute(command);
+        }
+
         TextBox inputBox;
         Shells.Shell shell;
         public void Shell_LineReceived(string lineString)
