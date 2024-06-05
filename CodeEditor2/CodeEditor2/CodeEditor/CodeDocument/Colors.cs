@@ -57,6 +57,10 @@ namespace CodeEditor2.CodeEditor
             return 0;
         }
 
+        public void RemoveColors()
+        {
+            LineInfomations.Clear();
+        }
 
         public virtual void SetColorAt(int index, byte value)
         {

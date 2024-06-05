@@ -30,26 +30,29 @@ namespace CodeEditor2.CodeEditor
 
         protected override void ColorizeLine(DocumentLine line)
         {
-
-            if (Global.mainView.CodeView.CodeDocument == null) return;
-
-            CodeDocument codeDocument = Global.mainView.CodeView.CodeDocument;
-            if (!codeDocument.TextColors.LineInfomations.ContainsKey(line.LineNumber)) return;
-            CodeEditor.LineInfomation lineInfo = codeDocument.TextColors.LineInfomations[line.LineNumber];
-
-            foreach (var color in lineInfo.Colors)
+            lock (this)
             {
-                if (line.Offset > color.Offset | color.Offset + color.Length > line.EndOffset) continue;
-                ChangeLinePart(
-                    color.Offset,
-                    color.Offset + color.Length,
-                    visualLine =>
-                    {
-                        visualLine.TextRunProperties.SetForegroundBrush(new SolidColorBrush(color.DrawColor));
-                    }
-                );
-            }
+                if (Global.mainView.CodeView.CodeDocument == null) return;
 
+                CodeDocument codeDocument = Global.mainView.CodeView.CodeDocument;
+                if (!codeDocument.TextColors.LineInfomations.ContainsKey(line.LineNumber)) return;
+                CodeEditor.LineInfomation lineInfo = codeDocument.TextColors.LineInfomations[line.LineNumber];
+
+                foreach (var color in lineInfo.Colors)
+                {
+                    if (line.Offset > color.Offset | color.Offset + color.Length > line.EndOffset) continue;
+                    ChangeLinePart(
+                        color.Offset,
+                        color.Offset + color.Length,
+                        visualLine =>
+                        {
+                            visualLine.TextRunProperties.SetForegroundBrush(new SolidColorBrush(color.DrawColor));
+                        }
+                    );
+                }
+
+
+            }
         }
     }
 }

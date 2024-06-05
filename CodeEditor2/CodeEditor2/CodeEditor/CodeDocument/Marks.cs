@@ -30,6 +30,7 @@ namespace CodeEditor2.CodeEditor
 		}
 		CodeDocument codeDocument;
 
+        // Details : Details information Assigned to this CodeDocument
 		public List<CodeDrawStyle.MarkDetail> Details = new List<CodeDrawStyle.MarkDetail>();
 		public void SetMarkAt(int index, int length, byte value)
 		{
@@ -46,8 +47,11 @@ namespace CodeEditor2.CodeEditor
 			mark.DecorationHeight = markStyle.DecorationHeight;
 			mark.DecorationWidth = markStyle.DecorationWidth;
 			mark.Style = markStyle.Style;
-			Details.Add(mark);
-		}
+            lock (Details)
+            {
+                Details.Add(mark);
+            }
+        }
 		public byte GetMarkAt(int index)
 		{
 			//            return marks[index];
@@ -73,7 +77,20 @@ namespace CodeEditor2.CodeEditor
 			}
 		}
 
-		internal TextSegmentCollection<TextSegment>? CurrentMarks = null;
+		public void RemoveMarks()
+		{
+            if (CurrentMarks == null) return;
+            lock (CurrentMarks)
+            {
+                Details.Clear();
+            }
+
+        }
+
+        // Current Marks : Mark info copied to TextEditor
+        // fix this information to apply current code edit 
+
+        internal TextSegmentCollection<TextSegment>? CurrentMarks = null;
 		public void OnTextEdit(DocumentChangeEventArgs e)
 		{
 			if (CurrentMarks == null) return;
@@ -81,61 +98,67 @@ namespace CodeEditor2.CodeEditor
 			int change = e.InsertionLength - e.RemovalLength;
 			List<TextSegment> removeTarget = new List<TextSegment>();
 
-			foreach (var mark in CurrentMarks)
+			lock (CurrentMarks)
 			{
-				//     start    last
-				//       +=======+
+                foreach (var mark in CurrentMarks)
+                {
+                    //     start    last
+                    //       +=======+
 
-				// |---|                 a0
-				// |---------|           a1
-				// |-------------------| a2
+                    // |---|                 a0
+                    // |---------|           a1
+                    // |-------------------| a2
 
-				//           |---|       b0
-				//           |---------| b1
+                    //           |---|       b0
+                    //           |---------| b1
 
-				//                  |--| c0
+                    //                  |--| c0
 
-				int start = mark.StartOffset;
-				int last = mark.EndOffset;
+                    int start = mark.StartOffset;
+                    int last = mark.EndOffset;
 
-				if (e.Offset <= start) // a0 | a1 | a2
-				{
-					if (e.Offset + e.RemovalLength < start)
-					{ // a0
-						mark.StartOffset += change;
-					}
-					else if (e.Offset + e.RemovalLength <= last)
-					{ // a1
-						mark.StartOffset = e.Offset;
-					}
-					else
-					{ // a2
-						if (mark.EndOffset + change > mark.StartOffset) mark.EndOffset += change;
-						else removeTarget.Add(mark);
-					}
-				}
-				else if (e.Offset <= mark.EndOffset + 1) // b0 | b1
-				{
-					if (e.Offset + e.RemovalLength <= last + 1)
-					{ // b0
-						mark.EndOffset += change;
-					}
-					else
-					{ // b1
-					  // none
-					}
-				}
-				else
-				{ // c0
-				  // none
-				}
-			}
+                    if (e.Offset <= start) // a0 | a1 | a2
+                    {
+                        if (e.Offset + e.RemovalLength < start)
+                        { // a0
+                            mark.StartOffset += change;
+                            mark.EndOffset += change;
+                        }
+                        else if (e.Offset + e.RemovalLength <= last)
+                        { // a1
+                            mark.StartOffset = e.Offset;
+                            mark.EndOffset = e.Offset + change;
+                        }
+                        else
+                        { // a2
+                            if (mark.EndOffset + change > mark.StartOffset) mark.EndOffset += change;
+                            else removeTarget.Add(mark);
+                        }
+                    }
+                    else if (e.Offset <= mark.EndOffset + 1) // b0 | b1
+                    {
+                        if (e.Offset + e.RemovalLength <= last + 1)
+                        { // b0
+                            mark.EndOffset += change;
+                        }
+                        else
+                        { // b1
+                          // none
+                        }
+                    }
+                    else
+                    { // c0
+                      // none
+                    }
+                }
 
-			foreach (var removeMark in removeTarget)
-			{
-				CurrentMarks.Remove(removeMark);
-			}
-		}
+                foreach (var removeMark in removeTarget)
+                {
+                    CurrentMarks.Remove(removeMark);
+                }
+
+            }
+        }
 
 
 
