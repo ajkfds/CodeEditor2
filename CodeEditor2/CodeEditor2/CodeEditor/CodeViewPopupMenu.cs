@@ -141,9 +141,9 @@ namespace CodeEditor2.CodeEditor
                 if (codeView.CodeDocument == null) return;
                 (popUpMenuItem as ToolItem)?.Apply(codeView.CodeDocument);
 
-                InteractiveSnippet? snippet = popUpMenuItem as InteractiveSnippet;
-                if (snippet == null) return;
-                Snippet = snippet;
+                //InteractiveSnippet? snippet = popUpMenuItem as InteractiveSnippet;
+                //if (snippet == null) return;
+                //Snippet = snippet;
             }
             else
             {
