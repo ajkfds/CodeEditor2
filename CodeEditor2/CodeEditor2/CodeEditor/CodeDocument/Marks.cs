@@ -133,7 +133,14 @@ namespace CodeEditor2.CodeEditor
                             }
                             else
                             {
-                                mark.EndOffset = e.Offset + change;
+                                if(e.Offset + change <= mark.StartOffset)
+                                {
+                                    removeTarget.Add(mark);
+                                }
+                                else
+                                {
+                                    mark.EndOffset = e.Offset + change;
+                                }
                             }
                         }
                         else
