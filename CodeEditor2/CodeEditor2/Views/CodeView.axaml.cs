@@ -221,15 +221,15 @@ namespace CodeEditor2.Views
 
         public void SetCaretPosition(int index)
         {
-            if (codeDocument == null) return;
-            if (_textEditor.CaretOffset == codeDocument.CaretIndex) return;
+            if (CodeDocument == null) return;
+            if (_textEditor.CaretOffset == index && CodeDocument.caretIndex == index) return;
             _textEditor.CaretOffset = index;
-            codeDocument.caretIndex = index;
+            CodeDocument.caretIndex = index;
         }
         public void SetSelection(int selectionStart, int selectionLast)
         {
             if (skipEvents) return;
-            if (CodeDocument != codeDocument) return;
+            if (CodeDocument != CodeDocument) return;
 
             _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, selectionStart, selectionLast + 1);
         }
@@ -324,7 +324,6 @@ namespace CodeEditor2.Views
             _textEditor.ScrollToLine(CodeDocument.GetLineAt(_textEditor.CaretOffset));
         }
 
-        CodeEditor.CodeDocument? codeDocument = null;
         public CodeEditor.CodeDocument? CodeDocument
         {
             get
