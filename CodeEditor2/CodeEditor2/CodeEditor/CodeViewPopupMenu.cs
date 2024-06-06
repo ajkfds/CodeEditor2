@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using System.Net.Http.Headers;
+using CodeEditor2.Snippets;
 
 namespace CodeEditor2.CodeEditor
 {
@@ -137,7 +138,12 @@ namespace CodeEditor2.CodeEditor
         {
             if (popUpMenuItem is ToolItem)
             {
+                if (codeView.CodeDocument == null) return;
                 (popUpMenuItem as ToolItem)?.Apply(codeView.CodeDocument);
+
+                InteractiveSnippet? snippet = popUpMenuItem as InteractiveSnippet;
+                if (snippet == null) return;
+                Snippet = snippet;
             }
             else
             {
@@ -149,12 +155,14 @@ namespace CodeEditor2.CodeEditor
 
         public void StartInteractiveSnippet(Snippets.InteractiveSnippet interactiveSnippet)
         {
+            System.Diagnostics.Debug.Print("## CodeViewSetupMenu.StartInteractiveSnippet");
             AbortInteractiveSnippet();
             Snippet = interactiveSnippet;
         }
 
         public void AbortInteractiveSnippet()
         {
+            System.Diagnostics.Debug.Print("## CodeViewSetupMenu.AbortInteractiveSnippet");
             if (Snippet == null) return;
             Snippet.Aborted();
             Snippet = null;
