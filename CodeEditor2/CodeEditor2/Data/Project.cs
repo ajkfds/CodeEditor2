@@ -1,16 +1,53 @@
-﻿using System;
+﻿using CodeEditor2.Setups;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.PortableExecutable;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Timers;
+using System.Text.Json;
 
 namespace CodeEditor2.Data
 {
     public class Project : Folder
     {
         protected Project() { }
+
+        public Setup CreateSetup()
+        {
+            return new Setup(this);
+        }
+        public class Setup
+        {
+            [JsonConstructor]
+            public Setup() { }
+
+            public Setup(Project project)
+            {
+                this.RootPath = project.RootPath;
+                this.Name = project.Name;
+                this.IgnoreList = project.ignoreList;
+
+                this.ProjectProperties.Clear();
+                foreach(var projectProperty in project.ProjectProperties)
+                {
+                    this.ProjectProperties.Add(projectProperty.Key,projectProperty.Value.CreateSetup());
+                }
+            }
+
+            [JsonInclude]
+            public string Name;
+            [JsonInclude]
+            public string RootPath;
+            [JsonInclude]
+            public List<string> IgnoreList;
+            [JsonInclude]
+            public Dictionary<string, ProjectProperty.Setup> ProjectProperties = new Dictionary<string, ProjectProperty.Setup>();
+        }
 
         public static Project Create(string rootPath)
         {
@@ -44,13 +81,18 @@ namespace CodeEditor2.Data
             initProject(project);
             return project;
         }
-        public static Project Create(AjkAvaloniaLibs.Libs.Json.JsonReader jsonReader)
+
+        public static Project Create(Setup setup)
         {
             Project project = new Project();
-            project.Name = jsonReader.Key;
-            project.LoadSetup(jsonReader);
+            project.Name = setup.Name;
+            project.RootPath = setup.RootPath;
+            project.ignoreList = setup.IgnoreList;
+//            case "PluginProperties":
+//               readProjectProperties(reader);
+//                break;
 
-            initProject(project);
+                initProject(project);
             return project;
         }
 
@@ -77,7 +119,6 @@ namespace CodeEditor2.Data
         }
 
         public static Action<Project>? Created;
-
 
         public Dictionary<string, ProjectProperty> ProjectProperties = new Dictionary<string, ProjectProperty>();
 
@@ -166,104 +207,53 @@ namespace CodeEditor2.Data
         // Seve and Load Project Setups ///////////////////////////////////////////////////////////////////
         // save and load project setups into json file
 
-        #region
-        public void SaveSetup(AjkAvaloniaLibs.Libs.Json.JsonWriter writer)
-        {
-            writer.writeKeyValue("RootPath", RootPath);
-            using (var blockWriter = writer.GetObjectWriter("IgnoreList"))
-            {
-                foreach (string ingore in ignoreList)
-                {
-                    blockWriter.writeKeyValue("Ignore", ingore);
-                }
-            }
+        //#region
+        //public void SaveSetup(AjkAvaloniaLibs.Libs.Json.JsonWriter writer)
+        //{
+        //    writer.writeKeyValue("RootPath", RootPath);
+        //    using (var blockWriter = writer.GetObjectWriter("IgnoreList"))
+        //    {
+        //        foreach (string ignore in ignoreList)
+        //        {
+        //            blockWriter.writeKeyValue("Ignore", ignore);
+        //        }
+        //    }
 
-            using (var blockWriter = writer.GetObjectWriter("PluginProperties"))
-            {
-                foreach (KeyValuePair<string, ProjectProperty> propertyKvp in ProjectProperties)
-                {
-                    using (var propertyWriter = blockWriter.GetObjectWriter(propertyKvp.Key))
-                    {
-                        propertyKvp.Value.SaveSetup(propertyWriter);
-                    }
-                }
-            }
-        }
+        //    using (var blockWriter = writer.GetObjectWriter("PluginProperties"))
+        //    {
+        //        foreach (KeyValuePair<string, ProjectProperty> propertyKvp in ProjectProperties)
+        //        {
+        //            using (var propertyWriter = blockWriter.GetObjectWriter(propertyKvp.Key))
+        //            {
+        //                propertyKvp.Value.SaveSetup(propertyWriter);
+        //            }
+        //        }
+        //    }
+        //}
 
-        public void LoadSetup(AjkAvaloniaLibs.Libs.Json.JsonReader jsonReader)
-        {
-            ignoreList.Clear();
 
-            using (var reader = jsonReader.GetNextObjectReader())
-            {
-                while (true)
-                {
-                    string key = reader.GetNextKey();
-                    if (key == null) break;
 
-                    switch (key)
-                    {
-                        case "RootPath":
-                            RootPath = reader.GetNextStringValue();
-                            break;
-                        case "IgnoreList":
-                            readIgnoreList(reader);
-                            break;
-                        case "PluginProperties":
-                            readProjectProperties(reader);
-                            break;
-                        default:
-                            reader.SkipValue();
-                            break;
-                    }
+        //private void readProjectProperties(AjkAvaloniaLibs.Libs.Json.JsonReader jsonReader)
+        //{
+        //    using (var reader = jsonReader.GetNextObjectReader())
+        //    {
+        //        while (true)
+        //        {
+        //            string key = reader.GetNextKey();
+        //            if (key == null) break;
 
-                }
-            }
-        }
-        private void readIgnoreList(AjkAvaloniaLibs.Libs.Json.JsonReader jsonReader)
-        {
-            using (var reader = jsonReader.GetNextObjectReader())
-            {
-                while (true)
-                {
-                    string key = reader.GetNextKey();
-                    if (key == null) break;
+        //            if (!ProjectProperties.ContainsKey(key))
+        //            {
+        //                reader.SkipValue();
+        //                continue;
+        //            }
+        //            ProjectProperty property = ProjectProperties[key];
+        //            property.LoadSetup(reader);
+        //        }
+        //    }
+        //}
 
-                    if (key == "Ignore")
-                    {
-                        string value = reader.GetNextStringValue();
-                        if (!ignoreList.Contains(value)) ignoreList.Add(value);
-                    }
-                    else
-                    {
-                        reader.SkipValue();
-                        continue;
-                    }
-                }
-            }
-        }
-
-        private void readProjectProperties(AjkAvaloniaLibs.Libs.Json.JsonReader jsonReader)
-        {
-            using (var reader = jsonReader.GetNextObjectReader())
-            {
-                while (true)
-                {
-                    string key = reader.GetNextKey();
-                    if (key == null) break;
-
-                    if (!ProjectProperties.ContainsKey(key))
-                    {
-                        reader.SkipValue();
-                        continue;
-                    }
-                    ProjectProperty property = ProjectProperties[key];
-                    property.LoadSetup(reader);
-                }
-            }
-        }
-
-        #endregion
+        //#endregion
 
 
         // file system watcher ////////////////////////////////////////////////////////////////////////////

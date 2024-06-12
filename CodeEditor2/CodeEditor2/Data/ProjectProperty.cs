@@ -4,28 +4,49 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AjkAvaloniaLibs.Libs.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace CodeEditor2.Data
 {
     public class ProjectProperty
     {
-        public virtual void SaveSetup(JsonWriter writer)
+        public ProjectProperty(Project project)
+        {
+
+        }
+        public ProjectProperty(Project project,Setup setup)
         {
 
         }
 
-        public virtual void LoadSetup(JsonReader jsonReader)
+        public virtual Setup CreateSetup()
         {
-            using (var reader = jsonReader.GetNextObjectReader())
-            {
-                while (true)
-                {
-                    string key = reader.GetNextKey();
-                    if (key == null) break;
+            return new Setup(this);
+        }
 
-                    reader.SkipValue();
-                }
+        public virtual Setup? CreateSetup(JsonElement jsonElement, JsonSerializerOptions options)
+        {
+            return JsonSerializer.Deserialize(jsonElement, typeof(Setup), options) as ProjectProperty.Setup;
+        }
+
+        public class Setup : CodeEditor2Plugin.IPluginSetup
+        {
+            public Setup() { }
+            public Setup(ProjectProperty projectProperty)
+            {
+
+            }
+            public virtual string ID { get; set; } = "default";
+
+            public virtual void Write(
+                Utf8JsonWriter writer,
+                JsonSerializerOptions options)
+            {
+                JsonSerializer.Serialize(writer, this, typeof(Setup), options);
             }
         }
+
+
     }
 }

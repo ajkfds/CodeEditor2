@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CodeEditor2.Setups;
 using Avalonia.Controls;
 using System.Threading;
+using System.Text.Json;
 
 namespace CodeEditor2
 {
@@ -17,6 +18,10 @@ namespace CodeEditor2
         public static Dictionary<string, FileTypes.FileType> FileTypes = new Dictionary<string, FileTypes.FileType>();
         public static Dictionary<string, Project> Projects = new Dictionary<string, Project>();
         public static Dictionary<string, CodeEditor2Plugin.IPlugin> Plugins = new Dictionary<string, CodeEditor2Plugin.IPlugin>();
+
+
+        public static Dictionary<string, Func<JsonElement, JsonSerializerOptions, ProjectProperty.Setup>> ProjectPropertyDeserializers
+            = new Dictionary<string, Func<JsonElement, JsonSerializerOptions, ProjectProperty.Setup>>();
 
         public static Setup Setup = new Setup();
         //public static Dictionary<string, CodeEditor2Plugin.PluginSetup> PluginSetups = new Dictionary<string, CodeEditor2Plugin.PluginSetup>();

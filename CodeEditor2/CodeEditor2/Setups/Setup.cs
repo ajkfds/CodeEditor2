@@ -5,6 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using CodeEditor2.Data;
 using AjkAvaloniaLibs.Libs.Json;
+using System.Text.Json;
+using System.Data;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
+using System.IO;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace CodeEditor2.Setups
 {
@@ -13,160 +20,120 @@ namespace CodeEditor2.Setups
 
         public void SaveSetup(string path)
         {
-            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(path))
-            {
-                using (JsonWriter writer = new JsonWriter(sw))
-                {
-                    writeJson(writer);
-                }
-            }
-        }
+            LastUpdate = DateTime.Now;
 
+            JsonSerializerOptions options = new()
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+            };
+            options.Converters.Add(new ProjectPropertyJsonConverter());
+
+            ProjectSetups.Clear();
+            foreach (Project project in Global.Projects.Values)
+            {
+                ProjectSetups.Add(project.CreateSetup());
+            }
+
+            using (FileStream file = System.IO.File.Create(path))
+            {
+                System.Text.Json.JsonSerializer.Serialize(file, this, options);
+            }
+
+        }
         public async Task LoadSetup(string path)
         {
-            using (System.IO.StreamReader sr = new System.IO.StreamReader(path))
+            JsonSerializerOptions options = new()
             {
-                using (JsonReader reader = new JsonReader(sr))
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+            };
+            options.Converters.Add(new ProjectPropertyJsonConverter());
+
+            ProjectSetups.Clear();
+            foreach (Project project in Global.Projects.Values)
+            {
+                ProjectSetups.Add(project.CreateSetup());
+            }
+
+            using (FileStream file = System.IO.File.Open(path, FileMode.Open))
+            {
+                Setup? setup = System.Text.Json.JsonSerializer.Deserialize<Setup>(file, options);
+                if (setup == null) return;
+
+                if (setup.ApplicationName != ApplicationName) return;
+                LastUpdate = setup.LastUpdate;
+                foreach (var projectSetup in setup.ProjectSetups)
                 {
-                    await readJson(reader);
+                    if (projectSetup == null) continue;
+                    if (Global.Projects.ContainsKey(projectSetup.Name)) continue;
+
+                    Project project = Project.Create(projectSetup);
+                    await CodeEditor2.Controller.AddProject(project);
                 }
             }
         }
 
-        private async Task readJson(JsonReader reader)
+        public class ProjectPropertyJsonConverter : JsonConverter<ProjectProperty.Setup>
         {
-            while (true)
+            public override ProjectProperty.Setup Read(
+                ref Utf8JsonReader reader,
+                Type typeToConvert,
+                JsonSerializerOptions options)
             {
-                string key = reader.GetNextKey();
-                if (key == null) break;
+                long index = reader.TokenStartIndex;
+                JsonElement je = JsonElement.ParseValue(ref reader);
+                JsonElement jid;
 
-                switch (key)
+                je.TryGetProperty("ID", out jid);
+                string? id = jid.GetString();
+                if (id == null) return null;
+                if (Global.ProjectPropertyDeserializers.ContainsKey(id))
                 {
-                    case "CodeEditor2":
-                        readCodeEditorSetup(reader);
-                        break;
-                    case "PluginSetups":
-                        readPluginSetup(reader);
-                        break;
-                    case "Projects":
-                        await readProjects(reader);
-                        break;
-                    default:
-                        reader.SkipValue();
-                        break;
+                    return Global.ProjectPropertyDeserializers[id](je, options);
                 }
+
+                return null;
+            }
+
+            public override void Write(
+                Utf8JsonWriter writer,
+                ProjectProperty.Setup value,
+                JsonSerializerOptions options)
+            {
+                value.Write(writer, options);
             }
         }
 
-        private void readCodeEditorSetup(JsonReader jsonReader)
-        {
-            using (var reader = jsonReader.GetNextObjectReader())
-            {
-                while (true)
-                {
-                    string key = reader.GetNextKey();
-                    if (key == null) break;
+//        public class ProjectPropertyJsonConverter2 : JsonConverter<Dictionary<string,ProjectProperty.Setup>>
+//        {
+//            public override Dictionary<string, ProjectProperty.Setup> Read(
+//                ref Utf8JsonReader reader,
+//                Type typeToConvert,
+//                JsonSerializerOptions options)
+//            {
+//                long index = reader.TokenStartIndex;
+//                JsonElement je = JsonElement.ParseValue(ref reader);
+//                //JsonObject jo = JsonObject.Create(reader);
 
-                    switch (key)
-                    {
-                        case "ApplicationName":
-                            string applicationName = reader.GetNextStringValue();
-                            if (applicationName != "CodeEditor2") throw new Exception("illegal format");
-                            break;
-                        case "LastUpdate":
-                            string lastUpdate = reader.GetNextStringValue();
-                            break;
-                        default:
-                            reader.SkipValue();
-                            break;
-                    }
-                }
-            }
-        }
+//                return (Dictionary<string, ProjectProperty.Setup>)JsonSerializer.Deserialize(ref reader, typeof(Dictionary<string, ProjectProperty.Setup>), options);
+//            }
 
-        private void readPluginSetup(JsonReader jsonReader)
-        {
-            using (var reader = jsonReader.GetNextObjectReader())
-            {
-                while (true)
-                {
-                    string key = reader.GetNextKey();
-                    if (key == null) break;
-
-                    //if (Global.PluginSetups.ContainsKey(key))
-                    //{
-                    //    using (var block = reader.GetNextObjectReader())
-                    //    {
-                    //        Global.PluginSetups[key].ReadJson(block);
-                    //    }
-                    //}
-                    //else
-                    {
-                        reader.SkipValue();
-                    }
-                }
-            }
-        }
-
-        private async Task readProjects(JsonReader jsonReader)
-        {
-            List<Project> projects = new List<Project>();
-
-            using (var reader = jsonReader.GetNextObjectReader())
-            {
-                while (true)
-                {
-                    string key = reader.GetNextKey();
-                    if (key == null) break;
-
-                    if (Global.Projects.ContainsKey(key))
-                    {
-                        Global.Projects[key].LoadSetup(reader);
-                    }
-                    else
-                    {
-                        Project project = Project.Create(reader);
-                        projects.Add(project);
-                    }
-                }
-            }
-            foreach(Project project in projects)
-            {
-                await Controller.AddProject(project);
-            }
-        }
+//            public override void Write(
+//                Utf8JsonWriter writer,
+//                Dictionary<string, ProjectProperty.Setup> value,
+//                JsonSerializerOptions options)
+//            {
+////                value.Write(writer, options);
+//            }
+//        }
 
 
-        private void writeJson(JsonWriter writer)
-        {
-            using (var blockWriter = writer.GetObjectWriter("CodeEditor2"))
-            {
-                blockWriter.writeKeyValue("ApplicationName", "CodeEditor2");
-                blockWriter.writeKeyValue("LastUpdate", DateTime.Now.ToString());
-            }
+        // json serialize items
+        public string ApplicationName { get; set; } = "CodeEditor2";
+        public DateTime LastUpdate { get; set; } = DateTime.Now;
+        public List<Project.Setup> ProjectSetups { set; get; } = new List<Project.Setup>();
 
-            //using (var blockWriter = writer.GetObjectWriter("PluginSetups"))
-            //{
-            //    foreach (var pluginKvp in Global.PluginSetups)
-            //    {
-            //        using (var pluginWriter = blockWriter.GetObjectWriter(pluginKvp.Key))
-            //        {
-            //            pluginKvp.Value.SaveSetup(pluginWriter);
-            //        }
-            //    }
-            //}
 
-            using (var blockWriter = writer.GetObjectWriter("Projects"))
-            {
-                foreach (var projectKvp in Global.Projects)
-                {
-                    using (var projectWriter = blockWriter.GetObjectWriter(projectKvp.Key))
-                    {
-                        projectKvp.Value.SaveSetup(projectWriter);
-                    }
-                }
-            }
-
-        }
     }
 }
