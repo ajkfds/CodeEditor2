@@ -153,6 +153,12 @@ namespace CodeEditor2.CodeEditor
             TextArea.Caret.PositionChanged -= CaretPositionChanged;
             TextArea.PointerWheelChanged -= TextArea_MouseWheel;
             TextArea.TextInput -= TextArea_PreviewTextInput;
+
+            foreach(var item in CompletionList.ListBox.Items)
+            {
+                AutocompleteItem aItem = item as AutocompleteItem;
+                if (aItem != null) aItem.Clean(); 
+            }
             base.DetachEvents();
         }
 

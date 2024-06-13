@@ -35,11 +35,11 @@ namespace CodeEditor2.CodeEditor
             if (flyout.IsOpen) return;
             if (codeView.TextFile == null) return;
 
-            if (cantidates.Count == 0)
-            {
-                HidePopupMenu();
-                return;
-            }
+            //if (cantidates.Count == 0)
+            //{
+            //    HidePopupMenu();
+            //    return;
+            //}
 
             TransformedBounds? tbound = Global.codeView.Editor.GetTransformedBounds();
             if (tbound == null) return;
