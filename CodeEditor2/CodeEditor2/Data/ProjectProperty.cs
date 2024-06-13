@@ -30,7 +30,7 @@ namespace CodeEditor2.Data
             return JsonSerializer.Deserialize(jsonElement, typeof(Setup), options) as ProjectProperty.Setup;
         }
 
-        public class Setup : CodeEditor2Plugin.IPluginSetup
+        public class Setup
         {
             public Setup() { }
             public Setup(ProjectProperty projectProperty)
