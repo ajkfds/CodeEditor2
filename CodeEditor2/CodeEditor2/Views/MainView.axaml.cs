@@ -64,24 +64,24 @@ public partial class MainView : UserControl
     }
 
 
-    private async void MenuItem_AddProjectPath_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        Tools.InputWindow inputWindow = new Tools.InputWindow("New Project Name","Input Project Absolute Path");
-        await inputWindow.ShowDialog(Global.mainWindow);
-        if (inputWindow.Cancel) return;
-        string path = inputWindow.InputText;
-        if (!System.IO.Directory.Exists(path))
-        {
-            Controller.AppendLog("no folders found");
-            return;
-        }
-        Global.StopParse = true;
-        Controller.AppendLog("AddProject" + path, Avalonia.Media.Colors.DarkOrange);
-        path = path.Replace('/', System.IO.Path.DirectorySeparatorChar);
-        Data.Project newProject = Project.Create(path);
-        await Controller.AddProject(newProject);
-        Global.StopParse = false;
-    }
+    //private async void MenuItem_AddProjectPath_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    //{
+    //    Tools.InputWindow inputWindow = new Tools.InputWindow("New Project Name","Input Project Absolute Path");
+    //    await inputWindow.ShowDialog(Global.mainWindow);
+    //    if (inputWindow.Cancel) return;
+    //    string path = inputWindow.InputText;
+    //    if (!System.IO.Directory.Exists(path))
+    //    {
+    //        Controller.AppendLog("no folders found");
+    //        return;
+    //    }
+    //    Global.StopParse = true;
+    //    Controller.AppendLog("AddProject" + path, Avalonia.Media.Colors.DarkOrange);
+    //    path = path.Replace('/', System.IO.Path.DirectorySeparatorChar);
+    //    Data.Project newProject = Project.Create(path);
+    //    await Controller.AddProject(newProject);
+    //    Global.StopParse = false;
+    //}
 
     private async void MenuItem_AddProject_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {

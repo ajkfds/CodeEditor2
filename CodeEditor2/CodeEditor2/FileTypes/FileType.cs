@@ -21,5 +21,10 @@ namespace CodeEditor2.FileTypes
             System.Diagnostics.Debugger.Break();
             return null;
         }
+
+        public virtual void CreateNewFile(string relativeFilePath,Project project)
+        {
+
+        }
     }
 }

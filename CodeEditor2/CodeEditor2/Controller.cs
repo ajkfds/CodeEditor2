@@ -51,7 +51,7 @@ namespace CodeEditor2
 
 
             CodeEditor2.Tools.ParseProject parser = new Tools.ParseProject();
-            await parser.Run(Global.navigateView.GetPeojectNode(project.Name)); 
+            await parser.Run(Global.navigateView.GetProjectNode(project.Name)); 
 
             //Tools.ProgressWindow progressWindow = new Tools.ProgressWindow(project.Name, "Loading...", 100);
             //progressWindow.Show();

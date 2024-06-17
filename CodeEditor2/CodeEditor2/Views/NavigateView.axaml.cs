@@ -1,9 +1,11 @@
 using AjkAvaloniaLibs.Contorls;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using CodeEditor2.Data;
 using CodeEditor2.NavigatePanel;
 using Microsoft.CodeAnalysis;
+using Splat;
 using System.Text;
 
 namespace CodeEditor2.Views
@@ -13,7 +15,7 @@ namespace CodeEditor2.Views
         public NavigateView()
         {
             InitializeComponent();
-            initializeMenuItes();
+            initializeMenuItems();
 
             Global.navigateView = this;
             TreeControl.Background = new SolidColorBrush(Color.FromRgb(10,10,10));
@@ -35,15 +37,16 @@ namespace CodeEditor2.Views
             return node;
         }
 
-        public ProjectNode GetPeojectNode(string projectName)
+        public ProjectNode GetProjectNode(string projectName)
         {
             ProjectNode ret = null;
             foreach (NavigatePanel.NavigatePanelNode node in TreeControl.Nodes)
             {
                 if (node is ProjectNode)
                 {
-                    ProjectNode pnode = node as ProjectNode;
-                    if (pnode.Project.Name == projectName) ret = pnode;
+                    ProjectNode? pNode = node as ProjectNode;
+                    if (pNode == null) throw new System.Exception();
+                    if (pNode.Project.Name == projectName) ret = pNode;
                 }
             }
             return ret;
@@ -51,10 +54,11 @@ namespace CodeEditor2.Views
 
         #region menuItmes
 
-        private void initializeMenuItes()
+        private void initializeMenuItems()
         {
             {
                 MenuItem menuItem_Add = CodeEditor2.Global.CreateMenuItem("Add", "MenuItem_Add");
+                menuItem_Add.Click += menuItem_Add_Click;
                 ContextMenu.Items.Add(menuItem_Add);
             }
 
@@ -70,6 +74,21 @@ namespace CodeEditor2.Views
             }
         }
 
+        private async void menuItem_Add_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var file = await Global.mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Create New File"
+            });
+            if (file == null) return;
+
+//            string relativePath = 
+
+
+
+
+        }
+
         private void menuItem_OpenInExplorer_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             TreeNode? node = TreeControl.GetSelectedNode();
@@ -77,7 +96,9 @@ namespace CodeEditor2.Views
 
             if (node is FolderNode)
             {
-                Data.Folder folder = (node as FolderNode).Folder;
+                FolderNode? folderNode = node as FolderNode;
+                if (folderNode == null) throw new System.Exception();
+                Data.Folder folder = folderNode.Folder;
                 if (folder == null || folder.Project == null) return;
                 string folderPath = folder.Project.GetAbsolutePath(folder.RelativePath).Replace('\\',System.IO.Path.DirectorySeparatorChar);
                 
@@ -92,7 +113,9 @@ namespace CodeEditor2.Views
             }
             else if (node is FileNode)
             {
-                Data.File file = (node as FileNode).FileItem;
+                FileNode? fileNode = node as FileNode;
+                if (fileNode == null) throw new System.Exception();
+                Data.File file = fileNode.FileItem;
                 if (file == null || file.Project == null) return;
                 string filePath = file.Project.GetAbsolutePath(file.RelativePath).Replace('\\', System.IO.Path.DirectorySeparatorChar);
 

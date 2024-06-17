@@ -30,7 +30,7 @@
 			</MenuItem>
 			<MenuItem Header="_Project">
 				<MenuItem Header="Add Project" Click="MenuItem_AddProject_Click"/>
-				<MenuItem Header="Add ProjectPath" Click="MenuItem_AddProjectPath_Click"/>
+				<!--<MenuItem Header="Add ProjectPath" Click="MenuItem_AddProjectPath_Click"/>-->
 			</MenuItem>
 			<MenuItem Header="_Tools">
 			</MenuItem>
