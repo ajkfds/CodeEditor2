@@ -142,11 +142,16 @@ namespace CodeEditor2.NavigatePanel
         //    base.DrawNode(graphics, x, y, font, color, backgroundColor, selectedColor, lineHeight, selected);
         //}
 
-        public virtual void ShowProperyForm()
+        public virtual void ShowPropertyForm()
         {
 
         }
 
-
+        public NavigatePanelNode GetRootNode()
+        {
+            NavigatePanelNode? parent = Parent as NavigatePanelNode;
+            if (parent == null) return this;
+            return parent.GetRootNode();
+        }
     }
 }

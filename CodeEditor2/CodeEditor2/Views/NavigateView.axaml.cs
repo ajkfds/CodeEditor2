@@ -1,4 +1,5 @@
 using AjkAvaloniaLibs.Contorls;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
@@ -76,17 +77,47 @@ namespace CodeEditor2.Views
 
         private async void menuItem_Add_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var file = await Global.mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            Project? project = null;
+
+            NavigatePanelNode? node = TreeControl.GetSelectedNode() as NavigatePanelNode;
+            if (node == null) return;
+            NavigatePanelNode rootNode = node.GetRootNode();
+
+            if(rootNode is ProjectNode)
+            {
+                ProjectNode? projectNode = rootNode as ProjectNode;
+                if (projectNode == null) throw new System.Exception();
+                project = projectNode.Project;
+            }
+            if (project == null) throw new System.Exception();
+
+            var newFile = await Global.mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
                 Title = "Create New File"
             });
-            if (file == null) return;
+            if (newFile == null) return;
 
-//            string relativePath = 
+            string relativePath = project.GetRelativePath(newFile.Path.ToString());
 
+            FileTypes.FileType? fileType = null;
+            foreach(FileTypes.FileType fType in Global.FileTypes.Values)
+            {
+                if(fType.IsThisFileType(relativePath, project))
+                {
+                    fileType = fType;
+                }
+            }
+            if(fileType == null)
+            {
+                
+            }
+            else
+            {
+                fileType.CreateFile(relativePath,project);
+            }
 
-
-
+            FolderNode? folderNode = node.Parent as FolderNode;
+            if (folderNode != null) folderNode.Update();
         }
 
         private void menuItem_OpenInExplorer_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
