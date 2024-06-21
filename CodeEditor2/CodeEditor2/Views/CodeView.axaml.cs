@@ -226,6 +226,12 @@ namespace CodeEditor2.Views
             _textEditor.CaretOffset = index;
             CodeDocument.caretIndex = index;
         }
+
+        public int? GetCaretPosition()
+        {
+            if (CodeDocument == null) return null;
+            return CodeDocument.caretIndex;
+        }
         public void SetSelection(int selectionStart, int selectionLast)
         {
             if (skipEvents) return;

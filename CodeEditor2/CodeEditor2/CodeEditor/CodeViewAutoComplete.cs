@@ -82,15 +82,17 @@ namespace CodeEditor2.CodeEditor
         public void ForceOpenAutoComplete(List<AutocompleteItem> autocompleteItems)
         {
             if (codeView.TextFile == null) return;
+            CodeDocument? codeDocument = codeView.CodeDocument;
+            if (codeDocument == null) return;
 
-            int prevIndex = codeView.CodeDocument.CaretIndex;
-            if (codeView.CodeDocument.GetLineStartIndex(codeView.CodeDocument.GetLineAt(prevIndex)) != prevIndex && prevIndex != 0)
+            int prevIndex = codeDocument.CaretIndex;
+            if (codeDocument.GetLineStartIndex(codeDocument.GetLineAt(prevIndex)) != prevIndex && prevIndex != 0)
             {
                 prevIndex--;
             }
 
             string candidateWord;
-            List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeView.CodeDocument.CaretIndex, out candidateWord);
+            List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeDocument.CaretIndex, out candidateWord);
             items = autocompleteItems;  // override items
             if (items == null || candidateWord == null)
             {

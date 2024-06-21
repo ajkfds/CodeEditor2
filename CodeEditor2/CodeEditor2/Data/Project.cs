@@ -132,7 +132,7 @@ namespace CodeEditor2.Data
         //        private List<Item> parseItems = new List<Item>();
 
         private Dictionary<string, Item> parseItems = new Dictionary<string, Item>();
-        public Item FetchReparseTarget()
+        public Item? FetchReparseTarget()
         {
             lock (parseItems)
             {

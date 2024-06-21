@@ -127,9 +127,9 @@ namespace CodeEditor2.Data
         }
 
 
-        public virtual Item GetItem(string relativePath)
+        public virtual Item? GetItem(string relativePath)
         {
-            // hier search to get a item
+            // hierarchy search to get a item
             if (Name == relativePath) return this;
 
             if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
@@ -191,11 +191,11 @@ namespace CodeEditor2.Data
         {
             get
             {
-                NavigatePanel.NavigatePanelNode node;
+                NavigatePanel.NavigatePanelNode? node;
                 if (nodeRef == null)
                 {
                     node = createNode();
-                    if (node == null) return null;
+                    if (node == null) throw new Exception();
                     nodeRef = new WeakReference<NavigatePanel.NavigatePanelNode>(node);
                     return node;
                 }
@@ -203,7 +203,7 @@ namespace CodeEditor2.Data
                 if (nodeRef.TryGetTarget(out node)) return node;
 
                 node = createNode();
-                if (node == null) return null;
+                if (node == null) throw new Exception();
                 nodeRef = new WeakReference<NavigatePanel.NavigatePanelNode>(node);
                 return node;
             }
@@ -227,7 +227,7 @@ namespace CodeEditor2.Data
             return node;
         }
 
-        public virtual CodeEditor.DocumentParser CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum parseMode)
+        public virtual CodeEditor.DocumentParser? CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum parseMode)
         {
             return null;
         }

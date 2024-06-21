@@ -50,6 +50,12 @@ namespace CodeEditor2.NavigatePanel
             //CodeEditor2.Controller.NavigatePanel.GetContextMenuStrip().Items["ignoreTsmi"].Visible = true;
         }
 
+        //public override void OnClicked()
+        //{
+        //    if (_nodes.Count == 0) return;
+        //    IsExpanded = !IsExpanded;
+        //}
+
         public override void Update()
         {
             Folder.Update();

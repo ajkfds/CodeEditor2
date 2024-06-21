@@ -142,7 +142,7 @@ namespace CodeEditor2.Views
         private void PopupMenuView_LostFocus(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             cancel();
-            CodeEditor2.Controller.CodeEditor.AbortInteractiveSnippet();
+            //CodeEditor2.Controller.CodeEditor.AbortInteractiveSnippet();
         }
 
         private void cancel()

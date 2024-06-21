@@ -16,9 +16,9 @@ namespace CodeEditor2.NavigatePanel
         private void setImage()
         {
             Image =  AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
-                    "CodeEditor2/Assets/Icons/document.svg",
-                    Avalonia.Media.Color.FromArgb(100, 100, 100, 100)
-                    );
+                "CodeEditor2/Assets/Icons/document.svg",
+                Avalonia.Media.Color.FromArgb(100, 100, 100, 100)
+                );
         }
 
         protected NavigatePanelNode()
@@ -127,14 +127,7 @@ namespace CodeEditor2.NavigatePanel
             }
         }
 
-        public virtual void Clicked()
-        {
 
-        }
-
-        public virtual void DoubleClicked()
-        {
-        }
 
         //public override void DrawNode(Graphics graphics, int x, int y, Font font, Color color, Color backgroundColor, Color selectedColor, int lineHeight, bool selected)
         //{

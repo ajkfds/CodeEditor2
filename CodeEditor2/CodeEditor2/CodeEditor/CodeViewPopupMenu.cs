@@ -30,6 +30,7 @@ namespace CodeEditor2.CodeEditor
 
         public void OpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> cantidates)
         {
+            System.Diagnostics.Debug.Print("## OpenCustomSelection");
             PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
             if (flyout == null) return;
             if (flyout.IsOpen) return;
@@ -68,6 +69,12 @@ namespace CodeEditor2.CodeEditor
 
         public void ShowToolSelectionPopupMenu()
         {
+            if(Snippet != null)
+            {
+                Controller.CodeEditor.AbortInteractiveSnippet();
+            }
+
+            System.Diagnostics.Debug.Print("## ShowToolSelectionPopupMenu");
             PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
             if (flyout == null) return;
             if (flyout.IsOpen) return;
@@ -128,6 +135,7 @@ namespace CodeEditor2.CodeEditor
 
         public void HidePopupMenu()
         {
+            System.Diagnostics.Debug.Print("## HidePopupMenu");
             PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
             if (flyout == null) return;
             if (!flyout.IsOpen) return;
@@ -136,6 +144,7 @@ namespace CodeEditor2.CodeEditor
 
         public void PopupMenu_Selected(PopupMenuItem popUpMenuItem)
         {
+            System.Diagnostics.Debug.Print("## PopupMenu_Selected");
             if (popUpMenuItem is ToolItem)
             {
                 if (codeView.CodeDocument == null) return;
@@ -162,8 +171,8 @@ namespace CodeEditor2.CodeEditor
 
         public void AbortInteractiveSnippet()
         {
-            System.Diagnostics.Debug.Print("## CodeViewSetupMenu.AbortInteractiveSnippet");
             if (Snippet == null) return;
+            System.Diagnostics.Debug.Print("## CodeViewSetupMenu.AbortInteractiveSnippet for snippet");
             Snippet.Aborted();
             Snippet = null;
         }
@@ -171,22 +180,26 @@ namespace CodeEditor2.CodeEditor
         public void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
             if (Snippet == null) return;
+            System.Diagnostics.Debug.Print("## TextArea_KeyDown for snippet");
             Snippet.KeyDown(sender, e, codeView.PopupMenu);
         }
         public void TextEntering(object? sender, TextInputEventArgs e)
         {
             if (Snippet == null) return;
+            System.Diagnostics.Debug.Print("## TextEntering for snippet");
             Snippet.BeforeKeyDown(sender, e, codeView.PopupMenu);
         }
 
         public void TextEntered(object? sender, TextInputEventArgs e)
         {
             if (Snippet == null) return;
+            System.Diagnostics.Debug.Print("## TextEntered for snippet");
             Snippet.AfterKeyDown(sender, e, codeView.PopupMenu);
         }
         public virtual void AfterAutoCompleteHandled()
         {
             if (Snippet == null) return;
+            System.Diagnostics.Debug.Print("## AfterAutoCompleteHandled for snippet");
             Snippet.AfterAutoCompleteHandled(codeView.PopupMenu);
         }
 

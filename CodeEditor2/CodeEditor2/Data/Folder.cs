@@ -32,40 +32,44 @@ namespace CodeEditor2.Data
             return folder;
         }
 
-        public File SearchFile(string relativePath)
+        public File? SearchFile(string relativePath)
         {
             string[] pathList = relativePath.Split(new char[] { System.IO.Path.DirectorySeparatorChar });
             if (pathList.Length == 0) return null;
 
             foreach (Item item in items.Values)
             {
-                if (item is File)
+                File? file = item as File;
+                if (file != null)
                 {
-                    if ((item as File).Name == pathList[0] && pathList.Length == 1) return item as File;
+                    if (file.Name == pathList[0] && pathList.Length == 1) return file;
+                    return null;
                 }
-                else if (item is Folder)
+
+                Folder? folder = item as Folder;
+                if (folder != null &&  folder.Name == pathList[0])
                 {
-                    if ((item as Folder).Name == pathList[0])
-                    {
-                        if (pathList.Length == 1) return null;
-                        return (item as Folder).SearchFile(relativePath.Substring(pathList[0].Length + 1));
-                    }
+                    if (pathList.Length == 1) return null;
+                    return folder.SearchFile(relativePath.Substring(pathList[0].Length + 1));
                 }
             }
             return null;
         }
-        public File SearchFile(Func<File, bool> match)
+        public File? SearchFile(Func<File, bool> match)
         {
             foreach (Item item in items.Values)
             {
-                if (item is File)
+                File? file = item as File;
+                if (file != null)
                 {
-                    if (match(item as File)) return item as File;
+                    if (match(file)) return file;
+                    return null;
                 }
-                else if (item is Folder)
+
+                Folder? folder = item as Folder;
+                if(folder != null)
                 {
-                    File ret = (item as Folder).SearchFile(match);
-                    if (ret != null) return ret;
+                    return folder.SearchFile(match);
                 }
             }
             return null;
@@ -102,7 +106,8 @@ namespace CodeEditor2.Data
                     name = relativePath;
                 }
 
-                if (this is Project && (this as Project).ignoreList.Contains(name))
+                Project? project = this as Project;
+                if (project != null && project.ignoreList.Contains(name))
                 {
                     continue;
                 }
@@ -125,7 +130,7 @@ namespace CodeEditor2.Data
             // add new folders
             foreach (string absoluteFolderPath in absoluteFolderPaths)
             {
-                // skip invisiable folder
+                // skip invisible folder
                 string body = absoluteFolderPath;
                 if (body.Contains(System.IO.Path.DirectorySeparatorChar)) body = body.Substring(body.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
                 if (body.StartsWith(".")) continue;
@@ -133,7 +138,8 @@ namespace CodeEditor2.Data
                 if (!items.ContainsKey(body))
                 {
                     Folder item = Create(Project.GetRelativePath(absoluteFolderPath), Project, this);
-                    if (this is Project && (this as Project).ignoreList.Contains(item.Name))
+                    Project? project = this as Project;
+                    if (project != null && project.ignoreList.Contains(item.Name))
                     {
                         continue;
                     }

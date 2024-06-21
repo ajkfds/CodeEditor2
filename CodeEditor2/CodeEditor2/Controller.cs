@@ -2,6 +2,7 @@
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using CodeEditor2.Data;
+using CodeEditor2.NavigatePanel;
 using CodeEditor2.Views;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,11 @@ namespace CodeEditor2
         public static void AppendLog(string message, Avalonia.Media.Color color)
         {
             Global.logView.AppendLog(message, color);
+        }
+
+        public static Window GetMainWindow()
+        {
+            return Global.mainWindow;
         }
 
         //public static System.Drawing.Color GetBackColor()
@@ -136,9 +142,28 @@ namespace CodeEditor2
             {
                 Global.codeView.SetCaretPosition(index);
             }
+
+            public static int? GerCaretPosition()
+            {
+                return Global.codeView.GetCaretPosition();
+            }
+
             public static void SetSelection(int startIndex,int lastIndex)
             {
                 Global.codeView.SetSelection(startIndex, lastIndex);
+            }
+
+            public static void GetSelection(out int startIndex, out int lastIndex)
+            {
+                CodeEditor2.CodeEditor.CodeDocument? codeDocument = Global.codeView.CodeDocument;
+                if(codeDocument == null)
+                {
+                    startIndex = -1;
+                    lastIndex = -1;
+                    return;
+                }
+                startIndex = codeDocument.selectionStart;
+                lastIndex =  codeDocument.selectionLast;
             }
             public static void Save()
             {
@@ -169,7 +194,7 @@ namespace CodeEditor2
                 Global.codeView.RequestReparse();
             }
 
-            public static Data.ITextFile GetTextFile()
+            public static Data.ITextFile? GetTextFile()
             {
                 return Global.codeView.TextFile;
             }
@@ -247,6 +272,21 @@ namespace CodeEditor2
             public static ContextMenu GetContextMenu()
             {
                 return Global.navigateView.ContextMenu;
+            }
+
+            public static MenuItem? GetContextMenuItem(List<string> captions)
+            {
+                return Global.navigateView.getContextMenuItem(captions);
+            }
+
+            public static Data.Project GetProject(NavigatePanelNode node)
+            {
+                return Global.navigateView.GetProject(node);
+            }
+
+            public static void UpdateFolder(NavigatePanelNode node)
+            {
+                Global.navigateView.UpdateFolder(node);
             }
 
             //public static void Refresh()

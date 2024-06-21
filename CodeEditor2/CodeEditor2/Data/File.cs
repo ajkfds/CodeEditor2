@@ -12,7 +12,7 @@ namespace CodeEditor2.Data
     {
         public static File Create(string relativePath, Project project, Item parent)
         {
-            // check resistered filetype
+            // check registered filetype
             foreach (var fileType in Global.FileTypes.Values)
             {
                 if (fileType.IsThisFileType(relativePath, project)) return fileType.CreateFile(relativePath, project);
@@ -51,19 +51,14 @@ namespace CodeEditor2.Data
             return true;
         }
 
-        public static Action<File> FileCreated;
-
-        //public static string GetID(string relativePath, Project project)
-        //{
-        //    return project.ID + ":File:" + relativePath;
-        //}
+        public static Action<File>? FileCreated;
 
         protected override NavigatePanelNode createNode()
         {
             return new FileNode(this);
         }
 
-        public FileTypes.FileType FileType
+        public FileTypes.FileType? FileType
         {
             get { return null; }
         }
