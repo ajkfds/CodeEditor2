@@ -6,11 +6,15 @@ namespace CodeEditor2.Tools
     {
         public YesNoWindow()
         {
+            InitializeComponent();
+
             initialize("","");
         }
 
         public YesNoWindow(string title, string caption)
         {
+            InitializeComponent();
+
             initialize(title, caption);
         }
         private void initialize(string title, string caption)
@@ -31,12 +35,12 @@ namespace CodeEditor2.Tools
         }
 
 
-        public bool OK = false;
+        public bool Yes = false;
         public string InputText = "";
 
         private void YesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            OK = true;
+            Yes = true;
             Close();
         }
 

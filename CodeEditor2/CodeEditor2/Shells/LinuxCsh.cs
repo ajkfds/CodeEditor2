@@ -14,7 +14,7 @@ namespace CodeEditor2.Shells
             //            initializeCommands.Add("prompt "+prompt+"$G$_");
 
             initialize(
-                "bash",
+                "csh",
                 "",
                 commands
                 );

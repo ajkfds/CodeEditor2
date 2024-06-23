@@ -111,6 +111,7 @@ namespace CodeEditor2.Views
 
             {
                 MenuItem menuItem_Delete = CodeEditor2.Global.CreateMenuItem("Delete", "MenuItem_Delete");
+                menuItem_Delete.Click += menuItem_Delete_Click;
                 ContextMenu.Items.Add(menuItem_Delete);
             }
 
@@ -196,49 +197,68 @@ namespace CodeEditor2.Views
             UpdateFolder(node);
         }
 
-        //private async void menuItem_Add_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        //{
-        //    Project? project = null;
-        //    NavigatePanelNode? node = TreeControl.GetSelectedNode() as NavigatePanelNode;
-        //    if (node == null) return;
-        //    NavigatePanelNode rootNode = node.GetRootNode();
+        private async void menuItem_Delete_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            NavigatePanelNode? node = TreeControl.GetSelectedNode() as NavigatePanelNode;
+            if (node == null) return;
+            Project project = GetProject(node);
 
-        //    if(rootNode is ProjectNode)
-        //    {
-        //        ProjectNode? projectNode = rootNode as ProjectNode;
-        //        if (projectNode == null) throw new System.Exception();
-        //        project = projectNode.Project;
-        //    }
-        //    if (project == null) throw new System.Exception();
+            if (node is ProjectNode) return;
 
-        //    var newFile = await Global.mainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-        //    {
-        //        Title = "Create New File"
-        //    });
-        //    if (newFile == null) return;
+            if(node is FileNode)
+            {
+                FileNode? fileNode = node as FileNode;
+                if (fileNode == null) throw new System.Exception();
+                string relativePath = fileNode.FileItem.RelativePath;
 
-        //    string relativePath = project.GetRelativePath(newFile.Path.ToString());
+                Tools.YesNoWindow window = new Tools.YesNoWindow("Delete File", "delete " + relativePath + " ?");
+                await window.ShowDialog(Controller.GetMainWindow());
 
-        //    FileTypes.FileType? fileType = null;
-        //    foreach(FileTypes.FileType fType in Global.FileTypes.Values)
-        //    {
-        //        if(fType.IsThisFileType(relativePath, project))
-        //        {
-        //            fileType = fType;
-        //        }
-        //    }
-        //    if(fileType == null)
-        //    {
-                
-        //    }
-        //    else
-        //    {
-        //        fileType.CreateFile(relativePath,project);
-        //    }
+                if (!window.Yes) return;
 
-        //    FolderNode? folderNode = node.Parent as FolderNode;
-        //    if (folderNode != null) folderNode.Update();
-        //}
+                try
+                {
+                    System.IO.File.Delete(project.GetAbsolutePath(relativePath));
+                } catch(System.Exception ex)
+                {
+                    CodeEditor2.Controller.AppendLog("failed to delete " + relativePath + ":" + ex.Message);
+                }
+                UpdateFolder(node);
+                return;
+            }
+
+            if (node is FolderNode)
+            {
+                FolderNode? folderNode = node as FolderNode;
+                if (folderNode == null) throw new System.Exception();
+                string relativePath = folderNode.Folder.RelativePath;
+
+                Tools.YesNoWindow window = new Tools.YesNoWindow("Delete File", "delete " + relativePath + " ?");
+                await window.ShowDialog(Controller.GetMainWindow());
+
+                if (!window.Yes) return;
+
+                try
+                {
+                    System.IO.Directory.Delete(project.GetAbsolutePath(relativePath));
+                }
+                catch (System.Exception ex)
+                {
+                    CodeEditor2.Controller.AppendLog("failed to delete " + relativePath + ":" + ex.Message);
+                }
+
+                NavigatePanelNode? parentNode = node.Parent as NavigatePanelNode;
+                if (parentNode != null)
+                {
+                    UpdateFolder(parentNode);
+                }
+
+                return;
+            }
+
+
+        }
+
 
         private void menuItem_OpenInExplorer_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
