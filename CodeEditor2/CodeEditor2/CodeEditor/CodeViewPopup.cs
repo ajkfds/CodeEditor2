@@ -60,9 +60,9 @@ namespace CodeEditor2.CodeEditor
             int headIndex, length;
             codeView.CodeDocument.GetWord(index, out headIndex, out length);
 
-            if (popupInex == headIndex) // close once to move popup position
+            if (popupInex != headIndex) // close once to move popup position
             {
-//                ToolTip.SetIsOpen(codeView.Editor, false);
+                ToolTip.SetIsOpen(codeView.Editor, false);
             }
             popupInex = headIndex;
 
@@ -72,12 +72,15 @@ namespace CodeEditor2.CodeEditor
                 ToolTip.SetIsOpen(codeView.Editor, false);
                 return;
             }
+//            ToolTip.SetIsOpen(codeView.Editor, false);
+//            ToolTip.SetIsOpen(codeView.Editor, true);
             codeView.PopupColorLabel.Clear();
             codeView.PopupColorLabel.Add(pItem);
 
 //            ToolTip.SetIsOpen(codeView.Editor, false); // close once to update pop-up window position
             if (pItem.GetItems().Count != 0)
             {
+//                ToolTip.SetIsOpen(codeView.Editor, false);
                 ToolTip.SetIsOpen(codeView.Editor, true);
             }
         }
