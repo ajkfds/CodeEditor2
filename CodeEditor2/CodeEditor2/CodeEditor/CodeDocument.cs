@@ -154,9 +154,7 @@ namespace CodeEditor2.CodeEditor
 
         #endregion
 
-        #region
-        #endregion
-
+ 
         #region
         #endregion
 
@@ -244,10 +242,10 @@ namespace CodeEditor2.CodeEditor
 
         // block handling /////////////////////////////
 
-        List<int> blockStartIndexs = new List<int>();
-        List<int> blockEndIndexs = new List<int>();
+        List<int> blockStartIndexes = new List<int>();
+        List<int> blockEndIndexes = new List<int>();
 
-        // block infomation cash
+        // block information cash
         bool blockCashActive = false;
         List<int> blockStartLines = new List<int>();
         List<int> blockEndLines = new List<int>();
@@ -257,67 +255,26 @@ namespace CodeEditor2.CodeEditor
 
             blockStartLines.Clear();
             blockEndLines.Clear();
-            for (int i = 0; i < blockStartIndexs.Count; i++)
+            for (int i = 0; i < blockStartIndexes.Count; i++)
             {
-                blockStartLines.Add(GetLineAt(blockStartIndexs[i]));
-                blockEndLines.Add(GetLineAt(blockEndIndexs[i]));
+                blockStartLines.Add(GetLineAt(blockStartIndexes[i]));
+                blockEndLines.Add(GetLineAt(blockEndIndexes[i]));
             }
             blockCashActive = true;
         }
 
 
-
-        public int VisibleLines
-        {
-            get
-            {
-                return visibleLines;
-            }
-        }
-
-        //public int GetVisibleLineNo(int lineNo)
-        //{
-        //    if (textOnly) return 0;
-
-        //    if (!blockCashActive) createBlockCash();
-        //    if (collapsedLines.Count == 0) return lineNo;
-        //    int vline = 0;
-        //    for (int i = 0; i < lineNo; i++)
-        //    {
-        //        if (lineVisible[i]) vline++;
-        //    }
-        //    return vline;
-        //}
-
-        //public int GetActialLineNo(int visibleLineNo)
-        //{
-        //    if (textOnly) return 0;
-
-        //    if (!blockCashActive) createBlockCash();
-        //    if (collapsedLines.Count == 0) return visibleLineNo;
-        //    int lineNo = 0;
-        //    int vLine = 0;
-        //    for (lineNo = 0; lineNo < Lines; lineNo++)
-        //    {
-        //        if (lineVisible[lineNo]) vLine++;
-        //        if (visibleLineNo == vLine) break;
-        //    }
-        //    if (lineNo == 0) lineNo = 1;
-        //    return lineNo;
-        //}
-
-
         public void ClearBlock()
         {
             blockCashActive = false;
-            blockStartIndexs.Clear();
-            blockEndIndexs.Clear();
+            blockStartIndexes.Clear();
+            blockEndIndexes.Clear();
         }
         public void AppendBlock(int startIndex, int endIndex)
         {
             blockCashActive = false;
-            blockStartIndexs.Add(startIndex);
-            blockEndIndexs.Add(endIndex);
+            blockStartIndexes.Add(startIndex);
+            blockEndIndexes.Add(endIndex);
         }
 
         //public bool IsVisibleLine(int lineNo)

@@ -87,6 +87,8 @@ namespace CodeEditor2.Data
             }
             catch
             {
+                // path is not exist
+
                 System.Diagnostics.Debugger.Break();
                 return;
             }

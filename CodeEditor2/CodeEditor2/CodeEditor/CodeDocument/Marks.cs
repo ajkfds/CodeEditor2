@@ -119,7 +119,7 @@ namespace CodeEditor2.CodeEditor
 
                     if (e.Offset <= start) // a0 | a1 | a2
                     {
-                        if (e.Offset + e.RemovalLength < start)
+                        if (e.Offset + e.RemovalLength <= start)
                         { // a0
                             mark.StartOffset += change;
 //                            mark.EndOffset += change;
