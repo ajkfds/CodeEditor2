@@ -70,12 +70,13 @@ namespace CodeEditor2.CodeEditor
         public Colors TextColors;
         public HIghLights HighLights;
 
+        public Action<object?, DocumentChangeEventArgs>? Changing = null;
 
         #region ThreadControl
 
         System.Threading.Thread? ownerThread = null;
 
-        private void CheckThead()
+        private void CheckThread()
         {
             //if(!HasThread)
             //{
@@ -97,7 +98,7 @@ namespace CodeEditor2.CodeEditor
 
         public void LockThreadToUI()
         {
-            CheckThead();
+            CheckThread();
             textDocument.SetOwnerThread(Global.UIThread);
             ownerThread = Global.UIThread;
         }
@@ -111,7 +112,7 @@ namespace CodeEditor2.CodeEditor
         {
             get
             {
-                CheckThead();
+                CheckThread();
                 return textDocument;
             }
         }
@@ -129,9 +130,9 @@ namespace CodeEditor2.CodeEditor
         }
         private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
         {
-            Marks.OnTextEdit(e);
             TextColors.OnTextEdit(e);
             HighLights.OnTextEdit(e);
+            if(Changing != null) Changing(sender, e);
         }
 
         private void TextDocument_Changed(object? sender, DocumentChangeEventArgs e)
@@ -155,8 +156,6 @@ namespace CodeEditor2.CodeEditor
         #endregion
 
  
-        #region
-        #endregion
 
 
         private readonly bool textOnly = false;
@@ -234,7 +233,7 @@ namespace CodeEditor2.CodeEditor
         {
             get
             {
-                CheckThead();
+                CheckThread();
                 return textDocument.TextLength;
             }
         }
@@ -375,9 +374,9 @@ namespace CodeEditor2.CodeEditor
 
         public void CopyColorMarkFrom(CodeDocument document)
         {
-            TextColors.LineInfomations = document.TextColors.LineInfomations;
+            TextColors.LineInformation = document.TextColors.LineInformation;
             Marks.
-            Details = document.Marks.Details;
+            marks = document.Marks.marks;
         }
         public void CopyFrom(CodeDocument document)
         {

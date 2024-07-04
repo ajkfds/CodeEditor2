@@ -14,12 +14,14 @@ namespace CodeEditor2.CodeEditor
         public MarkerRenderer()
         {
         }
-        internal TextSegmentCollection<TextSegment> marks { get; } = new TextSegmentCollection<TextSegment>();
+        private TextSegmentCollection<TextSegment> marks { get; } = new TextSegmentCollection<TextSegment>();
 
         public void ClearMark()
         {
             marks.Clear();
         }
+
+        // copy mark information
         public void SetMarks(List<CodeDrawStyle.MarkDetail> marks)
         {
             this.marks.Clear();
@@ -29,6 +31,88 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
+        public void OnTextEdit(DocumentChangeEventArgs e)
+        {
+            if (marks == null) return;
+
+            int change = e.InsertionLength - e.RemovalLength;
+            List<TextSegment> removeTarget = new List<TextSegment>();
+
+            lock (marks)
+            {
+                foreach (var mark in marks)
+                {
+                    //     start    last
+                    //       +=======+
+
+                    // |---|                 a0
+                    // |---------|           a1
+                    // |-------------------| a2
+
+                    //           |---|       b0
+                    //           |---------| b1
+
+                    //                  |--| c0
+
+                    int start = mark.StartOffset;
+                    int last = mark.EndOffset;
+
+                    if (e.Offset <= start) // a0 | a1 | a2
+                    {
+                        if (e.Offset + e.RemovalLength <= start)
+                        { // a0
+                            mark.StartOffset += change;
+                            //                            mark.EndOffset += change;
+                        }
+                        else if (e.Offset + e.RemovalLength <= last)
+                        { // a1
+                            mark.StartOffset = e.Offset;
+                            if (mark.EndOffset + change <= mark.StartOffset)
+                            {
+                                removeTarget.Add(mark);
+                            }
+                            else
+                            {
+                                if (e.Offset + change <= mark.StartOffset)
+                                {
+                                    removeTarget.Add(mark);
+                                }
+                                else
+                                {
+                                    mark.EndOffset = e.Offset + change;
+                                }
+                            }
+                        }
+                        else
+                        { // a2
+                            if (mark.EndOffset + change > mark.StartOffset) mark.EndOffset += change;
+                            else removeTarget.Add(mark);
+                        }
+                    }
+                    else if (e.Offset <= mark.EndOffset + 1) // b0 | b1
+                    {
+                        if (e.Offset + e.RemovalLength <= last + 1)
+                        { // b0
+                            mark.EndOffset += change;
+                        }
+                        else
+                        { // b1
+                          // none
+                        }
+                    }
+                    else
+                    { // c0
+                      // none
+                    }
+                }
+
+                foreach (var removeMark in removeTarget)
+                {
+                    marks.Remove(removeMark);
+                }
+
+            }
+        }
         public class Mark : AvaloniaEdit.Document.TextSegment
         {
             public Color Color;

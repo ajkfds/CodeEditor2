@@ -8,16 +8,16 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor
 {
-    public class LineInfomation
+    public class LineInformation
     {
         public List<Color> Colors = new List<Color>();
         //public List<Effect> Effects = new List<Effect>();
 
         public class Color
         {
-            public Color(int offeset,int length,Avalonia.Media.Color color)
+            public Color(int offset,int length,Avalonia.Media.Color color)
             {
-                this.Offset = offeset;
+                this.Offset = offset;
                 this.Length = length;
                 this.DrawColor = color;
             }

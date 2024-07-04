@@ -30,18 +30,18 @@ namespace CodeEditor2.CodeEditor
         }
         CodeDocument codeDocument;
 
-        public Dictionary<int, LineInfomation> LineInfomations = new Dictionary<int, LineInfomation>();
-        protected LineInfomation GetLineInfomation(int lineNumber)
+        public Dictionary<int, LineInformation> LineInformation = new Dictionary<int, LineInformation>();
+        protected LineInformation GetLineInformation(int lineNumber)
         {
-            LineInfomation lineInfo;
-            if (LineInfomations.ContainsKey(lineNumber))
+            LineInformation lineInfo;
+            if (LineInformation.ContainsKey(lineNumber))
             {
-                lineInfo = LineInfomations[lineNumber];
+                lineInfo = LineInformation[lineNumber];
             }
             else
             {
-                lineInfo = new LineInfomation();
-                LineInfomations.Add(lineNumber, lineInfo);
+                lineInfo = new LineInformation();
+                LineInformation.Add(lineNumber, lineInfo);
             }
             if (lineInfo.Colors.Count > 2000)
             {
@@ -59,7 +59,7 @@ namespace CodeEditor2.CodeEditor
 
         public void RemoveColors()
         {
-            LineInfomations.Clear();
+            LineInformation.Clear();
         }
 
         public virtual void SetColorAt(int index, byte value)
@@ -67,9 +67,9 @@ namespace CodeEditor2.CodeEditor
             if (codeDocument.TextDocument == null) return;
             if (codeDocument.TextFile == null) return;
             DocumentLine line = codeDocument.TextDocument.GetLineByOffset(index);
-            LineInfomation lineInfo = GetLineInfomation(line.LineNumber);
+            LineInformation lineInfo = GetLineInformation(line.LineNumber);
             Color color = codeDocument.TextFile.DrawStyle.ColorPallet[value];
-            lineInfo.Colors.Add(new LineInfomation.Color(index, 1, color));
+            lineInfo.Colors.Add(new LineInformation.Color(index, 1, color));
         }
 
         public virtual void SetColorAt(int index, byte value, int length)
@@ -88,21 +88,21 @@ namespace CodeEditor2.CodeEditor
 
             if (lineStart == lineLast)
             {
-                LineInfomation lineInfo = GetLineInfomation(lineStart.LineNumber);
-                lineInfo.Colors.Add(new LineInfomation.Color(index, length, color));
+                LineInformation lineInfo = GetLineInformation(lineStart.LineNumber);
+                lineInfo.Colors.Add(new LineInformation.Color(index, length, color));
             }
             else
             {
-                LineInfomation lineInfo = GetLineInfomation(lineStart.LineNumber);
-                lineInfo.Colors.Add(new LineInfomation.Color(index, codeDocument.GetLineLength(lineStart.LineNumber) - (index - codeDocument.GetLineStartIndex(lineStart.LineNumber)), color));
+                LineInformation lineInfo = GetLineInformation(lineStart.LineNumber);
+                lineInfo.Colors.Add(new LineInformation.Color(index, codeDocument.GetLineLength(lineStart.LineNumber) - (index - codeDocument.GetLineStartIndex(lineStart.LineNumber)), color));
 
-                lineInfo = GetLineInfomation(lineLast.LineNumber);
-                lineInfo.Colors.Add(new LineInfomation.Color(codeDocument.GetLineStartIndex(lineLast.LineNumber), index + length - codeDocument.GetLineStartIndex(lineLast.LineNumber), color));
+                lineInfo = GetLineInformation(lineLast.LineNumber);
+                lineInfo.Colors.Add(new LineInformation.Color(codeDocument.GetLineStartIndex(lineLast.LineNumber), index + length - codeDocument.GetLineStartIndex(lineLast.LineNumber), color));
 
                 for (int line = lineStart.LineNumber + 1; line <= lineLast.LineNumber - 1; line++)
                 {
-                    lineInfo = GetLineInfomation(line);
-                    lineInfo.Colors.Add(new LineInfomation.Color(codeDocument.GetLineStartIndex(line), codeDocument.GetLineLength(line), color));
+                    lineInfo = GetLineInformation(line);
+                    lineInfo.Colors.Add(new LineInformation.Color(codeDocument.GetLineStartIndex(line), codeDocument.GetLineLength(line), color));
                 }
             }
         }
@@ -116,8 +116,8 @@ namespace CodeEditor2.CodeEditor
             if (startLine.LineNumber == endLine.LineNumber)
             { // startLine = endLine
 
-                LineInfomation lineInfo = GetLineInfomation(startLine.LineNumber);
-                List<LineInfomation.Color> removeTarget = new List<LineInfomation.Color>();
+                LineInformation lineInfo = GetLineInformation(startLine.LineNumber);
+                List<LineInformation.Color> removeTarget = new List<LineInformation.Color>();
                 //     start    last
                 //       +=======+
 

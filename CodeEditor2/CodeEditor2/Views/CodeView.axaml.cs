@@ -308,20 +308,16 @@ namespace CodeEditor2.Views
 
         private void attachToCodeDocument()
         {
-            //                CodeDocument.SelectionChanged += CodeDocument_SelectionChanged;
-
-            //                Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
-            //                Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
-            //                Global.mainForm.mainTab.TabPages[0].Text = textFile.Name;
-            //                Global.mainForm.mainTab.SelectedTab = Global.mainForm.mainTab.TabPages[0];
-            TextFile.CodeDocument.Marks.CurrentMarks = _markerRenderer.marks;
-
             _markerRenderer.ClearMark();
-            _markerRenderer.SetMarks(TextFile.CodeDocument.Marks.Details);
+
+            if (TextFile == null) return;
+            _markerRenderer.SetMarks(TextFile.CodeDocument.Marks.marks);
+
+            if(CodeDocument != null) CodeDocument.Changing += CodeDocument_Changing;
         }
         private void detachFromCodeDocument()
         {
-            TextFile.CodeDocument.Marks.CurrentMarks = null;
+            if (CodeDocument != null) CodeDocument.Changing = null;
         }
 
         public void ScrollToCaret()
@@ -370,6 +366,11 @@ namespace CodeEditor2.Views
         }
 
         // -----------------------------------------------------------
+
+        private void CodeDocument_Changing(object? sender, DocumentChangeEventArgs e)
+        {
+            _markerRenderer.OnTextEdit(e);
+        }
 
         private void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
