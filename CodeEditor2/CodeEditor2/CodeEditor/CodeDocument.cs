@@ -118,11 +118,11 @@ namespace CodeEditor2.CodeEditor
         }
 
         public System.WeakReference<Data.TextFile>? textFileRef;
-        public Data.TextFile TextFile
+        public Data.TextFile? TextFile
         {
             get
             {
-                Data.TextFile ret;
+                Data.TextFile? ret;
                 if (textFileRef == null) return null;
                 if (!textFileRef.TryGetTarget(out ret)) return null;
                 return ret;
@@ -375,8 +375,7 @@ namespace CodeEditor2.CodeEditor
         public void CopyColorMarkFrom(CodeDocument document)
         {
             TextColors.LineInformation = document.TextColors.LineInformation;
-            Marks.
-            marks = document.Marks.marks;
+            Marks.marks = document.Marks.marks;
         }
         public void CopyFrom(CodeDocument document)
         {

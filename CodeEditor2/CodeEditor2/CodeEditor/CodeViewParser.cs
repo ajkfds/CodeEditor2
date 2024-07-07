@@ -20,23 +20,21 @@ namespace CodeEditor2.CodeEditor
 
         public void Timer_Tick(object? sender, EventArgs e)
         {
+            // update background parser result
             DocumentParser parser = backGroundParser.GetResult();
             if (parser == null) return;
             if (parser.ParsedDocument == null) return;
-            //if (TextFile == null) return;
-            //if (TextFile != parser.TextFile)
-            //{   // return not current file
-            //    return;
-            //}
 
-            Data.TextFile textFile = parser.TextFile;
-            CodeDocument codeDocument = textFile.CodeDocument;
+            Data.TextFile newTextFile = parser.TextFile;
+            CodeDocument codeDocument = newTextFile.CodeDocument;
 
-            if (textFile == null || textFile == null)
+            if (newTextFile == null)
             {
                 parser.Dispose();
                 return;
             }
+
+            Data.ITextFile? currentTextFile = Controller.CodeEditor.GetTextFile();
 
             Controller.AppendLog("complete edit parse ID :" + parser.TextFile.ID);
             if (codeDocument.Version != parser.ParsedDocument.Version)
@@ -46,9 +44,7 @@ namespace CodeEditor2.CodeEditor
                 return;
             }
 
-            //            CodeDocument.CopyFrom(parser.Document);
             codeDocument.CopyColorMarkFrom(parser.Document);
-            
 
             if (parser.ParsedDocument != null)
             {
@@ -57,7 +53,6 @@ namespace CodeEditor2.CodeEditor
             }
 
             // update current view
-            codeView._markerRenderer.SetMarks(codeDocument.Marks.marks);
             codeView._textEditor.TextArea.TextView.Redraw();
             Controller.MessageView.Update(codeView.TextFile.ParsedDocument);
         }

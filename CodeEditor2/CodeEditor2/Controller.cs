@@ -168,7 +168,9 @@ namespace CodeEditor2
             public static void Save()
             {
                 if (Global.codeView.CodeDocument == null) return;
-                Global.codeView.CodeDocument.TextFile.Save();
+                TextFile? textFile = Global.codeView.CodeDocument.TextFile;
+                if (textFile == null) return;
+                textFile.Save();
             }
 
             public static bool IsPopupMenuOpened
@@ -179,9 +181,9 @@ namespace CodeEditor2
                 }
             }
 
-            public static void ForceOpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> cantidates)
+            public static void ForceOpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> candidates)
             {
-                Global.codeView.OpenCustomSelection(cantidates);
+                Global.codeView.OpenCustomSelection(candidates);
             }
 
             public static void ForceOpenAutoComplete(List<CodeEditor2.CodeEditor.AutocompleteItem> autocompleteItems)
@@ -194,7 +196,7 @@ namespace CodeEditor2
                 Global.codeView.RequestReparse();
             }
 
-            public static Data.ITextFile? GetTextFile()
+            public static Data.TextFile? GetTextFile()
             {
                 return Global.codeView.TextFile;
             }
