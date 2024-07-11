@@ -289,10 +289,9 @@ namespace CodeEditor2.Views
                 TextFile = null;
                 return;
             }
+
+            if(textFile != null) textFile.AcceptParsedDocument(textFile.ParsedDocument);
             
-            //codeTextbox.Visible = true;
-            //            codeTextbox.Document = textFile.CodeDocument;
-            //TextFile = textFile;
             ScrollToCaret();
             if (textFile != null)
             {
