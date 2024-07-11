@@ -69,7 +69,10 @@ namespace CodeEditor2.CodeEditor
             DocumentLine line = codeDocument.TextDocument.GetLineByOffset(index);
             LineInformation lineInfo = GetLineInformation(line.LineNumber);
             Color color = codeDocument.TextFile.DrawStyle.ColorPallet[value];
-            lineInfo.Colors.Add(new LineInformation.Color(index, 1, color));
+            lock (lineInfo.Colors)
+            {
+                lineInfo.Colors.Add(new LineInformation.Color(index, 1, color));
+            }
         }
 
         public virtual void SetColorAt(int index, byte value, int length)
@@ -89,7 +92,10 @@ namespace CodeEditor2.CodeEditor
             if (lineStart == lineLast)
             {
                 LineInformation lineInfo = GetLineInformation(lineStart.LineNumber);
-                lineInfo.Colors.Add(new LineInformation.Color(index, length, color));
+                lock (lineInfo.Colors)
+                {
+                    lineInfo.Colors.Add(new LineInformation.Color(index, length, color));
+                }
             }
             else
             {
@@ -97,12 +103,18 @@ namespace CodeEditor2.CodeEditor
                 lineInfo.Colors.Add(new LineInformation.Color(index, codeDocument.GetLineLength(lineStart.LineNumber) - (index - codeDocument.GetLineStartIndex(lineStart.LineNumber)), color));
 
                 lineInfo = GetLineInformation(lineLast.LineNumber);
-                lineInfo.Colors.Add(new LineInformation.Color(codeDocument.GetLineStartIndex(lineLast.LineNumber), index + length - codeDocument.GetLineStartIndex(lineLast.LineNumber), color));
+                lock (lineInfo.Colors)
+                {
+                    lineInfo.Colors.Add(new LineInformation.Color(codeDocument.GetLineStartIndex(lineLast.LineNumber), index + length - codeDocument.GetLineStartIndex(lineLast.LineNumber), color));
+                }
 
                 for (int line = lineStart.LineNumber + 1; line <= lineLast.LineNumber - 1; line++)
                 {
                     lineInfo = GetLineInformation(line);
-                    lineInfo.Colors.Add(new LineInformation.Color(codeDocument.GetLineStartIndex(line), codeDocument.GetLineLength(line), color));
+                    lock (lineInfo.Colors)
+                    {
+                        lineInfo.Colors.Add(new LineInformation.Color(codeDocument.GetLineStartIndex(line), codeDocument.GetLineLength(line), color));
+                    }
                 }
             }
         }
@@ -129,50 +141,54 @@ namespace CodeEditor2.CodeEditor
                 //           |---------| b1
 
                 //                  |--| c0
-                foreach (var color in lineInfo.Colors)
+                lock (lineInfo.Colors)
                 {
-                    if (color == null) continue;
-
-                    int start = color.Offset;
-                    int last = color.Offset + color.Length;
-                    int change = e.InsertionLength - e.RemovalLength;
-
-                    if (e.Offset <= start) // a0 | a1 | a2
+                    foreach (var color in lineInfo.Colors)
                     {
-                        if (e.Offset + e.RemovalLength <= start)
-                        { // a0
-                            color.Offset += change;
+                        if (color == null) continue;
+
+                        int start = color.Offset;
+                        int last = color.Offset + color.Length;
+                        int change = e.InsertionLength - e.RemovalLength;
+
+                        if (e.Offset <= start) // a0 | a1 | a2
+                        {
+                            if (e.Offset + e.RemovalLength <= start)
+                            { // a0
+                                color.Offset += change;
+                            }
+                            else if (e.Offset + e.RemovalLength <= last)
+                            { // a1
+                                color.Offset = e.Offset;
+                            }
+                            else
+                            { // a2
+                                if (color.Offset + color.Length + change > color.Offset) color.Length += change;
+                                else removeTarget.Add(color);
+                            }
                         }
-                        else if (e.Offset + e.RemovalLength <= last)
-                        { // a1
-                            color.Offset = e.Offset;
+                        else if (e.Offset <= color.Offset + color.Length) // b0 | b1
+                        {
+                            if (e.Offset + e.RemovalLength <= last)
+                            { // b0
+                                color.Length += change;
+                            }
+                            else
+                            { // b1
+                              // none
+                            }
                         }
                         else
-                        { // a2
-                            if (color.Offset + color.Length + change > color.Offset) color.Length += change;
-                            else removeTarget.Add(color);
-                        }
-                    }
-                    else if (e.Offset <= color.Offset + color.Length) // b0 | b1
-                    {
-                        if (e.Offset + e.RemovalLength <= last)
-                        { // b0
-                            color.Length += change;
-                        }
-                        else
-                        { // b1
+                        { // c0
                           // none
                         }
+
                     }
-                    else
-                    { // c0
-                      // none
+                    foreach (var removeMark in removeTarget)
+                    {
+                        lineInfo.Colors.Remove(removeMark);
                     }
 
-                }
-                foreach (var removeMark in removeTarget)
-                {
-                    lineInfo.Colors.Remove(removeMark);
                 }
             }
 

@@ -38,20 +38,21 @@ namespace CodeEditor2.CodeEditor
                 if (!codeDocument.TextColors.LineInformation.ContainsKey(line.LineNumber)) return;
                 CodeEditor.LineInformation lineInfo = codeDocument.TextColors.LineInformation[line.LineNumber];
 
-                foreach (var color in lineInfo.Colors)
+                lock (lineInfo.Colors)
                 {
-                    if (line.Offset > color.Offset | color.Offset + color.Length > line.EndOffset) continue;
-                    ChangeLinePart(
-                        color.Offset,
-                        color.Offset + color.Length,
-                        visualLine =>
-                        {
-                            visualLine.TextRunProperties.SetForegroundBrush(new SolidColorBrush(color.DrawColor));
-                        }
-                    );
+                    foreach (var color in lineInfo.Colors)
+                    {
+                        if (line.Offset > color.Offset | color.Offset + color.Length > line.EndOffset) continue;
+                        ChangeLinePart(
+                            color.Offset,
+                            color.Offset + color.Length,
+                            visualLine =>
+                            {
+                                visualLine.TextRunProperties.SetForegroundBrush(new SolidColorBrush(color.DrawColor));
+                            }
+                        );
+                    }
                 }
-
-
             }
         }
     }
