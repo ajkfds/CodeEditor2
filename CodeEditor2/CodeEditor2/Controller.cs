@@ -249,6 +249,7 @@ namespace CodeEditor2
             public static void Refresh()
             {
                 Global.codeView.Redraw();
+                Global.codeView.UpdateMarks();
             }
 
             public static void ScrollToCaret()

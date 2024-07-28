@@ -89,7 +89,7 @@ namespace CodeEditor2.Data
 
         public virtual void LoadFormFile()
         {
-            loadDoumentFromFile();
+            loadDocumentFromFile();
         }
 
 
@@ -101,7 +101,7 @@ namespace CodeEditor2.Data
             {
                 if (document == null)
                 {
-                    loadDoumentFromFile();
+                    loadDocumentFromFile();
                 }
                 else
                 {
@@ -136,7 +136,7 @@ namespace CodeEditor2.Data
         }
 
         protected DateTime? loadedFileLastWriteTime;
-        private void loadDoumentFromFile()
+        private void loadDocumentFromFile()
         {
             try
             {
@@ -198,7 +198,7 @@ namespace CodeEditor2.Data
         }
 
 
-        public override CodeEditor.DocumentParser CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum parseMode)
+        public override CodeEditor.DocumentParser? CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum parseMode)
         {
             return null;
         }
@@ -208,9 +208,9 @@ namespace CodeEditor2.Data
             return null;
         }
 
-        public virtual List<AutocompleteItem> GetAutoCompleteItems(int index, out string cantidateWord)
+        public virtual List<AutocompleteItem> GetAutoCompleteItems(int index, out string candidateWord)
         {
-            cantidateWord = null;
+            candidateWord = null;
             return null;
         }
         public virtual List<CodeEditor.ToolItem> GetToolItems(int index)

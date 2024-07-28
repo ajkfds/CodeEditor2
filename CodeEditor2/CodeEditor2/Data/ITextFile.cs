@@ -31,7 +31,7 @@ namespace CodeEditor2.Data
         void ParseHierarchy(Action<ITextFile> action);
 
         NavigatePanel.NavigatePanelNode NavigatePanelNode { get; }
-        CodeEditor.DocumentParser CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum parseMode);
+        CodeEditor.DocumentParser? CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum parseMode);
 
         // textFile
         CodeEditor.CodeDocument CodeDocument { get; }

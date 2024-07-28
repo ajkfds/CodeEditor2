@@ -44,16 +44,15 @@ namespace CodeEditor2.CodeEditor
                 return;
             }
 
-            codeDocument.CopyColorMarkFrom(parser.Document);
-
             if (parser.ParsedDocument != null)
             {
                 parser.TextFile.AcceptParsedDocument(parser.ParsedDocument);
-                System.Diagnostics.Debug.Print("# BackgroundParser.AcceptParsedDocument "+parser.TextFile.ID);
+                System.Diagnostics.Debug.Print("# BackgroundParser.AcceptParsedDocument " + parser.TextFile.ID);
             }
+            codeDocument.CopyColorMarkFrom(parser.Document);
 
             // update current view
-            codeView._textEditor.TextArea.TextView.Redraw();
+            Controller.CodeEditor.Refresh();
             Controller.MessageView.Update(codeView.TextFile.ParsedDocument);
         }
 
@@ -62,7 +61,7 @@ namespace CodeEditor2.CodeEditor
         {
             //            if (Global.StopParse) return;
             if (codeView.TextFile == null) return;
-            Controller.AppendLog("### CodeViewParser.EntryParse ID :" + codeView.TextFile.ID+" "+DateTime.Now.ToShortTimeString());
+            Controller.AppendLog("### CodeViewParser.EntryParse ID :" + codeView.TextFile.ID + " " + DateTime.Now.ToShortTimeString());
             backGroundParser.EntryParse(codeView.TextFile);
         }
 

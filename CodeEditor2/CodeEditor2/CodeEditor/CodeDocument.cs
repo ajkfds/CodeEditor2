@@ -30,6 +30,9 @@ namespace CodeEditor2.CodeEditor
             initialize();
         }
 
+        public static int tagCount=0;
+        public string tag;
+
         public CodeDocument(Data.TextFile textFile, bool textOnly) : this()
         {
             textDocument = new TextDocument();
@@ -64,6 +67,16 @@ namespace CodeEditor2.CodeEditor
             textDocument.TextChanged += TextDocument_TextChanged;
             textDocument.Changed += TextDocument_Changed;
             textDocument.Changing += TextDocument_Changing;
+
+            tag = "document" + tagCount.ToString();
+            if (tagCount == int.MaxValue)
+            {
+                tagCount = 0;
+            }
+            else
+            {
+                tagCount++;
+            }
         }
 
         public Marks Marks;
@@ -375,7 +388,10 @@ namespace CodeEditor2.CodeEditor
         public void CopyColorMarkFrom(CodeDocument document)
         {
             TextColors.LineInformation = document.TextColors.LineInformation;
-            Marks.marks = document.Marks.marks;
+            lock (Marks.marks)
+            {
+                Marks.marks = document.Marks.marks;
+            }
         }
         public void CopyFrom(CodeDocument document)
         {

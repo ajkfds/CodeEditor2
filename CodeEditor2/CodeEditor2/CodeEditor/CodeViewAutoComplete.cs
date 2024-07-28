@@ -30,16 +30,12 @@ namespace CodeEditor2.CodeEditor
             }
             char prevChar = codeView.CodeDocument.GetCharAt(prevIndex);
 
-
             string candidateWord;
-           List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out candidateWord);
+            List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out candidateWord);
             System.Diagnostics.Debug.Print("## GetAutoCompleteItems try");
-            if (candidateWord == null) return;
+            if (candidateWord == "") return;
 
             System.Diagnostics.Debug.Print("## GetAutoCompleteItems "+candidateWord+","+items.Count);
-
-            //System.Diagnostics.Debug.Print("## checkAutoComplete " + cantidateWord + " " + cantidateWord.Length);
-            //System.Diagnostics.Debug.Print("## checkAutoCompleteCar _" + codeView.TextFile.CodeDocument.GetCharAt(prevIndex) + "_" + prevIndex.ToString());
 
             if (codeView._completionWindow != null)
             {

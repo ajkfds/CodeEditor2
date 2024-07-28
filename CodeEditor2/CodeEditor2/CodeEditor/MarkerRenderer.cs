@@ -25,9 +25,12 @@ namespace CodeEditor2.CodeEditor
         public void SetMarks(List<CodeDrawStyle.MarkDetail> marks)
         {
             this.marks.Clear();
-            foreach(var mark in marks)
+            lock (marks)
             {
-                this.marks.Add(Mark.CloneFrom(mark));
+                foreach (var mark in marks)
+                {
+                    this.marks.Add(Mark.CloneFrom(mark));
+                }
             }
         }
 

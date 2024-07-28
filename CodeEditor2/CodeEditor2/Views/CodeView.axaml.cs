@@ -58,24 +58,26 @@ namespace CodeEditor2.Views
 
             codeViewPopup = new CodeViewPopup(this);
             codeViewParser = new CodeViewParser(this);
-//            Highlighter = new Highlighter(this);
             codeViewPopupMenu = new CodeViewPopupMenu(this);
             codeViewAutoComplete = new CodeViewAutoComplete(this);
 
             _textEditor = Editor;
+
+            // initialize
             _textEditor.HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Visible;
             _textEditor.Background = Brushes.Transparent;
             _textEditor.ShowLineNumbers = true;
-
             _textEditor.Background = new SolidColorBrush(Color.FromRgb(10, 10, 10));
-
-            _textEditor.Options.ShowTabs = true;
             _textEditor.Options.ShowSpaces = true;
             _textEditor.Options.EnableImeSupport = true;
             _textEditor.Options.ShowEndOfLine = true;
-            _textEditor.Options.IndentationSize = 1;
-            //            _textEditor.FontStyle.li
+            _textEditor.TextArea.Background = this.Background;
 
+
+            _textEditor.Options.ShowBoxForControlCharacters = true;
+            _textEditor.Options.ColumnRulerPositions = new List<int>() { 80, 100 };
+
+            // default context menu
             _textEditor.ContextMenu = new ContextMenu
             {
                 ItemsSource = new List<MenuItem>
@@ -85,21 +87,20 @@ namespace CodeEditor2.Views
                     new MenuItem { Header = "Cut", InputGesture = new KeyGesture(Key.X, KeyModifiers.Control) }
                 }
             };
-            _textEditor.TextArea.Background = this.Background;
 
+            // tab indent is no supported by AvaloniaEdit. So I've forked AvaloniaEdit to implement fixed indent size.
+            // tab indent is implemented in Avalonia Edit. 
+            _textEditor.Options.ShowTabs = true;
+            _textEditor.Options.IndentationSize = 1;
+
+            // event setup
             _textEditor.TextArea.TextEntered += textEditor_TextArea_TextEntered;
             _textEditor.TextArea.TextEntering += textEditor_TextArea_TextEntering;
             _textEditor.TextArea.KeyDown += TextArea_KeyDown;
             _textEditor.TextArea.KeyUp += TextArea_KeyUp;
-
-
             _textEditor.TextArea.DocumentChanged += TextArea_DocumentChanged;
             _textEditor.TextArea.PointerMoved += TextArea_PointerMoved;
             _textEditor.Options.HighlightCurrentLine = true;
-
-            _textEditor.Options.ShowBoxForControlCharacters = true;
-            _textEditor.Options.ColumnRulerPositions = new List<int>() { 80, 100 };
-//            _textEditor.TextArea.IndentationStrategy = new AvaloniaEdit.Indentation.CSharp.CSharpIndentationStrategy(_textEditor.Options);
             _textEditor.TextArea.Caret.PositionChanged += Caret_PositionChanged;
             _textEditor.TextArea.SelectionChanged += TextArea_SelectionChanged;
             _textEditor.TextArea.RightClickMovesCaret = true;
@@ -113,6 +114,7 @@ namespace CodeEditor2.Views
 
             PopupMenu.Selected += PopupMenu_Selected;
 
+            // textmate
             //            _textEditor.TextArea.TextView.ElementGenerators.Add(_generator);
             //_registryOptions = new TextMateSharp.Grammars.RegistryOptions(
             //    (ThemeName)_currentTheme);
@@ -127,15 +129,16 @@ namespace CodeEditor2.Views
             //            _syntaxModeCombo.SelectionChanged += SyntaxModeCombo_SelectionChanged;
 
             //            string scopeName = _registryOptions.GetScopeByLanguageId(csharpLanguage.Id);
+            //            _textMateInstallation.SetGrammar(_registryOptions.GetScopeByLanguageId(csharpLanguage.Id));
 
+            // initial document
             _textEditor.Document = new TextDocument(
                 "// Press Ctrl + Space to force open auto-complete" + Environment.NewLine +
                 "// Press Shit + Space to open quick tool menu" + Environment.NewLine);
-            //+ ResourceLoader.LoadSampleFile(scopeName));
-            //            _textMateInstallation.SetGrammar(_registryOptions.GetScopeByLanguageId(csharpLanguage.Id));
 
             _textEditor.TextArea.TextView.LineTransformers.Add(new CodeDocumentColorTransformer());
 
+            // Wheel Scroll Implementation
             this.AddHandler(PointerWheelChangedEvent, (o, i) =>
             {
                 if (i.KeyModifiers != KeyModifiers.Control) return;
@@ -148,13 +151,13 @@ namespace CodeEditor2.Views
             timer.Tick += Timer_Tick;
             timer.Start();
         }
+
         internal CodeEditor.HighlightRenderer _highlightRenderer;
         internal CodeEditor.MarkerRenderer _markerRenderer;
         internal CodeViewPopup codeViewPopup;
         internal CodeViewParser codeViewParser;
         internal CodeViewPopupMenu codeViewPopupMenu;
         internal CodeViewAutoComplete codeViewAutoComplete;
-//        public Highlighter Highlighter;
 
         private void TextArea_KeyUp(object? sender, KeyEventArgs e)
         {
@@ -255,6 +258,14 @@ namespace CodeEditor2.Views
         public void Redraw()
         {
             _textEditor.TextArea.TextView.Redraw();
+        }
+
+        public void UpdateMarks()
+        {
+            _markerRenderer.ClearMark();
+
+            if (TextFile == null) return;
+            _markerRenderer.SetMarks(TextFile.CodeDocument.Marks.marks);
         }
 
         private bool skipEvents = false;
@@ -368,6 +379,7 @@ namespace CodeEditor2.Views
 
         private void CodeDocument_Changing(object? sender, DocumentChangeEventArgs e)
         {
+            // fix mark position on text edit
             _markerRenderer.OnTextEdit(e);
         }
 
@@ -452,11 +464,11 @@ namespace CodeEditor2.Views
         {
             if (skipEvents) return;
             codeViewPopupMenu.TextEntered(sender, e);
-            if (e.Text == "\n")
-            {
-                codeViewParser.EntryParse();
-                return;
-            }
+            //if (e.Text == "\n")
+            //{
+            //    codeViewParser.EntryParse();
+            //    return;
+            //}
             codeViewAutoComplete.CheckAutoComplete();
             TextFile?.TextEntered(e);
         }

@@ -78,7 +78,7 @@ namespace CodeEditor2.CodeEditor
 
         #region ToolTip handling
 
-        private void CompletionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CompletionList_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             if (_toolTipContent == null) return;
 
@@ -127,7 +127,7 @@ namespace CodeEditor2.CodeEditor
 
         #endregion
 
-        private void CompletionList_InsertionRequested(object sender, EventArgs e)
+        private void CompletionList_InsertionRequested(object? sender, EventArgs e)
         {
             Hide();
             // The window must close before Complete() is called.
@@ -172,13 +172,13 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        private void TextArea_PreviewTextInput(object sender, TextInputEventArgs e)
+        private void TextArea_PreviewTextInput(object? sender, TextInputEventArgs e)
         {
             e.Handled = RaiseEventPair(this, null, TextInputEvent,
                                        new TextInputEventArgs { Text = e.Text });
         }
 
-        private void TextArea_MouseWheel(object sender, PointerWheelEventArgs e)
+        private void TextArea_MouseWheel(object? sender, PointerWheelEventArgs e)
         {
             e.Handled = RaiseEventPair(GetScrollEventTarget(),
                                        null, PointerWheelChangedEvent, e);
@@ -208,7 +208,7 @@ namespace CodeEditor2.CodeEditor
         /// </summary>
         public bool CloseWhenCaretAtBeginning { get; set; }
 
-        private void CaretPositionChanged(object sender, EventArgs e)
+        private void CaretPositionChanged(object? sender, EventArgs e)
         {
             var offset = TextArea.Caret.Offset;
             if (offset == StartOffset)
@@ -238,9 +238,9 @@ namespace CodeEditor2.CodeEditor
                 var document = TextArea.Document;
                 if (document != null)
                 {
-                    string cantidateWord;
-                    List<AutocompleteItem> items = Global.codeView.TextFile.GetAutoCompleteItems(Global.codeView._textEditor.CaretOffset, out cantidateWord);
-                    CompletionList.SelectItem(cantidateWord);
+                    string candidateWord;
+                    List<AutocompleteItem> items = Global.codeView.TextFile.GetAutoCompleteItems(Global.codeView._textEditor.CaretOffset, out candidateWord);
+                    CompletionList.SelectItem(candidateWord);
                     //                    CompletionList.SelectItem(document.GetText(StartOffset, offset - StartOffset));
 
                     if (CompletionList.ListBox.ItemCount == 0) IsVisible = false;
