@@ -39,7 +39,7 @@ public partial class MainView : UserControl
     }
     private void Timer_Tick(object? sender, EventArgs e)
     {
-        // should launch afer mainwindow shown
+        // should launch after main window shown
         timer.Stop();
         // read setup file
 

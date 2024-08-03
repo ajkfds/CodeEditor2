@@ -6,15 +6,25 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor
 {
-    public class ToolItem : PopupMenuItem
+    public class ToolItem
     {
-        public ToolItem(string text) : base(text)
+        public ToolItem(string text)
         {
+            this.text = text;
+        }
+        string text;
+
+        public virtual void Apply()
+        {
+
         }
 
-        public virtual void Apply(CodeDocument codeDocument)
+        public virtual PopupMenuItem CreatePopupMenuItem()
         {
-
+            PopupMenuItem popupMenuItem = new PopupMenuItem(text);
+            popupMenuItem.Selected += new Action(()=> { Apply(); });
+            return popupMenuItem;
         }
+
     }
 }

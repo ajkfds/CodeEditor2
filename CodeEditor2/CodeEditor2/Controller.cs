@@ -366,6 +366,12 @@ namespace CodeEditor2
             {
                 Global.mainView.TabControl0.Items.Remove(tabItem);
             }
+
+            public static void SelectTab(Avalonia.Controls.TabItem tabItem)
+            {
+                if (Global.mainView.TabControl0.SelectedItem == tabItem) return;
+                Global.mainView.TabControl0.SelectedItem = tabItem;
+            }
         }
 
 

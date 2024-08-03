@@ -1,5 +1,8 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Media;
+using AvaloniaEdit.CodeCompletion;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Editing;
 using AvaloniaEdit.Utils;
 using HarfBuzzSharp;
 using SkiaSharp;
@@ -12,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor
 {
-    public class AutocompleteItem : AvaloniaEdit.CodeCompletion.ICompletionData
+    public class AutocompleteItem
     {
         public AutocompleteItem(string text, byte colorIndex, Avalonia.Media.Color color)
         {
@@ -23,18 +26,10 @@ namespace CodeEditor2.CodeEditor
 
         public void Clean()
         {
-            textBlock = null;
         }
 
-        public IImage? Image => null;
-        private TextBlock? textBlock = null;
 
         // Use this property if you want to show a fancy UIElement in the list.
-        public object? Content => textBlock;// Text;
-
-        public object Description => "";
-
-        public double Priority { get; } = 0;
 
         public void Complete(AvaloniaEdit.Editing.TextArea textArea, AvaloniaEdit.Document.ISegment completionSegment,
             EventArgs insertionRequestEventArgs)
@@ -54,14 +49,25 @@ namespace CodeEditor2.CodeEditor
         public void Assign(CodeDocument codeDocument)
         {
             this.codeDocument = codeDocument;
-            textBlock = new TextBlock();
-            textBlock.Text = Text;
-            textBlock.FontSize = 10;
-            textBlock.Foreground = new SolidColorBrush(Color);
         }
 
-        //private ajkControls.Primitive.IconImage icon = null;
-        //private ajkControls.Primitive.IconImage.ColorStyle iconColorStyle;
+
+        // create item view object to avoid Avalonia Exception
+        // ICompletionData re-use will cause visual tree exception
+        public AutoCompleteItemView CreateItemView()
+        {
+            AutoCompleteItemView itemView = new AutoCompleteItemView();
+            itemView.textBlock = new TextBlock();
+            itemView.textBlock.Text = Text;
+            itemView.textBlock.FontSize = 10;
+            itemView.textBlock.Foreground = new SolidColorBrush(Color);
+
+            itemView.Text = Text;
+
+            itemView.Completed = new Action<TextArea, ISegment, EventArgs>((x, y, z) => { Complete(x, y, z); });
+
+            return itemView;
+        }
 
         private string text;
         public string Text { get { return text; } }
@@ -104,6 +110,27 @@ namespace CodeEditor2.CodeEditor
                 CodeEditor2.Controller.CodeEditor.SetCaretPosition( headIndex + Text.Length);
             }
             Global.codeView.codeViewPopupMenu.AfterAutoCompleteHandled();
+        }
+
+        public class AutoCompleteItemView : AvaloniaEdit.CodeCompletion.ICompletionData
+        {
+
+            public object? Content => textBlock;// Text;
+
+            public string Text { get; set; }
+            
+            public object Description => "";
+
+            public double Priority { get; } = 0;
+
+            public IImage? Image => null;
+            public TextBlock? textBlock = null;
+            public Action<TextArea, ISegment, EventArgs> Completed;
+
+            public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
+            {
+                if (Completed != null) Completed(textArea, completionSegment, insertionRequestEventArgs);
+            }
         }
 
     }

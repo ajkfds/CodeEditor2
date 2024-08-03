@@ -156,7 +156,7 @@ namespace CodeEditor2.CodeEditor
 
             foreach(var item in CompletionList.ListBox.Items)
             {
-                AutocompleteItem aItem = item as AutocompleteItem;
+                AutocompleteItem? aItem = item as AutocompleteItem;
                 if (aItem != null) aItem.Clean(); 
             }
             base.DetachEvents();

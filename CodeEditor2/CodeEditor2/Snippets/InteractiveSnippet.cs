@@ -15,9 +15,12 @@ namespace CodeEditor2.Snippets
 
         }
 
-        public override void Apply(CodeEditor.CodeDocument codeDocument)
+        public override void Apply()
         {
-            document = codeDocument;
+            Data.TextFile? file = CodeEditor2.Controller.CodeEditor.GetTextFile();
+            if (file == null) return;
+
+            document = file.CodeDocument;
             Controller.CodeEditor.StartInteractiveSnippet(this);
             Controller.CodeEditor.Refresh();
         }

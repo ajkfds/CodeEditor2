@@ -17,10 +17,10 @@ namespace CodeEditor2.CodeEditor
             Padding = new Avalonia.Thickness(0, 0, 2, 2);
             Margin = new Avalonia.Thickness(0, 0, 0, 0);
         }
-
+        public Action Selected;
         public virtual void OnSelected()
         {
-
+            if (Selected != null) Selected();
         }
     }
 }

@@ -41,11 +41,13 @@ namespace CodeEditor2.CodeEditor
             {
                 if (codeView._completionWindow.CompletionList._listBox.ItemCount == 0)
                 {
+                    items.Clear();
                     codeView._completionWindow.Close();
                     return;
                 }
                 if (items == null || candidateWord == null || (candidateWord == "" & prevChar != '.'))
                 {
+                    items.Clear();
                     codeView._completionWindow.Close();
                     return;
                 }
@@ -68,7 +70,7 @@ namespace CodeEditor2.CodeEditor
                     foreach (AutocompleteItem item in items)
                     {
                         item.Assign(codeView.CodeDocument);
-                        data.Add(item);
+                        data.Add(item.CreateItemView());
                     }
                     codeView._completionWindow.StartOffset = prevIndex;
                 }

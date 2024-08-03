@@ -180,8 +180,13 @@ namespace CodeEditor2.Views
         {
             if (skipEvents) return;
             if (CodeDocument == null) return;
+
+            // update caret position in CodeDocument
+            // ( all code CodeDocument must have it's unique caret position
+            //   to recover its caret position when th document selected after deselect )
             CodeDocument.caretIndex = _textEditor.TextArea.Caret.Offset;
 
+            // entry code parse if caret line changed
             int caretLine = _textEditor.TextArea.Caret.Line;
             ulong version = CodeDocument.Version;
             if (prevVersion != version && caretLine != prevCaretLine)
@@ -189,18 +194,19 @@ namespace CodeEditor2.Views
                 prevVersion = version;
                 codeViewParser.EntryParse();
             }
+
+            // store caretLine
             prevCaretLine = caretLine;
         }
 
 
         private void TextArea_SelectionChanged(object? sender, EventArgs e)
         {
-            // mirror selection properties to CodeDocument
-
             if (skipEvents) return;
             if (CodeDocument == null) return;
             if (_textEditor.TextArea.Selection.Segments.Count() < 1) return;
 
+            // mirror selection properties to CodeDocument
             SelectionSegment segment;
             segment = _textEditor.TextArea.Selection.Segments.First();
 
@@ -212,15 +218,15 @@ namespace CodeEditor2.Views
         }
 
         // Called from CodeDocument. Update CodeDocument Index change to textEditor
-        private void CodeDocument_CaretChanged(CodeDocument codeDocument)
-        {
-            if (skipEvents) return;
-            if (CodeDocument != codeDocument) return;
+        //private void CodeDocument_CaretChanged(CodeDocument codeDocument)
+        //{
+        //    if (skipEvents) return;
+        //    if (CodeDocument != codeDocument) return;
 
-            // changed by CodeDocument Code
-            if (_textEditor.CaretOffset == codeDocument.CaretIndex) return;
-            _textEditor.CaretOffset = codeDocument.CaretIndex;
-        }
+        //    // changed by CodeDocument Code
+        //    if (_textEditor.CaretOffset == codeDocument.CaretIndex) return;
+        //    _textEditor.CaretOffset = codeDocument.CaretIndex;
+        //}
 
         public void SetCaretPosition(int index)
         {
@@ -246,11 +252,11 @@ namespace CodeEditor2.Views
         private void TextArea_DocumentChanged(object? sender, DocumentChangedEventArgs e)
         {
             if (skipEvents) return;
-            //            System.Diagnostics.Debug.Print("## TextArea_DocumentChanged");
         }
 
         private void Timer_Tick(object? sender, EventArgs e)
         {
+            // Get background parser Result
             codeViewParser.Timer_Tick(sender, e);
         }
 
@@ -262,6 +268,7 @@ namespace CodeEditor2.Views
 
         public void UpdateMarks()
         {
+            // copy mark fro CodeDocument to Renderer
             _markerRenderer.ClearMark();
 
             if (TextFile == null) return;
@@ -272,28 +279,18 @@ namespace CodeEditor2.Views
 
         public void SetTextFile(Data.TextFile textFile,bool parseEntry)
         {
+            System.Diagnostics.Debug.Print("## SetTextFile");
+
             skipEvents = true;
 
-            System.Diagnostics.Debug.Print("## SetTextFile");
+            if (codeViewPopupMenu.Snippet != null) codeViewPopupMenu.AbortInteractiveSnippet();
+            if (_completionWindow != null && _completionWindow.IsVisible) _completionWindow.Hide();
+            if (codeViewPopupMenu.IsOpened) codeViewPopupMenu.HidePopupMenu();
+
             if(CodeDocument != null)
             {
                 detachFromCodeDocument();
             }
-
-            if (textFile == null)
-            {
-//                Global.mainForm.editorPage.CodeEditor.SetTextFile(null);
-//                Global.mainForm.mainTab.TabPages[0].Text = "-";
-            }
-            else
-            {
-                TextFile = textFile;
-                attachToCodeDocument();
-            }
-
-            if (codeViewPopupMenu.Snippet != null) codeViewPopupMenu.AbortInteractiveSnippet();
-            if (_completionWindow !=null && _completionWindow.IsVisible) _completionWindow.Hide();
-            if (codeViewPopupMenu.IsOpened) codeViewPopupMenu.HidePopupMenu();
 
             if (textFile == null || textFile.CodeDocument == null)
             {
@@ -301,18 +298,22 @@ namespace CodeEditor2.Views
                 return;
             }
 
-            if(textFile != null) textFile.AcceptParsedDocument(textFile.ParsedDocument);
-            
+            TextFile = textFile;
+
+            // restore caret position
+            _textEditor.CaretOffset = textFile.CodeDocument.CaretIndex;
+
+            // update ParseDocument Result to current Text
+            textFile.AcceptParsedDocument(textFile.ParsedDocument);
+
             ScrollToCaret();
-            if (textFile != null)
-            {
-                Controller.MessageView.Update(textFile.ParsedDocument);
-                _textEditor.CaretOffset = textFile.CodeDocument.CaretIndex;
-            }
+
             if (parseEntry) codeViewParser.EntryParse();
+            attachToCodeDocument();
 
             skipEvents = false;
 
+            Controller.Tabs.SelectTab(Global.mainView.EditorTabItem);
             Controller.CodeEditor.Refresh();
         }
 
@@ -408,9 +409,9 @@ namespace CodeEditor2.Views
 
         //        public List<PopupMenuItem> PopupMenuItems = new List<PopupMenuItem>();
 
-        public void OpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> cantidates)
+        public void OpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> candidates)
         {
-            codeViewPopupMenu.OpenCustomSelection(cantidates);
+            codeViewPopupMenu.OpenCustomSelection(candidates);
         }
 
 

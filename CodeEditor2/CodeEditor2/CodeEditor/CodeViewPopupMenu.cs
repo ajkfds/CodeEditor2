@@ -28,7 +28,7 @@ namespace CodeEditor2.CodeEditor
 
         public List<PopupMenuItem> PopupMenuItems = new List<PopupMenuItem>();
 
-        public void OpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> cantidates)
+        public void OpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> candidates)
         {
             System.Diagnostics.Debug.Print("## OpenCustomSelection");
             PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
@@ -36,31 +36,25 @@ namespace CodeEditor2.CodeEditor
             if (flyout.IsOpen) return;
             if (codeView.TextFile == null) return;
 
-            //if (cantidates.Count == 0)
-            //{
-            //    HidePopupMenu();
-            //    return;
-            //}
-
-            TransformedBounds? tbound = Global.codeView.Editor.GetTransformedBounds();
-            if (tbound == null) return;
-            TransformedBounds transformedBound = (TransformedBounds)tbound;
-            var carletRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
+           TransformedBounds? tBound = Global.codeView.Editor.GetTransformedBounds();
+            if (tBound == null) return;
+            TransformedBounds transformedBound = (TransformedBounds)tBound;
+            var caretRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
 
 
             Avalonia.Point position = transformedBound.Clip.Position;
 
-            Avalonia.PixelPoint screenPosition = new Avalonia.PixelPoint(
-                Global.mainWindow.Position.X + (int)(transformedBound.Clip.Position.X * Global.mainWindow.DesktopScaling),
-                Global.mainWindow.Position.Y + (int)(transformedBound.Clip.Position.Y * Global.mainWindow.DesktopScaling)
-                );
+            //Avalonia.PixelPoint screenPosition = new Avalonia.PixelPoint(
+            //    Global.mainWindow.Position.X + (int)(transformedBound.Clip.Position.X * Global.mainWindow.DesktopScaling),
+            //    Global.mainWindow.Position.Y + (int)(transformedBound.Clip.Position.Y * Global.mainWindow.DesktopScaling)
+            //    );
 
             PopupMenuItems.Clear();
-            foreach (ToolItem item in cantidates) { PopupMenuItems.Add(item); }
+            foreach (ToolItem item in candidates) { PopupMenuItems.Add(item.CreatePopupMenuItem()); }
 
             flyout.Placement = PlacementMode.AnchorAndGravity;
-            flyout.VerticalOffset = carletRect.Top;
-            flyout.HorizontalOffset = carletRect.Left;
+            flyout.VerticalOffset = caretRect.Top;
+            flyout.HorizontalOffset = caretRect.Left;
             flyout.PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight;
             flyout.PlacementAnchor = Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.TopLeft;
 
@@ -96,13 +90,13 @@ namespace CodeEditor2.CodeEditor
                 return;
             }
 
-            //TransformedBounds? tbound = Global.codeView.Editor.GetTransformedBounds();
-            //if (tbound == null) return;
-            //TransformedBounds transformedBound = (TransformedBounds)tbound;
-            var carletRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
+            //TransformedBounds? tBound = Global.codeView.Editor.GetTransformedBounds();
+            //if (tBound == null) return;
+            //TransformedBounds transformedBound = (TransformedBounds)tBound;
+            var caretRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
 
 
-            Avalonia.Point position = carletRect.Position;// transformedBound.Clip.Position;
+            Avalonia.Point position = caretRect.Position;// transformedBound.Clip.Position;
             Avalonia.Vector scroll = codeView._textEditor.TextArea.TextView.ScrollOffset;
             //Avalonia.PixelPoint screenPosition = new Avalonia.PixelPoint(
             //    Global.mainWindow.Position.X + (int)(position.X * Global.mainWindow.DesktopScaling),
@@ -110,7 +104,7 @@ namespace CodeEditor2.CodeEditor
             //    );
 
             PopupMenuItems.Clear();
-            foreach (ToolItem item in tools) { PopupMenuItems.Add(item); }
+            foreach (ToolItem item in tools) { PopupMenuItems.Add(item.CreatePopupMenuItem()); }
 
             flyout.Placement = PlacementMode.AnchorAndGravity;
             flyout.VerticalOffset = position.Y-scroll.Y;
@@ -145,19 +139,21 @@ namespace CodeEditor2.CodeEditor
         public void PopupMenu_Selected(PopupMenuItem popUpMenuItem)
         {
             System.Diagnostics.Debug.Print("## PopupMenu_Selected");
-            if (popUpMenuItem is ToolItem)
-            {
-                if (codeView.CodeDocument == null) return;
-                (popUpMenuItem as ToolItem)?.Apply(codeView.CodeDocument);
 
-                //InteractiveSnippet? snippet = popUpMenuItem as InteractiveSnippet;
-                //if (snippet == null) return;
-                //Snippet = snippet;
-            }
-            else
-            {
+//            ToolItem? toolItem = popUpMenuItem as ToolItem;
+            //if (popUpMenuItem is ToolItem)
+            //{
+            //    if (codeView.CodeDocument == null) return;
+            //    (popUpMenuItem as ToolItem)?.Apply(codeView.CodeDocument);
+
+            //    //InteractiveSnippet? snippet = popUpMenuItem as InteractiveSnippet;
+            //    //if (snippet == null) return;
+            //    //Snippet = snippet;
+            //}
+            //else
+            //{
                 popUpMenuItem.OnSelected();
-            }
+            //}
         }
 
         public Snippets.InteractiveSnippet Snippet = null;

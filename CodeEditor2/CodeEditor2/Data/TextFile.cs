@@ -93,7 +93,7 @@ namespace CodeEditor2.Data
         }
 
 
-        protected CodeEditor.CodeDocument document = null;
+        protected CodeEditor.CodeDocument? document = null;
 
         public virtual CodeEditor.CodeDocument CodeDocument
         {
@@ -107,6 +107,7 @@ namespace CodeEditor2.Data
                 {
                     loadedFileLastWriteTime = null;
                 }
+                if (document == null) throw new Exception();
                 return document;
             }
             protected set

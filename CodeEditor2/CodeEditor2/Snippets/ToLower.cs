@@ -12,8 +12,12 @@ namespace CodeEditor2.Snippets
         {
         }
 
-        public override void Apply(CodeEditor.CodeDocument codeDocument)
+        public override void Apply()
         {
+            Data.TextFile? file = CodeEditor2.Controller.CodeEditor.GetTextFile();
+            if (file == null) return;
+            CodeEditor.CodeDocument codeDocument = file.CodeDocument;
+
             string replaceText = codeDocument.CreateString(codeDocument.SelectionStart, codeDocument.SelectionLast - codeDocument.SelectionStart).ToLower();
 
             codeDocument.Replace(codeDocument.SelectionStart, codeDocument.SelectionLast - codeDocument.SelectionStart, 0, replaceText);

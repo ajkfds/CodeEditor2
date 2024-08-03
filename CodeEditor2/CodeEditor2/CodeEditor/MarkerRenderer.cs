@@ -9,6 +9,9 @@ using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 namespace CodeEditor2.CodeEditor
 {
+    // mark renderer for AvaloniaEdit
+    // attached to TextEditor and handle mark rendering
+
     public class MarkerRenderer : IBackgroundRenderer
     {
         public MarkerRenderer()
