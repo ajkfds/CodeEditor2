@@ -1,4 +1,5 @@
 ﻿using Avalonia.Input;
+using CodeEditor2.CodeEditor.PopupMenu;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using static CodeEditor2.Controller;
 
 namespace CodeEditor2.Snippets
 {
-    public class InteractiveSnippet : CodeEditor.ToolItem
+    public class InteractiveSnippet : ToolItem
     {
         public InteractiveSnippet(string text) : base(text)
         {

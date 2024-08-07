@@ -12,6 +12,7 @@ using AvaloniaEdit.Rendering;
 using AvaloniaEdit;
 using ShimSkiaSharp;
 using System.Net.Http.Headers;
+using CodeEditor2.CodeEditor.TextDecollation;
 
 namespace CodeEditor2.CodeEditor
 {

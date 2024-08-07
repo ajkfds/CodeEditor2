@@ -1,4 +1,4 @@
-﻿using CodeEditor2.CodeEditor;
+﻿using CodeEditor2.CodeEditor.Parser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +44,7 @@ namespace CodeEditor2.Tools
 
         private void parse(Data.TextFile textFile)
         {
-            CodeEditor.DocumentParser parser = textFile.CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum.LoadParse);
+            DocumentParser parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.LoadParse);
             if (parser == null)
             {
                 textFile.CodeDocument.LockThreadToUI();

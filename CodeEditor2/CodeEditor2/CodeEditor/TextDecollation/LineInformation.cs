@@ -6,7 +6,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.TextDecollation
 {
     public class LineInformation
     {
@@ -15,11 +15,11 @@ namespace CodeEditor2.CodeEditor
 
         public class Color
         {
-            public Color(int offset,int length,Avalonia.Media.Color color)
+            public Color(int offset, int length, Avalonia.Media.Color color)
             {
-                this.Offset = offset;
-                this.Length = length;
-                this.DrawColor = color;
+                Offset = offset;
+                Length = length;
+                DrawColor = color;
             }
             public int Offset;
             public int Length;

@@ -14,7 +14,7 @@ using AvaloniaEdit.Editing;
 using AvaloniaEdit.Folding;
 using AvaloniaEdit.Rendering;
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.PopupHint
 {
     public class CodeViewPopup
     {
@@ -72,15 +72,15 @@ namespace CodeEditor2.CodeEditor
                 ToolTip.SetIsOpen(codeView.Editor, false);
                 return;
             }
-//            ToolTip.SetIsOpen(codeView.Editor, false);
-//            ToolTip.SetIsOpen(codeView.Editor, true);
+            //            ToolTip.SetIsOpen(codeView.Editor, false);
+            //            ToolTip.SetIsOpen(codeView.Editor, true);
             codeView.PopupColorLabel.Clear();
             codeView.PopupColorLabel.Add(pItem);
 
-//            ToolTip.SetIsOpen(codeView.Editor, false); // close once to update pop-up window position
+            //            ToolTip.SetIsOpen(codeView.Editor, false); // close once to update pop-up window position
             if (pItem.GetItems().Count != 0)
             {
-//                ToolTip.SetIsOpen(codeView.Editor, false);
+                //                ToolTip.SetIsOpen(codeView.Editor, false);
                 ToolTip.SetIsOpen(codeView.Editor, true);
             }
         }

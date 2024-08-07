@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Avalonia.Media;
 using AjkAvaloniaLibs.Contorls;
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.PopupHint
 {
     public class PopupItem : ColorLabel
     {
@@ -16,7 +16,7 @@ namespace CodeEditor2.CodeEditor
 
         public PopupItem(string text, Color color)
         {
-            this.AppendText(text, color);
+            AppendText(text, color);
         }
     }
 

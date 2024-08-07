@@ -4,17 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.Parser
 {
     public class DocumentParser : IDisposable
     {
         protected DocumentParser() { }
         public DocumentParser(Data.TextFile textFile, ParseModeEnum parseMode)
         {
-            this.document = new CodeDocument(textFile);
-            this.document.CopyTextOnlyFrom(textFile.CodeDocument);
-            this.ParseMode = parseMode;
-            this.TextFile = textFile;
+            document = new CodeDocument(textFile);
+            document.CopyTextOnlyFrom(textFile.CodeDocument);
+            ParseMode = parseMode;
+            TextFile = textFile;
         }
 
         public void Dispose()

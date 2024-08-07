@@ -35,6 +35,11 @@ using System.Threading.Tasks;
 using Avalonia.VisualTree;
 using Avalonia.Rendering;
 using CodeEditor2.Data;
+using CodeEditor2.CodeEditor.PopupMenu;
+using CodeEditor2.CodeEditor.TextDecollation;
+using CodeEditor2.CodeEditor.CodeComplete;
+using CodeEditor2.CodeEditor.Parser;
+using CodeEditor2.CodeEditor.PopupHint;
 
 namespace CodeEditor2.Views
 {
@@ -44,7 +49,7 @@ namespace CodeEditor2.Views
 
         private FoldingManager? _foldingManager;
         private readonly TextMate.Installation? _textMateInstallation;
-        internal AutoCompleteWindow? _completionWindow;
+//        internal AutoCompleteWindow? _completionWindow;
         private OverloadInsightWindow? _insightWindow;
         private TextMateSharp.Grammars.RegistryOptions? _registryOptions;
 
@@ -59,7 +64,7 @@ namespace CodeEditor2.Views
             codeViewPopup = new CodeViewPopup(this);
             codeViewParser = new CodeViewParser(this);
             codeViewPopupMenu = new CodeViewPopupMenu(this);
-            codeViewAutoComplete = new CodeViewAutoComplete(this);
+            codeViewAutoComplete = new CodeComplete(this);
 
             _textEditor = Editor;
 
@@ -152,12 +157,12 @@ namespace CodeEditor2.Views
             timer.Start();
         }
 
-        internal CodeEditor.HighlightRenderer _highlightRenderer;
-        internal CodeEditor.MarkerRenderer _markerRenderer;
+        internal HighlightRenderer _highlightRenderer;
+        internal MarkerRenderer _markerRenderer;
         internal CodeViewPopup codeViewPopup;
         internal CodeViewParser codeViewParser;
         internal CodeViewPopupMenu codeViewPopupMenu;
-        internal CodeViewAutoComplete codeViewAutoComplete;
+        internal CodeComplete codeViewAutoComplete;
 
         private void TextArea_KeyUp(object? sender, KeyEventArgs e)
         {
@@ -284,7 +289,7 @@ namespace CodeEditor2.Views
             skipEvents = true;
 
             if (codeViewPopupMenu.Snippet != null) codeViewPopupMenu.AbortInteractiveSnippet();
-            if (_completionWindow != null && _completionWindow.IsVisible) _completionWindow.Hide();
+//            if (_completionWindow != null && _completionWindow.IsVisible) _completionWindow.Hide();
             if (codeViewPopupMenu.IsOpened) codeViewPopupMenu.HidePopupMenu();
 
             if(CodeDocument != null)
@@ -409,7 +414,7 @@ namespace CodeEditor2.Views
 
         //        public List<PopupMenuItem> PopupMenuItems = new List<PopupMenuItem>();
 
-        public void OpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> candidates)
+        public void OpenCustomSelection(List<ToolItem> candidates)
         {
             codeViewPopupMenu.OpenCustomSelection(candidates);
         }
@@ -443,7 +448,7 @@ namespace CodeEditor2.Views
             codeViewPopupMenu.TextEntering(sender, e);
 
 
-            if (e.Text.Length > 0 && _completionWindow != null)
+//            if (e.Text.Length > 0 && _completionWindow != null)
             {
                 //if (!char.IsLetterOrDigit(e.Text[0]))
                 //{
@@ -465,11 +470,6 @@ namespace CodeEditor2.Views
         {
             if (skipEvents) return;
             codeViewPopupMenu.TextEntered(sender, e);
-            //if (e.Text == "\n")
-            //{
-            //    codeViewParser.EntryParse();
-            //    return;
-            //}
             codeViewAutoComplete.CheckAutoComplete();
             TextFile?.TextEntered(e);
         }

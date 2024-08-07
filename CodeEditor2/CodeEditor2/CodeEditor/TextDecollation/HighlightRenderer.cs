@@ -9,7 +9,7 @@ using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.TextDecollation
 {
     internal class HighlightRenderer : IBackgroundRenderer
     {

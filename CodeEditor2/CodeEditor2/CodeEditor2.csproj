@@ -23,6 +23,11 @@
     <Compile Remove="CodeEditor\CodeDocumentMarkHandler.cs" />
   </ItemGroup>
 
+  
+  <ItemGroup>
+    <None Remove="CodeEditor\CompletionList.xaml" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />

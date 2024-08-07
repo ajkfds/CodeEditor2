@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CodeEditor2.CodeEditor.Parser;
 
 namespace CodeEditor2.Data
 {
@@ -227,7 +228,7 @@ namespace CodeEditor2.Data
             return node;
         }
 
-        public virtual CodeEditor.DocumentParser? CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum parseMode)
+        public virtual DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode)
         {
             return null;
         }

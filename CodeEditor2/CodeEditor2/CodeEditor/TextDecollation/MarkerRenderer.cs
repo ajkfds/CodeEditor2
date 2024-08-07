@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Avalonia.Media;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.TextDecollation
 {
     // mark renderer for AvaloniaEdit
     // attached to TextEditor and handle mark rendering
@@ -119,7 +119,7 @@ namespace CodeEditor2.CodeEditor
 
             }
         }
-        public class Mark : AvaloniaEdit.Document.TextSegment
+        public class Mark : TextSegment
         {
             public Color Color;
             public double DecorationWidth = 4;
@@ -163,7 +163,7 @@ namespace CodeEditor2.CodeEditor
 
             foreach (var result in marks.FindOverlappingSegments(viewStart, viewEnd - viewStart))
             {
-                MarkerRenderer.Mark? mark = result as MarkerRenderer.Mark;
+                Mark? mark = result as Mark;
                 if (mark == null) continue;
 
                 var geoBuilder = new BackGroundUnderlineGeometryBuilder();
@@ -174,7 +174,7 @@ namespace CodeEditor2.CodeEditor
                 switch (mark.Style)
                 {
                     case CodeDrawStyle.MarkDetail.MarkStyleEnum.DotLine:
-                        pen = new Pen(brush, mark.Thickness,DashStyle.Dash);
+                        pen = new Pen(brush, mark.Thickness, DashStyle.Dash);
                         break;
                     default:
                         pen = new Pen(brush, mark.Thickness);

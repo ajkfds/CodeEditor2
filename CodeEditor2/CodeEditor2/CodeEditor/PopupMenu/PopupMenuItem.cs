@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.PopupMenu
 {
     public class PopupMenuItem : TextBlock
     {

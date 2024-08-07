@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.Parser
 {
     public class BackroungParser
     {
@@ -16,24 +16,24 @@ namespace CodeEditor2.CodeEditor
 
         public void Run()
         {
-            thread = new System.Threading.Thread(new System.Threading.ThreadStart(run));
+            thread = new Thread(new ThreadStart(run));
             thread.Name = "BackGroundParser";
             thread.Start();
         }
 
         public void Terminate()
         {
-//            abortFlag = true;
+            //            abortFlag = true;
             //            thread.Abort();
         }
-//        private volatile bool abortFlag = false;
-        System.Threading.Thread thread;
+        //        private volatile bool abortFlag = false;
+        Thread thread;
 
         public void EntryParse(TextFile textFile)
         {
             lock (toBackgroundStock)
             {
-                System.Diagnostics.Debug.Print("# BackgroundParser.EntryParse.Add toBackGround:"+textFile.ID);
+                System.Diagnostics.Debug.Print("# BackgroundParser.EntryParse.Add toBackGround:" + textFile.ID);
                 toBackgroundStock.Add(textFile);
             }
         }
@@ -65,7 +65,7 @@ namespace CodeEditor2.CodeEditor
 
                     {
                         Global.LockParse();
-                        
+
                         parser.Parse();
 
                         Global.ReleaseParseLock();
@@ -77,7 +77,7 @@ namespace CodeEditor2.CodeEditor
                     }
                     parsing = false;
                 }
-                System.Threading.Thread.Sleep(1);
+                Thread.Sleep(1);
             }
         }
 
@@ -106,7 +106,7 @@ namespace CodeEditor2.CodeEditor
         }
 
         private List<TextFile> toBackgroundStock = new List<TextFile>();
-//        private List<DocumentParser> toBackgroundStock = new List<DocumentParser>();
+        //        private List<DocumentParser> toBackgroundStock = new List<DocumentParser>();
         private List<DocumentParser> fromBackgroundStock = new List<DocumentParser>();
 
     }

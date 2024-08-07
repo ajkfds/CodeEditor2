@@ -1,6 +1,8 @@
 ﻿using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
+using CodeEditor2.CodeEditor.CodeComplete;
+using CodeEditor2.CodeEditor.PopupMenu;
 using CodeEditor2.Data;
 using CodeEditor2.NavigatePanel;
 using CodeEditor2.Views;
@@ -181,12 +183,12 @@ namespace CodeEditor2
                 }
             }
 
-            public static void ForceOpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> candidates)
+            public static void ForceOpenCustomSelection(List<ToolItem> candidates)
             {
                 Global.codeView.OpenCustomSelection(candidates);
             }
 
-            public static void ForceOpenAutoComplete(List<CodeEditor2.CodeEditor.AutocompleteItem> autocompleteItems)
+            public static void ForceOpenAutoComplete(List<AutocompleteItem> autocompleteItems)
             {
                 Global.codeView.ForceOpenAutoComplete(autocompleteItems);
             }

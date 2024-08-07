@@ -16,7 +16,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.TextDecollation
 {
     public class CodeDocumentColorTransformer : DocumentColorizingTransformer
     {
@@ -36,7 +36,7 @@ namespace CodeEditor2.CodeEditor
 
                 CodeDocument codeDocument = Global.mainView.CodeView.CodeDocument;
                 if (!codeDocument.TextColors.LineInformation.ContainsKey(line.LineNumber)) return;
-                CodeEditor.LineInformation lineInfo = codeDocument.TextColors.LineInformation[line.LineNumber];
+                LineInformation lineInfo = codeDocument.TextColors.LineInformation[line.LineNumber];
 
                 lock (lineInfo.Colors)
                 {

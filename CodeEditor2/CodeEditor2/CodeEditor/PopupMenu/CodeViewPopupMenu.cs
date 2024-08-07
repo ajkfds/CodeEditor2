@@ -11,7 +11,7 @@ using Avalonia.Input;
 using System.Net.Http.Headers;
 using CodeEditor2.Snippets;
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.PopupMenu
 {
     public class CodeViewPopupMenu
     {
@@ -28,7 +28,7 @@ namespace CodeEditor2.CodeEditor
 
         public List<PopupMenuItem> PopupMenuItems = new List<PopupMenuItem>();
 
-        public void OpenCustomSelection(List<CodeEditor2.CodeEditor.ToolItem> candidates)
+        public void OpenCustomSelection(List<ToolItem> candidates)
         {
             System.Diagnostics.Debug.Print("## OpenCustomSelection");
             PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
@@ -36,7 +36,7 @@ namespace CodeEditor2.CodeEditor
             if (flyout.IsOpen) return;
             if (codeView.TextFile == null) return;
 
-           TransformedBounds? tBound = Global.codeView.Editor.GetTransformedBounds();
+            TransformedBounds? tBound = Global.codeView.Editor.GetTransformedBounds();
             if (tBound == null) return;
             TransformedBounds transformedBound = (TransformedBounds)tBound;
             var caretRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
@@ -63,7 +63,7 @@ namespace CodeEditor2.CodeEditor
 
         public void ShowToolSelectionPopupMenu()
         {
-            if(Snippet != null)
+            if (Snippet != null)
             {
                 Controller.CodeEditor.AbortInteractiveSnippet();
             }
@@ -81,8 +81,8 @@ namespace CodeEditor2.CodeEditor
             {
                 tools = new List<ToolItem>();
             }
-            tools.Add(new Snippets.ToUpper());
-            tools.Add(new Snippets.ToLower());
+            tools.Add(new ToUpper());
+            tools.Add(new ToLower());
 
             if (tools.Count == 0)
             {
@@ -107,8 +107,8 @@ namespace CodeEditor2.CodeEditor
             foreach (ToolItem item in tools) { PopupMenuItems.Add(item.CreatePopupMenuItem()); }
 
             flyout.Placement = PlacementMode.AnchorAndGravity;
-            flyout.VerticalOffset = position.Y-scroll.Y;
-            flyout.HorizontalOffset = position.X-scroll.X;
+            flyout.VerticalOffset = position.Y - scroll.Y;
+            flyout.HorizontalOffset = position.X - scroll.X;
             flyout.PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight;
             flyout.PlacementAnchor = Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.TopLeft;
 
@@ -140,7 +140,7 @@ namespace CodeEditor2.CodeEditor
         {
             System.Diagnostics.Debug.Print("## PopupMenu_Selected");
 
-//            ToolItem? toolItem = popUpMenuItem as ToolItem;
+            //            ToolItem? toolItem = popUpMenuItem as ToolItem;
             //if (popUpMenuItem is ToolItem)
             //{
             //    if (codeView.CodeDocument == null) return;
@@ -152,13 +152,13 @@ namespace CodeEditor2.CodeEditor
             //}
             //else
             //{
-                popUpMenuItem.OnSelected();
+            popUpMenuItem.OnSelected();
             //}
         }
 
-        public Snippets.InteractiveSnippet Snippet = null;
+        public InteractiveSnippet Snippet = null;
 
-        public void StartInteractiveSnippet(Snippets.InteractiveSnippet interactiveSnippet)
+        public void StartInteractiveSnippet(InteractiveSnippet interactiveSnippet)
         {
             System.Diagnostics.Debug.Print("## CodeViewSetupMenu.StartInteractiveSnippet");
             AbortInteractiveSnippet();

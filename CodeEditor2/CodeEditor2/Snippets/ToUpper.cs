@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CodeEditor2.CodeEditor.PopupMenu;
 
 namespace CodeEditor2.Snippets
 {
-    public class ToUpper : CodeEditor.ToolItem
+    public class ToUpper : ToolItem
     {
         public ToUpper():base("ToUpper")
         {

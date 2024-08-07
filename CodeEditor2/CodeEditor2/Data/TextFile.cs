@@ -1,6 +1,10 @@
 ﻿using Avalonia.Input;
 using AvaloniaEdit.Document;
 using CodeEditor2.CodeEditor;
+using CodeEditor2.CodeEditor.CodeComplete;
+using CodeEditor2.CodeEditor.Parser;
+using CodeEditor2.CodeEditor.PopupHint;
+using CodeEditor2.CodeEditor.PopupMenu;
 using CodeEditor2.NavigatePanel;
 using System;
 using System.Collections.Generic;
@@ -199,7 +203,7 @@ namespace CodeEditor2.Data
         }
 
 
-        public override CodeEditor.DocumentParser? CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum parseMode)
+        public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode)
         {
             return null;
         }
@@ -214,7 +218,7 @@ namespace CodeEditor2.Data
             candidateWord = null;
             return null;
         }
-        public virtual List<CodeEditor.ToolItem> GetToolItems(int index)
+        public virtual List<ToolItem> GetToolItems(int index)
         {
             return null;
         }
@@ -272,7 +276,7 @@ namespace CodeEditor2.Data
             }
             else
             {
-                CodeEditor.DocumentParser parser = textFile.CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum.BackgroundParse);
+                DocumentParser parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse);
                 if (parser != null)
                 {
                     parser.Parse();
@@ -305,7 +309,7 @@ namespace CodeEditor2.Data
 
             if (textFile.ReparseRequested)
             {
-                CodeEditor.DocumentParser parser = item.CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum.BackgroundParse);
+                DocumentParser parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse);
                 if (parser != null)
                 {
                     parser.Parse();

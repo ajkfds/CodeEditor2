@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.Parser
 {
     public class CodeViewParser
     {

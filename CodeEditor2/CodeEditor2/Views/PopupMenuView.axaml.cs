@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
-using CodeEditor2.CodeEditor;
+using CodeEditor2.CodeEditor.PopupMenu;
 using CodeEditor2.Data;
 using System;
 using System.Collections.Generic;

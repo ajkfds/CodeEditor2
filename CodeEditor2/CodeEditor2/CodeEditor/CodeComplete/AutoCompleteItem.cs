@@ -13,15 +13,15 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.CodeComplete
 {
     public class AutocompleteItem
     {
-        public AutocompleteItem(string text, byte colorIndex, Avalonia.Media.Color color)
+        public AutocompleteItem(string text, byte colorIndex, Color color)
         {
             this.text = text;
             this.colorIndex = colorIndex;
-            this.Color = color;
+            Color = color;
         }
 
         public void Clean()
@@ -31,7 +31,7 @@ namespace CodeEditor2.CodeEditor
 
         // Use this property if you want to show a fancy UIElement in the list.
 
-        public void Complete(AvaloniaEdit.Editing.TextArea textArea, AvaloniaEdit.Document.ISegment completionSegment,
+        public void Complete(TextArea textArea, ISegment completionSegment,
             EventArgs insertionRequestEventArgs)
         {
             if (codeDocument == null)
@@ -96,7 +96,7 @@ namespace CodeEditor2.CodeEditor
             {
                 int index = codeDocument.CaretIndex;
                 codeDocument.Replace(index, 0, ColorIndex, Text);
-                CodeEditor2.Controller.CodeEditor.SetCaretPosition( index + Text.Length);
+                Controller.CodeEditor.SetCaretPosition(index + Text.Length);
 
                 //if(Global.codeView.CodeDocument == codeDocument)
                 //{
@@ -107,18 +107,18 @@ namespace CodeEditor2.CodeEditor
             {
                 // delete after last .
                 codeDocument.Replace(headIndex, length, ColorIndex, Text);
-                CodeEditor2.Controller.CodeEditor.SetCaretPosition( headIndex + Text.Length);
+                Controller.CodeEditor.SetCaretPosition(headIndex + Text.Length);
             }
             Global.codeView.codeViewPopupMenu.AfterAutoCompleteHandled();
         }
 
-        public class AutoCompleteItemView : AvaloniaEdit.CodeCompletion.ICompletionData
+        public class AutoCompleteItemView : ICompletionData
         {
 
             public object? Content => textBlock;// Text;
 
             public string Text { get; set; }
-            
+
             public object Description => "";
 
             public double Priority { get; } = 0;

@@ -1,4 +1,7 @@
 ﻿using CodeEditor2.CodeEditor;
+using CodeEditor2.CodeEditor.CodeComplete;
+using CodeEditor2.CodeEditor.Parser;
+using CodeEditor2.CodeEditor.PopupMenu;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +34,7 @@ namespace CodeEditor2.Data
         void ParseHierarchy(Action<ITextFile> action);
 
         NavigatePanel.NavigatePanelNode NavigatePanelNode { get; }
-        CodeEditor.DocumentParser? CreateDocumentParser(CodeEditor.DocumentParser.ParseModeEnum parseMode);
+        DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode);
 
         // textFile
         CodeEditor.CodeDocument CodeDocument { get; }
@@ -55,8 +58,8 @@ namespace CodeEditor2.Data
         //        void BeforeKeyDown(System.Windows.Forms.KeyEventArgs e);
 
 //        PopupItem GetPopupItem(ulong Version, int index);
-        List<CodeEditor2.CodeEditor.AutocompleteItem> GetAutoCompleteItems(int index, out string cantidateText);
-        List<CodeEditor2.CodeEditor.ToolItem> GetToolItems(int index);
+        List<AutocompleteItem> GetAutoCompleteItems(int index, out string cantidateText);
+        List<ToolItem> GetToolItems(int index);
 
 
          CodeDrawStyle DrawStyle { get; }

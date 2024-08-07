@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.PopupMenu
 {
     public class ToolItem
     {
@@ -22,7 +22,7 @@ namespace CodeEditor2.CodeEditor
         public virtual PopupMenuItem CreatePopupMenuItem()
         {
             PopupMenuItem popupMenuItem = new PopupMenuItem(text);
-            popupMenuItem.Selected += new Action(()=> { Apply(); });
+            popupMenuItem.Selected += new Action(() => { Apply(); });
             return popupMenuItem;
         }
 

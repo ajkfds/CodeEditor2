@@ -17,9 +17,9 @@ using Avalonia.Media;
 using AvaloniaEdit.CodeCompletion;
 using CodeEditor2.Views;
 
-namespace CodeEditor2.CodeEditor
+namespace CodeEditor2.CodeEditor.CodeComplete
 {
-    internal class AutoCompleteWindow : AvaloniaEdit.CodeCompletion.CompletionWindowBase
+    internal class AutoCompleteWindow : CompletionWindowBase
     {
 
         private PopupWithCustomPosition _toolTip;
@@ -36,7 +36,7 @@ namespace CodeEditor2.CodeEditor
         public AutoCompleteWindow(TextArea textArea) : base(textArea)
         {
             CompletionList = new CompletionList();
-            
+
             // keep height automatic
             CloseAutomatically = true;
             MaxHeight = 225;
@@ -154,10 +154,10 @@ namespace CodeEditor2.CodeEditor
             TextArea.PointerWheelChanged -= TextArea_MouseWheel;
             TextArea.TextInput -= TextArea_PreviewTextInput;
 
-            foreach(var item in CompletionList.ListBox.Items)
+            foreach (var item in CompletionList.ListBox.Items)
             {
                 AutocompleteItem? aItem = item as AutocompleteItem;
-                if (aItem != null) aItem.Clean(); 
+                if (aItem != null) aItem.Clean();
             }
             base.DetachEvents();
         }

@@ -3,6 +3,7 @@ using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.TextMate;
+using CodeEditor2.CodeEditor.TextDecollation;
 using CodeEditor2.NavigatePanel;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ReactiveUI;
