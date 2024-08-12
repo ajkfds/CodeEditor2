@@ -22,9 +22,9 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.CodeEditor
 {
-    public class Marks
+    public class MarkHandler
     {
-		public Marks(CodeDocument codeDocument)
+		public MarkHandler(CodeDocument codeDocument)
 		{
 			this.codeDocument = codeDocument;
 		}

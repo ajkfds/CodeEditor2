@@ -59,9 +59,9 @@ namespace CodeEditor2.CodeEditor
         [MemberNotNull(nameof(HighLights))]
         private void initialize()
         {
-            Marks = new Marks(this);
-            TextColors = new Colors(this);
-            HighLights = new HIghLights(this);
+            Marks = new MarkHandler(this);
+            TextColors = new ColorHandler(this);
+            HighLights = new HIghLightHandler(this);
             ownerThread = System.Threading.Thread.CurrentThread;
             textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);
             textDocument.TextChanged += TextDocument_TextChanged;
@@ -79,9 +79,9 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        public Marks Marks;
-        public Colors TextColors;
-        public HIghLights HighLights;
+        public MarkHandler Marks;
+        public ColorHandler TextColors;
+        public HIghLightHandler HighLights;
 
         public Action<object?, DocumentChangeEventArgs>? Changing = null;
 

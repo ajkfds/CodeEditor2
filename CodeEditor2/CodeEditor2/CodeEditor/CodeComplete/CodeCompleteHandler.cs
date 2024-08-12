@@ -1,4 +1,5 @@
-﻿using CodeEditor2.Views;
+﻿using Avalonia.Input;
+using CodeEditor2.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor.CodeComplete
 {
-    public class CodeComplete
+    public class CodeCompleteHandler
     {
-        public CodeComplete(CodeView codeView)
+        public CodeCompleteHandler(CodeView codeView)
         {
             this.codeView = codeView;
         }
@@ -17,10 +18,12 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         private CodeView codeView;
         private AutoCompleteWindow? _completionWindow;
 
+        private bool forceOpened = false;
+
         /// <summary>
         /// update auto complete word text
         /// </summary>
-        public void CheckAutoComplete()
+        public void OnTextEntered(TextInputEventArgs e)
         {
             if (codeView.TextFile == null) return;
             if (codeView.CodeDocument == null) return;
@@ -37,16 +40,13 @@ namespace CodeEditor2.CodeEditor.CodeComplete
 
             string candidateWord;
             List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out candidateWord);
-//            System.Diagnostics.Debug.Print("## GetAutoCompleteItems try");
-            if (candidateWord == "")
-            {
-                if (_completionWindow != null) _completionWindow.Close();
-                return;
-            }
 
 
-            if(_completionWindow == null)
+            if (_completionWindow == null)
             {   // open window
+
+                if (candidateWord.Length < 2) return;
+
                 _completionWindow = new AutoCompleteWindow(codeView._textEditor.TextArea);
                 _completionWindow.Closed += (o, args) => _completionWindow_Closed();
 
@@ -55,6 +55,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 {
                     item.Clean();
                 }
+                forceOpened = false;
                 _completionWindow.Show();
                 foreach (AutocompleteItem item in items)
                 {
@@ -65,6 +66,13 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
             else
             {   // update
+                if (candidateWord == "")
+                {
+                    _completionWindow.Close();
+                    return;
+                }
+
+
                 if (_completionWindow.CompletionList._listBox.ItemCount == 0)
                 {
                     _completionWindow.Close();
@@ -81,7 +89,6 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         private void _completionWindow_Closed()
         {
             if (_completionWindow == null) return;
-//            _completionWindow.CompletionList._listBox.ItemsSource;
             _completionWindow = null;
             return;
         }
@@ -98,6 +105,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 prevIndex--;
             }
 
+            forceOpened = true;
             string candidateWord;
             List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeDocument.CaretIndex, out candidateWord);
             items = autocompleteItems;  // override items

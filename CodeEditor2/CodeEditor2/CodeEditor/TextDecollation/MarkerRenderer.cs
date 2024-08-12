@@ -37,6 +37,7 @@ namespace CodeEditor2.CodeEditor.TextDecollation
             }
         }
 
+        // update renderer mark information on editing text
         public void OnTextEdit(DocumentChangeEventArgs e)
         {
             if (marks == null) return;
@@ -46,70 +47,141 @@ namespace CodeEditor2.CodeEditor.TextDecollation
 
             lock (marks)
             {
+
+                // marks sorted with offset order.
+                // mark offset change will change order of IEnumerator and
+                // foreach loop can failed to update all mark.
+                // marks must be stored once and update it
+                List<TextSegment> markList = new List<TextSegment>();
                 foreach (var mark in marks)
                 {
-                    //     start    last
-                    //       +=======+
+                    if (mark == null) continue;
+                    markList.Add(mark);
+                }
 
-                    // |---|                 a0
-                    // |---------|           a1
-                    // |-------------------| a2
+                foreach (var mark in markList)
+                {
 
-                    //           |---|       b0
-                    //           |---------| b1
+                    //                      mark
+                    //               start       last
+                    //                 v           v
+                    // .   .   .   .   .   .   .   .   .   .   .   .
+                    //                 =============
+                    //     |------->
+                    //     |------------------->
+                    //     |------------------------------->
+                    //                 |------->
+                    //                 |----------->
+                    //                 |------------------->
+                    //                     |--->
+                    //                     |------->
+                    //                     |--------------->
+                    //                             |------->
+                    //                                 |--->
 
-                    //                  |--| c0
+                    //mark.EndOffset means last offset position
 
-                    int start = mark.StartOffset;
-                    int last = mark.EndOffset;
-
-                    if (e.Offset <= start) // a0 | a1 | a2
+                    if(e.Offset < mark.StartOffset)
                     {
-                        if (e.Offset + e.RemovalLength <= start)
-                        { // a0
+                        //                      mark
+                        //               start       last
+                        //                 v           v
+                        // .   .   .   .   .   .   .   .   .   .   .   .
+                        //                 =============
+                        //     |------->
+                        //     |------------------->
+                        //     |------------------------------->
+                        if (e.Offset + e.RemovalLength < mark.StartOffset)
+                        {
                             mark.StartOffset += change;
-                            //                            mark.EndOffset += change;
                         }
-                        else if (e.Offset + e.RemovalLength <= last)
-                        { // a1
-                            mark.StartOffset = e.Offset;
-                            if (mark.EndOffset + change <= mark.StartOffset)
-                            {
-                                removeTarget.Add(mark);
-                            }
-                            else
-                            {
-                                if (e.Offset + change <= mark.StartOffset)
-                                {
-                                    removeTarget.Add(mark);
-                                }
-                                else
-                                {
-                                    mark.EndOffset = e.Offset + change;
-                                }
-                            }
+                        else if(e.Offset + e.RemovalLength == mark.StartOffset)
+                        {
+                            mark.StartOffset += change;
+                        }
+                        else if(e.Offset+e.RemovalLength < mark.StartOffset + mark.Length)
+                        {
+                            int length = mark.StartOffset + mark.Length - (e.Offset + e.RemovalLength);
+                            mark.StartOffset = e.Offset + e.RemovalLength + change;
+                            mark.Length = length;
+                        }
+                        else if(e.Offset + e.RemovalLength == mark.StartOffset + mark.Length)
+                        {
+                            removeTarget.Add(mark);
                         }
                         else
-                        { // a2
-                            if (mark.EndOffset + change > mark.StartOffset) mark.EndOffset += change;
-                            else removeTarget.Add(mark);
+                        {
+                            removeTarget.Add(mark);
                         }
                     }
-                    else if (e.Offset <= mark.EndOffset + 1) // b0 | b1
+                    else if(e.Offset== mark.StartOffset)
                     {
-                        if (e.Offset + e.RemovalLength <= last + 1)
-                        { // b0
-                            mark.EndOffset += change;
+                        //                      mark
+                        //               start       last
+                        //                 v           v
+                        // .   .   .   .   .   .   .   .   .   .   .   .
+                        //                 =============
+                        //                 |------->
+                        //                 |----------->
+                        //                 |------------------->
+                        if (e.Offset + e.RemovalLength < mark.StartOffset + mark.Length)
+                        {
+                            mark.StartOffset = e.Offset + e.RemovalLength + change;
+                        }
+                        else if (e.Offset + e.RemovalLength == mark.StartOffset + mark.Length)
+                        {
+                            removeTarget.Add(mark);
                         }
                         else
-                        { // b1
-                          // none
+                        {
+                            removeTarget.Add(mark);
                         }
+                    }
+                    else if (e.Offset < mark.StartOffset + mark.Length)
+                    {
+                        //                      mark
+                        //               start       last
+                        //                 v           v
+                        // .   .   .   .   .   .   .   .   .   .   .   .
+                        //                 =============
+                        //                     |--->
+                        //                     |------->
+                        //                     |--------------->
+                        if (e.Offset + e.RemovalLength < mark.StartOffset + mark.Length)
+                        {
+                            mark.Length += change;
+                        }
+                        else if (e.Offset + e.RemovalLength == mark.StartOffset + mark.Length)
+                        {
+                            mark.Length = e.Offset - mark.StartOffset;
+                        }
+                        else
+                        {
+                            mark.Length = e.Offset - mark.StartOffset;
+                        }
+                    }
+                    else if (e.Offset == mark.StartOffset + mark.Length)
+                    {
+                        //                      mark
+                        //               start       last
+                        //                 v           v
+                        // .   .   .   .   .   .   .   .   .   .   .   .
+                        //                 =============
+                        //                             |------->
+
                     }
                     else
-                    { // c0
-                      // none
+                    {
+                        //                      mark
+                        //               start       last
+                        //                 v           v
+                        // .   .   .   .   .   .   .   .   .   .   .   .
+                        //                 =============
+                        //                                 |--->
+
                     }
+
+
                 }
 
                 foreach (var removeMark in removeTarget)

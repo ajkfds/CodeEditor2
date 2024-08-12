@@ -49,6 +49,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="CodeEditor\CodeDocument\Marks.cs" />
+    <None Include="CodeEditor\CodeDocument\MarkHandler.cs" />
   </ItemGroup>
 </Project>

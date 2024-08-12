@@ -13,11 +13,11 @@ using CodeEditor2.Snippets;
 
 namespace CodeEditor2.CodeEditor.PopupMenu
 {
-    public class CodeViewPopupMenu
+    public class PopupMenuHandler
     {
         // popup menu for in-line menu select
 
-        public CodeViewPopupMenu(CodeView codeView)
+        public PopupMenuHandler(CodeView codeView)
         {
             this.codeView = codeView;
         }

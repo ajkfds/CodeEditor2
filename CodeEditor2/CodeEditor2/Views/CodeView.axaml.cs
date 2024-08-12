@@ -61,10 +61,10 @@ namespace CodeEditor2.Views
 
             Global.codeView = this;
 
-            codeViewPopup = new CodeViewPopup(this);
+            codeViewPopup = new PopupHandler(this);
             codeViewParser = new CodeViewParser(this);
-            codeViewPopupMenu = new CodeViewPopupMenu(this);
-            codeViewAutoComplete = new CodeComplete(this);
+            codeViewPopupMenu = new PopupMenuHandler(this);
+            codeViewAutoComplete = new CodeCompleteHandler(this);
 
             _textEditor = Editor;
 
@@ -159,10 +159,10 @@ namespace CodeEditor2.Views
 
         internal HighlightRenderer _highlightRenderer;
         internal MarkerRenderer _markerRenderer;
-        internal CodeViewPopup codeViewPopup;
+        internal PopupHandler codeViewPopup;
         internal CodeViewParser codeViewParser;
-        internal CodeViewPopupMenu codeViewPopupMenu;
-        internal CodeComplete codeViewAutoComplete;
+        internal PopupMenuHandler codeViewPopupMenu;
+        internal CodeCompleteHandler codeViewAutoComplete;
 
         private void TextArea_KeyUp(object? sender, KeyEventArgs e)
         {
@@ -470,7 +470,7 @@ namespace CodeEditor2.Views
         {
             if (skipEvents) return;
             codeViewPopupMenu.TextEntered(sender, e);
-            codeViewAutoComplete.CheckAutoComplete();
+            codeViewAutoComplete.OnTextEntered(e);
             TextFile?.TextEntered(e);
         }
 

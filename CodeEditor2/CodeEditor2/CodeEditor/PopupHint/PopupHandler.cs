@@ -16,12 +16,12 @@ using AvaloniaEdit.Rendering;
 
 namespace CodeEditor2.CodeEditor.PopupHint
 {
-    public class CodeViewPopup
+    public class PopupHandler
     {
         // Popup-Hint Handler
         //
         // show mouse over popup-hinting
-        public CodeViewPopup(CodeView codeView)
+        public PopupHandler(CodeView codeView)
         {
             this.codeView = codeView;
         }

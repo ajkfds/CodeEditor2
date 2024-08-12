@@ -23,9 +23,9 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.CodeEditor
 {
-    public class HIghLights
+    public class HIghLightHandler
     {
-        public HIghLights(CodeDocument codeDocument)
+        public HIghLightHandler(CodeDocument codeDocument)
         {
             this.codeDocument = codeDocument;
         }

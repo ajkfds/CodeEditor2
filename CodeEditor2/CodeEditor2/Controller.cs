@@ -60,12 +60,6 @@ namespace CodeEditor2
 
             CodeEditor2.Tools.ParseProject parser = new Tools.ParseProject();
             await parser.Run(Global.navigateView.GetProjectNode(project.Name)); 
-
-            //Tools.ProgressWindow progressWindow = new Tools.ProgressWindow(project.Name, "Loading...", 100);
-            //progressWindow.Show();
-
-            //Tools.ParseProjectForm pform = new Tools.ParseProjectForm(Global.navigateView.GetPeojectNode(project.Name));
-            //await pform.ShowDialog(Global.currentWindow);
         }
 
         public static Menu GetMenuStrip()
@@ -145,7 +139,7 @@ namespace CodeEditor2
                 Global.codeView.SetCaretPosition(index);
             }
 
-            public static int? GerCaretPosition()
+            public static int? GetCaretPosition()
             {
                 return Global.codeView.GetCaretPosition();
             }
