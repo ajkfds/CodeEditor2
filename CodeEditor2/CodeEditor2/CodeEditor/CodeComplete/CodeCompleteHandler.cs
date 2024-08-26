@@ -51,6 +51,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 _completionWindow.Closed += (o, args) => _completionWindow_Closed();
 
                 var data = _completionWindow.CompletionList.CompletionData;
+                data.Clear();
                 foreach (AutocompleteItem item in items)
                 {
                     item.Clean();
