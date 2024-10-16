@@ -66,7 +66,7 @@ namespace CodeEditor2.CodeEditor.PopupHint
             }
             popupInex = headIndex;
 
-            PopupItem pItem = codeView.TextFile.GetPopupItem(codeView.CodeDocument.Version, index);
+            PopupItem? pItem = codeView.TextFile.GetPopupItem(codeView.CodeDocument.Version, index);
             if (pItem == null || pItem.ItemCount == 0)
             {
                 ToolTip.SetIsOpen(codeView.Editor, false);
