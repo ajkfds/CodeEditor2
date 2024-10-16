@@ -23,7 +23,7 @@ namespace CodeEditor2.Data
 
         Item.ItemList Items { get; }
 
-        Item GetItem(string relativePath);
+        Item? GetItem(string relativePath);
 
         List<Item> FindItems(Func<Item, bool> match, Func<Item, bool> stop);
 
@@ -40,7 +40,7 @@ namespace CodeEditor2.Data
         CodeEditor.CodeDocument CodeDocument { get; }
         bool IsCodeDocumentCashed { get; }
 
-        CodeEditor.ParsedDocument ParsedDocument { get; set; }
+        CodeEditor.ParsedDocument? ParsedDocument { get; set; }
         void AcceptParsedDocument(CodeEditor.ParsedDocument newParsedDocument);
 
         void LoadFormFile();
@@ -58,8 +58,8 @@ namespace CodeEditor2.Data
         //        void BeforeKeyDown(System.Windows.Forms.KeyEventArgs e);
 
 //        PopupItem GetPopupItem(ulong Version, int index);
-        List<AutocompleteItem> GetAutoCompleteItems(int index, out string cantidateText);
-        List<ToolItem> GetToolItems(int index);
+        List<AutocompleteItem>? GetAutoCompleteItems(int index, out string cantidateText);
+        List<ToolItem>? GetToolItems(int index);
 
 
          CodeDrawStyle DrawStyle { get; }

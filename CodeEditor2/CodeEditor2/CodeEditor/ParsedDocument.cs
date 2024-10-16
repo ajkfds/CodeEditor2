@@ -16,6 +16,15 @@ namespace CodeEditor2.CodeEditor
             textFileRef = new WeakReference<Data.TextFile>(textFile);
         }
 
+        public long ObjectID
+        {
+            get
+            {
+                bool firstTime;
+                return Global.ObjectIDGenerator.GetId(this, out firstTime);
+            }
+        }
+
         public void UnlockDocument()
         {
             foreach(var doc in LockedDocument)

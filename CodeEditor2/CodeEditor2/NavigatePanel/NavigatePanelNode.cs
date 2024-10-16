@@ -20,6 +20,14 @@ namespace CodeEditor2.NavigatePanel
                 Avalonia.Media.Color.FromArgb(100, 100, 100, 100)
                 );
         }
+        public long ObjectID
+        {
+            get
+            {
+                bool firstTime;
+                return Global.ObjectIDGenerator.GetId(this, out firstTime);
+            }
+        }
 
         protected NavigatePanelNode()
         {

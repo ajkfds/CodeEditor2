@@ -11,6 +11,15 @@ namespace CodeEditor2.Data
     {
         protected Item() { }
 
+        public long ObjectID
+        {
+            get
+            {
+                bool firstTime;
+                return Global.ObjectIDGenerator.GetId(this, out firstTime);
+            }
+        }
+
         private WeakReference<Item> parent;
         public Item Parent
         {

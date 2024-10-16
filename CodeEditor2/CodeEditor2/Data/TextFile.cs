@@ -16,6 +16,7 @@ namespace CodeEditor2.Data
 {
     public class TextFile : File, ITextFile
     {
+        public TextFile() : base() { }
         public static TextFile Create(string relativePath, Project project)
         {
             TextFile fileItem = new TextFile();
@@ -49,14 +50,14 @@ namespace CodeEditor2.Data
             get { if (document == null) return false; else return true; }
         }
 
-        public virtual CodeEditor.ParsedDocument ParsedDocument { get; set; }
+        public virtual CodeEditor.ParsedDocument? ParsedDocument { get; set; }
 
         public bool ParseValid
         {
             get
             {
                 CodeEditor2.CodeEditor.CodeDocument doc = CodeDocument;
-                CodeEditor2.CodeEditor.ParsedDocument parsedDocument = ParsedDocument;
+                CodeEditor2.CodeEditor.ParsedDocument? parsedDocument = ParsedDocument;
                 if (doc == null) return false;
                 if (parsedDocument == null) return false;
                 if (doc.Version == parsedDocument.Version) return true;
@@ -66,7 +67,7 @@ namespace CodeEditor2.Data
 
         public virtual void AcceptParsedDocument(CodeEditor2.CodeEditor.ParsedDocument newParsedDocument)
         {
-            CodeEditor2.CodeEditor.ParsedDocument oldParsedDocument = ParsedDocument;
+            CodeEditor2.CodeEditor.ParsedDocument? oldParsedDocument = ParsedDocument;
             ParsedDocument = null;
             if (oldParsedDocument != null) oldParsedDocument.Dispose();
 
@@ -86,7 +87,6 @@ namespace CodeEditor2.Data
             get
             {
                 if (CodeDocument == null) return false;
-//                if (CodeDocument.IsDirty) return true;
                 return false;
             }
         }
@@ -208,17 +208,17 @@ namespace CodeEditor2.Data
             return null;
         }
 
-        public virtual PopupItem GetPopupItem(ulong Version, int index)
+        public virtual PopupItem? GetPopupItem(ulong Version, int index)
         {
             return null;
         }
 
-        public virtual List<AutocompleteItem> GetAutoCompleteItems(int index, out string candidateWord)
+        public virtual List<AutocompleteItem>? GetAutoCompleteItems(int index, out string candidateWord)
         {
-            candidateWord = null;
+            candidateWord = "";
             return null;
         }
-        public virtual List<ToolItem> GetToolItems(int index)
+        public virtual List<ToolItem>? GetToolItems(int index)
         {
             return null;
         }
@@ -261,7 +261,7 @@ namespace CodeEditor2.Data
         private void parseHierarchy(Data.Item item, List<string> parsedIds, Action<ITextFile> action)
         {
             if (item == null) return;
-            Data.ITextFile textFile = item as Data.TextFile;
+            Data.ITextFile? textFile = item as Data.TextFile;
             if (textFile == null) return;
             if (parsedIds.Contains(textFile.ID)) return;
             System.Diagnostics.Debug.Print("# Try ParseHier "+textFile.ID);
@@ -276,7 +276,7 @@ namespace CodeEditor2.Data
             }
             else
             {
-                DocumentParser parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse);
+                DocumentParser? parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse);
                 if (parser != null)
                 {
                     parser.Parse();
@@ -287,7 +287,7 @@ namespace CodeEditor2.Data
                 }
             }
 
-            // parse all chiled nodes
+            // parse all child nodes
             List<Data.Item> items = new List<Data.Item>();
             lock (textFile.Items)
             {
@@ -309,7 +309,7 @@ namespace CodeEditor2.Data
 
             if (textFile.ReparseRequested)
             {
-                DocumentParser parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse);
+                DocumentParser? parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse);
                 if (parser != null)
                 {
                     parser.Parse();

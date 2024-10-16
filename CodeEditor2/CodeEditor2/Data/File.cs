@@ -10,6 +10,13 @@ namespace CodeEditor2.Data
 {
     public class File : Item
     {
+        protected File() : base() 
+        {
+            FileWeakReferences.Add(new WeakReference<File>(this));
+        }
+
+        public static List<WeakReference<File>> FileWeakReferences = new List<WeakReference<File>>();
+
         public static File Create(string relativePath, Project project, Item parent)
         {
             // check registered filetype
@@ -36,6 +43,14 @@ namespace CodeEditor2.Data
             return fileItem;
         }
 
+        public long ObjectID
+        {
+            get
+            {
+                bool firstTime;
+                return Global.ObjectIDGenerator.GetId(this,out firstTime);
+            }
+        }
         public string AbsolutePath
         {
             get

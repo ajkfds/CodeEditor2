@@ -9,7 +9,8 @@ namespace CodeEditor2.Data
 {
     public class Folder : Item
     {
-        protected Folder() { }
+        protected Folder() : base()
+        { }
         public static Folder Create(string relativePath, Project project, Item parent)
         {
 

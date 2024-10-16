@@ -10,6 +10,7 @@ using CodeEditor2.Setups;
 using Avalonia.Controls;
 using System.Threading;
 using System.Text.Json;
+using System.Runtime.Serialization;
 
 namespace CodeEditor2
 {
@@ -31,6 +32,8 @@ namespace CodeEditor2
         internal static Views.MainWindow mainWindow;
         internal static Views.LogView logView;
         internal static Views.InfoView infoView;
+
+        public static ObjectIDGenerator ObjectIDGenerator = new ObjectIDGenerator();
 
         internal static Window currentWindow;
 

@@ -15,7 +15,7 @@ namespace CodeEditor2.Data
 {
     public class Project : Folder
     {
-        protected Project() { }
+        protected Project() :base() { }
 
         public Setup CreateSetup()
         {
