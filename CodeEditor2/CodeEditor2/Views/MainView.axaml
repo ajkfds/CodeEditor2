@@ -24,17 +24,17 @@
 				<Separator/>
 				<MenuItem Header="_Exit" Click="MenuItem_File_Exit_Click"/>
 			</MenuItem>
-			<MenuItem Header="_Edit">
+			<MenuItem Header="_Edit" Name="MenuItem_Edit">
 				<MenuItem Header="Copy"/>
 				<MenuItem Header="Paste"/>
 			</MenuItem>
-			<MenuItem Header="_Project">
+			<MenuItem Header="_Project" Name="MenuItem_Project">
 				<MenuItem Header="Add Project" Click="MenuItem_AddProject_Click"/>
 				<!--<MenuItem Header="Add ProjectPath" Click="MenuItem_AddProjectPath_Click"/>-->
 			</MenuItem>
-			<MenuItem Header="_Tools">
+			<MenuItem Header="_Tools" Name="MenuItem_Tools">
 			</MenuItem>
-			<MenuItem Header="_Help">
+			<MenuItem Header="_Help" Name="MenuItem_Help">
 				
 			</MenuItem>
 		</Menu>

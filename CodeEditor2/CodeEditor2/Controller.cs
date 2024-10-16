@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static CodeEditor2.CodeEditor.ParsedDocument;
 using static CodeEditor2.Controller;
@@ -55,21 +56,68 @@ namespace CodeEditor2
 
         private static async Task addProject(Project project)
         {
+            // add project node
             Global.navigateView.AddProject(project);
 
-
+            // parse project
             CodeEditor2.Tools.ParseProject parser = new Tools.ParseProject();
-            await parser.Run(Global.navigateView.GetProjectNode(project.Name)); 
+            ProjectNode? projectNode = Global.navigateView.GetProjectNode(project.Name);
+            if (projectNode == null) return;
+            await parser.Run(projectNode); 
         }
 
-        public static Menu GetMenuStrip()
-        {
-            return Global.mainView.Menu;
-        }
+        //public static Menu GetMenuStrip()
+        //{
+        //    return Global.mainView.Menu;
+        //}
 
         public static void ShellExecute(string command)
         {
             Global.mainView.ShellPanelView.Execute(command);
+        }
+
+        public static class Menu
+        {
+            public static MenuItem File
+            {
+                get
+                {
+                    return Global.mainView.MenuItem_File;
+                }
+            }
+
+            public static MenuItem Edit
+            {
+                get
+                {
+                    return Global.mainView.MenuItem_Edit;
+                }
+            }
+
+            public static MenuItem Project
+            {
+                get
+                {
+                    return Global.mainView.MenuItem_Project;
+                }
+            }
+
+            public static MenuItem Tool
+            {
+                get
+                {
+                    return Global.mainView.MenuItem_Tools;
+                }
+            }
+
+            public static MenuItem Help
+            {
+                get
+                {
+                    return Global.mainView.MenuItem_Help;
+                }
+            }
+
         }
 
         //public static System.Windows.Forms.DialogResult ShowMessageBox(string text, string caption, System.Windows.Forms.MessageBoxButtons buttons, System.Windows.Forms.MessageBoxIcon icon)
