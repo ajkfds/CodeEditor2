@@ -238,10 +238,14 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 var document = TextArea.Document;
                 if (document != null)
                 {
-                    string candidateWord;
-                    List<AutocompleteItem> items = Global.codeView.TextFile.GetAutoCompleteItems(Global.codeView._textEditor.CaretOffset, out candidateWord);
+                    string candidateWord = "";
+
+                    // update candidateWord
+                    if(Global.codeView.TextFile != null)
+                    {
+                        List<AutocompleteItem> items = Global.codeView.TextFile.GetAutoCompleteItems(Global.codeView._textEditor.CaretOffset, out candidateWord);
+                    }
                     CompletionList.SelectItem(candidateWord);
-                    //                    CompletionList.SelectItem(document.GetText(StartOffset, offset - StartOffset));
 
                     if (CompletionList.ListBox.ItemCount == 0) IsVisible = false;
                     else IsVisible = true;

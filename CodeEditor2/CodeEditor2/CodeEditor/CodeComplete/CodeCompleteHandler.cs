@@ -45,7 +45,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             if (_completionWindow == null)
             {   // open window
 
-                if (candidateWord.Length < 2) return;
+                if (candidateWord.Length < 1) return;
 
                 _completionWindow = new AutoCompleteWindow(codeView._textEditor.TextArea);
                 _completionWindow.Closed += (o, args) => _completionWindow_Closed();
