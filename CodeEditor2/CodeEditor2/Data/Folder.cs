@@ -13,19 +13,23 @@ namespace CodeEditor2.Data
         { }
         public static Folder Create(string relativePath, Project project, Item parent)
         {
-
-            Folder folder = new Folder();
-            folder.Project = project;
-            folder.RelativePath = relativePath;
-
+            string name;
             if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
             {
-                folder.Name = relativePath.Substring(relativePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
+                name = relativePath.Substring(relativePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
             }
             else
             {
-                folder.Name = relativePath;
+                name = relativePath;
             }
+
+            Folder folder = new Folder()
+            {
+                Name = name,
+                Project = project,
+                RelativePath = relativePath
+            };
+
 
             folder.Parent = parent;
             //project.RegisterProjectItem(folder);

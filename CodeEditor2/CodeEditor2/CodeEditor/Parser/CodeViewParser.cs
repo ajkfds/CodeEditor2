@@ -16,7 +16,7 @@ namespace CodeEditor2.CodeEditor.Parser
         }
 
         private Views.CodeView codeView;
-        public BackroungParser backGroundParser = new BackroungParser();
+        public BackgroundParser backGroundParser = new BackgroundParser();
 
         public void Timer_Tick(object? sender, EventArgs e)
         {

@@ -25,17 +25,22 @@ namespace CodeEditor2.Data
                 if (fileType.IsThisFileType(relativePath, project)) return fileType.CreateFile(relativePath, project);
             }
 
-            File fileItem = new File();
-            fileItem.Project = project;
-            fileItem.RelativePath = relativePath;
+            string name;
             if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
             {
-                fileItem.Name = relativePath.Substring(relativePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
+                name = relativePath.Substring(relativePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
             }
             else
             {
-                fileItem.Name = relativePath;
+                name = relativePath;
             }
+
+            File fileItem = new File()
+            {
+                Project = project,
+                RelativePath = relativePath,
+                Name = name
+            };
 
             fileItem.Parent = parent;
 
@@ -43,14 +48,6 @@ namespace CodeEditor2.Data
             return fileItem;
         }
 
-        public long ObjectID
-        {
-            get
-            {
-                bool firstTime;
-                return Global.ObjectIDGenerator.GetId(this,out firstTime);
-            }
-        }
         public string AbsolutePath
         {
             get

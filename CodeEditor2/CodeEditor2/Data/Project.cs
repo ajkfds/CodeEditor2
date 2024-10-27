@@ -10,22 +10,39 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Timers;
 using System.Text.Json;
+using System.Diagnostics.CodeAnalysis;
+using System.Xml.Linq;
 
 namespace CodeEditor2.Data
 {
     public class Project : Folder
     {
-        protected Project() :base() { }
+        [SetsRequiredMembers]
+        protected Project(string name,string rootPath,string relativePath) :base()
+        {
+            Name = name;
+            RootPath = rootPath;
+            RelativePath = relativePath;
+            Project = this;
+        }
+
+        public Dictionary<string, ProjectProperty> ProjectProperties = new Dictionary<string, ProjectProperty>();
+        public required string RootPath { get; init; }
+//        public required new string Name { get; init; }
 
         public Setup CreateSetup()
         {
-            return new Setup(this);
+            Setup setup = new Setup(this);
+            return setup;
         }
+
+        // setup object to convert project to json file
         public class Setup
         {
             [JsonConstructor]
             public Setup() { }
 
+            [SetsRequiredMembers]
             public Setup(Project project)
             {
                 this.RootPath = project.RootPath;
@@ -40,18 +57,17 @@ namespace CodeEditor2.Data
             }
 
             [JsonInclude]
-            public string Name;
+            public required string Name;
             [JsonInclude]
-            public string RootPath;
+            public required string RootPath;
             [JsonInclude]
-            public List<string> IgnoreList;
+            public required List<string> IgnoreList;
             [JsonInclude]
             public Dictionary<string, ProjectProperty.Setup> ProjectProperties = new Dictionary<string, ProjectProperty.Setup>();
         }
 
         public static Project Create(string rootPath)
         {
-            Project project = new Project();
             string path;
             if (rootPath.EndsWith(System.IO.Path.DirectorySeparatorChar))
             {
@@ -68,15 +84,17 @@ namespace CodeEditor2.Data
                 throw new Exception();
             }
 
-            project.RootPath = actualPath;
-            if (project.RootPath.Contains(Path.DirectorySeparatorChar))
+            string name;
+            if (actualPath.Contains(Path.DirectorySeparatorChar))
             {
-                project.Name = project.RootPath.Substring(project.RootPath.LastIndexOf(Path.DirectorySeparatorChar) + 1);
+                name = actualPath.Substring(actualPath.LastIndexOf(Path.DirectorySeparatorChar) + 1);
             }
             else
             {
-                project.Name = project.RootPath;
+                name = actualPath;
             }
+
+            Project project = new Project(name, actualPath, "");
 
             initProject(project);
             return project;
@@ -84,23 +102,16 @@ namespace CodeEditor2.Data
 
         public static Project Create(Setup setup)
         {
-            Project project = new Project();
-            project.Name = setup.Name;
-            project.RootPath = setup.RootPath;
-            project.ignoreList = setup.IgnoreList;
-//            case "PluginProperties":
-//               readProjectProperties(reader);
-//                break;
+            Project project = new Project(setup.Name, setup.RootPath, "");
 
-                initProject(project);
+            project.ignoreList = setup.IgnoreList;
+
+            initProject(project);
             return project;
         }
 
         private static void initProject(Project project)
         {
-            project.RelativePath = "";
-            project.Project = project;
-
             if (Created != null) Created(project);
             project.startFileSystemWatcher();
         }
@@ -113,17 +124,13 @@ namespace CodeEditor2.Data
 
         private void stopFileSystemWatcher()
         {
+            if (fileSystemWatcher == null) return;
             fileSystemWatcher.EnableRaisingEvents = false;
             fileSystemWatcher.Dispose();
             fileSystemWatcher = null;
         }
 
         public static Action<Project>? Created;
-
-        public Dictionary<string, ProjectProperty> ProjectProperties = new Dictionary<string, ProjectProperty>();
-
-        public string RootPath { get; protected set; }
-        public new string Name { get; protected set; }
 
         public List<string> ignoreList = new List<string>();
 
@@ -204,64 +211,12 @@ namespace CodeEditor2.Data
         }
 
 
-        // Seve and Load Project Setups ///////////////////////////////////////////////////////////////////
-        // save and load project setups into json file
-
-        //#region
-        //public void SaveSetup(AjkAvaloniaLibs.Libs.Json.JsonWriter writer)
-        //{
-        //    writer.writeKeyValue("RootPath", RootPath);
-        //    using (var blockWriter = writer.GetObjectWriter("IgnoreList"))
-        //    {
-        //        foreach (string ignore in ignoreList)
-        //        {
-        //            blockWriter.writeKeyValue("Ignore", ignore);
-        //        }
-        //    }
-
-        //    using (var blockWriter = writer.GetObjectWriter("PluginProperties"))
-        //    {
-        //        foreach (KeyValuePair<string, ProjectProperty> propertyKvp in ProjectProperties)
-        //        {
-        //            using (var propertyWriter = blockWriter.GetObjectWriter(propertyKvp.Key))
-        //            {
-        //                propertyKvp.Value.SaveSetup(propertyWriter);
-        //            }
-        //        }
-        //    }
-        //}
-
-
-
-        //private void readProjectProperties(AjkAvaloniaLibs.Libs.Json.JsonReader jsonReader)
-        //{
-        //    using (var reader = jsonReader.GetNextObjectReader())
-        //    {
-        //        while (true)
-        //        {
-        //            string key = reader.GetNextKey();
-        //            if (key == null) break;
-
-        //            if (!ProjectProperties.ContainsKey(key))
-        //            {
-        //                reader.SkipValue();
-        //                continue;
-        //            }
-        //            ProjectProperty property = ProjectProperties[key];
-        //            property.LoadSetup(reader);
-        //        }
-        //    }
-        //}
-
-        //#endregion
-
-
         // file system watcher ////////////////////////////////////////////////////////////////////////////
         // detect file change and raise events
 
         #region FileSystemWatcher
 
-        protected FileSystemWatcher fileSystemWatcher;
+        protected FileSystemWatcher? fileSystemWatcher;
         protected Timer fsTimer = new Timer();
         protected void startFileSystemWatcher()
         {

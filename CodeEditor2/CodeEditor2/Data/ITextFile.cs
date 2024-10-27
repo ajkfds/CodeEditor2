@@ -25,6 +25,8 @@ namespace CodeEditor2.Data
 
         Item? GetItem(string relativePath);
 
+        TextFile ToTextFile();
+
         List<Item> FindItems(Func<Item, bool> match, Func<Item, bool> stop);
 
         bool ParseValid { get; }

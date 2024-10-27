@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,18 +21,19 @@ namespace CodeEditor2.Data
             }
         }
 
-        private WeakReference<Item> parent;
-        public Item Parent
+        private WeakReference<Item>? parent;
+        public Item? Parent
         {
             get
             {
-                Item ret;
+                Item? ret;
                 if (parent == null) return null;
                 if (!parent.TryGetTarget(out ret)) return null;
                 return ret;
             }
             set
             {
+                if (value == null) return;
                 parent = new WeakReference<Item>(value);
             }
         }
@@ -48,10 +50,10 @@ namespace CodeEditor2.Data
         {
             get; set;
         }
-        public virtual string RelativePath { get; protected set; }
+        public required virtual string RelativePath { get; init; }
 
-        public virtual string Name { get; protected set; }
-        public virtual Project Project { get; protected set; }
+        public required virtual string Name { get; init; }
+        public required virtual Project Project { get; init; }
 
         protected ItemList items = new ItemList();
         public virtual ItemList Items
@@ -196,7 +198,7 @@ namespace CodeEditor2.Data
 
 
 
-        protected WeakReference<NavigatePanel.NavigatePanelNode> nodeRef;
+        protected WeakReference<NavigatePanel.NavigatePanelNode>? nodeRef;
         public virtual NavigatePanel.NavigatePanelNode NavigatePanelNode
         {
             get
@@ -229,7 +231,7 @@ namespace CodeEditor2.Data
             return NavigatePanelNode;
         }
 
-        public virtual NavigatePanel.NavigatePanelNode CreateLinkNode()
+        public virtual NavigatePanel.NavigatePanelNode? CreateLinkNode()
         {
             NavigatePanel.NavigatePanelNode node;
             node = createNode();

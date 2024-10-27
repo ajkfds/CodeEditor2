@@ -19,21 +19,28 @@ namespace CodeEditor2.Data
         public TextFile() : base() { }
         public static TextFile Create(string relativePath, Project project)
         {
-            TextFile fileItem = new TextFile();
-            fileItem.Project = project;
-            fileItem.RelativePath = relativePath;
+            string name;
             if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
             {
-                fileItem.Name = relativePath.Substring(relativePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
+                name = relativePath.Substring(relativePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
             }
             else
             {
-                fileItem.Name = relativePath;
+                name = relativePath;
             }
+            TextFile fileItem = new TextFile() {
+                Project = project,
+                RelativePath = relativePath,
+                Name = name
+            };
 
             return fileItem;
         }
 
+        public TextFile ToTextFile()
+        {
+            return this;
+        }
         public override void Dispose()
         {
             if (document != null) document.Dispose();

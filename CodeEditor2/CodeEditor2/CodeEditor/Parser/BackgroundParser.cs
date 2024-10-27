@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor.Parser
 {
-    public class BackroungParser
+    public class BackgroundParser
     {
-        public BackroungParser()
+        public BackgroundParser()
         {
         }
 
@@ -27,7 +27,7 @@ namespace CodeEditor2.CodeEditor.Parser
             //            thread.Abort();
         }
         //        private volatile bool abortFlag = false;
-        Thread thread;
+        Thread? thread;
 
         public void EntryParse(TextFile textFile)
         {

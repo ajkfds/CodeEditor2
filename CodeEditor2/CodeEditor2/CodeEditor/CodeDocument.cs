@@ -31,7 +31,7 @@ namespace CodeEditor2.CodeEditor
         }
 
         public static int tagCount=0;
-        public string tag;
+        public string tag ="";
 
         public CodeDocument(Data.TextFile textFile, bool textOnly) : this()
         {

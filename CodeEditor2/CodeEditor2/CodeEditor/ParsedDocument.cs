@@ -38,27 +38,27 @@ namespace CodeEditor2.CodeEditor
         public readonly DocumentParser.ParseModeEnum ParseMode;
 
         private System.WeakReference<Data.TextFile> textFileRef;
-        public Data.Item Item
+        public Data.Item? Item
         {
             get
             {
-                Data.TextFile ret;
+                Data.TextFile? ret;
                 if (!textFileRef.TryGetTarget(out ret)) return null;
                 return ret;
             }
         }
 
-        public Data.TextFile TextFile
+        public Data.TextFile? TextFile
         {
             get
             {
-                Data.TextFile ret;
+                Data.TextFile? ret;
                 if (!textFileRef.TryGetTarget(out ret)) return null;
                 return ret;
             }
         }
 
-        public Data.Project Project
+        public Data.Project? Project
         {
             get
             {
@@ -79,9 +79,9 @@ namespace CodeEditor2.CodeEditor
         {
             public int Index { get; protected set; }
             public int Length { get; protected set; }
-            public string Text { get; protected set; }
-            public Data.Project Project { get; protected set; }
-            public virtual MessageView.MessageNode CreateMessageNode()
+            public string Text { get; protected set; } = "";
+            public Data.Project? Project { get; protected set; } = null;
+            public virtual MessageView.MessageNode? CreateMessageNode()
             {
                 return null;
             }
