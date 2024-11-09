@@ -19,7 +19,7 @@ namespace CodeEditor2.Shells
         }
 
         public delegate void ReceivedHandler(string lineString);
-        public virtual event ReceivedHandler LineReceived;
+        public virtual event ReceivedHandler? LineReceived;
 
         public virtual void Start()
         {

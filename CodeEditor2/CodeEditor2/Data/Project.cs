@@ -28,7 +28,6 @@ namespace CodeEditor2.Data
 
         public Dictionary<string, ProjectProperty> ProjectProperties = new Dictionary<string, ProjectProperty>();
         public required string RootPath { get; init; }
-//        public required new string Name { get; init; }
 
         public Setup CreateSetup()
         {

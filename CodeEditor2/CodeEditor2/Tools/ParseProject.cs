@@ -26,6 +26,8 @@ namespace CodeEditor2.Tools
         {
             projectNode.Project.Update(); // must be launch on UI thread
 
+            CodeEditor2.Global.StopBackGroundParse = true;
+
             // data update
             projectNode.HierarchicalVisibleUpdate();
             items = projectNode.Project.FindItems(
@@ -39,16 +41,13 @@ namespace CodeEditor2.Tools
                 Global.ProgressWindow.ShowDialog(Global.mainWindow);
             });
 
-            Global.LockParse();
-
-            
             await runParse();
-
-            Global.ReleaseParseLock();
 
             Dispatcher.UIThread.Post(() => {
                 Global.ProgressWindow.Hide();
             });
+
+            CodeEditor2.Global.StopBackGroundParse = false;
         }
 
 

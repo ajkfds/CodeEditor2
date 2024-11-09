@@ -46,7 +46,7 @@ namespace CodeEditor2.Views
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                shell = new Shells.WinCmdChell(new List<string> { "prompt $P$G$_" });
+                shell = new Shells.WinCmdShell(new List<string> { "prompt $P$G$_" });
                 shell.LineReceived += Shell_LineReceived;
 
                 shell.Start();

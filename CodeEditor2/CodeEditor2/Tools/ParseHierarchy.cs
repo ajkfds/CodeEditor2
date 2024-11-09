@@ -21,21 +21,21 @@ namespace CodeEditor2.Tools
 
         public static async Task Run(NavigatePanel.NavigatePanelNode rootNode)
         {
-            Global.StopParse = true;
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
             System.Diagnostics.Debug.Print("parse hier sw " + sw.ElapsedMilliseconds.ToString());
 
             Global.ProgressWindow.Title = "Reparse " + rootNode.Text;
             Global.ProgressWindow.ProgressMaxValue = 100;
-            Global.ProgressWindow.ShowDialog(Global.mainWindow);
+            var _ = Global.ProgressWindow.ShowDialog(Global.mainWindow);
 
             {
-                Global.LockParse();
                 
                 int i = 0;
-                ParseHierarchyUnit unit = new ParseHierarchyUnit("ParseHier"+rootNode.Item.Name);
-                unit.Run(rootNode.Item,
+                Item? item = rootNode.Item;
+                if (item == null) throw new Exception();
+                ParseHierarchyUnit unit = new ParseHierarchyUnit("ParseHier"+item.Name);
+                unit.Run(item,
                         (
                             (f) =>
                             {
@@ -55,12 +55,10 @@ namespace CodeEditor2.Tools
                     await Task.Delay(10);
                 }
 
-                Global.ReleaseParseLock();
             }
             rootNode.Update();
 
             Global.ProgressWindow.Hide();
-            Global.StopParse = false;
         }
 
     }

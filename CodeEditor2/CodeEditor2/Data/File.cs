@@ -70,11 +70,6 @@ namespace CodeEditor2.Data
             return new FileNode(this);
         }
 
-        public FileTypes.FileType? FileType
-        {
-            get { return null; }
-        }
-
         public override void Update()
         {
             base.Update();

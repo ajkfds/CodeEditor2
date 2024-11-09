@@ -1,35 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.Shells
 {
-    public class WinCmdChell : Shell
+    public class WinCmdShell : Shell
     {
 
-        public WinCmdChell(List<string> commands)
+        public WinCmdShell(List<string> commands)
         {
-            //            initializeCommands.Add("prompt "+prompt+"$G$_");
+            string? cmd_exe = System.Environment.GetEnvironmentVariable("ComSpec");
+            if (cmd_exe == null) throw new Exception();
 
             initialize(
-                System.Environment.GetEnvironmentVariable("ComSpec"),   // cmd.exe
+                cmd_exe,   // cmd.exe
                 "/K \"chcp 65001\"", // utf-8
                 commands
                 );
         }
 
-        public WinCmdChell()
+        public WinCmdShell()
         {
+            string? cmd_exe = System.Environment.GetEnvironmentVariable("ComSpec");
+            if (cmd_exe == null) throw new Exception();
+
             initialize(
-                System.Environment.GetEnvironmentVariable("ComSpec"),   // cmd.exe
+                cmd_exe,   // cmd.exe
                 "/K \"chcp 65001\"", // utf-8
                 new List<string> { }
                 );
         }
 
-        public WinCmdChell(string command, string arguments)
+        public WinCmdShell(string command, string arguments)
         {
             initialize(
                 command,
@@ -38,7 +43,7 @@ namespace CodeEditor2.Shells
                 );
         }
 
-        public WinCmdChell(string command, string arguments, List<string> commands)
+        public WinCmdShell(string command, string arguments, List<string> commands)
         {
             initialize(
                 command,
@@ -47,9 +52,10 @@ namespace CodeEditor2.Shells
                 );
         }
 
+        public override event ReceivedHandler? LineReceived;
         private void initialize(string command, string arguments, List<string> commands)
         {
-            initialCommans = commands;
+            initialCommands = commands;
 
             process = new System.Diagnostics.Process();
 
@@ -69,17 +75,16 @@ namespace CodeEditor2.Shells
         }
 
 
-        System.Diagnostics.Process process = null;
-        public override event ReceivedHandler LineReceived;
-        private List<string> initialCommans;
+        System.Diagnostics.Process? process = null;
+        private List<string> initialCommands = new List<string>();
 
         public override void Start()
         {
-
+            if (process == null) throw new Exception();
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-            foreach (string command in initialCommans)
+            foreach (string command in initialCommands)
             {
                 process.StandardInput.WriteLine(command);
             }
@@ -88,13 +93,16 @@ namespace CodeEditor2.Shells
 
         public override void Dispose()
         {
-            KillProcessAndChildrens(process.Id); // recursive process kill ( process.kill will not kill child process booted on cmd.exe );
+            if (process == null) return;
 
-            process.WaitForExit();
+            KillProcessAndChildren(process.Id); // recursive process kill ( process.kill will not kill child process booted on cmd.exe );
+            //process.WaitForExit();
+            //process.Close();
             process.Close();
+            process = null;
         }
 
-        private static void KillProcessAndChildrens(int pid)
+        private static void KillProcessAndChildren(int pid)
         {
             //System.Management.ManagementObjectSearcher processSearcher = new System.Management.ManagementObjectSearcher
             //  ("Select * From Win32_Process Where ParentProcessID=" + pid);
@@ -190,6 +198,7 @@ namespace CodeEditor2.Shells
         {
             lock (logs)
             {
+                if (e.Data == null) return;
                 if (e.Data == "") return;
                 if (!logging) logs.Clear();
                 logs.Add(e.Data);
@@ -202,6 +211,7 @@ namespace CodeEditor2.Shells
         {
             lock (logs)
             {
+                if (e.Data == null) return;
                 if (e.Data == "") return;
                 if (!logging) logs.Clear();
                 logs.Add(e.Data);

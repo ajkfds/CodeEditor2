@@ -63,13 +63,12 @@ namespace CodeEditor2.CodeEditor.Parser
                 {
                     parsing = true;
 
+                    while (Global.StopBackGroundParse)
                     {
-                        Global.LockParse();
-
-                        parser.Parse();
-
-                        Global.ReleaseParseLock();
+                        Thread.Sleep(10);
                     }
+
+                    parser.Parse();
 
                     lock (fromBackgroundStock)
                     {

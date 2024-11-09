@@ -101,8 +101,8 @@ public partial class MainView : UserControl
 
         IStorageFolder folder = folders[0];
 
+        CodeEditor2.Global.StopBackGroundParse = true;
 
-        Global.StopParse = true;
         Controller.AppendLog("AddProject" + folder.Path.AbsolutePath,Avalonia.Media.Colors.DarkOrange);
         string path;
         {
@@ -113,7 +113,8 @@ public partial class MainView : UserControl
 
         Data.Project newProject = Project.Create(path);
         await Controller.AddProject(newProject);
-        Global.StopParse = false;
+
+        CodeEditor2.Global.StopBackGroundParse = false;
     }
 
     // MenuItem File

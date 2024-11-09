@@ -63,11 +63,11 @@ namespace CodeEditor2.NavigatePanel
         }
 
         private WeakReference<Item> itemRef;
-        public Item Item
+        public Item? Item
         {
             get
             {
-                Item ret;
+                Item? ret;
                 if (!itemRef.TryGetTarget(out ret)) return null;
                 return ret;
             }

@@ -86,7 +86,7 @@ namespace CodeEditor2.Data
             if (Dirty) return;
             if (CodeDocument == null) return;
             CodeDocument.Dispose();
-            CodeDocument = null;
+//            CodeDocument = null;
         }
 
         public virtual bool Dirty

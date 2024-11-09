@@ -13,7 +13,7 @@ namespace CodeEditor2.Data
     public interface ITextFile
     {
         // item
-        Data.Item Parent { get; set; }
+        Data.Item? Parent { get; set; }
 
         string ID { get; }
         string RelativePath { get; }

@@ -42,23 +42,24 @@ namespace CodeEditor2
         public static System.Threading.Thread UIThread = null;
 
         public static bool Abort = false;
+        public static volatile bool StopBackGroundParse = false;
 
         public static int count = 0;
-        public static void LockParse()
-        {
-            lockName = System.Threading.Thread.CurrentThread.Name;
-            System.Diagnostics.Debug.Print(count.ToString()+ " Parse locked by "+lockName+",count"+ parseSemaphore.CurrentCount.ToString());
-            count++;
-//            parseSemaphore.Wait();
-        }
-        public static void ReleaseParseLock()
-        {
-            System.Diagnostics.Debug.Print("Parse released");
-            lockName = "";
-            //parseSemaphore.Release();
-        }
-        private static string lockName = "";
-        private static SemaphoreSlim parseSemaphore = new SemaphoreSlim(1, 1);
+//        public static void StopBackgroundParse()
+//        {
+//            lockName = System.Threading.Thread.CurrentThread.Name;
+//            System.Diagnostics.Debug.Print(count.ToString()+ " Parse locked by "+lockName+",count"+ backGroundParseSemaphore.CurrentCount.ToString());
+//            count++;
+////            parseSemaphore.Wait();
+//        }
+//        public static void ReleaseBackGroundParse()
+//        {
+//            System.Diagnostics.Debug.Print("Parse released");
+//            lockName = "";
+//            //parseSemaphore.Release();
+//        }
+//        private static string? lockName = "";
+//        private static SemaphoreSlim backGroundParseSemaphore = new SemaphoreSlim(1, 1);
 
         public static Tools.ProgressWindow ProgressWindow;
 
@@ -134,6 +135,5 @@ namespace CodeEditor2
 
         //// for debug
         //public static System.Runtime.Serialization.ObjectIDGenerator IdGenerator = new System.Runtime.Serialization.ObjectIDGenerator();
-        public static bool StopParse = false;
     }
 }
