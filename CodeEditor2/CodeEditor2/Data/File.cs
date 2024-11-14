@@ -65,7 +65,7 @@ namespace CodeEditor2.Data
 
         public static Action<File>? FileCreated;
 
-        protected override NavigatePanelNode createNode()
+        protected override NavigatePanelNode CreateNode()
         {
             return new FileNode(this);
         }

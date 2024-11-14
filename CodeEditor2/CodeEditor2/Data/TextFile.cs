@@ -204,7 +204,7 @@ namespace CodeEditor2.Data
 
 
 
-        protected override NavigatePanelNode createNode()
+        protected override NavigatePanelNode CreateNode()
         {
             return new TextFileNode(this);
         }

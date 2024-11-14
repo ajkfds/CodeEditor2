@@ -68,13 +68,15 @@ namespace CodeEditor2.Data
                 if (file != null)
                 {
                     if (match(file)) return file;
-                    return null;
+                    continue;
                 }
 
                 Folder? folder = item as Folder;
                 if(folder != null)
                 {
-                    return folder.SearchFile(match);
+                    File? folderFile = folder.SearchFile(match);
+                    if (folderFile != null) return folderFile;
+                    continue;
                 }
             }
             return null;
@@ -185,7 +187,7 @@ namespace CodeEditor2.Data
 
         }
 
-        protected override NavigatePanelNode createNode()
+        protected override NavigatePanelNode CreateNode()
         {
             return new FolderNode(this);
         }

@@ -206,7 +206,7 @@ namespace CodeEditor2.Data
                 NavigatePanel.NavigatePanelNode? node;
                 if (nodeRef == null)
                 {
-                    node = createNode();
+                    node = CreateNode();
                     if (node == null) throw new Exception();
                     nodeRef = new WeakReference<NavigatePanel.NavigatePanelNode>(node);
                     return node;
@@ -214,7 +214,7 @@ namespace CodeEditor2.Data
 
                 if (nodeRef.TryGetTarget(out node)) return node;
 
-                node = createNode();
+                node = CreateNode();
                 if (node == null) throw new Exception();
                 nodeRef = new WeakReference<NavigatePanel.NavigatePanelNode>(node);
                 return node;
@@ -224,7 +224,7 @@ namespace CodeEditor2.Data
                 nodeRef = new WeakReference<NavigatePanel.NavigatePanelNode>(value);
             }
         }
-        protected virtual NavigatePanel.NavigatePanelNode createNode()
+        protected virtual NavigatePanel.NavigatePanelNode CreateNode()
         {
             // should set nodeRef
             System.Diagnostics.Debugger.Break();
@@ -234,7 +234,7 @@ namespace CodeEditor2.Data
         public virtual NavigatePanel.NavigatePanelNode? CreateLinkNode()
         {
             NavigatePanel.NavigatePanelNode node;
-            node = createNode();
+            node = CreateNode();
             if (node != null) node.Link = true;
             return node;
         }
