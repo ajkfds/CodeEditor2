@@ -316,20 +316,20 @@ namespace CodeEditor2.Data
                 parseHierarchy(subitem, parsedIds, action);
             }
 
-            //if (textFile.ReparseRequested)
-            //{
-            //    DocumentParser? parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse);
-            //    if (parser != null)
-            //    {
-            //        parser.Parse();
-            //        if (parser.ParsedDocument == null) return;
-            //        textFile.AcceptParsedDocument(parser.ParsedDocument);
+            if (textFile.ReparseRequested)
+            {
+                DocumentParser? parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse);
+                if (parser != null)
+                {
+                    parser.Parse();
+                    if (parser.ParsedDocument == null) return;
+                    textFile.AcceptParsedDocument(parser.ParsedDocument);
 
-            //        // textFile.Items.ParsedDocuments Disposed already
-            //        System.Diagnostics.Debug.Print("# Re-ParseHier.Accept " + textFile.ID);
-            //        textFile.Update();
-            //    }
-            //}
+                    // textFile.Items.ParsedDocuments Disposed already
+                    System.Diagnostics.Debug.Print("# Re-ParseHier.Accept " + textFile.ID);
+                    textFile.Update();
+                }
+            }
         }
     }
 }
