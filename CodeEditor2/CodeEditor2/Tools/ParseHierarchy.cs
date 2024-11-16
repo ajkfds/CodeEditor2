@@ -26,7 +26,8 @@ namespace CodeEditor2.Tools
             System.Diagnostics.Debug.Print("parse hier sw " + sw.ElapsedMilliseconds.ToString());
 
             Global.ProgressWindow.Title = "Reparse " + rootNode.Text;
-            Global.ProgressWindow.ProgressMaxValue = 100;
+            int progressMax = 20;
+            Global.ProgressWindow.ProgressMaxValue = progressMax;
             var _ = Global.ProgressWindow.ShowDialog(Global.mainWindow);
 
             {
@@ -42,6 +43,8 @@ namespace CodeEditor2.Tools
                                 Dispatcher.UIThread.Post(
                                     new Action(() =>
                                     {
+                                        if (progressMax <= i) progressMax = progressMax * 2;
+                                        Global.ProgressWindow.ProgressMaxValue = progressMax;
                                         Global.ProgressWindow.ProgressValue = i;
                                         Global.ProgressWindow.Message = f.Name;
                                         i++;
@@ -52,7 +55,7 @@ namespace CodeEditor2.Tools
                 );
                 while (!unit.Complete)
                 {
-                    await Task.Delay(10);
+                    await Task.Delay(1);
                 }
 
             }

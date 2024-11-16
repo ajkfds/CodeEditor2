@@ -2,6 +2,7 @@
 using CodeEditor2.Data;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,23 +29,27 @@ namespace CodeEditor2.Tools
             thread.Start();
         }
 
-        System.Threading.Thread thread = null;
+        System.Threading.Thread? thread = null;
         public volatile bool Complete = false;
 
-        private Data.Item item;
-        Action<Data.TextFile> startParse;
+        private Data.Item? item;
+        Action<Data.TextFile>? startParse;
 
         private void worker()
         {
             if (item == null) return;
-            Data.ITextFile textFile = item as Data.TextFile;
+            Data.ITextFile? textFile = item as Data.TextFile;
             if (textFile == null) return;
 
-            textFile.ParseHierarchy((tFile) => {
-                textFile.ParseHierarchy((tFile) =>
-                {
-                    Dispatcher.UIThread.Invoke(new Action(() => { Global.ProgressWindow.Message = tFile.ID; }));
-                });
+            //textFile.ParseHierarchy((tFile) => {
+            //    textFile.ParseHierarchy((tFile) =>
+            //    {
+            //        Dispatcher.UIThread.Invoke(new Action(() => { Global.ProgressWindow.Message = tFile.ID; }));
+            //    });
+            //});
+            textFile.ParseHierarchy((tFile) =>
+            {
+                Dispatcher.UIThread.Invoke(new Action(() => { Global.ProgressWindow.Message = tFile.ID; }));
             });
             Complete = true;
         }

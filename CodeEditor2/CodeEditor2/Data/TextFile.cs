@@ -5,6 +5,7 @@ using CodeEditor2.CodeEditor.CodeComplete;
 using CodeEditor2.CodeEditor.Parser;
 using CodeEditor2.CodeEditor.PopupHint;
 using CodeEditor2.CodeEditor.PopupMenu;
+using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
 using System;
 using System.Collections.Generic;
@@ -220,7 +221,7 @@ namespace CodeEditor2.Data
             return null;
         }
 
-        public virtual List<AutocompleteItem>? GetAutoCompleteItems(int index, out string candidateWord)
+        public virtual List<AutocompleteItem>? GetAutoCompleteItems(int index, out string? candidateWord)
         {
             candidateWord = "";
             return null;
@@ -250,11 +251,12 @@ namespace CodeEditor2.Data
         //{
         //}
 
+        // parse this text file hierarchy
         public void ParseHierarchy(Action<ITextFile> action)
         {
-//            CodeEditor2.Controller.AppendLog("parseHier : " + Name);
-
+            //parse complete id list
             List<string> parsedIds = new List<string>();
+
             parseHierarchy(this, parsedIds, action);
             Update();
 
@@ -262,7 +264,7 @@ namespace CodeEditor2.Data
             {
                 NavigatePanelNode.HierarchicalVisibleUpdate();
             }
-//            CodeEditor2.Controller.NavigatePanel.Update();
+            System.Diagnostics.Debug.Print("### TextFile.ParseHierarchy compelet " + parsedIds.Count.ToString() + "module parsed");
         }
 
         private void parseHierarchy(Data.Item item, List<string> parsedIds, Action<ITextFile> action)
@@ -271,13 +273,14 @@ namespace CodeEditor2.Data
             Data.ITextFile? textFile = item as Data.TextFile;
             if (textFile == null) return;
             if (parsedIds.Contains(textFile.ID)) return;
-            System.Diagnostics.Debug.Print("# Try ParseHier "+textFile.ID);
+
+//            System.Diagnostics.Debug.Print("# Try ParseHier "+textFile.ID);
             action(textFile);
             parsedIds.Add(textFile.ID);
 
             if (textFile.ParseValid & !textFile.ReparseRequested)
             {
-                System.Diagnostics.Debug.Print("# ParseHier.Skip " + textFile.ID);
+                System.Diagnostics.Debug.Print("### TextFileparseHierarchy parse skip : " + textFile.ID);
                 textFile.Update();
                 textFile.CodeDocument.LockThreadToUI();
             }
@@ -287,9 +290,13 @@ namespace CodeEditor2.Data
                 if (parser != null)
                 {
                     parser.Parse();
-                    if (parser.ParsedDocument == null) return;
+                    if (parser.ParsedDocument == null)
+                    {
+                        System.Diagnostics.Debug.Print("### TextFileparseHierarchy not parsed : " + textFile.ID + "," + parsedIds.Count.ToString() + "module parsed");
+                        return;
+                    }
                     textFile.AcceptParsedDocument(parser.ParsedDocument);
-                    System.Diagnostics.Debug.Print("# ParseHier.Accept " + textFile.ID);
+                    System.Diagnostics.Debug.Print("### TextFileparseHierarchy parsed : " + textFile.ID+ ","+parsedIds.Count.ToString() + "module parsed");
                     textFile.Update();
                 }
             }
@@ -307,27 +314,22 @@ namespace CodeEditor2.Data
             foreach (Data.Item subitem in items)
             {
                 parseHierarchy(subitem, parsedIds, action);
-                //TextFile? subTextFile = subitem as TextFile;
-                //if (subTextFile == null) continue;
-                //subTextFile.
-
-
             }
 
-            if (textFile.ReparseRequested)
-            {
-                DocumentParser? parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse);
-                if (parser != null)
-                {
-                    parser.Parse();
-                    if (parser.ParsedDocument == null) return;
-                    textFile.AcceptParsedDocument(parser.ParsedDocument);
+            //if (textFile.ReparseRequested)
+            //{
+            //    DocumentParser? parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse);
+            //    if (parser != null)
+            //    {
+            //        parser.Parse();
+            //        if (parser.ParsedDocument == null) return;
+            //        textFile.AcceptParsedDocument(parser.ParsedDocument);
 
-                    // textFile.Items.ParsedDocuments Disposed already
-                    System.Diagnostics.Debug.Print("# Re-ParseHier.Accept " + textFile.ID);
-                    textFile.Update();
-                }
-            }
+            //        // textFile.Items.ParsedDocuments Disposed already
+            //        System.Diagnostics.Debug.Print("# Re-ParseHier.Accept " + textFile.ID);
+            //        textFile.Update();
+            //    }
+            //}
         }
     }
 }
