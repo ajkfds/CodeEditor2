@@ -10,8 +10,12 @@ namespace CodeEditor2.Data
 {
     public class Item : IDisposable
     {
+        // Item is the basic unit of all Data, and project/Directory/File are all represented as items that inherit from Item.
+        // This Item holds the associated data, and that data is reflected in the UI.
+
         protected Item() { }
 
+        // Debug feature: Retrieve the Object ID to distinguish individual objects.
         public long ObjectID
         {
             get
@@ -20,6 +24,10 @@ namespace CodeEditor2.Data
                 return Global.ObjectIDGenerator.GetId(this, out firstTime);
             }
         }
+
+        // Maintain references to parent Items in the tree structure.
+        // Items hold references from parent to child, while references to parents are held as weak references.
+        // This unidirectional reference ensures that when a parent Item is discarded, unused child Items can be collected by the Garbage Collector.
 
         private WeakReference<Item>? parent;
         public Item? Parent
