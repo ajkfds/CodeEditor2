@@ -53,9 +53,11 @@ namespace CodeEditor2.CodeEditor.Parser
             }
 
             Data.ITextFile? currentTextFile = Controller.CodeEditor.GetTextFile();
-            if(currentTextFile != null && currentTextFile.RelativePath == targetTextFile.RelativePath)
+            targetCodeDocument.CopyColorMarkFrom(parser.Document);
+
+            if (currentTextFile == null || currentTextFile != targetTextFile)
             {
-                targetCodeDocument.CopyColorMarkFrom(parser.Document);
+                return;
             }
 
             //targetCodeDocument.CopyColorMarkFrom(parser.Document);
@@ -63,7 +65,7 @@ namespace CodeEditor2.CodeEditor.Parser
 
             // update current view
             Controller.CodeEditor.Refresh();
-            Controller.MessageView.Update(codeView.TextFile.ParsedDocument);
+            Controller.MessageView.Update(parser.ParsedDocument);
         }
 
 
