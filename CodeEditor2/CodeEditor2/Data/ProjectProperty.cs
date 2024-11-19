@@ -9,6 +9,12 @@ using System.Text.Json;
 
 namespace CodeEditor2.Data
 {
+    /// <summary>
+    /// Project property object attached to the project.
+    /// Used to maintain setup for each project. 
+    /// By inheriting this project property for each function and implementing the setup, 
+    /// the project can be serialized and the settings saved to the project file when saving the project.
+    /// </summary>
     public class ProjectProperty
     {
         public ProjectProperty(Project project)

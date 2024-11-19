@@ -405,6 +405,15 @@ namespace CodeEditor2.CodeEditor
             Version = document.Version;
         }
 
+        public void ClearColorMark()
+        {
+            TextColors.LineInformation.Clear();
+            lock (Marks.marks)
+            {
+                Marks.marks.Clear();
+            }
+        }
+
 
 
 

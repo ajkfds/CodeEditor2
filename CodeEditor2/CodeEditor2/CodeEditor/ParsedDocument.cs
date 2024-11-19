@@ -7,6 +7,10 @@ using CodeEditor2.CodeEditor.Parser;
 
 namespace CodeEditor2.CodeEditor
 {
+    /// <summary>
+    // ParsedDocument is the parse result of a text document.
+    // The Parser object parses the TextFile and returns a ParsedDocument object. It keeps the parse results.
+    /// </summary>
     public class ParsedDocument : IDisposable
     {
         public ParsedDocument(Data.TextFile textFile, ulong version, DocumentParser.ParseModeEnum parseMode)
@@ -48,6 +52,9 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Data.TextFile? TextFile
         {
             get

@@ -25,21 +25,23 @@ namespace CodeEditor2.CodeEditor.Parser
             if (parser == null) return;
             if (parser.ParsedDocument == null) return;
 
-            Data.TextFile newTextFile = parser.TextFile;
-            CodeDocument codeDocument = newTextFile.CodeDocument;
+            // parser.Text <- parsedDodument,Document update
 
-            if (newTextFile == null)
+            Data.TextFile targetTextFile = parser.TextFile;
+            CodeDocument targetCodeDocument = targetTextFile.CodeDocument;
+
+            if (targetTextFile == null)
             {
                 parser.Dispose();
                 return;
             }
 
-            Data.ITextFile? currentTextFile = Controller.CodeEditor.GetTextFile();
-
             Controller.AppendLog("complete edit parse ID :" + parser.TextFile.ID);
-            if (codeDocument.Version != parser.ParsedDocument.Version)
+
+            // If the version of the parsed document is already outdated, discard the parse result.
+            if (targetCodeDocument.Version != parser.ParsedDocument.Version)
             {
-                Controller.AppendLog("edit parsed mismatch " + DateTime.Now.ToString() + "ver" + codeDocument.Version + "<-" + parser.ParsedDocument.Version);
+                Controller.AppendLog("edit parsed mismatch " + DateTime.Now.ToString() + "ver" + targetCodeDocument.Version + "<-" + parser.ParsedDocument.Version);
                 parser.Dispose();
                 return;
             }
@@ -49,7 +51,15 @@ namespace CodeEditor2.CodeEditor.Parser
                 parser.TextFile.AcceptParsedDocument(parser.ParsedDocument);
                 System.Diagnostics.Debug.Print("# BackgroundParser.AcceptParsedDocument " + parser.TextFile.ID);
             }
-            codeDocument.CopyColorMarkFrom(parser.Document);
+
+            Data.ITextFile? currentTextFile = Controller.CodeEditor.GetTextFile();
+            if(currentTextFile != null && currentTextFile.RelativePath == targetTextFile.RelativePath)
+            {
+                targetCodeDocument.CopyColorMarkFrom(parser.Document);
+            }
+
+            //targetCodeDocument.CopyColorMarkFrom(parser.Document);
+            //Controller.MessageView.Update(currentTextFile.ParsedDocument);
 
             // update current view
             Controller.CodeEditor.Refresh();

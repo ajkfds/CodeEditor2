@@ -15,6 +15,11 @@ using System.Xml.Linq;
 
 namespace CodeEditor2.Data
 {
+    /// <summary>
+    /// Project item object. 
+    /// It is associated with a specific folder and treats the files/folders under that folder as project items. 
+    /// It maintains the setup for each project and has the functionality to save the project's setup to a JSON file.
+    /// </summary>
     public class Project : Folder
     {
         [SetsRequiredMembers]

@@ -8,14 +8,29 @@ using CodeEditor2.CodeEditor.Parser;
 
 namespace CodeEditor2.Data
 {
+    /// <summary>
+    /// Item is the basic unit of all Data. 
+    /// All items represent specific folders or files, and project/Directory/File objects are all represented as items that inherit from Item.
+    /// This Item holds the associated data, and that data is reflected in the UI.
+    /// </summary>
     public class Item : IDisposable
     {
-        // Item is the basic unit of all Data, and project/Directory/File are all represented as items that inherit from Item.
-        // This Item holds the associated data, and that data is reflected in the UI.
-
         protected Item() { }
 
-        // Debug feature: Retrieve the Object ID to distinguish individual objects.
+        /*
+        
+        Item        <-- File    <-- TextFile
+                    <-- Folder  <-- Project
+         
+        
+        (ITextFile) <-- TextFile
+        */
+
+
+
+        /// <summary>
+        /// Debug feature: Retrieve the Object ID to distinguish individual objects.
+        /// </summary>
         public long ObjectID
         {
             get
@@ -58,18 +73,31 @@ namespace CodeEditor2.Data
         {
             get; set;
         }
+
+        /// <summary>
+        /// file relative path
+        /// </summary>
         public required virtual string RelativePath { get; init; }
 
         public required virtual string Name { get; init; }
+
+        /// <summary>
+        /// refrence to root project item
+        /// </summary>
         public required virtual Project Project { get; init; }
 
         protected ItemList items = new ItemList();
+        /// <summary>
+        /// holding child Items
+        /// </summary>
         public virtual ItemList Items
         {
             get { return items; }
         }
 
-
+        /// <summary>
+        /// This is a collection class for holding child Items. It has the functionality of both a dictionary and a list.
+        /// </summary>
         public class ItemList
         {
             private List<Item> itemList = new List<Item>();
