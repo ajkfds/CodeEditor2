@@ -38,15 +38,12 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
 
 
-            string candidateWord;
-            List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out candidateWord);
-
+            string? candidateWord;
+            List<AutocompleteItem>? items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out candidateWord);
+            if (items == null ||candidateWord == null) return;
 
             if (_completionWindow == null)
             {   // open window
-
-                if (candidateWord.Length < 1) return;
-
                 _completionWindow = new AutoCompleteWindow(codeView._textEditor.TextArea);
                 _completionWindow.Closed += (o, args) => _completionWindow_Closed();
 
