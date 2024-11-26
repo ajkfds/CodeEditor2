@@ -105,7 +105,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
 
             forceOpened = true;
             string candidateWord;
-            List<AutocompleteItem> items = codeView.TextFile.GetAutoCompleteItems(codeDocument.CaretIndex, out candidateWord);
+            List<AutocompleteItem>? items = codeView.TextFile.GetAutoCompleteItems(codeDocument.CaretIndex, out candidateWord);
             items = autocompleteItems;  // override items
             if (items == null || candidateWord == null)
             {
