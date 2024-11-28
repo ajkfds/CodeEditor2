@@ -35,6 +35,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         /// </summary>
         public AutoCompleteWindow(TextArea textArea) : base(textArea)
         {
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.AutoCompleteWindow enter");
             CompletionList = new CompletionList();
 
             // keep height automatic
@@ -62,10 +63,12 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             AttachEvents();
 
             CloseWhenCaretAtBeginning = true;
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.AutoCompleteWindow leave");
         }
 
         protected override void OnClosed()
         {
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.OnClosed enter");
             base.OnClosed();
 
             if (_toolTip != null)
@@ -74,12 +77,14 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 _toolTip = null;
                 _toolTipContent = null;
             }
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.OnClosed leave");
         }
 
         #region ToolTip handling
 
         private void CompletionList_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.CompletionList_SelectionChanged enter");
             if (_toolTipContent == null) return;
 
             var item = CompletionList.SelectedItem;
@@ -123,31 +128,37 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             {
                 _toolTip.IsOpen = false;
             }
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.CompletionList_SelectionChanged leave");
         }
 
         #endregion
 
         private void CompletionList_InsertionRequested(object? sender, EventArgs e)
         {
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.CompletionList_InsertionRequested enter");
             Hide();
             // The window must close before Complete() is called.
             // If the Complete callback pushes stacked input handlers, we don't want to pop those when the CC window closes.
             var item = CompletionList.SelectedItem;
             item?.Complete(TextArea, new AnchorSegment(TextArea.Document, StartOffset, EndOffset - StartOffset), e);
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.CompletionList_InsertionRequested leave");
         }
 
         private void AttachEvents()
         {
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.AttachEvents enter");
             CompletionList.InsertionRequested += CompletionList_InsertionRequested;
             CompletionList.SelectionChanged += CompletionList_SelectionChanged;
             TextArea.Caret.PositionChanged += CaretPositionChanged;
             TextArea.PointerWheelChanged += TextArea_MouseWheel;
             TextArea.TextInput += TextArea_PreviewTextInput;
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.AttachEvents leave");
         }
 
         /// <inheritdoc/>
         protected override void DetachEvents()
         {
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.DetachEvents enter");
             CompletionList.InsertionRequested -= CompletionList_InsertionRequested;
             CompletionList.SelectionChanged -= CompletionList_SelectionChanged;
             TextArea.Caret.PositionChanged -= CaretPositionChanged;
@@ -160,34 +171,43 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 if (aItem != null) aItem.Clean();
             }
             base.DetachEvents();
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.DetachEvents leave");
         }
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.OnKeyDown enter");
             base.OnKeyDown(e);
             if (!e.Handled)
             {
                 CompletionList.HandleKey(e);
             }
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.OnKeyDown leave");
         }
 
         private void TextArea_PreviewTextInput(object? sender, TextInputEventArgs e)
         {
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.TextArea_PreviewTextInput enter");
             e.Handled = RaiseEventPair(this, null, TextInputEvent,
                                        new TextInputEventArgs { Text = e.Text });
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.TextArea_PreviewTextInput leave");
         }
 
         private void TextArea_MouseWheel(object? sender, PointerWheelEventArgs e)
         {
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.TextArea_MouseWheel enter");
             e.Handled = RaiseEventPair(GetScrollEventTarget(),
                                        null, PointerWheelChangedEvent, e);
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.TextArea_MouseWheel leave");
         }
 
         private Control GetScrollEventTarget()
         {
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.GetScrollEventTarget enter");
             if (CompletionList == null)
                 return this;
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.GetScrollEventTarget leave");
             return CompletionList.ScrollViewer ?? CompletionList.ListBox ?? (Control)CompletionList;
         }
 
@@ -210,6 +230,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
 
         private void CaretPositionChanged(object? sender, EventArgs e)
         {
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.CaretPositionChanged enter");
             var offset = TextArea.Caret.Offset;
             if (offset == StartOffset)
             {
@@ -251,6 +272,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                     else IsVisible = true;
                 }
             }
+            System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.CaretPositionChanged leave");
         }
     }
 }

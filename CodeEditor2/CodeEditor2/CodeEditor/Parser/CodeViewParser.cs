@@ -60,9 +60,6 @@ namespace CodeEditor2.CodeEditor.Parser
                 return;
             }
 
-            //targetCodeDocument.CopyColorMarkFrom(parser.Document);
-            //Controller.MessageView.Update(currentTextFile.ParsedDocument);
-
             // update current view
             Controller.CodeEditor.Refresh();
             Controller.MessageView.Update(parser.ParsedDocument);
