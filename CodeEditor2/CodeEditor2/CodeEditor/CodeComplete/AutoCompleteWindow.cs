@@ -79,7 +79,6 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
             System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.OnClosed leave");
         }
-
         #region ToolTip handling
 
         private void CompletionList_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -232,8 +231,10 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         {
             System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.CaretPositionChanged enter");
             var offset = TextArea.Caret.Offset;
+
             if (offset == StartOffset)
             {
+                System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.CaretPositionChanged startOffset");
                 if (CloseAutomatically && CloseWhenCaretAtBeginning)
                 {
                     Hide();
@@ -246,12 +247,13 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                     else IsVisible = true;
                 }
                 return;
-            }
-            if (offset < StartOffset || offset > EndOffset)
+            }else if (offset < StartOffset || offset > EndOffset)
             {
                 if (CloseAutomatically)
                 {
                     Hide();
+                    System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.CaretPositionChanged hide");
+                    return;
                 }
             }
             else
@@ -266,10 +268,18 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                     {
                         List<AutocompleteItem> items = Global.codeView.TextFile.GetAutoCompleteItems(Global.codeView._textEditor.CaretOffset, out candidateWord);
                     }
+                    System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.CaretPositionChanged SelectItem");
                     CompletionList.SelectItem(candidateWord);
 
-                    if (CompletionList.ListBox.ItemCount == 0) IsVisible = false;
-                    else IsVisible = true;
+                    System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.CaretPositionChanged ItemCount "+CompletionList.ListBox.ItemCount.ToString());
+                    if (CompletionList.ListBox.ItemCount == 0)
+                    {
+                        IsVisible = false;
+                    }
+                    else
+                    {
+                        IsVisible = true;
+                    }
                 }
             }
             System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.CaretPositionChanged leave");

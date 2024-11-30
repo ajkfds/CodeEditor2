@@ -131,6 +131,17 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             {
                 if (Completed != null) Completed(textArea, completionSegment, insertionRequestEventArgs);
             }
+
+            public ICompletionData Clone()
+            {
+                AutoCompleteItemView aView = new AutoCompleteItemView();
+                aView.textBlock = textBlock;
+                aView.Text = Text;
+                aView.Completed = Completed;
+                return aView;
+
+
+            }
         }
 
     }
