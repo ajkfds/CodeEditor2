@@ -3,6 +3,7 @@ using CodeEditor2.CodeEditor.PopupMenu;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Text;
 using System.Threading.Tasks;
 using static CodeEditor2.Controller;
@@ -47,6 +48,11 @@ namespace CodeEditor2.Snippets
 
         }
         public virtual void AfterKeyDown(object? sender, TextInputEventArgs e, Views.PopupMenuView popupMenuView)
+        {
+
+        }
+
+        public virtual void Caret_PositionChanged(object? sender, EventArgs e)
         {
 
         }

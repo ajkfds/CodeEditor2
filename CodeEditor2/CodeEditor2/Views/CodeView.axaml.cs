@@ -101,7 +101,6 @@ namespace CodeEditor2.Views
             // event setup
             _textEditor.TextArea.TextEntered += textEditor_TextArea_TextEntered;
             _textEditor.TextArea.TextEntering += textEditor_TextArea_TextEntering;
-            _textEditor.TextArea.KeyDown += TextArea_KeyDown;
             _textEditor.TextArea.KeyUp += TextArea_KeyUp;
             _textEditor.TextArea.DocumentChanged += TextArea_DocumentChanged;
             _textEditor.TextArea.PointerMoved += TextArea_PointerMoved;
@@ -109,6 +108,10 @@ namespace CodeEditor2.Views
             _textEditor.TextArea.Caret.PositionChanged += Caret_PositionChanged;
             _textEditor.TextArea.SelectionChanged += TextArea_SelectionChanged;
             _textEditor.TextArea.RightClickMovesCaret = true;
+
+            // KeyDown Event tunneled to avoid cursor and tab event elemination
+            //_textEditor.TextArea.KeyDown += TextArea_KeyDown;
+            this.AddHandler(InputElement.KeyDownEvent, TextArea_KeyDown, RoutingStrategies.Tunnel);
 
             _highlightRenderer = new HighlightRenderer(new SolidColorBrush(Color.FromArgb(255, 100, 100, 100)));
             _textEditor.TextArea.TextView.BackgroundRenderers.Add(_highlightRenderer);
@@ -391,6 +394,8 @@ namespace CodeEditor2.Views
 
         private void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
+            // TextArea.Keydown will not assert @ cursor key
+            System.Diagnostics.Debug.Print("### TextArea_KeyDown");
              if (e.KeyModifiers == KeyModifiers.Control)
             {
                 if(e.Key == Key.S)

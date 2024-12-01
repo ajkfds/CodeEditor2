@@ -62,6 +62,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                     data.Add(item.CreateItemView());
                 }
                 _completionWindow.StartOffset = prevIndex;
+                _completionWindow.CompletionList.SelectItem(candidateWord);
             }
             else
             {   // update

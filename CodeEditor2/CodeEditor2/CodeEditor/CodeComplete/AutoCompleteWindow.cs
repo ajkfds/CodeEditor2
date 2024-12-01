@@ -63,6 +63,32 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             AttachEvents();
 
             CloseWhenCaretAtBeginning = true;
+            //{
+            //    var document = TextArea.Document;
+            //    if (document != null)
+            //    {
+            //        string candidateWord = "";
+
+            //        // update candidateWord
+            //        if (Global.codeView.TextFile != null)
+            //        {
+            //            List<AutocompleteItem> items = Global.codeView.TextFile.GetAutoCompleteItems(Global.codeView._textEditor.CaretOffset, out candidateWord);
+            //        }
+            //        CompletionList.SelectItem(candidateWord);
+
+            //        //if (CompletionList.ListBox.ItemCount == 0)
+            //        //{
+            //        //    IsVisible = false;
+            //        //}
+            //        //else
+            //        //{
+            //        //    IsVisible = true;
+            //        //}
+            //    }
+
+            //}
+
+
             System.Diagnostics.Debug.Print("#=# AutoCompleteWindow.AutoCompleteWindow leave");
         }
 

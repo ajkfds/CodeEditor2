@@ -156,7 +156,26 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             //}
         }
 
-        public InteractiveSnippet Snippet = null;
+        private InteractiveSnippet? snippet = null;
+        public InteractiveSnippet? Snippet
+        {
+            get
+            {
+                return snippet;
+            }
+            set
+            {
+                if(value == null)
+                {
+                    System.Diagnostics.Debug.Print("### Snippet = null");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.Print("### Snippet = " + value.ToString());
+                }
+                snippet = value;
+            }
+        }
 
         public void StartInteractiveSnippet(InteractiveSnippet interactiveSnippet)
         {
