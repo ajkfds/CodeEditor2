@@ -63,6 +63,13 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 }
                 _completionWindow.StartOffset = prevIndex;
                 _completionWindow.CompletionList.SelectItem(candidateWord);
+
+                if (_completionWindow.CompletionList._listBox.ItemCount == 0)
+                {
+                    _completionWindow.Close();
+                    System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave2");
+                    return;
+                }
             }
             else
             {   // update
@@ -72,7 +79,6 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                     System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave1");
                     return;
                 }
-
 
                 if (_completionWindow.CompletionList._listBox.ItemCount == 0)
                 {

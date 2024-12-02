@@ -194,9 +194,10 @@ namespace CodeEditor2.CodeEditor.PopupMenu
 
         public void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
+            System.Diagnostics.Debug.Print("## TextArea_KeyDown for snippet enter");
             if (Snippet == null) return;
-            System.Diagnostics.Debug.Print("## TextArea_KeyDown for snippet");
             Snippet.KeyDown(sender, e, codeView.PopupMenu);
+            System.Diagnostics.Debug.Print("## TextArea_KeyDown for snippet leave");
         }
         public void TextEntering(object? sender, TextInputEventArgs e)
         {

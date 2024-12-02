@@ -395,8 +395,8 @@ namespace CodeEditor2.Views
         private void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
             // TextArea.Keydown will not assert @ cursor key
-            System.Diagnostics.Debug.Print("### TextArea_KeyDown");
-             if (e.KeyModifiers == KeyModifiers.Control)
+            System.Diagnostics.Debug.Print("### TextArea_KeyDown enter");
+            if (e.KeyModifiers == KeyModifiers.Control)
             {
                 if(e.Key == Key.S)
                 {
@@ -411,6 +411,7 @@ namespace CodeEditor2.Views
                 codeViewPopupMenu.ShowToolSelectionPopupMenu();
             }
             codeViewPopupMenu.TextArea_KeyDown(sender, e);
+            System.Diagnostics.Debug.Print("### TextArea_KeyDown leave");
         }
 
         // tool selection form /////////////////////////////////////////////////////////////////////////
