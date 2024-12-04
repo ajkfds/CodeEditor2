@@ -28,7 +28,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             if (codeView.TextFile == null) return;
             if (codeView.CodeDocument == null) return;
 
-            System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered enter");
+            //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered enter");
 
             char? prevChar = null;  // character before caret
             int prevIndex = codeView._textEditor.CaretOffset;
@@ -67,7 +67,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 if (_completionWindow.CompletionList._listBox.ItemCount == 0)
                 {
                     _completionWindow.Close();
-                    System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave2");
+                    //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave2");
                     return;
                 }
             }
@@ -76,47 +76,47 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 if (candidateWord == "")
                 {
                     _completionWindow.Close();
-                    System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave1");
+                    //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave1");
                     return;
                 }
 
                 if (_completionWindow.CompletionList._listBox.ItemCount == 0)
                 {
                     _completionWindow.Close();
-                    System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave2");
+                    //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave2");
                     return;
                 }
                 if (items == null || candidateWord == null || candidateWord == "" & prevChar != '.')
                 {
                     _completionWindow.Close();
-                    System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave3");
+                    //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave3");
                     return;
                 }
             }
-            System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave4");
+            //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave4");
         }
 
         private void _completionWindow_Closed()
         {
-            System.Diagnostics.Debug.Print("#=# CodeCompleteHandler._completionWindow_Closed enter");
+            //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler._completionWindow_Closed enter");
             if (_completionWindow == null) return;
             _completionWindow = null;
-            System.Diagnostics.Debug.Print("#=# CodeCompleteHandler._completionWindow_Closed leave");
+            //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler._completionWindow_Closed leave");
             return;
         }
 
         public void ForceOpenAutoComplete(List<AutocompleteItem> autocompleteItems)
         {
-            System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.ForceOpenAutoComplete enter");
+            //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.ForceOpenAutoComplete enter");
             if (codeView.TextFile == null)
             {
-                System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.ForceOpenAutoComplete leave1");
+                //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.ForceOpenAutoComplete leave1");
                 return;
             }
             CodeDocument? codeDocument = codeView.CodeDocument;
             if (codeDocument == null)
             {
-                System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.ForceOpenAutoComplete leave2");
+                //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.ForceOpenAutoComplete leave2");
                 return;
             }
 
@@ -141,7 +141,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 var data = _completionWindow.CompletionList.CompletionData;
                 _completionWindow.Show();
             }
-            System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.ForceOpenAutoComplete leave3");
+            //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.ForceOpenAutoComplete leave3");
         }
     }
 }

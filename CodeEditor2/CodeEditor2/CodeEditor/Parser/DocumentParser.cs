@@ -28,7 +28,7 @@ namespace CodeEditor2.CodeEditor.Parser
         public required CodeDocument Document
         {
             get;
-            init;
+            set;
         }
 
         public enum ParseModeEnum
