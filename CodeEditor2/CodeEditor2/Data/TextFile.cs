@@ -51,6 +51,8 @@ namespace CodeEditor2.Data
             base.Dispose();
         }
 
+        public double StoredVerticalScrollPosition { get; set; } = 0;
+
         public virtual bool ReparseRequested { get; set; } = false;
 
         public bool IsCodeDocumentCashed

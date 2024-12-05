@@ -289,6 +289,8 @@ namespace CodeEditor2.Views
         {
             System.Diagnostics.Debug.Print("## SetTextFile");
 
+            if (TextFile != null) TextFile.StoredVerticalScrollPosition = _textEditor.VerticalOffset;
+
             skipEvents = true;
 
             if (codeViewPopupMenu.Snippet != null) codeViewPopupMenu.AbortInteractiveSnippet();
@@ -322,7 +324,8 @@ namespace CodeEditor2.Views
                 textFile.AcceptParsedDocument(textFile.ParsedDocument);
             }
 
-            ScrollToCaret();
+            //            ScrollToCaret();
+            _textEditor.ScrollToVerticalOffset(TextFile.StoredVerticalScrollPosition);
 
             if (parseEntry) codeViewParser.EntryParse();
             attachToCodeDocument();
