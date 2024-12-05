@@ -312,7 +312,15 @@ namespace CodeEditor2.Views
             _textEditor.CaretOffset = textFile.CodeDocument.CaretIndex;
 
             // update ParseDocument Result to current Text
-            //textFile.AcceptParsedDocument(textFile.ParsedDocument);
+            if(textFile.ParsedDocument == null)
+            {
+                textFile.ReparseRequested = true;
+//                System.Diagnostics.Debugger.Break();
+            }
+            else
+            {
+                textFile.AcceptParsedDocument(textFile.ParsedDocument);
+            }
 
             ScrollToCaret();
 
