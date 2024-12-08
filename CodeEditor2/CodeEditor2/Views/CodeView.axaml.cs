@@ -58,6 +58,7 @@ namespace CodeEditor2.Views
         public CodeView()
         {
             InitializeComponent();
+            if (Design.IsDesignMode) return;
 
             Global.codeView = this;
 

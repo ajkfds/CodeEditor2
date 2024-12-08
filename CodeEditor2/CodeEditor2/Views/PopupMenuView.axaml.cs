@@ -16,6 +16,8 @@ namespace CodeEditor2.Views
         public PopupMenuView()
         {
             InitializeComponent();
+            this.Margin = new Avalonia.Thickness(0);
+            this.Padding = new Avalonia.Thickness(0);
 
             Style style = new Style();
             style.Selector = ((Selector?)null).OfType(typeof(ListBoxItem));
@@ -35,6 +37,8 @@ namespace CodeEditor2.Views
 
         private void TextBox0_TextChanged(object? sender, TextChangedEventArgs e)
         {
+            if (Design.IsDesignMode) return;
+
             PopupMenuItem? selectedItem = ListBox0.SelectedItem as PopupMenuItem;
 
             List<PopupMenuItem> topHititems = new List<PopupMenuItem>();

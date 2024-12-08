@@ -5,7 +5,7 @@
              xmlns:vm="clr-namespace:CodeEditor2.ViewModels;assembly=CodeEditor2"
              xmlns:views="clr-namespace:CodeEditor2.Views;assembly=CodeEditor2"
              xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Contorls;assembly=AjkAvaloniaLibs"
-             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
              x:Class="CodeEditor2.Views.MainView"
              >
   <Design.DataContext>

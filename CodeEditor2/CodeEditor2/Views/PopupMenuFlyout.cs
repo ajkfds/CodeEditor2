@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Styling;
 using System;
@@ -17,6 +18,17 @@ namespace CodeEditor2.Views
 {
     public class PopupMenuFlyout : PopupFlyoutBase
     {
+        //public PopupMenuFlyout():base() {
+        //    // FlyoutPresenterThemeを設定
+        //    this.FlyoutPresenterTheme = new ControlTheme(typeof(FlyoutPresenter)) {
+        //        Setters = { 
+        ////            new Setter(FlyoutPresenter.BackgroundProperty, Avalonia.Media.Brushes.LightBlue),
+        ////            new Setter(FlyoutPresenter.BorderBrushProperty, Avalonia.Media.Brushes.DarkBlue),
+        //            new Setter(FlyoutPresenter.BorderThicknessProperty, new Thickness(2)) 
+        //        } 
+        //    };
+        //}
+
         /// <summary>
         /// Defines the <see cref="Content"/> property
         /// </summary>
@@ -57,10 +69,11 @@ namespace CodeEditor2.Views
 
         protected override Control CreatePresenter()
         {
-            return new FlyoutPresenter
+            FlyoutPresenter presenter = new FlyoutPresenter
             {
                 [!ContentControl.ContentProperty] = this[!ContentProperty]
             };
+            return presenter;
         }
 
 
@@ -73,9 +86,23 @@ namespace CodeEditor2.Views
                 //    SetPresenterClasses(presenter, FlyoutPresenterClasses);
                 //}
 
+                //if(FlyoutPresenterTheme == null)
+                //{
+                //    this.FlyoutPresenterTheme = new ControlTheme(typeof(FlyoutPresenter)) 
+                //    { 
+                //        Setters = { 
+                //            new Setter(FlyoutPresenter.BackgroundProperty, Brushes.LightBlue),
+                //            new Setter(FlyoutPresenter.BorderBrushProperty, Brushes.DarkBlue),
+                //            new Setter(FlyoutPresenter.BorderThicknessProperty, new Thickness(2)) 
+                //        } 
+                //    };
+                //}
+
                 if (FlyoutPresenterTheme is { } theme)
                 {
                     presenter.SetValue(Control.ThemeProperty, theme);
+                    //presenter.SetValue(Control.MarginProperty, 0);
+                    //presenter.SetValue(Control.MaxWidthProperty, 10);
                 }
             }
 
@@ -91,7 +118,7 @@ namespace CodeEditor2.Views
             get
             {
                 if (!(Popup.Child is FlyoutPresenter)) throw new Exception();
-                if ((Popup.Child as FlyoutPresenter).Content == null) return null;
+                if ((Popup.Child as FlyoutPresenter)?.Content == null) return null;
                 PopupMenuView view = (Popup.Child as FlyoutPresenter).Content as PopupMenuView;
                 return view;
             }

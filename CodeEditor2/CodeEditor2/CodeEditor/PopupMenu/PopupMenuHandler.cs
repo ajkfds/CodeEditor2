@@ -44,11 +44,6 @@ namespace CodeEditor2.CodeEditor.PopupMenu
 
             Avalonia.Point position = transformedBound.Clip.Position;
 
-            //Avalonia.PixelPoint screenPosition = new Avalonia.PixelPoint(
-            //    Global.mainWindow.Position.X + (int)(transformedBound.Clip.Position.X * Global.mainWindow.DesktopScaling),
-            //    Global.mainWindow.Position.Y + (int)(transformedBound.Clip.Position.Y * Global.mainWindow.DesktopScaling)
-            //    );
-
             PopupMenuItems.Clear();
             foreach (ToolItem item in candidates) { PopupMenuItems.Add(item.CreatePopupMenuItem()); }
 
