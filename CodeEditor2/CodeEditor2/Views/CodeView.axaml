@@ -9,16 +9,17 @@
 			 FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
 			 FontWeight="Normal"
              x:Class="CodeEditor2.Views.CodeView">
-		<AvalonEdit:TextEditor Name="Editor"
-			HorizontalScrollBarVisibility="Auto"
-			VerticalScrollBarVisibility="Visible"
-			FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
-			FontWeight="Normal"
-			FontSize="10"
-			ToolTip.Tip="AAA"
-			ToolTip.Placement="Pointer"
-			ToolTip.ShowDelay="0"
-		>
+	<AvalonEdit:TextEditor Name="Editor"
+		HorizontalScrollBarVisibility="Auto"
+		VerticalScrollBarVisibility="Visible"
+		FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+		FontWeight="Normal"
+		FontSize="10"
+		ToolTip.Tip="AAA"
+		ToolTip.Placement="Pointer"
+		ToolTip.ShowDelay="0"
+	>
+		
 		<ToolTip.Tip>
 			<ajkctrl:ColorLabelControl 
 				Name="PopupColorLabel"
@@ -28,6 +29,7 @@
 			>
 			</ajkctrl:ColorLabelControl>
 		</ToolTip.Tip>
+		
 		<FlyoutBase.AttachedFlyout>
 			<views:PopupMenuFlyout Placement="AnchorAndGravity">
 				<views:PopupMenuView
@@ -40,5 +42,17 @@
 				/>
 			</views:PopupMenuFlyout>
 		</FlyoutBase.AttachedFlyout>
-		</AvalonEdit:TextEditor>
+
+		<AvalonEdit:TextEditor.Styles>
+			<Style Selector="FlyoutPresenter">
+				<!-->Setter Property="Background" Value="Red"></Setter-->
+				<!--Setter Property="Margin" Value="2"></Setter-->
+				<!--Setter Property="BorderThickness" Value="2"></Setter-->
+				<Setter Property="Padding" Value="2"></Setter>
+			</Style>
+
+		</AvalonEdit:TextEditor.Styles>
+
+	</AvalonEdit:TextEditor>
+	
 </UserControl>
