@@ -2,11 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Contorls;assembly=AjkAvaloniaLibs"
              mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="200"
              x:Class="CodeEditor2.Views.PopupMenuView">
 	<StackPanel Orientation="Vertical" Margin="0">
 		<TextBox Text="Sample" Name="TextBox0" FontSize="9" Height="20" MinHeight="12" Padding="2" Margin="0">
 		</TextBox>
-		<ListBox Name="ListBox0" FontSize="9" Margin="0" Padding="2"></ListBox>
+		<ajkctrl:ListViewControl Name="ListView" FontSize="9" Margin="0" Padding="2" MaxHeight="200"></ajkctrl:ListViewControl>
 	</StackPanel>
 </UserControl>

@@ -19,19 +19,19 @@ namespace CodeEditor2.Views
             this.Margin = new Avalonia.Thickness(0);
             this.Padding = new Avalonia.Thickness(0);
 
-            Style style = new Style();
-            style.Selector = ((Selector?)null).OfType(typeof(ListBoxItem));
-            style.Add(new Setter(Layoutable.MinHeightProperty, 8.0));
-            style.Add(new Setter(Layoutable.HeightProperty, 14.0));
-            ListBox0.Styles.Add(style);
+            //Style style = new Style();
+            //style.Selector = ((Selector?)null).OfType(typeof(ListBoxItem));
+            //style.Add(new Setter(Layoutable.MinHeightProperty, 8.0));
+            //style.Add(new Setter(Layoutable.HeightProperty, 14.0));
+            //ListBox0.Styles.Add(style);
 
             KeyDown += PopupMenuView_KeyDown;
             LostFocus += PopupMenuView_LostFocus;
             TextBox0.TextChanged += TextBox0_TextChanged;
 
-            if (ListBox0.Items.Count > 0)
+            if (ListView.Items.Count > 0)
             {
-                ListBox0.SelectedIndex = 0;
+                ListView.SelectedIndex = 0;
             }
         }
 
@@ -39,7 +39,7 @@ namespace CodeEditor2.Views
         {
             if (Design.IsDesignMode) return;
 
-            PopupMenuItem? selectedItem = ListBox0.SelectedItem as PopupMenuItem;
+            PopupMenuItem? selectedItem = null;//ListBox0.SelectedItem as PopupMenuItem;
 
             List<PopupMenuItem> topHititems = new List<PopupMenuItem>();
             List<PopupMenuItem> partialHititems = new List<PopupMenuItem>();
@@ -71,31 +71,31 @@ namespace CodeEditor2.Views
                 }
             }
 
-            ListBox0.Items.Clear();
-            foreach(var item in topHititems)
+            ListView.Items.Clear();
+            foreach (var item in topHititems)
             {
-                ListBox0.Items.Add(item);
+                ListView.Items.Add(item);
             }
             foreach (var item in partialHititems)
             {
-                ListBox0.Items.Add(item);
+                ListView.Items.Add(item);
             }
 
-            if(selectedItem != null)
+            if (selectedItem != null)
             {
-                if (ListBox0.Items.Contains(selectedItem))
+                if (ListView.Items.Contains(selectedItem))
                 {
-                    ListBox0.SelectedItem = selectedItem;
-                } 
+                    ListView.SelectedItem = selectedItem;
+                }
             }
 
-            if (ListBox0.Items.Count == 0)
+            if (ListView.Items.Count == 0)
             {
                 cancel();
             }
-            if (ListBox0.SelectedItem == null)
+            if (ListView.SelectedItem == null)
             {
-                ListBox0.SelectedIndex = 0;
+                ListView.SelectedIndex = 0;
             }
         }
 
@@ -105,11 +105,11 @@ namespace CodeEditor2.Views
         public void OnOpen(CancelEventArgs args)
         {
             TextBox0.Text = "";
-            ListBox0.Items.Clear();
+            ListView.Items.Clear();
 
-            foreach(PopupMenuItem item in Global.codeView.codeViewPopupMenu.PopupMenuItems)
+            foreach (PopupMenuItem item in Global.codeView.codeViewPopupMenu.PopupMenuItems)
             {
-                ListBox0.Items.Add(item);
+                ListView.Items.Add(item);
             }
         }
 
@@ -127,19 +127,19 @@ namespace CodeEditor2.Views
                 return;
             }
 
-            if(e.Key == Avalonia.Input.Key.Up)
+            if (e.Key == Avalonia.Input.Key.Up)
             {
-                int i = ListBox0.SelectedIndex;
+                int i = ListView.SelectedIndex;
                 if (i != 0) i--;
-                ListBox0.SelectedIndex = i;
+                ListView.SelectedIndex = i;
                 return;
             }
 
-            if(e.Key == Avalonia.Input.Key.Down)
+            if (e.Key == Avalonia.Input.Key.Down)
             {
-                int i = ListBox0.SelectedIndex;
-                if (i < ListBox0.ItemCount - 1) i++;
-                ListBox0.SelectedIndex = i;
+                int i = ListView.SelectedIndex;
+                if (i < ListView.ItemCount - 1) i++;
+                ListView.SelectedIndex = i;
                 return;
             }
         }
@@ -157,7 +157,7 @@ namespace CodeEditor2.Views
         private void select()
         {
             Global.codeView.HidePopupMenu();
-            PopupMenuItem? selectedItem = ListBox0.SelectedItem as PopupMenuItem;
+            PopupMenuItem? selectedItem = ListView.SelectedItem as PopupMenuItem;
             if (selectedItem == null) return;
 
             if (Selected != null) Selected(selectedItem);

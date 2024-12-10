@@ -70,8 +70,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             if (codeView.TextFile == null) return;
 
 
-            List<ToolItem> tools = codeView.TextFile.GetToolItems(codeView.CodeDocument.CaretIndex);
-            //items.Add(new Snippets.ToLower());
+            List<ToolItem>? tools = codeView.TextFile.GetToolItems(codeView.CodeDocument.CaretIndex);
             if (tools == null)
             {
                 tools = new List<ToolItem>();

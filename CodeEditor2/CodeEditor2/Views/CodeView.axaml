@@ -45,9 +45,6 @@
 
 		<AvalonEdit:TextEditor.Styles>
 			<Style Selector="FlyoutPresenter">
-				<!-->Setter Property="Background" Value="Red"></Setter-->
-				<!--Setter Property="Margin" Value="2"></Setter-->
-				<!--Setter Property="BorderThickness" Value="2"></Setter-->
 				<Setter Property="Padding" Value="2"></Setter>
 				<Setter Property="MaxHeight" Value="400"></Setter>
 			</Style>
