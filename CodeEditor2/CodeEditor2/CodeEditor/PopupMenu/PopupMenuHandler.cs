@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Avalonia.Input;
 using System.Net.Http.Headers;
 using CodeEditor2.Snippets;
+using DynamicData;
 
 namespace CodeEditor2.CodeEditor.PopupMenu
 {
@@ -28,6 +29,71 @@ namespace CodeEditor2.CodeEditor.PopupMenu
 
         public List<PopupMenuItem> PopupMenuItems = new List<PopupMenuItem>();
 
+        public PopupMenuView? OpenAutoComplete(List<ToolItem> candidates)
+        {
+            System.Diagnostics.Debug.Print("## OpenCustomSelection");
+            PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
+            if (flyout == null) return null;
+            if (flyout.IsOpen) return null;
+            if (codeView.TextFile == null) return null;
+
+            TransformedBounds? tBound = Global.codeView.Editor.GetTransformedBounds();
+            if (tBound == null) return null;
+            //            TransformedBounds transformedBound = (TransformedBounds)tBound;
+            var caretRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
+
+
+            //            Avalonia.Point position = transformedBound.Clip.Position;
+
+            PopupMenuItems.Clear();
+            foreach (ToolItem item in candidates) { PopupMenuItems.Add(item.CreatePopupMenuItem()); }
+
+            flyout.ShowMode = FlyoutShowMode.Standard;
+            flyout.Placement = PlacementMode.AnchorAndGravity;
+            flyout.VerticalOffset = caretRect.Top + caretRect.Height;
+            flyout.HorizontalOffset = caretRect.Left;
+            flyout.PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight;
+            flyout.PlacementAnchor = Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.TopLeft;
+
+            PopupMenuView popupMenuView = (PopupMenuView)flyout.Content;
+            popupMenuView.TextBox0.IsVisible = false;
+
+
+            flyout.ShowMode = FlyoutShowMode.Transient;
+            flyout.ShowAt(codeView._textEditor); // = FlyoutBase.ShowAttachedFlyout(_textEditor);
+
+            return popupMenuView;
+        }
+        public void UpdateAutoComplete(List<ToolItem> candidates)
+        {
+            //System.Diagnostics.Debug.Print("## OpenCustomSelection");
+            //PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
+            //if (flyout == null) return;
+            //if (flyout.IsOpen) return;
+            //if (codeView.TextFile == null) return;
+
+            //TransformedBounds? tBound = Global.codeView.Editor.GetTransformedBounds();
+            //if (tBound == null) return;
+            ////            TransformedBounds transformedBound = (TransformedBounds)tBound;
+            //var caretRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
+
+
+            PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
+            if (flyout == null) return;
+//            if (flyout.IsOpen) return;
+            if (codeView.TextFile == null) return;
+            PopupMenuView popupMenuView = (PopupMenuView)flyout.Content;
+            PopupMenuItems.Clear();
+            foreach (ToolItem item in candidates) { PopupMenuItems.Add(item.CreatePopupMenuItem()); }
+
+            popupMenuView.ListView.Items.Clear();
+            foreach (ToolItem item in candidates)
+            {
+                popupMenuView.ListView.Items.Add(item.CreatePopupMenuItem());
+            }
+
+        }
+
         public void OpenCustomSelection(List<ToolItem> candidates)
         {
             System.Diagnostics.Debug.Print("## OpenCustomSelection");
@@ -38,22 +104,29 @@ namespace CodeEditor2.CodeEditor.PopupMenu
 
             TransformedBounds? tBound = Global.codeView.Editor.GetTransformedBounds();
             if (tBound == null) return;
-            TransformedBounds transformedBound = (TransformedBounds)tBound;
+            //            TransformedBounds transformedBound = (TransformedBounds)tBound;
             var caretRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
 
 
-            Avalonia.Point position = transformedBound.Clip.Position;
+            //            Avalonia.Point position = transformedBound.Clip.Position;
 
             PopupMenuItems.Clear();
             foreach (ToolItem item in candidates) { PopupMenuItems.Add(item.CreatePopupMenuItem()); }
 
+            flyout.ShowMode = FlyoutShowMode.Standard;
             flyout.Placement = PlacementMode.AnchorAndGravity;
             flyout.VerticalOffset = caretRect.Top;
             flyout.HorizontalOffset = caretRect.Left;
             flyout.PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight;
             flyout.PlacementAnchor = Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.TopLeft;
 
+            PopupMenuView popupMenuView = (PopupMenuView)flyout.Content;
+            popupMenuView.TextBox0.IsVisible = true;
+
+
+            flyout.ShowMode = FlyoutShowMode.Standard;
             flyout.ShowAt(codeView._textEditor); // = FlyoutBase.ShowAttachedFlyout(_textEditor);
+
         }
 
         public void ShowToolSelectionPopupMenu()
@@ -100,11 +173,15 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             PopupMenuItems.Clear();
             foreach (ToolItem item in tools) { PopupMenuItems.Add(item.CreatePopupMenuItem()); }
 
+            flyout.ShowMode = FlyoutShowMode.Standard;
             flyout.Placement = PlacementMode.AnchorAndGravity;
             flyout.VerticalOffset = position.Y - scroll.Y;
             flyout.HorizontalOffset = position.X - scroll.X;
             flyout.PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight;
             flyout.PlacementAnchor = Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.TopLeft;
+
+            PopupMenuView popupMenuView = (PopupMenuView)flyout.Content;
+            popupMenuView.TextBox0.IsVisible = true;
 
             flyout.ShowAt(codeView._textEditor); // = FlyoutBase.ShowAttachedFlyout(_textEditor);
         }

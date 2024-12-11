@@ -29,6 +29,7 @@ namespace CodeEditor2.Views
             LostFocus += PopupMenuView_LostFocus;
             TextBox0.TextChanged += TextBox0_TextChanged;
 
+
             if (ListView.Items.Count > 0)
             {
                 ListView.SelectedIndex = 0;
@@ -46,11 +47,6 @@ namespace CodeEditor2.Views
 
             if (TextBox0.Text == null) return;
             string targetText = TextBox0.Text.ToLower();
-
-            if(TextBox0.Text == "mo")
-            {
-                string s = "";
-            }
 
             foreach (PopupMenuItem item in Global.codeView.codeViewPopupMenu.PopupMenuItems)
             {
@@ -91,7 +87,7 @@ namespace CodeEditor2.Views
 
             if (ListView.Items.Count == 0)
             {
-                cancel();
+                Cancel();
             }
             if (ListView.SelectedItem == null)
             {
@@ -117,44 +113,54 @@ namespace CodeEditor2.Views
         {
             if (e.Key == Avalonia.Input.Key.Return | e.Key == Avalonia.Input.Key.Enter)
             {
-                select();
+                ChooseItem();
                 return;
             }
 
             if (e.Key == Avalonia.Input.Key.Escape)
             {
-                cancel();
+                Cancel();
                 return;
             }
 
-            if (e.Key == Avalonia.Input.Key.Up)
-            {
-                int i = ListView.SelectedIndex;
-                if (i != 0) i--;
-                ListView.SelectedIndex = i;
-                return;
-            }
+            if (e.Key == Avalonia.Input.Key.Up) SelectUp();
 
-            if (e.Key == Avalonia.Input.Key.Down)
-            {
-                int i = ListView.SelectedIndex;
-                if (i < ListView.ItemCount - 1) i++;
-                ListView.SelectedIndex = i;
-                return;
-            }
+            if (e.Key == Avalonia.Input.Key.Down) SelectDown();
         }
+
+        public void SelectUp()
+        {
+            int i = ListView.SelectedIndex;
+            if (i != 0) i--;
+            ListView.SelectedIndex = i;
+            return;
+        }
+
+        public void SelectDown()
+        {
+            int i = ListView.SelectedIndex;
+            if (i < ListView.ItemCount - 1) i++;
+            ListView.SelectedIndex = i;
+            return;
+        }
+
+
         private void PopupMenuView_LostFocus(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            cancel();
+            Cancel();
             //CodeEditor2.Controller.CodeEditor.AbortInteractiveSnippet();
         }
 
-        private void cancel()
+        public void Cancel()
         {
             Global.codeView.HidePopupMenu();
         }
 
-        private void select()
+        public PopupMenuItem? GetSlectedItem()
+        {
+            return ListView.SelectedItem as PopupMenuItem;
+        }
+        public void ChooseItem()
         {
             Global.codeView.HidePopupMenu();
             PopupMenuItem? selectedItem = ListView.SelectedItem as PopupMenuItem;

@@ -40,6 +40,7 @@ using CodeEditor2.CodeEditor.TextDecollation;
 using CodeEditor2.CodeEditor.CodeComplete;
 using CodeEditor2.CodeEditor.Parser;
 using CodeEditor2.CodeEditor.PopupHint;
+using System.Text.RegularExpressions;
 
 namespace CodeEditor2.Views
 {
@@ -406,8 +407,8 @@ namespace CodeEditor2.Views
 
         private void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
+
             // TextArea.Keydown will not assert @ cursor key
-            System.Diagnostics.Debug.Print("### TextArea_KeyDown enter");
             if (e.KeyModifiers == KeyModifiers.Control)
             {
                 if(e.Key == Key.S)
@@ -423,7 +424,7 @@ namespace CodeEditor2.Views
                 codeViewPopupMenu.ShowToolSelectionPopupMenu();
             }
             codeViewPopupMenu.TextArea_KeyDown(sender, e);
-            System.Diagnostics.Debug.Print("### TextArea_KeyDown leave");
+            codeViewAutoComplete.KeyDown(sender, e);
         }
 
         // tool selection form /////////////////////////////////////////////////////////////////////////
@@ -436,7 +437,6 @@ namespace CodeEditor2.Views
         {
             codeViewPopupMenu.OpenCustomSelection(candidates);
         }
-
 
         public void HidePopupMenu()
         {
@@ -488,7 +488,7 @@ namespace CodeEditor2.Views
         {
             if (skipEvents) return;
             codeViewPopupMenu.TextEntered(sender, e);
-            codeViewAutoComplete.OnTextEntered(e);
+            codeViewAutoComplete.TextEntered(sender,e);
             TextFile?.TextEntered(e);
         }
 

@@ -4,6 +4,7 @@ using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Utils;
+using CodeEditor2.CodeEditor.PopupMenu;
 using HarfBuzzSharp;
 using SkiaSharp;
 using System;
@@ -15,9 +16,9 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor.CodeComplete
 {
-    public class AutocompleteItem
+    public class AutocompleteItem : PopupMenu.ToolItem
     {
-        public AutocompleteItem(string text, byte colorIndex, Color color)
+        public AutocompleteItem(string text, byte colorIndex, Color color) :base(text)
         {
             this.text = text;
             this.colorIndex = colorIndex;
@@ -40,7 +41,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
             else
             {
-                Apply(codeDocument);
+                Apply();
             }
         }
 
@@ -51,23 +52,6 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             this.codeDocument = codeDocument;
         }
 
-
-        // create item view object to avoid Avalonia Exception
-        // ICompletionData re-use will cause visual tree exception
-        public AutoCompleteItemView CreateItemView()
-        {
-            AutoCompleteItemView itemView = new AutoCompleteItemView();
-            itemView.textBlock = new TextBlock();
-            itemView.textBlock.Text = Text;
-            itemView.textBlock.FontSize = 10;
-            itemView.textBlock.Foreground = new SolidColorBrush(Color);
-
-            itemView.Text = Text;
-
-            itemView.Completed = new Action<TextArea, ISegment, EventArgs>((x, y, z) => { Complete(x, y, z); });
-
-            return itemView;
-        }
 
         private string text;
         public string Text { get { return text; } }
@@ -83,8 +67,9 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         private byte colorIndex;
         private Color Color;
 
-        public virtual void Apply(CodeDocument codeDocument)
+        public override void Apply()
         {
+            if (codeDocument == null) return;
             int prevIndex = codeDocument.CaretIndex;
             if (codeDocument.GetLineStartIndex(codeDocument.GetLineAt(prevIndex)) != prevIndex && prevIndex != 0)
             {
@@ -112,36 +97,12 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             Global.codeView.codeViewPopupMenu.AfterAutoCompleteHandled();
         }
 
-        public class AutoCompleteItemView : ICompletionData
+        public override PopupMenuItem CreatePopupMenuItem()
         {
-
-            public object? Content => textBlock;// Text;
-
-            public string Text { get; set; }
-
-            public object Description => "";
-
-            public double Priority { get; } = 0;
-
-            public IImage? Image => null;
-            public TextBlock? textBlock = null;
-            public Action<TextArea, ISegment, EventArgs> Completed;
-
-            public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
-            {
-                if (Completed != null) Completed(textArea, completionSegment, insertionRequestEventArgs);
-            }
-
-            public ICompletionData Clone()
-            {
-                AutoCompleteItemView aView = new AutoCompleteItemView();
-                aView.textBlock = textBlock;
-                aView.Text = Text;
-                aView.Completed = Completed;
-                return aView;
-
-
-            }
+            PopupMenuItem popupMenuItem = new PopupMenuItem(text);
+            popupMenuItem.ForeColor = Color;
+            popupMenuItem.Selected += new Action(() => { Apply(); });
+            return popupMenuItem;
         }
 
     }

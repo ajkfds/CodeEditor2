@@ -229,11 +229,19 @@ namespace CodeEditor2
             {
                 Global.codeView.OpenCustomSelection(candidates);
             }
-
-            public static void ForceOpenAutoComplete(List<AutocompleteItem> autocompleteItems)
+            public static PopupMenuView? OpenAutoComplete(List<ToolItem> candidates)
             {
-                Global.codeView.ForceOpenAutoComplete(autocompleteItems);
+                return Global.codeView.codeViewPopupMenu.OpenAutoComplete(candidates);
             }
+
+            public static void UpdateAutoComplete(List<ToolItem> candidates)
+            {
+                Global.codeView.codeViewPopupMenu.UpdateAutoComplete(candidates);
+            }
+            //public static void ForceOpenAutoComplete(List<AutocompleteItem> autocompleteItems)
+            //{
+            //    Global.codeView.ForceOpenAutoComplete(autocompleteItems);
+            //}
 
             public static void RequestReparse()
             {

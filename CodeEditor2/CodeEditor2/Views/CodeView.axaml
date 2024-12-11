@@ -46,7 +46,6 @@
 		<AvalonEdit:TextEditor.Styles>
 			<Style Selector="FlyoutPresenter">
 				<Setter Property="Padding" Value="2"></Setter>
-				<Setter Property="MaxHeight" Value="400"></Setter>
 			</Style>
 
 		</AvalonEdit:TextEditor.Styles>

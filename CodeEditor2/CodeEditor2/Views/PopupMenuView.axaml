@@ -8,6 +8,6 @@
 	<StackPanel Orientation="Vertical" Margin="0">
 		<TextBox Text="Sample" Name="TextBox0" FontSize="9" Height="20" MinHeight="12" Padding="2" Margin="0">
 		</TextBox>
-		<ajkctrl:ListViewControl Name="ListView" FontSize="9" Margin="0" Padding="2" MaxHeight="200"></ajkctrl:ListViewControl>
+		<ajkctrl:ListViewControl Name="ListView" FontSize="8" Margin="0" Padding="0" MaxHeight="400"></ajkctrl:ListViewControl>
 	</StackPanel>
 </UserControl>

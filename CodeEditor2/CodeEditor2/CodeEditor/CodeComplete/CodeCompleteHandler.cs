@@ -1,5 +1,8 @@
-﻿using Avalonia.Input;
+﻿using AjkAvaloniaLibs;
+using Avalonia;
+using Avalonia.Input;
 using CodeEditor2.Views;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,19 +19,70 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         }
 
         private CodeView codeView;
-        private AutoCompleteWindow? _completionWindow;
+        //        private AutoCompleteWindow? _completionWindow;
+        private PopupMenuView? popupMenuView = null;
+        private bool working = false;
 
         private bool forceOpened = false;
 
-        /// <summary>
-        /// update auto complete word text
-        /// </summary>
-        public void OnTextEntered(TextInputEventArgs e)
+        public void Close()
+        {
+            if (popupMenuView == null) return;
+            popupMenuView.Cancel();
+            working = false;
+        }
+
+        public void KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (!working) return;
+            if (codeView.TextFile == null) return;
+            if (codeView.CodeDocument == null) return;
+            if (popupMenuView == null) return;
+
+            if (e.Key == Key.Up)
+            {
+                popupMenuView.SelectUp();
+                e.Handled = true;
+            }else if(e.Key == Key.Down)
+            {
+                popupMenuView.SelectDown();
+                e.Handled = true;
+            }
+            else if(e.Key == Key.Enter)
+            {
+                Apply();
+                Close();
+                e.Handled = true;
+                return;
+            }else if(e.Key == Key.Tab | e.Key == Key.Space)
+            {
+                Apply();
+                Close();
+                return;
+            }else if( e.Key == Key.Escape)
+            {
+                Close();
+                return;
+            }
+        }
+
+        public void Apply()
         {
             if (codeView.TextFile == null) return;
             if (codeView.CodeDocument == null) return;
+            if (popupMenuView == null) return;
 
-            //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered enter");
+            PopupMenu.PopupMenuItem? popupMenuItem = popupMenuView.GetSlectedItem();
+            if (popupMenuItem == null) return;
+            popupMenuItem.OnSelected();
+
+        }
+
+        public void TextEntered(object? sender, TextInputEventArgs e)
+        {
+            System.Diagnostics.Debug.Print("### TextEnteted "+working.ToString());
+            if (codeView.TextFile == null) return;
+            if (codeView.CodeDocument == null) return;
 
             char? prevChar = null;  // character before caret
             int prevIndex = codeView._textEditor.CaretOffset;
@@ -37,111 +91,79 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 prevIndex--;
                 prevChar = codeView.CodeDocument.GetCharAt(prevIndex);
             }
-
+            System.Diagnostics.Debug.Print("### TextEnteted 1");
 
             string? candidateWord;
             List<AutocompleteItem>? items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out candidateWord);
-            if (items == null ||candidateWord == null) return;
+            if (items == null || candidateWord == null)
+            {
+                Close();
+                return;
+            }
+            if (candidateWord == "" & prevChar != '.')
+            {
+                Close();
+                return;
+            }
+            System.Diagnostics.Debug.Print("### TextEnteted 2");
 
-            if (_completionWindow == null)
-            {   // open window
-                _completionWindow = new AutoCompleteWindow(codeView._textEditor.TextArea);
-                _completionWindow.Closed += (o, args) => _completionWindow_Closed();
-
-                var data = _completionWindow.CompletionList.CompletionData;
-                data.Clear();
-                foreach (AutocompleteItem item in items)
+            List<PopupMenu.ToolItem> toolItems = new List<PopupMenu.ToolItem>();
+            foreach(AutocompleteItem aItem in items)
+            {
+                if(candidateWord.Length<1 || aItem.Text.StartsWith(candidateWord))
                 {
-                    item.Clean();
+                    aItem.Assign(codeView.CodeDocument);
+                    toolItems.Add(aItem);
                 }
-                forceOpened = false;
-                _completionWindow.Show();
-                foreach (AutocompleteItem item in items)
-                {
-                    item.Assign(codeView.CodeDocument);
-                    data.Add(item.CreateItemView());
-                }
-                _completionWindow.StartOffset = prevIndex;
-                _completionWindow.CompletionList.SelectItem(candidateWord);
+            }
+            System.Diagnostics.Debug.Print("### TextEnteted 3");
 
-                if (_completionWindow.CompletionList._listBox.ItemCount == 0)
+            if (toolItems.Count == 0)
+            {
+                Close();
+                return;
+            }
+            System.Diagnostics.Debug.Print("### TextEnteted 4");
+
+            if (!working)
+            {
+                System.Diagnostics.Debug.Print("### TextEnteted 5");
+                popupMenuView = Controller.CodeEditor.OpenAutoComplete(toolItems);
+                if (popupMenuView == null)
                 {
-                    _completionWindow.Close();
-                    //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave2");
+                    Close();
+                    working = false;
                     return;
                 }
+                popupMenuView.SelectDown();
+                working = true;
             }
             else
-            {   // update
-                if (candidateWord == "")
+            {
+                System.Diagnostics.Debug.Print("### TextEnteted 6");
+                if (popupMenuView == null)
                 {
-                    _completionWindow.Close();
-                    //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave1");
+                    Close();
                     return;
                 }
-
-                if (_completionWindow.CompletionList._listBox.ItemCount == 0)
-                {
-                    _completionWindow.Close();
-                    //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave2");
-                    return;
-                }
-                if (items == null || candidateWord == null || candidateWord == "" & prevChar != '.')
-                {
-                    _completionWindow.Close();
-                    //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave3");
-                    return;
-                }
+                System.Diagnostics.Debug.Print("### TextEnteted 7 "+toolItems.Count);
+                Controller.CodeEditor.UpdateAutoComplete(toolItems);
+                popupMenuView.SelectDown();
+                working = true;
             }
-            //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.OnTextEntered leave4");
         }
 
-        private void _completionWindow_Closed()
+        public void UpdateMenu()
         {
-            //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler._completionWindow_Closed enter");
-            if (_completionWindow == null) return;
-            _completionWindow = null;
-            //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler._completionWindow_Closed leave");
-            return;
+
         }
+
+
 
         public void ForceOpenAutoComplete(List<AutocompleteItem> autocompleteItems)
         {
-            //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.ForceOpenAutoComplete enter");
-            if (codeView.TextFile == null)
-            {
-                //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.ForceOpenAutoComplete leave1");
-                return;
-            }
-            CodeDocument? codeDocument = codeView.CodeDocument;
-            if (codeDocument == null)
-            {
-                //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.ForceOpenAutoComplete leave2");
-                return;
-            }
-
-            int prevIndex = codeDocument.CaretIndex;
-            if (codeDocument.GetLineStartIndex(codeDocument.GetLineAt(prevIndex)) != prevIndex && prevIndex != 0)
-            {
-                prevIndex--;
-            }
-
-            forceOpened = true;
-            string candidateWord;
-            List<AutocompleteItem>? items = codeView.TextFile.GetAutoCompleteItems(codeDocument.CaretIndex, out candidateWord);
-            items = autocompleteItems;  // override items
-            if (items == null || candidateWord == null)
-            {
-                if (_completionWindow != null) _completionWindow.Close();
-            }
-            else
-            {
-                _completionWindow = new AutoCompleteWindow(codeView._textEditor.TextArea);
-                _completionWindow.Closed += (o, args) => _completionWindow = null;
-                var data = _completionWindow.CompletionList.CompletionData;
-                _completionWindow.Show();
-            }
-            //System.Diagnostics.Debug.Print("#=# CodeCompleteHandler.ForceOpenAutoComplete leave3");
         }
+
+
     }
 }
