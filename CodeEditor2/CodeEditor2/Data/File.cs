@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CodeEditor2.NavigatePanel;
+using DynamicData.Binding;
 
 
 namespace CodeEditor2.Data

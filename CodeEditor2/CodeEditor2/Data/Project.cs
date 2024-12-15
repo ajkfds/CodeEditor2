@@ -12,6 +12,8 @@ using System.Timers;
 using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
 using System.Xml.Linq;
+using CodeEditor2.FileTypes;
+using Avalonia.Threading;
 
 namespace CodeEditor2.Data
 {
@@ -242,9 +244,10 @@ namespace CodeEditor2.Data
             fileSystemWatcher.EnableRaisingEvents = true;
 
             fsTimer.Interval = 10;
-            //            fsTimer.Tick += fsTimer_Tick;
+            fsTimer.Elapsed += FsTimer_Elapsed;
             fsTimer.Start();
         }
+
 
         Dictionary<string, FileSystemEventArgs> fileSystemEvents = new Dictionary<string, FileSystemEventArgs>();
         private void addFileSystemEvent(FileSystemEventArgs e)
@@ -271,7 +274,7 @@ namespace CodeEditor2.Data
                     }
                 }
                 fileSystemEvents.Add(e.FullPath, e);
-                //                fsTimer.Enabled = true;
+                fsTimer.Enabled = true;
             }
         }
 
@@ -295,40 +298,48 @@ namespace CodeEditor2.Data
             addFileSystemEvent(e);
         }
 
-        private void fsTimer_Tick(object sender, EventArgs e)
+        private void FsTimer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             lock (fileSystemEvents)
             {
-                //while (fileSystemEvents.Count != 0)
-                //{
-                //    System.IO.FileSystemEventArgs fs = fileSystemEvents.Values.FirstOrDefault();
-                //    fileSystemEvents.Remove(fs.FullPath);
-                //    {
-                //        Controller.AppendLog(fs.Name + " changed");
-                //        return;
-                //        string relativePath = GetRelativePath(fs.FullPath);
-                //        Data.File file = GetItem(relativePath) as Data.File;
-                //        if (file == null) return;
-                //        Data.ITextFile textFile = file as Data.ITextFile;
-                //        if (textFile == null) return;
-                //        if (textFile.Dirty)
-                //        {
-                //            Controller.AppendLog(fs.FullPath + " conflict!");
-                //        }
-                //        else
-                //        {
-                //            DateTime lastWriteTime = System.IO.File.GetLastWriteTime(fs.FullPath);
-                //            if (textFile.LoadedFileLastWriteTime != lastWriteTime)
-                //            {
-                //                textFile.LoadFormFile();
-                //                textFile.Update();
-                //            }
-                //        }
-                //    }
+                while (fileSystemEvents.Count != 0)
+                {
+                    System.IO.FileSystemEventArgs? fs = fileSystemEvents.Values.FirstOrDefault();
+                    if(fs == null)
+                    {
+                        throw new Exception();
+                    }
+                    fileSystemEvents.Remove(fs.FullPath);
+                    {
+                        Controller.AppendLog(fs.Name + " changed");
+                        string relativePath = GetRelativePath(fs.FullPath);
+                        Data.File? file = GetItem(relativePath) as Data.File;
+                        if (file == null) return;
+                        Data.ITextFile? textFile = file as Data.ITextFile;
+                        if (textFile == null) return;
+                        Dispatcher.UIThread.Post(() => fileChaned(textFile));
+                    }
 
-                //}
+                }
             }
         }
+        private void fileChaned(Data.ITextFile textFile)
+        {
+            if (textFile.Dirty)
+            {
+                Controller.AppendLog(textFile.RelativePath + " conflict!");
+            }
+            else
+            {
+                DateTime lastWriteTime = System.IO.File.GetLastWriteTime(GetAbsolutePath(textFile.RelativePath));
+                if (textFile.LoadedFileLastWriteTime != lastWriteTime)
+                {
+                    textFile.LoadFormFile();
+                    textFile.Update();
+                }
+            }
+        }
+
 
         #endregion
 
