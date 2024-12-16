@@ -327,7 +327,7 @@ namespace CodeEditor2.Data
         {
             if (textFile.Dirty)
             {
-                Controller.AppendLog(textFile.RelativePath + " conflict!");
+                Controller.AppendLog(textFile.RelativePath + " file edit conflict!",Avalonia.Media.Colors.Red);
             }
             else
             {

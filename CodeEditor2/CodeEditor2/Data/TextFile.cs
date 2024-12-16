@@ -97,7 +97,7 @@ namespace CodeEditor2.Data
             get
             {
                 if (CodeDocument == null) return false;
-                return false;
+                return CodeDocument.IsDirty;
             }
         }
 
