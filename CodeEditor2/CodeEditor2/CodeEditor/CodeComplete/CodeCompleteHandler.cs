@@ -2,7 +2,7 @@
 using Avalonia;
 using Avalonia.Input;
 using CodeEditor2.Views;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+//using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;

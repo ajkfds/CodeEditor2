@@ -6,7 +6,7 @@ using AvaloniaEdit.TextMate;
 using CodeEditor2.CodeEditor.TextDecollation;
 using CodeEditor2.NavigatePanel;
 using DynamicData;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+//using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ReactiveUI;
 using System;
 using System.Buffers;
