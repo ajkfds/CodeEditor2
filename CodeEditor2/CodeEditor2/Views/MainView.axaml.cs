@@ -37,14 +37,15 @@ public partial class MainView : UserControl
         timer.Start();
 
     }
-    private void Timer_Tick(object? sender, EventArgs e)
+    private async void Timer_Tick(object? sender, EventArgs e)
     {
         // should launch after main window shown
         timer.Stop();
         // read setup file
 
         Global.ProgressWindow = new Tools.ProgressWindow();
-        var _ = initialize();
+        await initialize();
+        Global.mainWindow.Activate();
     }
 
     private DispatcherTimer timer = new DispatcherTimer();

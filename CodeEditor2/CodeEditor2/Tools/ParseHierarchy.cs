@@ -62,6 +62,7 @@ namespace CodeEditor2.Tools
             rootNode.Update();
 
             Global.ProgressWindow.Hide();
+            Global.mainWindow.Activate();
         }
 
     }
