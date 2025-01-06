@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor.PopupMenu
 {
-    public class PopupMenuItem : AjkAvaloniaLibs.Contorls.ListViewItem
+    public class PopupMenuItem : AjkAvaloniaLibs.Controls.ListViewItem
     {
         public PopupMenuItem(string text)
         {

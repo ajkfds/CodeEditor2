@@ -56,6 +56,7 @@ namespace CodeEditor2.Setups
                 ProjectSetups.Add(project.CreateSetup());
             }
 
+            if(!System.IO.File.Exists(path)) return;
             using (FileStream file = System.IO.File.Open(path, FileMode.Open))
             {
                 Setup? setup = System.Text.Json.JsonSerializer.Deserialize<Setup>(file, options);

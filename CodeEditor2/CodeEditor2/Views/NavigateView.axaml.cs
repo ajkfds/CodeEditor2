@@ -1,4 +1,4 @@
-using AjkAvaloniaLibs.Contorls;
+using AjkAvaloniaLibs.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;

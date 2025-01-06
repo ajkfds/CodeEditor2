@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:AvalonEdit="using:AvaloniaEdit"
              xmlns:views="clr-namespace:CodeEditor2.Views;assembly=CodeEditor2"
-             xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Contorls;assembly=AjkAvaloniaLibs"
+             xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Controls;assembly=AjkAvaloniaLibs"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"

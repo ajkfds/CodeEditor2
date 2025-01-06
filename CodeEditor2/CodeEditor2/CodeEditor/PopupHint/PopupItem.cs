@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Media;
-using AjkAvaloniaLibs.Contorls;
+using AjkAvaloniaLibs.Controls;
 
 namespace CodeEditor2.CodeEditor.PopupHint
 {

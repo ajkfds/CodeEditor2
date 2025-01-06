@@ -28,7 +28,7 @@ using CodeEditor2.CodeEditor;
 using System.Threading;
 using Avalonia.Threading;
 using System.Diagnostics;
-using AjkAvaloniaLibs.Contorls;
+using AjkAvaloniaLibs.Controls;
 using DynamicData.Binding;
 using Avalonia.Controls.Primitives;
 using System.Threading.Tasks;

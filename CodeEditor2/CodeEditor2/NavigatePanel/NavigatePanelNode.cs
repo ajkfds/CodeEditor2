@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.NavigatePanel
 {
-    public class NavigatePanelNode : AjkAvaloniaLibs.Contorls.TreeNode
+    public class NavigatePanelNode : AjkAvaloniaLibs.Controls.TreeNode
     {
         private void setImage()
         {

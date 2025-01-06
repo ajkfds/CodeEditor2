@@ -56,6 +56,10 @@ public partial class MainView : UserControl
     {
         try
         {
+            if(!System.IO.File.Exists(setupFileName))
+            {
+                return;
+            }
             await Global.Setup.LoadSetup(setupFileName);
         }
         catch(Exception ex)
@@ -83,6 +87,14 @@ public partial class MainView : UserControl
     //    await Controller.AddProject(newProject);
     //    Global.StopParse = false;
     //}
+
+
+    private Views.BrowserWindow browserWindow;
+    private async void MenuItem_Test_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        browserWindow = new BrowserWindow();
+        await browserWindow.ShowDialog(Global.mainWindow);
+    }
 
     private async void MenuItem_AddProject_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
@@ -155,6 +167,10 @@ public partial class MainView : UserControl
         Controller.AppendLog("Saved");
     }
     private void MenuItem_File_Exit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+    }
+
+    private void MenuItem_Click_1(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
     }
 

@@ -1,4 +1,4 @@
-using AjkAvaloniaLibs.Contorls;
+using AjkAvaloniaLibs.Controls;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using System.Linq;
@@ -18,14 +18,14 @@ namespace CodeEditor2.Views
 
         public void AppendLog(string message)
         {
-            AjkAvaloniaLibs.Contorls.ListViewItem item = new AjkAvaloniaLibs.Contorls.ListViewItem(message);
+            AjkAvaloniaLibs.Controls.ListViewItem item = new AjkAvaloniaLibs.Controls.ListViewItem(message);
             Dispatcher.UIThread.Post(() => appendLog(item));
             
         }
 
         public void AppendLog(string message,Avalonia.Media.Color color)
         {
-            AjkAvaloniaLibs.Contorls.ListViewItem item = new AjkAvaloniaLibs.Contorls.ListViewItem(message, color);
+            AjkAvaloniaLibs.Controls.ListViewItem item = new AjkAvaloniaLibs.Controls.ListViewItem(message, color);
             Dispatcher.UIThread.Post(() => appendLog(item));
         }
 

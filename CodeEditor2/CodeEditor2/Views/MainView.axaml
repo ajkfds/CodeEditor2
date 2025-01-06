@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:CodeEditor2.ViewModels;assembly=CodeEditor2"
              xmlns:views="clr-namespace:CodeEditor2.Views;assembly=CodeEditor2"
-             xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Contorls;assembly=AjkAvaloniaLibs"
+             xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Controls;assembly=AjkAvaloniaLibs"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
              x:Class="CodeEditor2.Views.MainView"
              >
@@ -33,6 +33,7 @@
 				<!--<MenuItem Header="Add ProjectPath" Click="MenuItem_AddProjectPath_Click"/>-->
 			</MenuItem>
 			<MenuItem Header="_Tools" Name="MenuItem_Tools">
+				<MenuItem Header="_Test" Name="MenuItem_Test" Click="MenuItem_Test_Click"></MenuItem>
 			</MenuItem>
 			<MenuItem Header="_Help" Name="MenuItem_Help">
 				
