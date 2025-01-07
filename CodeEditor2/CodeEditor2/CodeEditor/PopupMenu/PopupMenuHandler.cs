@@ -50,7 +50,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
 
             flyout.ShowMode = FlyoutShowMode.Standard;
             flyout.Placement = PlacementMode.AnchorAndGravity;
-            flyout.VerticalOffset = caretRect.Top + caretRect.Height;
+            flyout.VerticalOffset = caretRect.Top + caretRect.Height - codeView._textEditor.VerticalOffset;
             flyout.HorizontalOffset = caretRect.Left;
             flyout.PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight;
             flyout.PlacementAnchor = Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.TopLeft;
