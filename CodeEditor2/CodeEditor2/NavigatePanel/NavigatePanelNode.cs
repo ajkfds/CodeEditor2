@@ -13,6 +13,11 @@ namespace CodeEditor2.NavigatePanel
 {
     public class NavigatePanelNode : AjkAvaloniaLibs.Controls.TreeNode
     {
+        protected NavigatePanelNode()
+        {
+            setImage();
+        }
+
         private void setImage()
         {
             Image =  AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
@@ -29,10 +34,6 @@ namespace CodeEditor2.NavigatePanel
             }
         }
 
-        protected NavigatePanelNode()
-        {
-            setImage();
-        }
 
         public virtual void Refresh()
         {
@@ -42,11 +43,11 @@ namespace CodeEditor2.NavigatePanel
         public NavigatePanelNode(Item item)
         {
             itemRef = new WeakReference<Item>(item);
-            Name = item.Name;
+//            Name = item.Name;
             if (NavigatePanelNodeCreated != null) NavigatePanelNodeCreated(this);
         }
 
-        public new string Name { get; protected set; }
+//        public required string Name { get; init; }
 
         private bool link = false;
 
@@ -62,12 +63,13 @@ namespace CodeEditor2.NavigatePanel
             }
         }
 
-        private WeakReference<Item> itemRef;
+        private WeakReference<Item>? itemRef;
         public Item? Item
         {
             get
             {
                 Item? ret;
+                if (itemRef == null) return null;
                 if (!itemRef.TryGetTarget(out ret)) return null;
                 return ret;
             }
@@ -136,12 +138,6 @@ namespace CodeEditor2.NavigatePanel
         }
 
 
-
-        //public override void DrawNode(Graphics graphics, int x, int y, Font font, Color color, Color backgroundColor, Color selectedColor, int lineHeight, bool selected)
-        //{
-        //    if (Link) graphics.DrawImage(Global.IconImages.Link.GetImage(lineHeight, ajkControls.Primitive.IconImage.ColorStyle.Blue), new Point(x, y));
-        //    base.DrawNode(graphics, x, y, font, color, backgroundColor, selectedColor, lineHeight, selected);
-        //}
 
         public virtual void ShowPropertyForm()
         {

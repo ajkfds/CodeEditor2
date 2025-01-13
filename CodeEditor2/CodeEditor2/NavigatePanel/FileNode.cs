@@ -18,7 +18,7 @@ namespace CodeEditor2.NavigatePanel
             UpdateVisual();
             if (FileNodeCreated != null) FileNodeCreated(this);
         }
-        public static Action<FileNode> FileNodeCreated;
+        public static Action<FileNode>? FileNodeCreated;
 
         public override void UpdateVisual()
         {
@@ -27,14 +27,18 @@ namespace CodeEditor2.NavigatePanel
                     Avalonia.Media.Color.FromArgb(100, 100, 100, 100)
                     );
         }
-        public virtual File FileItem
+        public virtual File? FileItem
         {
             get { return Item as File; }
         }
 
         public override string Text
         {
-            get { return FileItem.Name; }
+            get {
+                File? file = FileItem;
+                if (file == null) return "null";
+                return file.Name; 
+            }
         }
 
         public override void OnSelected()
@@ -55,10 +59,6 @@ namespace CodeEditor2.NavigatePanel
                         break;
                 }
             }
-
-            //Data.ITextFile textFile = FileItem as Data.ITextFile;
-            //CodeEditor2.Controller.NavigatePanel.GetContextMenuStrip().Items["openWithExploererTsmi"].Visible = true;
-
         }
     }
 }

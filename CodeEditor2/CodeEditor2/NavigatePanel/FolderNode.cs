@@ -16,10 +16,10 @@ namespace CodeEditor2.NavigatePanel
         {
             if (FolderNodeCreated != null) FolderNodeCreated(this);
         }
-        public static Action<FolderNode> FolderNodeCreated;
+        public static Action<FolderNode>? FolderNodeCreated;
 
         //        private System.WeakReference<Data.Folder> folderRef;
-        public virtual Folder Folder
+        public virtual Folder? Folder
         {
             get
             {
@@ -41,7 +41,11 @@ namespace CodeEditor2.NavigatePanel
 
         public override string Text
         {
-            get { return Folder.Name; }
+            get {
+                Folder? folder = Folder;
+                if (folder == null) return "null";
+                return folder.Name; 
+            }
         }
 
         public override void OnSelected()
@@ -58,7 +62,20 @@ namespace CodeEditor2.NavigatePanel
 
         public override void Update()
         {
-            Folder.Update();
+            Folder? folder = Folder;
+            if(folder == null)
+            {
+                Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                    "CodeEditor2/Assets/Icons/questionDocument.svg",
+                    Avalonia.Media.Color.FromArgb(100, 200, 200, 200),
+                    "CodeEditor2/Assets/Icons/questionDocument.svg",
+                    Avalonia.Media.Color.FromArgb(255, 255, 255, 200)
+                    );
+                Nodes.Clear();
+                return;
+            }
+
+            folder.Update();
 
             List<Item> addItems = new List<Item>();
             foreach (Item item in Folder.Items.Values)

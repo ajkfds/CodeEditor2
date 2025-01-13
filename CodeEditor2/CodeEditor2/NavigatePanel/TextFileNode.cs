@@ -13,26 +13,43 @@ namespace CodeEditor2.NavigatePanel
 {
     public class TextFileNode : FileNode
     {
-        public static Action<TextFileNode> TextFileNodeCreated;
+        public static Action<TextFileNode>? TextFileNodeCreated;
         public TextFileNode(Data.TextFile textFile) : base(textFile as Data.File)
         {
             if (TextFileNodeCreated != null) TextFileNodeCreated(this);
             UpdateVisual();
         }
 
-        public Data.TextFile TextFile
+        public Data.TextFile? TextFile
         {
             get { return Item as Data.TextFile; }
         }
 
         public override string Text
         {
-            get { return FileItem.Name; }
+            get {
+                Data.TextFile? textFile = TextFile;
+                if(textFile == null) return "null";
+                return textFile.Name; 
+            }
         }
 
         public override void UpdateVisual()
         {
-            if (TextFile.CodeDocument.IsDirty)
+            Data.TextFile? textFile = TextFile;
+            if (textFile==null)
+            {
+                Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                    "CodeEditor2/Assets/Icons/questionDocument.svg",
+                    Avalonia.Media.Color.FromArgb(100, 200, 200, 200),
+                    "CodeEditor2/Assets/Icons/questionDocument.svg",
+                    Avalonia.Media.Color.FromArgb(255, 255, 255, 200)
+                    );
+                Nodes.Clear();
+                return;
+            }
+
+            if (textFile.CodeDocument.IsDirty)
             {
                 Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/text.svg",
