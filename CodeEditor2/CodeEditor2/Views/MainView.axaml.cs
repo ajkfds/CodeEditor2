@@ -89,11 +89,11 @@ public partial class MainView : UserControl
     //}
 
 
-    private Views.BrowserWindow browserWindow;
+//    private Views.BrowserWindow browserWindow;
     private async void MenuItem_Test_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        browserWindow = new BrowserWindow();
-        await browserWindow.ShowDialog(Global.mainWindow);
+//        browserWindow = new BrowserWindow();
+//        await browserWindow.ShowDialog(Global.mainWindow);
     }
 
     private async void MenuItem_AddProject_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
