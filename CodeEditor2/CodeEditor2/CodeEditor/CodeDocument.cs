@@ -217,7 +217,6 @@ namespace CodeEditor2.CodeEditor
         public Action<int, int, byte, string>? Replaced = null;
 
 
-        private int visibleLines = 0;
         List<int> collapsedLines = new List<int>();
 
         public virtual ulong Version { get; set; } = 0;

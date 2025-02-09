@@ -61,7 +61,7 @@ namespace CodeEditor2
 //        private static string? lockName = "";
 //        private static SemaphoreSlim backGroundParseSemaphore = new SemaphoreSlim(1, 1);
 
-        public static Tools.ProgressWindow ProgressWindow;
+        public static Tools.ProgressWindow? ProgressWindow;
 
         public static MenuItem CreateMenuItem (string header,string name)
         {

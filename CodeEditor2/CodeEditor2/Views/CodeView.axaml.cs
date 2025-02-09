@@ -49,26 +49,28 @@ namespace CodeEditor2.Views
         internal readonly TextEditor _textEditor;
 
         private FoldingManager? _foldingManager;
-        private readonly TextMate.Installation? _textMateInstallation;
+//        private readonly TextMate.Installation? _textMateInstallation;
 //        internal AutoCompleteWindow? _completionWindow;
-        private OverloadInsightWindow? _insightWindow;
-        private TextMateSharp.Grammars.RegistryOptions? _registryOptions;
+//        private OverloadInsightWindow? _insightWindow;
+//        private TextMateSharp.Grammars.RegistryOptions? _registryOptions;
 
         private int _currentTheme = (int)ThemeName.DarkPlus;
 
         public CodeView()
         {
             InitializeComponent();
-            if (Design.IsDesignMode) return;
-
             Global.codeView = this;
+            _textEditor = Editor;
+
+
+//            if (Design.IsDesignMode) return;
+
 
             codeViewPopup = new PopupHandler(this);
             codeViewParser = new CodeViewParser(this);
             codeViewPopupMenu = new PopupMenuHandler(this);
             codeViewAutoComplete = new CodeCompleteHandler(this);
 
-            _textEditor = Editor;
 
             // initialize
             _textEditor.HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Visible;
@@ -476,7 +478,7 @@ namespace CodeEditor2.Views
                 //}
             }
 
-            _insightWindow?.Hide();
+//            _insightWindow?.Hide();
 
             TextFile?.TextEntering(e);
             // Do not set e.Handled=true.

@@ -20,10 +20,12 @@ namespace CodeEditor2.Tools
         // to pase thread
         //private Tools.ProgressWindow progressWindow;
         List<Data.Item> items;
-        private volatile bool abort = false;
+//        private volatile bool abort = false;
 
         public async Task Run(NavigatePanel.ProjectNode projectNode)
         {
+            if (projectNode.Project == null) throw new Exception();
+
             projectNode.Project.Update(); // must be launch on UI thread
 
             CodeEditor2.Global.StopBackGroundParse = true;
@@ -36,6 +38,7 @@ namespace CodeEditor2.Tools
                 );
 
             Dispatcher.UIThread.Post(() => {
+                if (Global.ProgressWindow == null) throw new Exception();
                 Global.ProgressWindow.Title = "Loading "+projectNode.Text;
                 Global.ProgressWindow.ProgressMaxValue = items.Count;
                 Global.ProgressWindow.ShowDialog(Global.mainWindow);
@@ -44,6 +47,7 @@ namespace CodeEditor2.Tools
             await runParse();
 
             Dispatcher.UIThread.Post(() => {
+                if (Global.ProgressWindow == null) throw new Exception();
                 Global.ProgressWindow.Hide();
             });
 
@@ -71,6 +75,7 @@ namespace CodeEditor2.Tools
                             Dispatcher.UIThread.Post(
                                 new Action(() =>
                                 {
+                                    if (Global.ProgressWindow == null) throw new Exception();
                                     Global.ProgressWindow.ProgressValue = i;
                                     Global.ProgressWindow.Message = f.Name;
                                     i++;
@@ -83,8 +88,9 @@ namespace CodeEditor2.Tools
 
             foreach (Data.Item item in items)
             {
-                if (!(item is Data.TextFile)) continue;
-                fileQueue.Add(item as Data.TextFile);
+                Data.TextFile textFile = (Data.TextFile)item;
+                if (textFile == null) continue;
+                fileQueue.Add(textFile);
             }
             fileQueue.CompleteAdding();
 
@@ -103,7 +109,7 @@ namespace CodeEditor2.Tools
                 }
                 if (completeTasks == tasks.Count) break;
             }
-            abort = true;
+//            abort = true;
         }
     }
 }

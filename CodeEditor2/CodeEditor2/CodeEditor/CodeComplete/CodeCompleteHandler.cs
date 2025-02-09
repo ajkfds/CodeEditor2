@@ -23,7 +23,6 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         private PopupMenuView? popupMenuView = null;
         private bool working = false;
 
-        private bool forceOpened = false;
 
         public void Close()
         {

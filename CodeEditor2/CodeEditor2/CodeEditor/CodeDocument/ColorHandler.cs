@@ -46,10 +46,6 @@ namespace CodeEditor2.CodeEditor
                 lineInfo = new LineInformation();
                 LineInformation.Add(lineNumber, lineInfo);
             }
-            if (lineInfo.Colors.Count > 2000)
-            {
-                string a = "";
-            }
             return lineInfo;
         }
 

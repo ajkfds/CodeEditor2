@@ -62,6 +62,8 @@ namespace CodeEditor2.CodeEditor.Parser
 
             // update current view
             Controller.CodeEditor.Refresh();
+
+            if (parser.ParsedDocument == null) return;
             Controller.MessageView.Update(parser.ParsedDocument);
         }
 

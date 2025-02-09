@@ -39,7 +39,7 @@ namespace CodeEditor2.Data
         DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode);
 
         // textFile
-        CodeEditor.CodeDocument CodeDocument { get; }
+        CodeEditor.CodeDocument? CodeDocument { get; }
         bool IsCodeDocumentCashed { get; }
 
         CodeEditor.ParsedDocument? ParsedDocument { get; set; }

@@ -50,7 +50,7 @@ namespace CodeEditor2.Shells
 
         public virtual List<string> GetLogs()
         {
-            return null;
+            return new List<string>();
         }
 
         public virtual string GetLastLine()

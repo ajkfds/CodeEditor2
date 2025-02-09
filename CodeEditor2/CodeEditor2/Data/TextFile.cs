@@ -274,6 +274,7 @@ namespace CodeEditor2.Data
             if (item == null) return;
             Data.ITextFile? textFile = item as Data.TextFile;
             if (textFile == null) return;
+            if (textFile.CodeDocument == null) return;
             if (parsedIds.Contains(textFile.ID)) return;
 
 //            System.Diagnostics.Debug.Print("# Try ParseHier "+textFile.ID);
