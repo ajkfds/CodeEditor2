@@ -53,12 +53,21 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 Close();
                 e.Handled = true;
                 return;
-            }else if(e.Key == Key.Tab | e.Key == Key.Space)
+            }
+            else if (e.Key == Key.Tab)
+            {
+                Apply();
+                Close();
+                e.Handled = true;
+                return;
+            }
+            else if (e.Key == Key.Space)
             {
                 Apply();
                 Close();
                 return;
-            }else if( e.Key == Key.Escape)
+            }
+            else if( e.Key == Key.Escape)
             {
                 Close();
                 return;
