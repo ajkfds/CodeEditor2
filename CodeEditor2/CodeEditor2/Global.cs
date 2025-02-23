@@ -11,6 +11,7 @@ using Avalonia.Controls;
 using System.Threading;
 using System.Text.Json;
 using System.Runtime.Serialization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CodeEditor2
 {
@@ -25,7 +26,7 @@ namespace CodeEditor2
             = new Dictionary<string, Func<JsonElement, JsonSerializerOptions, ProjectProperty.Setup>>();
 
         public static Setup Setup = new Setup();
-        //public static Dictionary<string, CodeEditor2Plugin.PluginSetup> PluginSetups = new Dictionary<string, CodeEditor2Plugin.PluginSetup>();
+
         internal static Views.CodeView codeView;
         internal static Views.MainView mainView;
         internal static Views.NavigateView navigateView;
@@ -39,7 +40,7 @@ namespace CodeEditor2
 
         public static CodeDrawStyle DefaultDrawStyle = new CodeDrawStyle();
 
-        public static System.Threading.Thread UIThread = null;
+        public static System.Threading.Thread? UIThread = null;
 
         public static bool Abort = false;
         public static volatile bool StopBackGroundParse = false;

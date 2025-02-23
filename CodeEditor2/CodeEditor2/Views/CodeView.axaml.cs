@@ -48,7 +48,6 @@ namespace CodeEditor2.Views
     {
         internal readonly TextEditor _textEditor;
 
-        private FoldingManager? _foldingManager;
 //        private readonly TextMate.Installation? _textMateInstallation;
 //        internal AutoCompleteWindow? _completionWindow;
 //        private OverloadInsightWindow? _insightWindow;
@@ -124,6 +123,8 @@ namespace CodeEditor2.Views
             _textEditor.TextArea.TextView.BackgroundRenderers.Add(_markerRenderer);
 
 
+
+
             PopupMenu.Selected += PopupMenu_Selected;
 
             // textmate
@@ -149,6 +150,7 @@ namespace CodeEditor2.Views
                 "// Press Shit + Space to open quick tool menu" + Environment.NewLine);
 
             _textEditor.TextArea.TextView.LineTransformers.Add(new CodeDocumentColorTransformer());
+            _foldingManager = FoldingManager.Install(_textEditor.TextArea);
 
             // Wheel Scroll Implementation
             this.AddHandler(PointerWheelChangedEvent, (o, i) =>
@@ -166,6 +168,7 @@ namespace CodeEditor2.Views
 
         internal HighlightRenderer _highlightRenderer;
         internal MarkerRenderer _markerRenderer;
+        internal FoldingManager _foldingManager;
         internal PopupHandler codeViewPopup;
         internal CodeViewParser codeViewParser;
         internal PopupMenuHandler codeViewPopupMenu;
@@ -229,17 +232,6 @@ namespace CodeEditor2.Views
             CodeDocument.selectionLast = offset;
         }
 
-        // Called from CodeDocument. Update CodeDocument Index change to textEditor
-        //private void CodeDocument_CaretChanged(CodeDocument codeDocument)
-        //{
-        //    if (skipEvents) return;
-        //    if (CodeDocument != codeDocument) return;
-
-        //    // changed by CodeDocument Code
-        //    if (_textEditor.CaretOffset == codeDocument.CaretIndex) return;
-        //    _textEditor.CaretOffset = codeDocument.CaretIndex;
-        //}
-
         public void SetCaretPosition(int index)
         {
             if (CodeDocument == null) return;
@@ -287,6 +279,12 @@ namespace CodeEditor2.Views
             _markerRenderer.SetMarks(TextFile.CodeDocument.Marks.marks);
         }
 
+        public void UpdateFoldings()
+        {
+            if (TextFile == null) return;
+            _foldingManager.UpdateFoldings(TextFile.CodeDocument.Foldings.Foldings,-1);
+        }
+
         private bool skipEvents = false;
 
         public void SetTextFile(Data.TextFile textFile,bool parseEntry)
@@ -301,7 +299,8 @@ namespace CodeEditor2.Views
 //            if (_completionWindow != null && _completionWindow.IsVisible) _completionWindow.Hide();
             if (codeViewPopupMenu.IsOpened) codeViewPopupMenu.HidePopupMenu();
 
-            if(CodeDocument != null)
+            FoldingManager.Uninstall(_foldingManager);
+            if (CodeDocument != null)
             {
                 detachFromCodeDocument();
             }
@@ -334,6 +333,7 @@ namespace CodeEditor2.Views
             if (parseEntry) codeViewParser.EntryParse();
             attachToCodeDocument();
 
+
             skipEvents = false;
 
             Controller.Tabs.SelectTab(Global.mainView.EditorTabItem);
@@ -347,11 +347,13 @@ namespace CodeEditor2.Views
             if (TextFile == null) return;
             _markerRenderer.SetMarks(TextFile.CodeDocument.Marks.marks);
 
-            if(CodeDocument != null) CodeDocument.Changing += CodeDocument_Changing;
+            if (CodeDocument != null) CodeDocument.Changing += CodeDocument_Changing;
+            _foldingManager = FoldingManager.Install(_textEditor.TextArea);
         }
         private void detachFromCodeDocument()
         {
             if (CodeDocument != null) CodeDocument.Changing = null;
+            FoldingManager.Uninstall(_foldingManager);
         }
 
         public void ScrollToCaret()
@@ -445,8 +447,9 @@ namespace CodeEditor2.Views
             codeViewPopupMenu.HidePopupMenu();
         }
 
-        public void PopupMenu_Selected(PopupMenuItem popUpMenuItem)
+        public void PopupMenu_Selected(PopupMenuItem? popUpMenuItem)
         {
+            if (popUpMenuItem == null) return;
             codeViewPopupMenu.PopupMenu_Selected(popUpMenuItem);
         }
 

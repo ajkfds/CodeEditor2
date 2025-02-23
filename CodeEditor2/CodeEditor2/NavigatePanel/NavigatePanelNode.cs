@@ -43,11 +43,9 @@ namespace CodeEditor2.NavigatePanel
         public NavigatePanelNode(Item item)
         {
             itemRef = new WeakReference<Item>(item);
-//            Name = item.Name;
             if (NavigatePanelNodeCreated != null) NavigatePanelNodeCreated(this);
         }
 
-//        public required string Name { get; init; }
 
         private bool link = false;
 

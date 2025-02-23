@@ -57,11 +57,13 @@ namespace CodeEditor2.CodeEditor
         [MemberNotNull(nameof(Marks))]
         [MemberNotNull(nameof(TextColors))]
         [MemberNotNull(nameof(HighLights))]
+        [MemberNotNull(nameof(Foldings))]
         private void initialize()
         {
             Marks = new MarkHandler(this);
             TextColors = new ColorHandler(this);
             HighLights = new HIghLightHandler(this);
+            Foldings = new FoldingHandler(this);
             ownerThread = System.Threading.Thread.CurrentThread;
             textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);
             textDocument.TextChanged += TextDocument_TextChanged;
@@ -82,6 +84,7 @@ namespace CodeEditor2.CodeEditor
         public MarkHandler Marks;
         public ColorHandler TextColors;
         public HIghLightHandler HighLights;
+        public FoldingHandler Foldings;
 
         public Action<object?, DocumentChangeEventArgs>? Changing = null;
 
@@ -170,7 +173,6 @@ namespace CodeEditor2.CodeEditor
 
  
 
-
         private readonly bool textOnly = false;
         private bool disposed = false;
         public void Dispose()
@@ -253,84 +255,21 @@ namespace CodeEditor2.CodeEditor
 
         // block handling /////////////////////////////
 
-        List<int> blockStartIndexes = new List<int>();
-        List<int> blockEndIndexes = new List<int>();
 
         // block information cash
-        bool blockCashActive = false;
-        List<int> blockStartLines = new List<int>();
-        List<int> blockEndLines = new List<int>();
-        private void createBlockCash()
-        {
-            if (textOnly) return;
-
-            blockStartLines.Clear();
-            blockEndLines.Clear();
-            for (int i = 0; i < blockStartIndexes.Count; i++)
-            {
-                blockStartLines.Add(GetLineAt(blockStartIndexes[i]));
-                blockEndLines.Add(GetLineAt(blockEndIndexes[i]));
-            }
-            blockCashActive = true;
-        }
-
-
-        public void ClearBlock()
-        {
-            blockCashActive = false;
-            blockStartIndexes.Clear();
-            blockEndIndexes.Clear();
-        }
+        //public void ClearBlock()
+        //{
+        //}
         public void AppendBlock(int startIndex, int endIndex)
         {
-            blockCashActive = false;
-            blockStartIndexes.Add(startIndex);
-            blockEndIndexes.Add(endIndex);
+            Foldings.AppendBlock(startIndex, endIndex);
+            //blockCashActive = false;
+            //blockStartIndexes.Add(startIndex);
+            //blockEndIndexes.Add(endIndex);
         }
 
-        //public bool IsVisibleLine(int lineNo)
-        //{
-        //    if (!blockCashActive) createBlockCash();
-        //    return lineVisible[lineNo - 1];
-        //}
-        public bool IsBlockHeadLine(int lineNo)
-        {
-            if (!blockCashActive) createBlockCash();
-            return blockStartLines.Contains(lineNo);
-        }
-
-        //public void CollapseBlock(int lineNo)
-        //{
-        //    if (!blockCashActive) createBlockCash();
-        //    if (!blockStartLines.Contains(lineNo)) return;
-        //    if (!collapsedLines.Contains(lineNo))
-        //    {
-        //        collapsedLines.Add(lineNo);
-        //        refreshVisibleLines();
-        //    }
-        //}
-
-        //public void ExpandBlock(int lineNo)
-        //{
-        //    if (!blockCashActive) createBlockCash();
-        //    if (!blockStartLines.Contains(lineNo)) return;
-        //    if (collapsedLines.Contains(lineNo))
-        //    {
-        //        collapsedLines.Remove(lineNo);
-        //        refreshVisibleLines();
-        //    }
-        //}
-
-        public bool IsCollapsed(int lineNo)
-        {
-            if (!blockStartLines.Contains(lineNo)) return false;
-            if (collapsedLines.Contains(lineNo)) return true;
-            return false;
-        }
 
         /////////////////////////////////////////
-
-//        public Action<CodeDocument>? SelectionChanged = null;
 
         internal  int selectionStart;
         public int SelectionStart
@@ -357,8 +296,6 @@ namespace CodeEditor2.CodeEditor
             Global.codeView.SetSelection(startIndex, lastIndex);
         }
 
-
-
         internal int caretIndex;
         public int CaretIndex
         {
@@ -367,8 +304,6 @@ namespace CodeEditor2.CodeEditor
                 return caretIndex;
             }
         }
-
-
 
         public char GetCharAt(int index)
         {
@@ -391,6 +326,9 @@ namespace CodeEditor2.CodeEditor
             {
                 Marks.marks = document.Marks.marks;
             }
+            document.Foldings.Foldings.Sort((x, y) => { return x.StartOffset - y.StartOffset; });
+            Foldings.Foldings = document.Foldings.Foldings;
+            Global.codeView.UpdateFoldings();
         }
         public void CopyFrom(CodeDocument document)
         {
