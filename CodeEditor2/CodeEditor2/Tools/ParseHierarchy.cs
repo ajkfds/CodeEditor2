@@ -25,9 +25,11 @@ namespace CodeEditor2.Tools
             sw.Start();
             System.Diagnostics.Debug.Print("parse hier sw " + sw.ElapsedMilliseconds.ToString());
 
+            if (Global.ProgressWindow == null) throw new Exception();
             Global.ProgressWindow.Title = "Reparse " + rootNode.Text;
             int progressMax = 20;
             Global.ProgressWindow.ProgressMaxValue = progressMax;
+
             var _ = Global.ProgressWindow.ShowDialog(Global.mainWindow);
 
             {
@@ -62,7 +64,13 @@ namespace CodeEditor2.Tools
             rootNode.Update();
 
             Global.ProgressWindow.Hide();
-            Global.mainWindow.Activate();
+
+            // move ownerWindow to top
+            Global.mainWindow.Focus();
+            Global.mainWindow.Topmost = true;
+            await Task.Delay(1);
+            Global.mainWindow.Topmost = false;
+            Global.mainWindow.Focus();
         }
 
     }

@@ -29,12 +29,6 @@ public partial class App : Application
 
             initialize();
 
-            // read setup file
-            //if (System.IO.File.Exists(setupFileName))
-            //{
-            //    Global.Setup.LoadSetup(setupFileName);
-            //}
-
             desktop.MainWindow = mainWindow;
             Global.currentWindow = mainWindow;
             mainWindow.Show();
