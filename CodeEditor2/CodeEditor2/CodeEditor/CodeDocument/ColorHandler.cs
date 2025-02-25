@@ -44,7 +44,10 @@ namespace CodeEditor2.CodeEditor
             else
             {
                 lineInfo = new LineInformation();
-                LineInformation.Add(lineNumber, lineInfo);
+                lock (LineInformation)
+                {
+                    LineInformation.Add(lineNumber, lineInfo);
+                }
             }
             return lineInfo;
         }
@@ -119,10 +122,19 @@ namespace CodeEditor2.CodeEditor
             DocumentLine startLine = codeDocument.TextDocument.GetLineByOffset(e.Offset);
             DocumentLine endLine = codeDocument.TextDocument.GetLineByOffset(e.Offset + e.RemovalLength);
 
+            int insertLines = 0;
+            {
+                int i = e.InsertedText.IndexOf('\n', 0, e.InsertedText.TextLength);
+                while (i >= 0)
+                {
+                    insertLines++;
+                    i = e.InsertedText.IndexOf('\n', i+1, e.InsertedText.TextLength-i-1);
+                }
+            }
+            int changeLines = insertLines - (endLine.LineNumber - startLine.LineNumber);
 
             if (startLine.LineNumber == endLine.LineNumber)
             { // startLine = endLine
-
                 LineInformation lineInfo = GetLineInformation(startLine.LineNumber);
                 List<LineInformation.Color> removeTarget = new List<LineInformation.Color>();
 
@@ -131,7 +143,7 @@ namespace CodeEditor2.CodeEditor
                     foreach (var color in lineInfo.Colors)
                     {
                         if (color == null) continue;
-                        updateColor(startLine, e, color, removeTarget);
+                        updateColor(e.Offset,e.InsertionLength,e.RemovalLength,startLine.LineNumber, color, removeTarget);
                     }
                     foreach (var removeMark in removeTarget)
                     {
@@ -141,23 +153,63 @@ namespace CodeEditor2.CodeEditor
             }
             else
             {
-
-                //lock (LineInformation)
                 //{
-                //    for (int i = startLine.LineNumber + 1; i < endLine.LineNumber; i++)
+                //    LineInformation lineInfo = GetLineInformation(startLine.LineNumber);
+                //    List<LineInformation.Color> removeTarget = new List<LineInformation.Color>();
+
+                //    lock (lineInfo.Colors)
                 //    {
-                //        if (LineInformation.ContainsKey(i)) LineInformation.Remove(i);
+                //        foreach (var color in lineInfo.Colors)
+                //        {
+                //            if (color == null) continue;
+                //            int insertionLength = e.InsertionLength;
+                //            int removalLength = e.RemovalLength;
+                //            int lineLength = codeDocument.GetLineLength(startLine.LineNumber);
+                //            int offset = e.Offset - codeDocument.GetLineStartIndex(startLine.LineNumber);
+                //            if (removalLength > offset + lineLength) removalLength = lineLength - offset;
+
+                //            updateColor(e.Offset, e.InsertionLength, e.RemovalLength, startLine.LineNumber, color, removeTarget);
+                //        }
+                //        foreach (var removeMark in removeTarget)
+                //        {
+                //            lineInfo.Colors.Remove(removeMark);
+                //        }
                 //    }
                 //}
 
+
+            }
+
+            if (changeLines != 0)
+            {
+                lock (LineInformation)
+                {
+                    for (int i = startLine.LineNumber; i <= endLine.LineNumber; i++)
+                    {
+                        if (LineInformation.ContainsKey(i)) LineInformation.Remove(i);
+                    }
+                    List<KeyValuePair<int, LineInformation>> skewInfo = new List<KeyValuePair<int, LineInformation>>();
+                    foreach (var line in LineInformation)
+                    {
+                        if (line.Key >= endLine.LineNumber) skewInfo.Add(line);
+                    }
+                    foreach (var line in skewInfo)
+                    {
+                        if (LineInformation.ContainsKey(line.Key)) LineInformation.Remove(line.Key);
+                    }
+                    foreach (var line in skewInfo)
+                    {
+                        if (!LineInformation.ContainsKey(line.Key + changeLines)) LineInformation.Add(line.Key + changeLines, line.Value);
+                    }
+                }
             }
 
         }
 
-        public void updateColor(DocumentLine line,DocumentChangeEventArgs e, LineInformation.Color color, List<LineInformation.Color> removeTarget)
+        public void updateColor(int editOffset,int insertionLength,int removalLength,int lineNumber,LineInformation.Color color, List<LineInformation.Color> removeTarget)
         {
-            int change = e.InsertionLength - e.RemovalLength;
-            int offset = e.Offset - codeDocument.GetLineStartIndex(line.LineNumber);
+            int change = insertionLength - removalLength;
+            int offset = editOffset - codeDocument.GetLineStartIndex(lineNumber);
 
             if (offset < color.Offset)
             {
@@ -169,21 +221,21 @@ namespace CodeEditor2.CodeEditor
                 //     |------->
                 //     |------------------->
                 //     |------------------------------->
-                if (offset + e.RemovalLength < color.Offset)
+                if (offset + removalLength < color.Offset)
                 {
                     color.Offset += change;
                 }
-                else if (offset + e.RemovalLength == color.Offset)
+                else if (offset + removalLength == color.Offset)
                 {
                     color.Offset += change;
                 }
-                else if (offset + e.RemovalLength < color.Offset + color.Length)
+                else if (offset + removalLength < color.Offset + color.Length)
                 {
-                    int length = color.Offset + color.Length - (offset + e.RemovalLength);
-                    color.Offset = offset + e.RemovalLength + change;
+                    int length = color.Offset + color.Length - (offset + removalLength);
+                    color.Offset = offset + removalLength + change;
                     color.Length = length;
                 }
-                else if (offset + e.RemovalLength == color.Offset + color.Length)
+                else if (offset + removalLength == color.Offset + color.Length)
                 {
                     removeTarget.Add(color);
                 }
@@ -202,12 +254,12 @@ namespace CodeEditor2.CodeEditor
                 //                 |------->
                 //                 |----------->
                 //                 |------------------->
-                if (offset + e.RemovalLength < color.Offset + color.Length)
+                if (offset + removalLength < color.Offset + color.Length)
                 {
-                    color.Offset = offset + e.RemovalLength + change;
+                    color.Offset = offset + removalLength + change;
                     // color.length kept
                 }
-                else if (offset + e.RemovalLength == color.Offset + color.Length)
+                else if (offset + removalLength == color.Offset + color.Length)
                 {
                     removeTarget.Add(color);
                 }
@@ -226,11 +278,11 @@ namespace CodeEditor2.CodeEditor
                 //                     |--->
                 //                     |------->
                 //                     |--------------->
-                if (offset + e.RemovalLength < color.Offset + color.Length)
+                if (offset + removalLength < color.Offset + color.Length)
                 {
                     color.Length += change;
                 }
-                else if (offset + e.RemovalLength == color.Offset + color.Length)
+                else if (offset + removalLength == color.Offset + color.Length)
                 {
                     color.Length = offset - color.Offset;
                 }
