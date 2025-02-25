@@ -263,15 +263,16 @@ namespace CodeEditor2.CodeEditor
         public void AppendBlock(int startIndex, int endIndex)
         {
             Foldings.AppendBlock(startIndex, endIndex);
-            //blockCashActive = false;
-            //blockStartIndexes.Add(startIndex);
-            //blockEndIndexes.Add(endIndex);
         }
 
+        public void AppendBlock(int startIndex, int endIndex,string name,bool defaultClose)
+        {
+            Foldings.AppendBlock(startIndex, endIndex,name,defaultClose);
+        }
 
         /////////////////////////////////////////
 
-        internal  int selectionStart;
+        internal int selectionStart;
         public int SelectionStart
         {
             get
@@ -328,7 +329,10 @@ namespace CodeEditor2.CodeEditor
             }
             document.Foldings.Foldings.Sort((x, y) => { return x.StartOffset - y.StartOffset; });
             Foldings.Foldings = document.Foldings.Foldings;
-            Global.codeView.UpdateFoldings();
+            if(Global.codeView.TextFile != null && Global.codeView.TextFile.CodeDocument == this)
+            {
+                Global.codeView.UpdateFoldings();
+            }
         }
         public void CopyFrom(CodeDocument document)
         {
