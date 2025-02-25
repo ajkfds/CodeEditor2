@@ -207,6 +207,11 @@ namespace CodeEditor2.CodeEditor
             node?.UpdateVisual();
         }
 
+        public void ClearHistory()
+        {
+            textDocument.UndoStack.ClearAll();
+        }
+
         public bool IsDirty
         {
             get
@@ -219,14 +224,10 @@ namespace CodeEditor2.CodeEditor
         public Action<int, int, byte, string>? Replaced = null;
 
 
-        List<int> collapsedLines = new List<int>();
-
         public virtual ulong Version { get; set; } = 0;
 
         public ulong CleanVersion { get; private set; } = 0;
 
-        List<History> histories = new List<History>();
-        public int HistoryMaxLimit = 100;
 
         public class History
         {
@@ -363,20 +364,8 @@ namespace CodeEditor2.CodeEditor
 
         public void Undo()
         {
-            //lock (this)
-            //{
-            //    if (histories.Count == 0) return;
-            //    History history = histories.Last();
-            //    histories.RemoveAt(histories.Count - 1);
-            //    Version--;
-            //    replace(history.Index, history.Length, 0, history.ChangedFrom);
-            //}
         }
 
-        public void ClearHistory()
-        {
-            histories.Clear();
-        }
 
         public void Replace(int index, int replaceLength, byte colorIndex, string text)
         {
