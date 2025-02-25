@@ -42,10 +42,11 @@ namespace CodeEditor2.CodeEditor.TextDecollation
                 {
                     foreach (var color in lineInfo.Colors)
                     {
-                        if (line.Offset > color.Offset | color.Offset + color.Length > line.EndOffset) continue;
+//                        if (line.Offset > color.Offset | color.Offset + color.Length > line.EndOffset) continue;
+                        if ( color.Offset<0 | color.Offset + color.Length > line.Length ) continue;
                         ChangeLinePart(
-                            color.Offset,
-                            color.Offset + color.Length,
+                            color.Offset + line.Offset,
+                            color.Offset + line.Offset + color.Length,
                             visualLine =>
                             {
                                 visualLine.TextRunProperties.SetForegroundBrush(new SolidColorBrush(color.DrawColor));

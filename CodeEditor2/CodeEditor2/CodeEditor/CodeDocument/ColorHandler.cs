@@ -89,18 +89,18 @@ namespace CodeEditor2.CodeEditor
                 LineInformation lineInfo = GetLineInformation(lineStart.LineNumber);
                 lock (lineInfo.Colors)
                 {
-                    lineInfo.Colors.Add(new LineInformation.Color(index, length, color));
+                    lineInfo.Colors.Add(new LineInformation.Color(index- codeDocument.GetLineStartIndex(lineStart.LineNumber), length, color));
                 }
             }
             else
             {
                 LineInformation lineInfo = GetLineInformation(lineStart.LineNumber);
-                lineInfo.Colors.Add(new LineInformation.Color(index, codeDocument.GetLineLength(lineStart.LineNumber) - (index - codeDocument.GetLineStartIndex(lineStart.LineNumber)), color));
+                lineInfo.Colors.Add(new LineInformation.Color(index - codeDocument.GetLineStartIndex(lineStart.LineNumber), codeDocument.GetLineLength(lineStart.LineNumber) - (index - codeDocument.GetLineStartIndex(lineStart.LineNumber)), color));
 
                 lineInfo = GetLineInformation(lineLast.LineNumber);
                 lock (lineInfo.Colors)
                 {
-                    lineInfo.Colors.Add(new LineInformation.Color(codeDocument.GetLineStartIndex(lineLast.LineNumber), index + length - codeDocument.GetLineStartIndex(lineLast.LineNumber), color));
+                    lineInfo.Colors.Add(new LineInformation.Color(0, index + length - codeDocument.GetLineStartIndex(lineLast.LineNumber), color));
                 }
 
                 for (int line = lineStart.LineNumber + 1; line <= lineLast.LineNumber - 1; line++)
@@ -108,7 +108,7 @@ namespace CodeEditor2.CodeEditor
                     lineInfo = GetLineInformation(line);
                     lock (lineInfo.Colors)
                     {
-                        lineInfo.Colors.Add(new LineInformation.Color(codeDocument.GetLineStartIndex(line), codeDocument.GetLineLength(line), color));
+                        lineInfo.Colors.Add(new LineInformation.Color(0, codeDocument.GetLineLength(line), color));
                     }
                 }
             }
@@ -131,23 +131,35 @@ namespace CodeEditor2.CodeEditor
                     foreach (var color in lineInfo.Colors)
                     {
                         if (color == null) continue;
-                        updateColor(e, color, removeTarget);
+                        updateColor(startLine, e, color, removeTarget);
                     }
                     foreach (var removeMark in removeTarget)
                     {
                         lineInfo.Colors.Remove(removeMark);
                     }
-
                 }
+            }
+            else
+            {
+
+                //lock (LineInformation)
+                //{
+                //    for (int i = startLine.LineNumber + 1; i < endLine.LineNumber; i++)
+                //    {
+                //        if (LineInformation.ContainsKey(i)) LineInformation.Remove(i);
+                //    }
+                //}
+
             }
 
         }
 
-        public void updateColor(DocumentChangeEventArgs e, LineInformation.Color color, List<LineInformation.Color> removeTarget)
+        public void updateColor(DocumentLine line,DocumentChangeEventArgs e, LineInformation.Color color, List<LineInformation.Color> removeTarget)
         {
             int change = e.InsertionLength - e.RemovalLength;
+            int offset = e.Offset - codeDocument.GetLineStartIndex(line.LineNumber);
 
-            if (e.Offset < color.Offset)
+            if (offset < color.Offset)
             {
                 //                      color
                 //               start       last
@@ -157,21 +169,21 @@ namespace CodeEditor2.CodeEditor
                 //     |------->
                 //     |------------------->
                 //     |------------------------------->
-                if (e.Offset + e.RemovalLength < color.Offset)
+                if (offset + e.RemovalLength < color.Offset)
                 {
                     color.Offset += change;
                 }
-                else if (e.Offset + e.RemovalLength == color.Offset)
+                else if (offset + e.RemovalLength == color.Offset)
                 {
                     color.Offset += change;
                 }
-                else if (e.Offset + e.RemovalLength < color.Offset + color.Length)
+                else if (offset + e.RemovalLength < color.Offset + color.Length)
                 {
-                    int length = color.Offset + color.Length - (e.Offset + e.RemovalLength);
-                    color.Offset = e.Offset + e.RemovalLength + change;
+                    int length = color.Offset + color.Length - (offset + e.RemovalLength);
+                    color.Offset = offset + e.RemovalLength + change;
                     color.Length = length;
                 }
-                else if (e.Offset + e.RemovalLength == color.Offset + color.Length)
+                else if (offset + e.RemovalLength == color.Offset + color.Length)
                 {
                     removeTarget.Add(color);
                 }
@@ -180,7 +192,7 @@ namespace CodeEditor2.CodeEditor
                     removeTarget.Add(color);
                 }
             }
-            else if (e.Offset == color.Offset)
+            else if (offset == color.Offset)
             {
                 //                      color
                 //               start       last
@@ -190,12 +202,12 @@ namespace CodeEditor2.CodeEditor
                 //                 |------->
                 //                 |----------->
                 //                 |------------------->
-                if (e.Offset + e.RemovalLength < color.Offset + color.Length)
+                if (offset + e.RemovalLength < color.Offset + color.Length)
                 {
-                    color.Offset = e.Offset + e.RemovalLength + change;
+                    color.Offset = offset + e.RemovalLength + change;
                     // color.length kept
                 }
-                else if (e.Offset + e.RemovalLength == color.Offset + color.Length)
+                else if (offset + e.RemovalLength == color.Offset + color.Length)
                 {
                     removeTarget.Add(color);
                 }
@@ -204,7 +216,7 @@ namespace CodeEditor2.CodeEditor
                     removeTarget.Add(color);
                 }
             }
-            else if (e.Offset < color.Offset + color.Length)
+            else if (offset < color.Offset + color.Length)
             {
                 //                      color
                 //               start       last
@@ -214,20 +226,20 @@ namespace CodeEditor2.CodeEditor
                 //                     |--->
                 //                     |------->
                 //                     |--------------->
-                if (e.Offset + e.RemovalLength < color.Offset + color.Length)
+                if (offset + e.RemovalLength < color.Offset + color.Length)
                 {
                     color.Length += change;
                 }
-                else if (e.Offset + e.RemovalLength == color.Offset + color.Length)
+                else if (offset + e.RemovalLength == color.Offset + color.Length)
                 {
-                    color.Length = e.Offset - color.Offset;
+                    color.Length = offset - color.Offset;
                 }
                 else
                 {
-                    color.Length = e.Offset - color.Offset;
+                    color.Length = offset - color.Offset;
                 }
             }
-            else if (e.Offset == color.Offset + color.Length)
+            else if (offset == color.Offset + color.Length)
             {
                 //                      color
                 //               start       last
@@ -245,9 +257,7 @@ namespace CodeEditor2.CodeEditor
                 // .   .   .   .   .   .   .   .   .   .   .   .
                 //                 =============
                 //                                 |--->
-
             }
-
         }
 
     }
