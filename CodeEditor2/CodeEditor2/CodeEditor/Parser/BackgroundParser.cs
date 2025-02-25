@@ -63,7 +63,7 @@ namespace CodeEditor2.CodeEditor.Parser
                 {
                     parsing = true;
 
-                    while (Global.StopBackGroundParse)
+                    while (Global.StopBackGroundParse & !Global.Abort)
                     {
                         Thread.Sleep(10);
                     }
