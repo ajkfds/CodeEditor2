@@ -122,6 +122,8 @@ namespace CodeEditor2.CodeEditor
             DocumentLine startLine = codeDocument.TextDocument.GetLineByOffset(e.Offset);
             DocumentLine endLine = codeDocument.TextDocument.GetLineByOffset(e.Offset + e.RemovalLength);
 
+            // addlines
+
             int insertLines = 0;
             {
                 int i = e.InsertedText.IndexOf('\n', 0, e.InsertedText.TextLength);
@@ -244,99 +246,103 @@ namespace CodeEditor2.CodeEditor
 
         public void updateColor(int editOffset,int insertionLength,int removalLength,int lineNumber,LineInformation.Color color, List<LineInformation.Color> removeTarget)
         {
-            int change = insertionLength - removalLength;
             int offset = editOffset - codeDocument.GetLineStartIndex(lineNumber);
 
             if (offset < color.Offset)
             {
-                //                      color
-                //               start       last
-                //                 v           v
-                // .   .   .   .   .   .   .   .   .   .   .   .
-                //                 =============
-                //     |------->
-                //     |------------------->
-                //     |------------------------------->
                 if (offset + removalLength < color.Offset)
                 {
-                    color.Offset += change;
-                }
-                else if (offset + removalLength == color.Offset)
-                {
-                    color.Offset += change;
+                    //                      color
+                    //               start       last
+                    //                 v           v
+                    // .   .   .   .   .   .   .   .   .   .   .   .
+                    //                 =============
+                    //     |------->                 removal area
+                    // remove
+                    color.Offset -= removalLength;
+                    // insert
+                    color.Offset += insertionLength;
                 }
                 else if (offset + removalLength < color.Offset + color.Length)
                 {
-                    int length = color.Offset + color.Length - (offset + removalLength);
-                    color.Offset = offset + removalLength + change;
-                    color.Length = length;
-                }
-                else if (offset + removalLength == color.Offset + color.Length)
-                {
-                    removeTarget.Add(color);
+                    //                      color
+                    //               start       last
+                    //                 v           v
+                    // .   .   .   .   .   .   .   .   .   .   .   .
+                    //                 =============
+                    //     |------------------>      removalarea
+                    // remove
+                    //                 <------> duplicate
+                    int duplicate = offset + removalLength - color.Offset;
+
+                    color.Offset = offset;
+                    color.Length -= duplicate;
+                    // insert
+                    color.Offset += insertionLength;
                 }
                 else
                 {
+                    //                      color
+                    //               start       last
+                    //                 v           v
+                    // .   .   .   .   .   .   .   .   .   .   .   .
+                    //                 =============
+                    //     |-------------------------------> // removalarea
                     removeTarget.Add(color);
                 }
             }
             else if (offset == color.Offset)
             {
-                //                      color
-                //               start       last
-                //                 v           v
-                // .   .   .   .   .   .   .   .   .   .   .   .
-                //                 =============
-                //                 |------->
-                //                 |----------->
-                //                 |------------------->
                 if (offset + removalLength < color.Offset + color.Length)
                 {
-                    color.Offset = offset + removalLength + change;
-                    color.Length += change;
-                    // color.length kept
-                }
-                else if (offset + removalLength == color.Offset + color.Length)
-                {
-                    removeTarget.Add(color);
+                    //                      color
+                    //               start       last
+                    //                 v           v
+                    // .   .   .   .   .   .   .   .   .   .   .   .
+                    //                 =============
+                    //                 |------->     removal area
+                    // remove
+                    color.Length -= removalLength;
+                    // insert
+                    color.Offset += insertionLength;
                 }
                 else
                 {
+                    //                      color
+                    //               start       last
+                    //                 v           v
+                    // .   .   .   .   .   .   .   .   .   .   .   .
+                    //                 =============
+                    //                 |-------------------> removal area
                     removeTarget.Add(color);
                 }
             }
-            else if (offset < color.Offset + color.Length)
+            else if (offset <= color.Offset + color.Length)
             {
-                //                      color
-                //               start       last
-                //                 v           v
-                // .   .   .   .   .   .   .   .   .   .   .   .
-                //                 =============
-                //                     |--->
-                //                     |------->
-                //                     |--------------->
                 if (offset + removalLength < color.Offset + color.Length)
                 {
-                    color.Length += change;
-                }
-                else if (offset + removalLength == color.Offset + color.Length)
-                {
-                    color.Length = offset - color.Offset;
+                    //                      color
+                    //               start       last
+                    //                 v           v
+                    // .   .   .   .   .   .   .   .   .   .   .   .
+                    //                 =============
+                    //                     |--->     removal area
+                    // remove
+                    color.Length -= removalLength;
+                    // insert
+                    color.Length += insertionLength;
                 }
                 else
                 {
+                    //                      color
+                    //               start       last
+                    //                 v           v
+                    // .   .   .   .   .   .   .   .   .   .   .   .
+                    //                 =============
+                    //                     |---------------> removal area
+                    // remove
                     color.Length = offset - color.Offset;
                 }
-            }
-            else if (offset == color.Offset + color.Length)
-            {
-                //                      color
-                //               start       last
-                //                 v           v
-                // .   .   .   .   .   .   .   .   .   .   .   .
-                //                 =============
-                //                             |------->
-
             }
             else
             {
