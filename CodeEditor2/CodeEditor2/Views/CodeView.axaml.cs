@@ -160,12 +160,12 @@ namespace CodeEditor2.Views
                 else _textEditor.FontSize = _textEditor.FontSize > 1 ? _textEditor.FontSize - 1 : 1;
             }, RoutingStrategies.Bubble, true);
 
-            DispatcherTimer timer = new DispatcherTimer();
             timer.Interval = new TimeSpan(0, 0, 0, 0, 10);
             timer.Tick += Timer_Tick;
             timer.Start();
         }
 
+        internal DispatcherTimer timer = new DispatcherTimer();
         internal HighlightRenderer _highlightRenderer;
         internal MarkerRenderer _markerRenderer;
         internal FoldingManager _foldingManager;
@@ -262,6 +262,7 @@ namespace CodeEditor2.Views
         {
             // Get background parser Result
             codeViewParser.Timer_Tick(sender, e);
+            if (Global.Abort) timer.Stop();
         }
 
 
