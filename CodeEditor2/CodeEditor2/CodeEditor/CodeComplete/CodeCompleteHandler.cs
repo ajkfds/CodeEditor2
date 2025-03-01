@@ -99,7 +99,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 prevIndex--;
                 prevChar = codeView.CodeDocument.GetCharAt(prevIndex);
             }
-            System.Diagnostics.Debug.Print("### TextEnteted 1");
+//            System.Diagnostics.Debug.Print("### TextEnteted 1");
 
             string? candidateWord;
             List<AutocompleteItem>? items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out candidateWord);
@@ -113,7 +113,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 Close();
                 return;
             }
-            System.Diagnostics.Debug.Print("### TextEnteted 2");
+//            System.Diagnostics.Debug.Print("### TextEnteted 2");
 
             List<PopupMenu.ToolItem> toolItems = new List<PopupMenu.ToolItem>();
             foreach(AutocompleteItem aItem in items)
@@ -124,18 +124,18 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                     toolItems.Add(aItem);
                 }
             }
-            System.Diagnostics.Debug.Print("### TextEnteted 3");
+//            System.Diagnostics.Debug.Print("### TextEnteted 3");
 
             if (toolItems.Count == 0)
             {
                 Close();
                 return;
             }
-            System.Diagnostics.Debug.Print("### TextEnteted 4");
+//            System.Diagnostics.Debug.Print("### TextEnteted 4");
 
             if (!working)
             {
-                System.Diagnostics.Debug.Print("### TextEnteted 5");
+//                System.Diagnostics.Debug.Print("### TextEnteted 5");
                 popupMenuView = Controller.CodeEditor.OpenAutoComplete(toolItems);
                 if (popupMenuView == null)
                 {
@@ -148,13 +148,13 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
             else
             {
-                System.Diagnostics.Debug.Print("### TextEnteted 6");
+//                System.Diagnostics.Debug.Print("### TextEnteted 6");
                 if (popupMenuView == null)
                 {
                     Close();
                     return;
                 }
-                System.Diagnostics.Debug.Print("### TextEnteted 7 "+toolItems.Count);
+//                System.Diagnostics.Debug.Print("### TextEnteted 7 "+toolItems.Count);
                 Controller.CodeEditor.UpdateAutoComplete(toolItems);
                 popupMenuView.SelectDown();
                 working = true;
