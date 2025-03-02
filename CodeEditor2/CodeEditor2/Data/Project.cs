@@ -31,6 +31,7 @@ namespace CodeEditor2.Data
             RootPath = rootPath;
             RelativePath = relativePath;
             Project = this;
+            FileClassify = new FileClassify(this);
         }
 
         public Dictionary<string, ProjectProperty> ProjectProperties = new Dictionary<string, ProjectProperty>();
@@ -41,6 +42,8 @@ namespace CodeEditor2.Data
             Setup setup = new Setup(this);
             return setup;
         }
+
+        public FileClassify FileClassify { get; set; }
 
         // setup object to convert project to json file
         public class Setup
@@ -311,6 +314,12 @@ namespace CodeEditor2.Data
                     }
                     fileSystemEvents.Remove(fs.FullPath);
                     {
+                        if(fs.FullPath == FileClassify.AbsolutePath)
+                        {
+                            FileClassify.Reload();
+                            return;
+                        }
+
                         Controller.AppendLog(fs.Name + " changed");
                         string relativePath = GetRelativePath(fs.FullPath);
                         Data.File? file = GetItem(relativePath) as Data.File;

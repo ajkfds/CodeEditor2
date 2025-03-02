@@ -10,7 +10,6 @@ namespace CodeEditor2.FileTypes
     public class FileType
     {
         public virtual string ID { get; protected set; }
-
         public virtual bool IsThisFileType(string relativeFilePath, Project project)
         {
             return false;

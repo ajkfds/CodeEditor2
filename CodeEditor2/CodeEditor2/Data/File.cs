@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CodeEditor2.NavigatePanel;
 using DynamicData.Binding;
+using DynamicData.Kernel;
 
 
 namespace CodeEditor2.Data
@@ -21,11 +22,22 @@ namespace CodeEditor2.Data
         public static File Create(string relativePath, Project project, Item parent)
         {
             // check registered filetype
-            foreach (var fileType in Global.FileTypes.Values)
+            if (project.FileClassify.HasDefinition())
             {
-                if (fileType.IsThisFileType(relativePath, project)) return fileType.CreateFile(relativePath, project);
+                project.FileClassify.IsMatched(relativePath, out string type);
+                if (Global.FileTypes.ContainsKey(type))
+                {
+                    FileTypes.FileType fileType = Global.FileTypes[type];
+                    return fileType.CreateFile(relativePath, project);
+                }
             }
 
+            foreach (var fileType in Global.FileTypes)
+            {
+                if (fileType.Value.IsThisFileType(relativePath, project)) return fileType.Value.CreateFile(relativePath, project);
+            }
+
+           
             string name;
             if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
             {
