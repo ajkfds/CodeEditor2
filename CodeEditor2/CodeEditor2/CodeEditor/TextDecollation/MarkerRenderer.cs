@@ -64,137 +64,10 @@ namespace CodeEditor2.CodeEditor.TextDecollation
                     updateMark(e.Offset , e.InsertionLength, e.RemovalLength, mark, removeTarget);
                 }
 
-
-                //    foreach (var mark in markList)
-                //    {
-
-                //        //                      mark
-                //        //               start       last
-                //        //                 v           v
-                //        // .   .   .   .   .   .   .   .   .   .   .   .
-                //        //                 =============
-                //        //     |------->
-                //        //     |------------------->
-                //        //     |------------------------------->
-                //        //                 |------->
-                //        //                 |----------->
-                //        //                 |------------------->
-                //        //                     |--->
-                //        //                     |------->
-                //        //                     |--------------->
-                //        //                             |------->
-                //        //                                 |--->
-
-                //        //mark.EndOffset means last offset position
-
-                //        if(e.Offset < mark.StartOffset)
-                //        {
-                //            //                      mark
-                //            //               start       last
-                //            //                 v           v
-                //            // .   .   .   .   .   .   .   .   .   .   .   .
-                //            //                 =============
-                //            //     |------->
-                //            //     |------------------->
-                //            //     |------------------------------->
-                //            if (e.Offset + e.RemovalLength < mark.StartOffset)
-                //            {
-                //                mark.StartOffset += change;
-                //            }
-                //            else if(e.Offset + e.RemovalLength == mark.StartOffset)
-                //            {
-                //                mark.StartOffset += change;
-                //            }
-                //            else if(e.Offset+e.RemovalLength < mark.StartOffset + mark.Length)
-                //            {
-                //                int length = mark.StartOffset + mark.Length - (e.Offset + e.RemovalLength);
-                //                mark.StartOffset = e.Offset + e.RemovalLength + change;
-                //                mark.Length = length;
-                //            }
-                //            else if(e.Offset + e.RemovalLength == mark.StartOffset + mark.Length)
-                //            {
-                //                removeTarget.Add(mark);
-                //            }
-                //            else
-                //            {
-                //                removeTarget.Add(mark);
-                //            }
-                //        }
-                //        else if(e.Offset== mark.StartOffset)
-                //        {
-                //            //                      mark
-                //            //               start       last
-                //            //                 v           v
-                //            // .   .   .   .   .   .   .   .   .   .   .   .
-                //            //                 =============
-                //            //                 |------->
-                //            //                 |----------->
-                //            //                 |------------------->
-                //            if (e.Offset + e.RemovalLength < mark.StartOffset + mark.Length)
-                //            {
-                //                mark.StartOffset = e.Offset + e.RemovalLength + change;
-                //            }
-                //            else if (e.Offset + e.RemovalLength == mark.StartOffset + mark.Length)
-                //            {
-                //                removeTarget.Add(mark);
-                //            }
-                //            else
-                //            {
-                //                removeTarget.Add(mark);
-                //            }
-                //        }
-                //        else if (e.Offset < mark.StartOffset + mark.Length)
-                //        {
-                //            //                      mark
-                //            //               start       last
-                //            //                 v           v
-                //            // .   .   .   .   .   .   .   .   .   .   .   .
-                //            //                 =============
-                //            //                     |--->
-                //            //                     |------->
-                //            //                     |--------------->
-                //            if (e.Offset + e.RemovalLength < mark.StartOffset + mark.Length)
-                //            {
-                //                mark.Length += change;
-                //            }
-                //            else if (e.Offset + e.RemovalLength == mark.StartOffset + mark.Length)
-                //            {
-                //                mark.Length = e.Offset - mark.StartOffset;
-                //            }
-                //            else
-                //            {
-                //                mark.Length = e.Offset - mark.StartOffset;
-                //            }
-                //        }
-                //        else if (e.Offset == mark.StartOffset + mark.Length)
-                //        {
-                //            //                      mark
-                //            //               start       last
-                //            //                 v           v
-                //            // .   .   .   .   .   .   .   .   .   .   .   .
-                //            //                 =============
-                //            //                             |------->
-
-                //        }
-                //        else
-                //        {
-                //            //                      mark
-                //            //               start       last
-                //            //                 v           v
-                //            // .   .   .   .   .   .   .   .   .   .   .   .
-                //            //                 =============
-                //            //                                 |--->
-
-                //        }
-
-
-                //    }
-
                 foreach (var removeMark in removeTarget)
                 {
                     marks.Remove(removeMark);
                 }
-
             }
         }
 
@@ -279,10 +152,12 @@ namespace CodeEditor2.CodeEditor.TextDecollation
                     // .   .   .   .   .   .   .   .   .   .   .   .
                     //                 =============
                     //                     |--->     removal area
+                    color.Length = offset - color.StartOffset;
+
                     // remove
-                    color.Length -= removalLength;
+                    //color.Length -= removalLength;
                     // insert
-                    color.Length += insertionLength;
+                    //color.Length += insertionLength;
                 }
                 else
                 {

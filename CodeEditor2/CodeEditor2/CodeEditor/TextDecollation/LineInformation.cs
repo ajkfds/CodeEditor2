@@ -26,19 +26,14 @@ namespace CodeEditor2.CodeEditor.TextDecollation
             public Avalonia.Media.Color DrawColor;
         }
 
-        //public class Effect
-        //{
-        //    public Effect(int offset, int length, Avalonia.Media.Color color, CodeDocumentColorTransformer.MarkStyleEnum markStyle)
-        //    {
-        //        this.Offset = offset;
-        //        this.Length = length;
-        //        this.DrawColor = color;
-        //        this.MarkStyle = markStyle;
-        //    }
-        //    public int Offset;
-        //    public int Length;
-        //    public Avalonia.Media.Color DrawColor;
-        //    public CodeDocumentColorTransformer.MarkStyleEnum MarkStyle;
-        //}
+        public LineInformation Clone()
+        {
+            LineInformation lineInformation = new LineInformation();
+            foreach (Color color in Colors) 
+            {
+                lineInformation.Colors.Add(new Color(color.Offset, color.Length, color.DrawColor));
+            }
+            return lineInformation;
+        }
     }
 }
