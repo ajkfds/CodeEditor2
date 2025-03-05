@@ -47,6 +47,12 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 popupMenuView.SelectDown();
                 e.Handled = true;
             }
+            else if(e.Key == Key.OemComma)
+            {
+                Apply();
+                Close();
+                return;
+            }
             else if(e.Key == Key.Enter)
             {
                 Apply();
