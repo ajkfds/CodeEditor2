@@ -25,19 +25,15 @@ namespace CodeEditor2.Tools
             sw.Start();
             System.Diagnostics.Debug.Print("parse hier sw " + sw.ElapsedMilliseconds.ToString());
 
-            if (Global.ProgressWindow == null) throw new Exception();
-            Global.ProgressWindow.Title = "Reparse " + rootNode.Text;
+            ProgressWindow progress = new ProgressWindow();
+            progress.Title = "Reparse " + rootNode.Text;
             int progressMax = 20;
-            Global.ProgressWindow.ProgressMaxValue = progressMax;
-
-            var _ = Global.ProgressWindow.ShowDialog(Global.mainWindow);
-
-            {
-                
+            progress.ProgressMaxValue = progressMax;
+            progress.LoadedAction = async (p) => {
                 int i = 0;
                 Item? item = rootNode.Item;
                 if (item == null) throw new Exception();
-                ParseHierarchyUnit unit = new ParseHierarchyUnit("ParseHier"+item.Name);
+                ParseHierarchyUnit unit = new ParseHierarchyUnit("ParseHier" + item.Name,p);
                 unit.Run(item,
                         (
                             (f) =>
@@ -46,9 +42,9 @@ namespace CodeEditor2.Tools
                                     new Action(() =>
                                     {
                                         if (progressMax <= i) progressMax = progressMax * 2;
-                                        Global.ProgressWindow.ProgressMaxValue = progressMax;
-                                        Global.ProgressWindow.ProgressValue = i;
-                                        Global.ProgressWindow.Message = f.Name;
+                                        p.ProgressMaxValue = progressMax;
+                                        p.ProgressValue = i;
+                                        p.Message = f.Name;
                                         i++;
                                     })
                                     );
@@ -59,11 +55,11 @@ namespace CodeEditor2.Tools
                 {
                     await Task.Delay(1);
                 }
+                p.Close();
+            };
+            await progress.ShowDialog(Global.mainWindow);
 
-            }
             rootNode.Update();
-
-            Global.ProgressWindow.Hide();
 
             // move ownerWindow to top
             Global.mainWindow.Focus();

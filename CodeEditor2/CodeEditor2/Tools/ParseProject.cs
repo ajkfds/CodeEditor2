@@ -37,25 +37,21 @@ namespace CodeEditor2.Tools
                 (x) => (false)
                 );
 
-            Dispatcher.UIThread.Post(() => {
-                if (Global.ProgressWindow == null) throw new Exception();
-                Global.ProgressWindow.Title = "Loading "+projectNode.Text;
-                Global.ProgressWindow.ProgressMaxValue = items.Count;
-                Global.ProgressWindow.ShowDialog(Global.mainWindow);
-            });
+            ProgressWindow progress = new ProgressWindow();
+            progress.Title = "Loading " + projectNode.Text;
+            progress.ProgressMaxValue = items.Count;
 
-            await runParse();
-
-            Dispatcher.UIThread.Post(() => {
-                if (Global.ProgressWindow == null) throw new Exception();
-                Global.ProgressWindow.Hide();
-            });
+            progress.LoadedAction = async (p) => {
+                await runParse(p);
+                p.Close();
+            };
+            await progress.ShowDialog(Global.mainWindow);
 
             CodeEditor2.Global.StopBackGroundParse = false;
         }
 
 
-        private async Task runParse()
+        private async Task runParse(ProgressWindow progress)
         {
             // parse items
             int i = 0;
@@ -75,9 +71,8 @@ namespace CodeEditor2.Tools
                             Dispatcher.UIThread.Post(
                                 new Action(() =>
                                 {
-                                    if (Global.ProgressWindow == null) throw new Exception();
-                                    Global.ProgressWindow.ProgressValue = i;
-                                    Global.ProgressWindow.Message = f.Name;
+                                    progress.ProgressValue = i;
+                                    progress.Message = f.Name;
                                     i++;
                                 })
                                 );
@@ -97,7 +92,6 @@ namespace CodeEditor2.Tools
             while (!fileQueue.IsCompleted)
             {
                 await Task.Delay(10);
-//                System.Threading.Thread.Sleep(10);
             }
 
             while (true)
@@ -109,7 +103,6 @@ namespace CodeEditor2.Tools
                 }
                 if (completeTasks == tasks.Count) break;
             }
-//            abort = true;
         }
     }
 }

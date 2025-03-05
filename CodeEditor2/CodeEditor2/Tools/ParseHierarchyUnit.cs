@@ -11,13 +11,14 @@ namespace CodeEditor2.Tools
 {
     internal class ParseHierarchyUnit
     {
-        public ParseHierarchyUnit(string name)
+        public ParseHierarchyUnit(string name,ProgressWindow progress)
         {
             this.name = name;
+            this.progress = progress;
         }
 
         string name;
-
+        ProgressWindow progress;
         public void Run(Data.Item item, Action<Data.TextFile> startParse)
         {
             this.item = item;
@@ -49,7 +50,7 @@ namespace CodeEditor2.Tools
             //});
             textFile.ParseHierarchy((tFile) =>
             {
-                Dispatcher.UIThread.Invoke(new Action(() => { Global.ProgressWindow.Message = tFile.ID; }));
+                Dispatcher.UIThread.Invoke(new Action(() => { progress.Message = tFile.ID; }));
             });
             Complete = true;
         }

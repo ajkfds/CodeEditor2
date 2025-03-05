@@ -1,7 +1,9 @@
 using Avalonia.Controls;
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using static CodeEditor2.CodeEditor.ParsedDocument;
+using System.Threading.Tasks;
 
 namespace CodeEditor2.Tools
 {
@@ -13,8 +15,19 @@ namespace CodeEditor2.Tools
             Title = "Title";
             Message = "Loading...";
             ProgressMaxValue = 100;
+            Loaded += ProgressWindow_Loaded;
+            
         }
 
+        private async void ProgressWindow_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (LoadedAction != null)
+            {
+                await LoadedAction(this);
+            }
+        }
+
+        public Func<ProgressWindow,Task>? LoadedAction = null;
         public ProgressWindow(string title,string message,double maxValue)
         {
             InitializeComponent();

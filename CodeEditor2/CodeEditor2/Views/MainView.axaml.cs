@@ -43,9 +43,7 @@ public partial class MainView : UserControl
         timer.Stop();
         // read setup file
 
-        Global.ProgressWindow = new Tools.ProgressWindow();
         await initialize();
-        Global.mainWindow.Activate();
     }
 
     private DispatcherTimer timer = new DispatcherTimer();
