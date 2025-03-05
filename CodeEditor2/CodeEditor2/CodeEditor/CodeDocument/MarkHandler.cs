@@ -4,6 +4,10 @@ using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.TextMate;
 using CodeEditor2.NavigatePanel;
+using ExCSS;
+using HarfBuzzSharp;
+
+
 //using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ReactiveUI;
 using System;
@@ -38,21 +42,65 @@ namespace CodeEditor2.CodeEditor
 			if (codeDocument.TextFile == null) return;
 			if (index >= codeDocument.Length) return;
 
-			CodeDrawStyle.MarkDetail markStyle = codeDocument.TextFile.DrawStyle.MarkStyle[value];
-			CodeDrawStyle.MarkDetail mark = new CodeDrawStyle.MarkDetail();
-			mark.Offset = index;
-			mark.LastOffset = index + length;
-			mark.Color = markStyle.Color;
-			mark.Thickness = markStyle.Thickness;
-			mark.DecorationHeight = markStyle.DecorationHeight;
-			mark.DecorationWidth = markStyle.DecorationWidth;
-			mark.Style = markStyle.Style;
-            lock (marks)
-            {
-                marks.Add(mark);
+			int startLine = codeDocument.GetLineAt(index);
+			int lastLine = codeDocument.GetLineAt(index + length);
+
+			if(startLine == lastLine)
+			{
+				CodeDrawStyle.MarkDetail mark = createDetail(codeDocument.TextFile.DrawStyle.MarkStyle[value]);
+                mark.Offset = index;
+                mark.LastOffset = index + length;
+                lock (marks)
+                {
+                    marks.Add(mark);
+                }
+				return;
+            }
+
+			{ // startLine
+                CodeDrawStyle.MarkDetail mark = createDetail(codeDocument.TextFile.DrawStyle.MarkStyle[value]);
+				mark.Offset = index;
+                mark.LastOffset = codeDocument.GetLineStartIndex(startLine) + codeDocument.GetLineLength(startLine);
+
+                lock (marks)
+                {
+                    marks.Add(mark);
+                }
+            }
+            for (int i = startLine + 1; i < lastLine; i++)
+			{
+                CodeDrawStyle.MarkDetail mark = createDetail(codeDocument.TextFile.DrawStyle.MarkStyle[value]);
+				mark.Offset = codeDocument.GetLineStartIndex(i);
+				mark.LastOffset = mark.Offset + codeDocument.GetLineLength(i);
+
+                lock (marks)
+                {
+                    marks.Add(mark);
+                }
+			}
+			{ // last line
+                CodeDrawStyle.MarkDetail mark = createDetail(codeDocument.TextFile.DrawStyle.MarkStyle[value]);
+				mark.Offset = codeDocument.GetLineStartIndex(lastLine);
+				mark.LastOffset = index + length;
+
+                lock (marks)
+                {
+                    marks.Add(mark);
+                }
             }
         }
-		public byte GetMarkAt(int index)
+		private CodeDrawStyle.MarkDetail createDetail(CodeDrawStyle.MarkDetail markStyle)
+		{
+            CodeDrawStyle.MarkDetail mark = new CodeDrawStyle.MarkDetail();
+            mark.Color = markStyle.Color;
+            mark.Thickness = markStyle.Thickness;
+            mark.DecorationHeight = markStyle.DecorationHeight;
+            mark.DecorationWidth = markStyle.DecorationWidth;
+            mark.Style = markStyle.Style;
+			return mark;
+        }
+
+        public byte GetMarkAt(int index)
 		{
 			//            return marks[index];
 			return 0;
