@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Viewer</title>
+    
+    <!-- Prism.js（シンタックスハイライト） -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-verilog.min.js"></script>
+
+    <!-- Marked.js（Markdownパース用） -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.0/marked.min.js"></script>
+
+    <!-- Mermaid.js（マーメイド対応） -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.4.0/mermaid.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #fff;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+
+        /* プレビューエリア */
+        .preview {
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .preview-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #output {
+            min-height: 100%;
+        }
+
+        /* コードブロック */
+        pre {
+            background: #282c34;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #444;
+        }
+
+        /* スクロールバーのカスタマイズ */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #333;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #666;
+            border-radius: 4px;
+        }
+    </style>
+	
+</head>
+<body>
+
+
+
+<div class="container">
+	<div class="preview" onscroll="syncScroll('preview')">
+		<div id="output"></div>
+	</div>
+</div> 
+
+<script>
+	mermaid.initialize({ startOnLoad: false });
+	
+	function renderMarkdown() {
+		const input = document.querySelector("body > markdown").textContent
+		const outputDiv = document.getElementById('output');
+		// Markdown を HTML に変換 
+		outputDiv.innerHTML = marked.parse(input);
+		// Prism.js によるシンタックスハイライト適用
+		Prism.highlightAll(); 
+		// Mermaidブロックを処理 
+		const mermaidBlocks = outputDiv.querySelectorAll(".language-mermaid");
+		mermaidBlocks.forEach(
+			block => {
+				const newDiv = document.createElement("div"); newDiv.classList.add("mermaid"); 
+				newDiv.innerHTML = block.textContent; 
+				block.replaceWith(newDiv); 
+			});
+		// Mermaid を再レンダリング 
+		mermaid.run();
+		document.querySelector("body > markdown").textContent="";
+		}
+	// ページ読み込み時に自動実行 
+	window.onload = renderMarkdown; 
+</script> 
+
+<markdown>
+# Markdown サンプル
+
+```js
+console.log("Hello, World!");
+```
+
+```mermaid
+gantt
+    title A Gantt Diagram
+    dateFormat YYYY-MM-DD
+    section Section
+        A task          :a1, 2014-01-01, 30d
+        Another task    :after a1, 20d
+    section Another
+        Task in Another :2014-01-12, 12d
+        another task    :24d
+
+```
+```verilog
+`timescale 1ns / 1ps
+
+// _3_11_OverviewOfHierarchy;
+
+module top_3_11; // module with no ports
+
+	logic in1, in2, select; // variable declarations
+	wire out1; // net declaration
+	
+	mux2to1_3_11 m1 (.a(in1), .b(in2), .sel(select), .y(out1)); // module instance
+
+endmodule: top_3_11
+
+
+
+module mux2to1_3_11 (	input wire a, b, sel, // combined port and type declaration
+					output logic y);
+
+// netlist using built-in primitive instances
+not g1 (sel_n, sel);
+and g2 (a_s, a, sel_n);
+and g3 (b_s, b, sel);
+or g4 (y, a_s, b_s);
+
+endmodule: mux2to1_3_11
+
+```
+
+</markdown>
+
+
+</body> 
+</html>
+
