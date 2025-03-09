@@ -10,12 +10,12 @@ public partial class BrowserWindow : Window
     {
         InitializeComponent();
 
-        OnLoaded+= BrowserWindow_OnLoaded;
+        Loaded += BrowserWindow_OnLoaded;
     }
 
-    private void BrowserWindow_OnLoaded(object? sender, System.EventArgs e)
+    private async void BrowserWindow_OnLoaded(object? sender, System.EventArgs e)
     {
-        
+        await browser.NavigateAsync("https://www.google.com");   
         //throw new System.NotImplementedException();
     }
 
