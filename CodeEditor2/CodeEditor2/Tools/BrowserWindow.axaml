@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:browser="clr-namespace:ajkCefGlue.Browser;assembly=ajkCefGlue"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="CodeEditor2.BrowserWindow"
+        x:Class="CodeEditor2.Tools.BrowserWindow"
         Title="BrowserWindow">
-	<browser:BrowserControl/>
+	<browser:BrowserControl Name="browser"/>
 </Window>

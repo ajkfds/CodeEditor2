@@ -34,6 +34,7 @@
 			</MenuItem>
 			<MenuItem Header="_Tools" Name="MenuItem_Tools">
 				<MenuItem Header="_Test" Name="MenuItem_Test" Click="MenuItem_Test_Click"></MenuItem>
+				<MenuItem Header="_Browser" Name="MenuItem_Browser" Click="MenuItem_Browser_Click"></MenuItem>
 			</MenuItem>
 			<MenuItem Header="_Help" Name="MenuItem_Help">
 				
