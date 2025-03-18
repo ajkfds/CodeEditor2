@@ -330,7 +330,7 @@ namespace CodeEditor2.CodeEditor
             }
             document.Foldings.Foldings.Sort((x, y) => { return x.StartOffset - y.StartOffset; });
             Foldings.Foldings = document.Foldings.Foldings;
-            if(Global.codeView.TextFile != null && Global.codeView.TextFile.CodeDocument == this)
+            if(Global.codeView.TextFile != null && Global.codeView.TextFile.CodeDocument == this && System.Threading.Thread.CurrentThread.Name == "UI" )
             {
                 Global.codeView.UpdateFoldings();
             }
