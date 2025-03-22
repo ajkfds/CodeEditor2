@@ -1,4 +1,5 @@
 using AjkAvaloniaLibs.Controls;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Layout;
@@ -25,24 +26,22 @@ namespace CodeEditor2.Views
                 inputBox = new TextBox();
                 inputBox.FontSize = 11;
                 inputBox.Margin = new Avalonia.Thickness(0, 0, 0, 0);
-                inputBox.Padding = new Avalonia.Thickness(0, 0, 0, 0);
+                inputBox.Padding = new Avalonia.Thickness(5, 5, 5, 5);
                 inputBox.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-                inputBox.Height = 20;
-                inputBox.MinHeight = 14;
+                inputBox.MinHeight = 8;
 
                 ListBoxItem item = new ListBoxItem();
-                item.Height = 20;
                 item.Content = inputBox;
+                item.Margin = new Avalonia.Thickness(0, 0, 0, 0);
+                item.Padding = new Avalonia.Thickness(0, 0, 0, 0);
                 listItems.Add(item);
-
-//                ListBox0.AutoScrollToSelectedItem = true;
             }
 
             ListBox0.ItemsSource = listItems;
 
             Style style = new Style();
             style.Selector = ((Selector?)null).OfType(typeof(ListBoxItem));
-            style.Add(new Setter(Layoutable.MinHeightProperty, 8.0));
+            style.Add(new Setter(Layoutable.MinHeightProperty, 10.0));
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -87,40 +86,51 @@ namespace CodeEditor2.Views
         private void appendLog(string lineString,Color? color)
         {
             Dispatcher.UIThread.Post(
-                    new Action(() =>
+                new Action(() =>
+                {
+                    TextBlock textBlock = new TextBlock()
                     {
-                        TextBlock textBlock = new TextBlock();
-                        textBlock.Text = lineString;
-                        textBlock.FontSize = 10;
-                        textBlock.Height = 11;
-                        textBlock.MinHeight = 11;
-                        if(color != null)
+                        TextWrapping = TextWrapping.Wrap,
+                        Margin = new Thickness(0, 0, 0, 0),
+                        Padding = new Thickness(2, 2, 2, 2),
+                        Text = lineString,
+                        FontSize = 10,
+                        MinHeight = 8
+                    };
+
+                    if(color != null)
+                    {
+                        textBlock.Foreground = new SolidColorBrush((Color)color);
+                    }
+
+                    ListBoxItem item = new ListBoxItem()
+                    {
+                        Content = textBlock,
+                        Margin = new Thickness(0, 0, 0, 0),
+                        Padding = new Thickness(0, 0, 0, 0),
+                        MinHeight = 8
+                    };
+
+                    lock (listItems)
+                    {
+                        int i = listItems.Count - 1;
+                        if (i < 0) i = 0;
+                        listItems.Insert(i, item);
+                        
+                        if (listItems.Count > 1000)
                         {
-                            textBlock.Foreground = new SolidColorBrush((Color)color);
+                            ListBoxItem? removeItem = listItems[0] as ListBoxItem;
+                            if (removeItem == null) return;
+                            listItems.Remove(removeItem);
                         }
-                        textBlock.Margin = new Avalonia.Thickness(0, 0, 0, 0);
-                        lock (listItems)
-                        {
-                            ListBoxItem item = new ListBoxItem();
-                            item.Content = textBlock;
-                            int i = listItems.Count - 1;
-                            if (i < 0) i = 0;
-                            listItems.Insert(i, item);
-                            if (listItems.Count > 1000)
-                            {
-                                ListBoxItem? removeItem = listItems[0] as ListBoxItem;
-                                if (removeItem == null) return;
-                                listItems.Remove(removeItem);
-                            }
-                            listItems.Last().IsSelected = true;
-                            ListBox0.ScrollIntoView(listItems.Last());
-                        }
-                        ListBox0.InvalidateVisual();
-                    })
-                );
+                        
+                        listItems.Last().IsSelected = true;
+                        ListBox0.ScrollIntoView(listItems.Last());
+                    }
+//                    ListBox0.InvalidateVisual();
+                })
+            );
         }
-
-
     }
 
 
