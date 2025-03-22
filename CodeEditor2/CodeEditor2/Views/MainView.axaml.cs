@@ -95,8 +95,8 @@ public partial class MainView : UserControl
     }
     private async void MenuItem_Browser_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        Tools.BrowserWindow browserWindow = new Tools.BrowserWindow();
-        browserWindow.Show();
+//        Tools.BrowserWindow browserWindow = new Tools.BrowserWindow();
+//        browserWindow.Show();
         //Global.mainWindow);
         //        browserWindow = new BrowserWindow();
         //        await browserWindow.ShowDialog(Global.mainWindow);

@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Markdown Editor</title>
 
+    <!-- MathJax 設定 -->
+    <script>
+        window.onload = function () {
+            window.MathJax = {
+                tex: {
+                    inlineMath: [['$', '$'], ['\\(', '\\)']],
+                    displayMath: [['$$', '$$'], ['\\[', '\\]']]
+                }
+            };
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <!-- CodeMirror -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
@@ -13,14 +26,13 @@
     <!-- Prism.js -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-verilog.min.js"></script> <!-- Verilog 対応 -->
 
     <!-- Marked.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.0/marked.min.js"></script>
 
     <!-- Mermaid.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.4.0/mermaid.min.js"></script>
-    
+
     <!-- WaveDrom -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.2.0/wavedrom.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.2.0/skins/default.js"></script>
@@ -40,7 +52,6 @@
             gap: 15px;
         }
 
-        /* おしゃれなカード風デザイン */
         .editor, .preview {
             width: 50%;
             background: #ffffff;
@@ -50,27 +61,6 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-        }
-
-        .editor-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .copy-button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            cursor: pointer;
-            font-size: 14px;
-            border-radius: 5px;
-            transition: 0.2s;
-        }
-        .copy-button:hover {
-            background: #0056b3;
         }
 
         .CodeMirror {
@@ -84,31 +74,61 @@
             overflow-y: auto;
             border-left: 4px solid #486745;
         }
-
-        .preview-header {
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #486745;
-        }
-
-        #output {
-            min-height: 100%;
-        }
-
-        /* コードブロックを見やすく */
-        pre {
-            background: #f4f4f4 !important;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
-        }
-
-        code {
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            color: #d63384;
-        }
     </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            mermaid.initialize({ startOnLoad: false });
+
+            window.editor = CodeMirror.fromTextArea(document.getElementById("markdown-input"), {
+                mode: "markdown",
+                theme: "default",
+                lineNumbers: true,
+                lineWrapping: true,
+            });
+
+            marked.setOptions({
+                highlight: function (code, lang) {
+                    return Prism.highlight(code, Prism.languages[lang] || Prism.languages.markup, lang);
+                }
+            });
+
+            window.editor.on("change", function () {
+                renderMarkdown();
+            });
+
+            renderMarkdown();
+        });
+
+        function renderMarkdown() {
+            if (!window.editor) return;
+
+            const input = window.editor.getValue();
+            document.getElementById("output").innerHTML = marked.parse(input);
+            Prism.highlightAll();
+
+            // MathJax 適用
+            if (window.MathJax) {
+                setTimeout(() => MathJax.typesetPromise(), 200);
+            }
+
+            // Mermaid の修正: <code class="language-mermaid"> → <div class="mermaid">
+            document.querySelectorAll("code.language-mermaid").forEach((el) => {
+                const newEl = document.createElement("div");
+                newEl.className = "mermaid";
+                newEl.textContent = el.textContent;
+                el.replaceWith(newEl);
+            });
+
+            if (window.mermaid) {
+                mermaid.init(undefined, document.querySelectorAll(".mermaid"));
+            }
+
+            // WaveDrom
+            WaveDrom.ProcessAll();
+        }
+    </script>
+
 </head>
 <body>
 
@@ -116,111 +136,15 @@
 
 <div class="container">
     <div class="editor">
-        <div class="editor-header">
-            <h3 style="color: #004b7f;">Markdown</h3>
-            <button class="copy-button" onclick="copyToClipboard()">📋 copy</button>
-        </div>
+        <h3>Markdown</h3>
         <textarea id="markdown-input"></textarea>
     </div>
 
     <div class="preview">
-        <div class="preview-header">Preview</div>
+        <h3>Preview</h3>
         <div id="output"></div>
     </div>
 </div>
-
-<script>
-    mermaid.initialize({ startOnLoad: false });
-
-    const editor = CodeMirror.fromTextArea(document.getElementById("markdown-input"), {
-        mode: "markdown",
-        theme: "default",
-        lineNumbers: true,
-        lineWrapping: true,
-    });
-
-    editor.on("change", function() {
-        renderMarkdown();
-    });
-
-    const preview = document.getElementById("output");
-    let isSyncingScroll = false;
-
-    function syncScroll(source) {
-        if (isSyncingScroll) return;
-        isSyncingScroll = true;
-
-        const editorScroll = editor.getScrollerElement();
-        const previewScroll = preview.parentElement;
-
-        if (source === "editor") {
-            const ratio = editorScroll.scrollTop / (editorScroll.scrollHeight - editorScroll.clientHeight);
-            previewScroll.scrollTop = ratio * (previewScroll.scrollHeight - previewScroll.clientHeight);
-        } else {
-            const ratio = previewScroll.scrollTop / (previewScroll.scrollHeight - previewScroll.clientHeight);
-            editorScroll.scrollTop = ratio * (editorScroll.scrollHeight - editorScroll.clientHeight);
-        }
-
-        setTimeout(() => isSyncingScroll = false, 100);
-    }
-
-    editor.getScrollerElement().addEventListener("scroll", function() {
-        syncScroll("editor");
-    });
-
-    preview.parentElement.addEventListener("scroll", function() {
-        syncScroll("preview");
-    });
-
-    function renderMarkdown() {
-        const input = editor.getValue();
-        preview.innerHTML = marked.parse(input);
-        Prism.highlightAll();
-
-        const mermaidBlocks = preview.querySelectorAll(".language-mermaid");
-        mermaidBlocks.forEach(block => {
-            const newDiv = document.createElement("div");
-            newDiv.classList.add("mermaid");
-            newDiv.innerHTML = block.textContent;
-            block.replaceWith(newDiv);
-        });
-        mermaid.run();
-        
-        // WaveDrom の処理
-        const waveDromBlocks = preview.querySelectorAll(".language-wavedrom");
-        waveDromBlocks.forEach((block, index) => {
-            const script = document.createElement("script");
-            script.type = "WaveDrom";
-            script.textContent = block.textContent;
-            block.replaceWith(script);
-        });
-
-        setTimeout(() => {
-            WaveDrom.ProcessAll();
-        }, 100);
-	}
-
-    function copyToClipboard() {
-        const text = editor.getValue();
-        navigator.clipboard.writeText(text).then(() => {
-            const button = document.querySelector(".copy-button");
-            button.textContent = "✅ copyed";
-
-            setTimeout(() => {
-                button.textContent = "📋 copy";
-            }, 1500);
-        });
-    }
-
-    document.addEventListener("keydown", function(event) {
-        if (event.ctrlKey && event.key === "s") {
-            event.preventDefault();
-            copyToClipboard();
-        }
-    });
-
-    window.onload = renderMarkdown;
-</script>
 
 </body>
 </html>
