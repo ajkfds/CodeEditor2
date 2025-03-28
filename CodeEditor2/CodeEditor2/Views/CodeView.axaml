@@ -12,7 +12,7 @@
 	<AvalonEdit:TextEditor Name="Editor"
 		HorizontalScrollBarVisibility="Auto"
 		VerticalScrollBarVisibility="Visible"
-		FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+		FontFamily="Cascadia Mono,Consolas,Menlo,Monospace,DejaVu Sans Mono,Liberation Mono,Noto Sans Mono,Source Code Pro"
 		FontWeight="Normal"
 		FontSize="10"
 		ToolTip.Tip="AAA"
