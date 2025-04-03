@@ -43,6 +43,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\AjkAvaloniaLibs\AjkAvaloniaLibs\AjkAvaloniaLibs.csproj" />
+    <ProjectReference Include="..\..\..\ajkCefGlue\ajkCefGlue\ajkCefGlue.csproj" />
     <ProjectReference Include="..\..\..\AvaloniaEdit\src\AvaloniaEdit\AvaloniaEdit.csproj" />
     <ProjectReference Include="..\..\..\CodeEditor2Plugin\CodeEditor2Plugin\CodeEditor2Plugin\CodeEditor2Plugin.csproj" />
   </ItemGroup>

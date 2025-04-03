@@ -78,7 +78,7 @@ namespace CodeEditor2.NavigatePanel
             folder.Update();
 
             List<Item> addItems = new List<Item>();
-            foreach (Item item in Folder.Items.Values)
+            foreach (Item item in folder.Items.Values)
             {
                 addItems.Add(item);
             }
@@ -115,38 +115,5 @@ namespace CodeEditor2.NavigatePanel
 
         }
 
-        //private static ajkControls.Primitive.IconImage openFolder = new ajkControls.Primitive.IconImage(Properties.Resources.openFolder);
-        //private static ajkControls.Primitive.IconImage folder = new ajkControls.Primitive.IconImage(Properties.Resources.folder);
-        //private static ajkControls.Primitive.IconImage ignoreIcon = new ajkControls.Primitive.IconImage(Properties.Resources.ignore);
-
-        //public override void DrawNode(Graphics graphics, int x, int y, Font font, Color color, Color backgroundColor, Color selectedColor, int lineHeight, bool selected)
-        //{
-        //    if (IsExpanded)
-        //    {
-        //        graphics.DrawImage(openFolder.GetImage(lineHeight, ajkControls.Primitive.IconImage.ColorStyle.Blue), new Point(x, y));
-        //    }
-        //    else
-        //    {
-        //        graphics.DrawImage(folder.GetImage(lineHeight, ajkControls.Primitive.IconImage.ColorStyle.Blue), new Point(x, y));
-        //    }
-
-        //    if (Item.Ignore)
-        //    {
-        //        graphics.DrawImage(ignoreIcon.GetImage(lineHeight, ajkControls.Primitive.IconImage.ColorStyle.Gray), new Point(x, y));
-        //    }
-        //    if (Link) graphics.DrawImage(CodeEditor2.Global.IconImages.Link.GetImage(lineHeight, ajkControls.Primitive.IconImage.ColorStyle.Blue), new Point(x, y));
-
-        //    Color bgColor = backgroundColor;
-        //    if (selected) bgColor = selectedColor;
-        //    System.Windows.Forms.TextRenderer.DrawText(
-        //        graphics,
-        //        Text,
-        //        font,
-        //        new Point(x + lineHeight + (lineHeight >> 2), y),
-        //        color,
-        //        bgColor,
-        //        System.Windows.Forms.TextFormatFlags.NoPadding
-        //        );
-        //}
     }
 }

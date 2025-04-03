@@ -42,14 +42,8 @@ namespace CodeEditor2.Tools
             Data.ITextFile? textFile = item as Data.TextFile;
             if (textFile == null) return;
 
-            //textFile.ParseHierarchy((tFile) => {
-            //    textFile.ParseHierarchy((tFile) =>
-            //    {
-            //        Dispatcher.UIThread.Invoke(new Action(() => { Global.ProgressWindow.Message = tFile.ID; }));
-            //    });
-            //});
             textFile.ParseHierarchy((tFile) =>
-            {
+            {   // update progress window message
                 Dispatcher.UIThread.Invoke(new Action(() => { progress.Message = tFile.ID; }));
             });
             Complete = true;

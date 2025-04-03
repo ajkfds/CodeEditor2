@@ -144,6 +144,17 @@ namespace CodeEditor2.Data
                 if (body.Contains(System.IO.Path.DirectorySeparatorChar)) body = body.Substring(body.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
                 if (body.StartsWith(".")) continue;
 
+                //if(Project.FileClassify.HasDefinition())
+                //{
+                //    string relativePath = Project.GetRelativePath(absoluteFolderPath);
+                //    Project.FileClassify.IsMatched(relativePath, out string type);
+                //    if (Global.FileTypes.ContainsKey(type))
+                //    {
+                //        FileTypes.FileType fileType = Global.FileTypes[type];
+                //        return fileType.CreateFile(relativePath, project);
+                //    }
+                //}
+
                 if (!items.ContainsKey(body))
                 {
                     Folder item = Create(Project.GetRelativePath(absoluteFolderPath), Project, this);

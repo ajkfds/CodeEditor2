@@ -57,16 +57,11 @@ namespace CodeEditor2.Tools
                 }
                 p.Close();
             };
+
+            // show progress window and wait parse complete
             await progress.ShowDialog(Global.mainWindow);
 
             rootNode.Update();
-
-            // move ownerWindow to top
-            Global.mainWindow.Focus();
-            Global.mainWindow.Topmost = true;
-            await Task.Delay(1);
-            Global.mainWindow.Topmost = false;
-            Global.mainWindow.Focus();
         }
 
     }
