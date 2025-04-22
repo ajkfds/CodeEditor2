@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
 		Width="800"
-		Height="200"
+		Height="100"
         x:Class="CodeEditor2.Tools.ProgressWindow"
 		Background="Transparent"
 		TransparencyBackgroundFallback="Transparent"
