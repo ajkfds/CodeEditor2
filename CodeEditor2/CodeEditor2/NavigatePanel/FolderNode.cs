@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Media;
+using Avalonia.Threading;
 using CodeEditor2.Data;
 
 namespace CodeEditor2.NavigatePanel
@@ -52,6 +53,7 @@ namespace CodeEditor2.NavigatePanel
         {
             //CodeEditor2.Controller.NavigatePanel.GetContextMenuStrip().Items["openWithExploererTsmi"].Visible = true;
             //CodeEditor2.Controller.NavigatePanel.GetContextMenuStrip().Items["ignoreTsmi"].Visible = true;
+            Update();
         }
 
         //public override void OnClicked()
@@ -62,55 +64,59 @@ namespace CodeEditor2.NavigatePanel
 
         public override void Update()
         {
-            Folder? folder = Folder;
-            if(folder == null)
+            Dispatcher.UIThread.InvokeAsync(() =>
             {
-                Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
-                    "CodeEditor2/Assets/Icons/questionDocument.svg",
-                    Avalonia.Media.Color.FromArgb(100, 200, 200, 200),
-                    "CodeEditor2/Assets/Icons/questionDocument.svg",
-                    Avalonia.Media.Color.FromArgb(255, 255, 255, 200)
-                    );
-                Nodes.Clear();
-                return;
-            }
-
-            folder.Update();
-
-            List<Item> addItems = new List<Item>();
-            foreach (Item item in folder.Items.Values)
-            {
-                addItems.Add(item);
-            }
-
-            List<NavigatePanelNode> removeNodes = new List<NavigatePanelNode>();
-            foreach (NavigatePanelNode node in Nodes)
-            {
-                removeNodes.Add(node);
-            }
-
-            foreach (Item item in Folder.Items.Values)
-            {
-                if (removeNodes.Contains(item.NavigatePanelNode))
+                Folder? folder = Folder;
+                if (folder == null)
                 {
-                    removeNodes.Remove(item.NavigatePanelNode);
+                    Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                        "CodeEditor2/Assets/Icons/questionDocument.svg",
+                        Avalonia.Media.Color.FromArgb(100, 200, 200, 200),
+                        "CodeEditor2/Assets/Icons/questionDocument.svg",
+                        Avalonia.Media.Color.FromArgb(255, 255, 255, 200)
+                        );
+                    Nodes.Clear();
+                    return;
                 }
-                if (Nodes.Contains(item.NavigatePanelNode))
+
+                folder.Update();
+
+                List<Item> addItems = new List<Item>();
+                foreach (Item item in folder.Items.Values)
                 {
-                    addItems.Remove(item);
+                    addItems.Add(item);
                 }
-            }
 
-            foreach (NavigatePanelNode nodes in removeNodes)
-            {
-                Nodes.Remove(nodes);
-            }
+                List<NavigatePanelNode> removeNodes = new List<NavigatePanelNode>();
+                foreach (NavigatePanelNode node in Nodes)
+                {
+                    removeNodes.Add(node);
+                }
 
-            foreach (Item item in addItems)
-            {
-                if (item == null) continue;
-                Nodes.Add(item.NavigatePanelNode);
-            }
+                foreach (Item item in Folder.Items.Values)
+                {
+                    if (removeNodes.Contains(item.NavigatePanelNode))
+                    {
+                        removeNodes.Remove(item.NavigatePanelNode);
+                    }
+                    if (Nodes.Contains(item.NavigatePanelNode))
+                    {
+                        addItems.Remove(item);
+                    }
+                }
+
+                foreach (NavigatePanelNode nodes in removeNodes)
+                {
+                    Nodes.Remove(nodes);
+                }
+
+                foreach (Item item in addItems)
+                {
+                    if (item == null) continue;
+                    Nodes.Add(item.NavigatePanelNode);
+                }
+            });
+
 
 
         }
