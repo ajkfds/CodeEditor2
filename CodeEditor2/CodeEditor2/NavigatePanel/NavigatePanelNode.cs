@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 
 namespace CodeEditor2.NavigatePanel
 {
@@ -129,10 +130,13 @@ namespace CodeEditor2.NavigatePanel
             Update();
             if (depth > 100) return;
             if (!expanded) return;
-            foreach (NavigatePanelNode node in Nodes)
+            Dispatcher.UIThread.InvokeAsync(() =>
             {
-                node.HierarchicalVisibleUpdate(depth + 1, node.IsExpanded);
-            }
+                foreach (NavigatePanelNode node in Nodes)
+                {
+                    node.HierarchicalVisibleUpdate(depth + 1, node.IsExpanded);
+                }
+            });
         }
 
 

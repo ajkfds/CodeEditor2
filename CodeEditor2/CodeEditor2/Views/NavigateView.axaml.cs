@@ -21,8 +21,6 @@ namespace CodeEditor2.Views
 
             Global.navigateView = this;
             TreeControl.Background = new SolidColorBrush(Color.FromRgb(10,10,10));
-
-
         }
 
         public void AddProject(Project project)

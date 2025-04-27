@@ -10,10 +10,14 @@
 		FontSize="12"
 		FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
 		FontWeight="Normal"
+		Background="Black"
+		SelectedBackgroundColor="#0078d4"
+		SelectedForegroundColor="Black"
+		ToggleButtonColor="#f0f0f0"
 	>
 		<ajkctrl:TreeControl.ContextMenu>
 			<ContextMenu Name="ContextMenu" FontSize="12">
-			</ContextMenu>			
+			</ContextMenu>
 		</ajkctrl:TreeControl.ContextMenu>
 	</ajkctrl:TreeControl>
 </UserControl>

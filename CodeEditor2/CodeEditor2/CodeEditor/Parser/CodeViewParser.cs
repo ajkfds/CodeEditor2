@@ -49,7 +49,7 @@ namespace CodeEditor2.CodeEditor.Parser
             if (parser.ParsedDocument != null)
             {
                 parser.TextFile.AcceptParsedDocument(parser.ParsedDocument);
-                System.Diagnostics.Debug.Print("# BackgroundParser.AcceptParsedDocument " + parser.TextFile.ID);
+//                System.Diagnostics.Debug.Print("# BackgroundParser.AcceptParsedDocument " + parser.TextFile.ID);
             }
 
             Data.ITextFile? currentTextFile = Controller.CodeEditor.GetTextFile();
@@ -72,7 +72,7 @@ namespace CodeEditor2.CodeEditor.Parser
         {
             //            if (Global.StopParse) return;
             if (codeView.TextFile == null) return;
-            Controller.AppendLog("### CodeViewParser.EntryParse ID :" + codeView.TextFile.ID + " " + DateTime.Now.ToShortTimeString());
+//            Controller.AppendLog("### CodeViewParser.EntryParse ID :" + codeView.TextFile.ID + " " + DateTime.Now.ToShortTimeString());
             backGroundParser.EntryParse(codeView.TextFile);
         }
 

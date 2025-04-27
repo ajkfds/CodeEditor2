@@ -53,7 +53,7 @@ namespace CodeEditor2.Tools
             parser.Document._tag = "TextParserTask:"+textFile.Name;
 
             if (textFile != null) startParse(textFile);
-            System.Diagnostics.Debug.Print("# ParseProjectUnit.Parse " + textFile.ID);
+//            System.Diagnostics.Debug.Print("# ParseProjectUnit.Parse " + textFile.ID);
             parser.Parse();
 
             textFile.CodeDocument.CopyColorMarkFrom(parser.Document);
@@ -66,7 +66,7 @@ namespace CodeEditor2.Tools
             }
 
             textFile.AcceptParsedDocument(parser.ParsedDocument);
-            System.Diagnostics.Debug.Print("# ParseProjectUnit.Accept "+textFile.ID);
+//            System.Diagnostics.Debug.Print("# ParseProjectUnit.Accept "+textFile.ID);
             textFile.Close();
             if(parser.ParseMode == DocumentParser.ParseModeEnum.LoadParse)
             {

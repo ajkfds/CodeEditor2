@@ -33,8 +33,22 @@ namespace CodeEditor2.NavigatePanel
                 return textFile.Name; 
             }
         }
-
         public override void UpdateVisual()
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                _updateVisual();
+            }
+            else
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _updateVisual();
+                });
+            }
+        }
+
+        public void _updateVisual()
         {
             Data.TextFile? textFile = TextFile;
             if (textFile==null)

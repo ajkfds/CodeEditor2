@@ -265,7 +265,7 @@ namespace CodeEditor2.Data
             {
                 NavigatePanelNode.HierarchicalVisibleUpdate();
             }
-            System.Diagnostics.Debug.Print("### TextFile.ParseHierarchy compelet " + parsedIds.Count.ToString() + "module parsed");
+//            System.Diagnostics.Debug.Print("### TextFile.ParseHierarchy compelet " + parsedIds.Count.ToString() + "module parsed");
         }
 
         private void parseHierarchy(Data.Item item, List<string> parsedIds, Action<ITextFile> action)
@@ -282,7 +282,7 @@ namespace CodeEditor2.Data
 
             if (textFile.ParseValid & !textFile.ReparseRequested)
             {
-                System.Diagnostics.Debug.Print("### TextFileparseHierarchy parse skip : " + textFile.ID);
+//                System.Diagnostics.Debug.Print("### TextFileparseHierarchy parse skip : " + textFile.ID);
                 textFile.Update();
                 textFile.CodeDocument.LockThreadToUI();
             }
@@ -294,11 +294,11 @@ namespace CodeEditor2.Data
                     parser.Parse();
                     if (parser.ParsedDocument == null)
                     {
-                        System.Diagnostics.Debug.Print("### TextFileparseHierarchy not parsed : " + textFile.ID + "," + parsedIds.Count.ToString() + "module parsed");
+//                        System.Diagnostics.Debug.Print("### TextFileparseHierarchy not parsed : " + textFile.ID + "," + parsedIds.Count.ToString() + "module parsed");
                         return;
                     }
                     textFile.AcceptParsedDocument(parser.ParsedDocument);
-                    System.Diagnostics.Debug.Print("### TextFileparseHierarchy parsed : " + textFile.ID+ ","+parsedIds.Count.ToString() + "module parsed");
+//                    System.Diagnostics.Debug.Print("### TextFileparseHierarchy parsed : " + textFile.ID+ ","+parsedIds.Count.ToString() + "module parsed");
                     textFile.Update();
                 }
             }

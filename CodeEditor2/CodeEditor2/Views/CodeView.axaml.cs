@@ -290,7 +290,7 @@ namespace CodeEditor2.Views
 
         public void SetTextFile(Data.TextFile textFile,bool parseEntry)
         {
-            System.Diagnostics.Debug.Print("## SetTextFile");
+//            System.Diagnostics.Debug.Print("## SetTextFile");
 
             if (TextFile != null) TextFile.StoredVerticalScrollPosition = _textEditor.VerticalOffset;
 

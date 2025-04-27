@@ -33,7 +33,7 @@ namespace CodeEditor2.CodeEditor.Parser
         {
             lock (toBackgroundStock)
             {
-                System.Diagnostics.Debug.Print("# BackgroundParser.EntryParse.Add toBackGround:" + textFile.ID);
+//                System.Diagnostics.Debug.Print("# BackgroundParser.EntryParse.Add toBackGround:" + textFile.ID);
                 toBackgroundStock.Add(textFile);
             }
         }
