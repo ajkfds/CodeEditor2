@@ -7,6 +7,7 @@ using System.Drawing;
 using CodeEditor2.Data;
 using Avalonia.Media;
 using Avalonia.Controls;
+using Avalonia.Threading;
 
 namespace CodeEditor2.NavigatePanel
 {
@@ -22,23 +23,33 @@ namespace CodeEditor2.NavigatePanel
 
         public override void UpdateVisual()
         {
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                _updateVisual();
+            }
+            else
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _updateVisual();
+                });
+            }
+        }
+        private void _updateVisual()
+        {
             Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/questionDocument.svg",
                     Avalonia.Media.Color.FromArgb(100, 100, 100, 100)
                     );
+
+            string text = "null";
+            File? file = FileItem;
+            if (file != null) text = file.Name;
+            Text = text;
         }
         public virtual File? FileItem
         {
             get { return Item as File; }
-        }
-
-        public override string Text
-        {
-            get {
-                File? file = FileItem;
-                if (file == null) return "null";
-                return file.Name; 
-            }
         }
 
         public override void OnSelected()

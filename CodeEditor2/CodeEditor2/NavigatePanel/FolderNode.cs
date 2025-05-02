@@ -15,6 +15,7 @@ namespace CodeEditor2.NavigatePanel
 
         public FolderNode(Folder folder) : base(folder)
         {
+            UpdateVisual();
             if (FolderNodeCreated != null) FolderNodeCreated(this);
         }
         public static Action<FolderNode>? FolderNodeCreated;
@@ -28,25 +29,30 @@ namespace CodeEditor2.NavigatePanel
             }
         }
 
-        public override IImage? Image
+        public override void UpdateVisual()
         {
-            get
+            if (Dispatcher.UIThread.CheckAccess())
             {
-                return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
-                    "CodeEditor2/Assets/Icons/folder.svg",
-                    Color.FromArgb(100,100,150,255)
-                    );
+                _updateVisual();
+            }
+            else
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _updateVisual();
+                });
             }
         }
-
-
-        public override string Text
+        private void _updateVisual()
         {
-            get {
-                Folder? folder = Folder;
-                if (folder == null) return "null";
-                return folder.Name; 
-            }
+            Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                    "CodeEditor2/Assets/Icons/folder.svg",
+                    Color.FromArgb(100, 100, 150, 255)
+                    );
+            string text = "null";
+            Folder? folder = Folder;
+            if (folder != null) text = folder.Name;
+            Text = text;
         }
 
         public override void OnSelected()

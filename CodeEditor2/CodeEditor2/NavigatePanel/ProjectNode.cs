@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Data = CodeEditor2.Data;
 using CodeEditor2.Data;
+using Avalonia.Threading;
 
 
 namespace CodeEditor2.NavigatePanel
@@ -17,6 +18,7 @@ namespace CodeEditor2.NavigatePanel
     {
         public ProjectNode(Project project) : base(project)
         {
+            UpdateVisual();
             if (ProjectNodeCreated != null) ProjectNodeCreated(this);
         }
         public static Action<ProjectNode>? ProjectNodeCreated;
@@ -28,25 +30,31 @@ namespace CodeEditor2.NavigatePanel
                 return Item as Project;
             }
         }
-
-        public override string Text
+        public override void UpdateVisual()
         {
-            get {
-                Project? project = Project;
-                if(project==null) return "null";
-                return project.Name;
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                _updateVisual();
+            }
+            else
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _updateVisual();
+                });
             }
         }
-
-        public override IImage? Image
+        private void _updateVisual()
         {
-            get
-            {
-                return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+            string text = "null";
+            Project? project = Project;
+            if (project != null) text = project.Name;
+            Text = text;
+
+            Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/home.svg",
-                    Avalonia.Media.Color.FromArgb(100,255,100,100)
+                    Avalonia.Media.Color.FromArgb(100, 255, 100, 100)
                     );
-            }
         }
 
 

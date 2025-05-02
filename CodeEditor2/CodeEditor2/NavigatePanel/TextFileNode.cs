@@ -25,14 +25,6 @@ namespace CodeEditor2.NavigatePanel
             get { return Item as Data.TextFile; }
         }
 
-        public override string Text
-        {
-            get {
-                Data.TextFile? textFile = TextFile;
-                if(textFile == null) return "null";
-                return textFile.Name; 
-            }
-        }
         public override void UpdateVisual()
         {
             if (Dispatcher.UIThread.CheckAccess())
@@ -50,7 +42,11 @@ namespace CodeEditor2.NavigatePanel
 
         public void _updateVisual()
         {
+            string text = "null";
             Data.TextFile? textFile = TextFile;
+            if (textFile != null) text = textFile.Name;
+            Text = text;
+
             if (textFile==null)
             {
                 Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
