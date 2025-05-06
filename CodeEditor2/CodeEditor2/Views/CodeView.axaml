@@ -19,7 +19,7 @@
 		ToolTip.Placement="Pointer"
 		ToolTip.ShowDelay="0"
 	>
-		
+
 		<ToolTip.Tip>
 			<ajkctrl:ColorLabelControl 
 				Name="PopupColorLabel"

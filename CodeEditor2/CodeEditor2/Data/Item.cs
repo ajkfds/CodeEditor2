@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using CodeEditor2.CodeEditor.Parser;
 
 namespace CodeEditor2.Data
@@ -94,6 +95,7 @@ namespace CodeEditor2.Data
         {
             get { return items; }
         }
+
 
         /// <summary>
         /// This is a collection class for holding child Items. It has the functionality of both a dictionary and a list.

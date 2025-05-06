@@ -1,4 +1,5 @@
-﻿using Avalonia.Input;
+﻿using Avalonia.Controls;
+using Avalonia.Input;
 using AvaloniaEdit.Document;
 using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.CodeComplete;
@@ -36,6 +37,10 @@ namespace CodeEditor2.Data
             };
 
             return fileItem;
+        }
+        public virtual void ModifyEditorContextMenu(ContextMenu contextMenu)
+        {
+
         }
 
         public TextFile ToTextFile()

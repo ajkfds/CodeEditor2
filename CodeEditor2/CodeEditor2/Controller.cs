@@ -182,6 +182,11 @@ namespace CodeEditor2
                 }
             }
 
+            public static ContextMenu ContextMenu
+            {
+                get { return Global.codeView.contextMenu; }
+            }
+
             public static void SetCaretPosition(int index)
             {
                 Global.codeView.SetCaretPosition(index);
