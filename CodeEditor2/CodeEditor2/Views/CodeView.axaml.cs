@@ -165,36 +165,11 @@ namespace CodeEditor2.Views
             timer.Start();
 
 
-            MenuItem editor_Copy = Global.CreateMenuItem("Copy", "Copy");
-            editor_Copy.InputGesture = new KeyGesture(Key.C, KeyModifiers.Control);
-            editor_Copy.Click += (s, e) =>
-            {
-                Editor.Copy();
-            };
-            defaultContextMenu.Items.Add(editor_Copy);
-
-            MenuItem editor_Paste = Global.CreateMenuItem("Paste", "Paste");
-            editor_Paste.InputGesture = new KeyGesture(Key.V, KeyModifiers.Control);
-            editor_Paste.Click += (s, e) =>
-            {
-                Editor.Paste();
-            };
-            defaultContextMenu.Items.Add(editor_Paste);
-
-            MenuItem editor_Cut = Global.CreateMenuItem("Cut", "Cut");
-            editor_Cut.InputGesture = new KeyGesture(Key.X, KeyModifiers.Control);
-            editor_Cut.Click += (s, e) =>
-            {
-                Editor.Cut();
-            };
-            defaultContextMenu.Items.Add(editor_Cut);
-
             contextMenu.Padding = new Avalonia.Thickness(10, 0, 10, 0);
             Editor.ContextMenu = contextMenu;
         }
 
         internal ContextMenu contextMenu = new ContextMenu();
-        internal ContextMenu defaultContextMenu = new ContextMenu();
 
 
 
@@ -367,15 +342,34 @@ namespace CodeEditor2.Views
             if (parseEntry) codeViewParser.EntryParse();
             attachToCodeDocument();
 
+            { // update editor context menu
+                contextMenu.Items.Clear();
+                MenuItem editor_Copy = Global.CreateMenuItem("Copy", "Copy");
+                editor_Copy.InputGesture = new KeyGesture(Key.C, KeyModifiers.Control);
+                editor_Copy.Click += (s, e) =>
+                {
+                    Editor.Copy();
+                };
+                contextMenu.Items.Add(editor_Copy);
 
-            contextMenu.Items.Clear();
-            foreach (var menu in contextMenu.Items)
-            {
-                contextMenu.Items.Add(menu);
+                MenuItem editor_Paste = Global.CreateMenuItem("Paste", "Paste");
+                editor_Paste.InputGesture = new KeyGesture(Key.V, KeyModifiers.Control);
+                editor_Paste.Click += (s, e) =>
+                {
+                    Editor.Paste();
+                };
+                contextMenu.Items.Add(editor_Paste);
+
+                MenuItem editor_Cut = Global.CreateMenuItem("Cut", "Cut");
+                editor_Cut.InputGesture = new KeyGesture(Key.X, KeyModifiers.Control);
+                editor_Cut.Click += (s, e) =>
+                {
+                    Editor.Cut();
+                };
+                contextMenu.Items.Add(editor_Cut);
+
+                TextFile.ModifyEditorContextMenu(contextMenu);
             }
-            TextFile.ModifyEditorContextMenu(contextMenu);
-
-
             skipEvents = false;
 
             Controller.Tabs.SelectTab(Global.mainView.EditorTabItem);
