@@ -344,6 +344,9 @@ namespace CodeEditor2.Views
 
             { // update editor context menu
                 contextMenu.Items.Clear();
+
+                textFile.CustomizeEditorContextMenu(contextMenu);
+
                 MenuItem editor_Copy = Global.CreateMenuItem("Copy", "Copy");
                 editor_Copy.InputGesture = new KeyGesture(Key.C, KeyModifiers.Control);
                 editor_Copy.Click += (s, e) =>

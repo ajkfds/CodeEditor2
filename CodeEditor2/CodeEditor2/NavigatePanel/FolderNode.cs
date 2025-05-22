@@ -57,17 +57,9 @@ namespace CodeEditor2.NavigatePanel
 
         public override void OnSelected()
         {
-            //CodeEditor2.Controller.NavigatePanel.GetContextMenuStrip().Items["openWithExploererTsmi"].Visible = true;
-            //CodeEditor2.Controller.NavigatePanel.GetContextMenuStrip().Items["ignoreTsmi"].Visible = true;
+            base.OnSelected();
             Update();
         }
-
-        //public override void OnClicked()
-        //{
-        //    if (_nodes.Count == 0) return;
-        //    IsExpanded = !IsExpanded;
-        //}
-
         public override void Update()
         {
             Dispatcher.UIThread.InvokeAsync(() =>
@@ -122,9 +114,6 @@ namespace CodeEditor2.NavigatePanel
                     Nodes.Add(item.NavigatePanelNode);
                 }
             });
-
-
-
         }
 
     }

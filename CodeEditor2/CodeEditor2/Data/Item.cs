@@ -234,6 +234,12 @@ namespace CodeEditor2.Data
         public virtual void Update() { }
 
 
+        public static Action<ContextMenu>? CustomizeItemEditorContextMenu;
+
+        public void CustomizeEditorContextMenu(ContextMenu contextMenu)
+        {
+            CustomizeItemEditorContextMenu?.Invoke(contextMenu);
+        }
 
 
         protected WeakReference<NavigatePanel.NavigatePanelNode>? nodeRef;

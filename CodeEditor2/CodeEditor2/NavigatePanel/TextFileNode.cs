@@ -80,10 +80,8 @@ namespace CodeEditor2.NavigatePanel
 
         public override void OnSelected()
         {
-            Controller.CodeEditor.SetTextFile(TextFile);
-            Refresh();
-            Global.mainView.NavigateView.TreeControl.InvalidateVisual();
-            //            Controller.CodeEditor.SetTextFile(TextFile);
+            base.OnSelected();
+            if(TextFile != null) Controller.CodeEditor.SetTextFile(TextFile);
         }
 
     }

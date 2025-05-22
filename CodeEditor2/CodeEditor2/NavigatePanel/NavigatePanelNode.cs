@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Threading;
+using Avalonia.Controls;
+using AjkAvaloniaLibs.Controls;
 
 namespace CodeEditor2.NavigatePanel
 {
@@ -36,10 +38,6 @@ namespace CodeEditor2.NavigatePanel
         }
 
 
-        public virtual void Refresh()
-        {
-
-        }
 
         public NavigatePanelNode(Item item)
         {
@@ -120,6 +118,8 @@ namespace CodeEditor2.NavigatePanel
         }
 
 
+
+
         public virtual void HierarchicalVisibleUpdate()
         {
             HierarchicalVisibleUpdate(0, IsExpanded);
@@ -152,5 +152,233 @@ namespace CodeEditor2.NavigatePanel
             if (parent == null) return this;
             return parent.GetRootNode();
         }
+        public override void OnSelected()
+        {
+            createContextMenu();
+        }
+        public Project GetProject()
+        {
+            Project? project = null;
+            NavigatePanelNode rootNode = GetRootNode();
+            if (rootNode is ProjectNode)
+            {
+                ProjectNode? projectNode = rootNode as ProjectNode;
+                if (projectNode == null) throw new System.Exception();
+                project = projectNode.Project;
+            }
+            if (project == null) throw new System.Exception();
+            return project;
+        }
+
+
+        public static Action<ContextMenu>? CustomizeNavigateNodeContextMenu;
+        // Context Menu
+        //public virtual void CustomizeContextMenu(ContextMenu contextMenu)
+        //{
+
+        //}
+        private void createContextMenu()
+        {
+            // re-generate context menu
+            ContextMenu contextMenu = Controller.NavigatePanel.GetContextMenu();
+            contextMenu.Items.Clear();
+
+            {
+                MenuItem menuItem_Add = CodeEditor2.Global.CreateMenuItem(
+                    "Add", "MenuItem_Add"
+                    //"CodeEditor2/Assets/Icons/plus.svg",
+                    //Avalonia.Media.Color.FromArgb(100, 100, 150, 255)
+                    );
+                contextMenu.Items.Add(menuItem_Add);
+
+                {
+                    MenuItem menuItem_AddFolder = CodeEditor2.Global.CreateMenuItem(
+                    "Folder",
+                    "MenuItem_AddFolder",
+                    "CodeEditor2/Assets/Icons/folder.svg",
+                    Avalonia.Media.Color.FromArgb(100, 100, 150, 255)
+                    );
+                    menuItem_AddFolder.Click += menuItem_AddFolder_Click;
+                    menuItem_Add.Items.Add(menuItem_AddFolder);
+                }
+            }
+            {
+                MenuItem menuItem_Delete = CodeEditor2.Global.CreateMenuItem("Delete", "MenuItem_Delete");
+                menuItem_Delete.Click += menuItem_Delete_Click;
+                contextMenu.Items.Add(menuItem_Delete);
+            }
+            contextMenu.Items.Add(new Separator());
+
+            CustomizeNavigateNodeContextMenu?.Invoke(contextMenu);
+
+            {
+                MenuItem menuItem_OpenInExplorer = CodeEditor2.Global.CreateMenuItem(
+                    "Open in Explorer",
+                    "MenuItem_OpenInExplorer",
+                    "CodeEditor2/Assets/Icons/search.svg",
+                    Avalonia.Media.Color.FromArgb(100, 200, 200, 255)
+                    );
+                menuItem_OpenInExplorer.Click += menuItem_OpenInExplorer_Click;
+                contextMenu.Items.Add(menuItem_OpenInExplorer);
+            }
+
+        }
+        public void UpdateFolder(NavigatePanelNode node)
+        {
+            FileNode? fileNode = node as FileNode;
+            if (fileNode != null)
+            {
+                NavigatePanelNode? parentNode = fileNode.Parent as NavigatePanelNode;
+                if (parentNode == null) throw new System.Exception();
+                UpdateFolder(parentNode);
+            }
+
+            FolderNode? folderNode = node as FolderNode;
+            if (folderNode != null)
+            {
+                folderNode.Update();
+            }
+        }
+        private string getRelativeFolderPath(NavigatePanelNode node)
+        {
+            FileNode? fileNode = node as FileNode;
+            if (fileNode != null)
+            {
+                NavigatePanelNode? parentNode = fileNode.Parent as NavigatePanelNode;
+                if (parentNode == null) throw new System.Exception();
+                return getRelativeFolderPath(parentNode);
+            }
+
+            FolderNode? folderNode = node as FolderNode;
+            if (folderNode != null && folderNode.Folder != null)
+            {
+                return folderNode.Folder.RelativePath;
+            }
+            return "";
+        }
+        private async void menuItem_AddFolder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode(); 
+            if (node == null) return;
+            Project project = GetProject();
+
+            string relativePath = getRelativeFolderPath(node);
+            if (!relativePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) relativePath += System.IO.Path.DirectorySeparatorChar;
+
+            Tools.InputWindow window = new Tools.InputWindow("Create New Folder", "new Folder Name");
+            await window.ShowDialog(Controller.GetMainWindow());
+
+            if (window.Cancel) return;
+            string folderName = window.InputText.Trim();
+
+            System.IO.Directory.CreateDirectory(project.GetAbsolutePath(relativePath + folderName));
+
+            UpdateFolder(node);
+        }
+
+        private async void menuItem_Delete_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
+            if (node == null) return;
+            Project project = GetProject();
+
+            if (node is ProjectNode) return;
+
+            if (node is FileNode)
+            {
+                FileNode fileNode = (FileNode)node;
+                if (fileNode.FileItem == null) return;
+                string relativePath = fileNode.FileItem.RelativePath;
+
+                Tools.YesNoWindow window = new Tools.YesNoWindow("Delete File", "delete " + relativePath + " ?");
+                await window.ShowDialog(Controller.GetMainWindow());
+
+                if (!window.Yes) return;
+
+                try
+                {
+                    System.IO.File.Delete(project.GetAbsolutePath(relativePath));
+                }
+                catch (System.Exception ex)
+                {
+                    CodeEditor2.Controller.AppendLog("failed to delete " + relativePath + ":" + ex.Message);
+                }
+                UpdateFolder(node);
+                return;
+            }
+
+            if (node is FolderNode)
+            {
+                FolderNode folderNode = (FolderNode)node;
+                if (folderNode.Folder == null) return;
+                string relativePath = folderNode.Folder.RelativePath;
+
+                Tools.YesNoWindow window = new Tools.YesNoWindow("Delete File", "delete " + relativePath + " ?");
+                await window.ShowDialog(Controller.GetMainWindow());
+
+                if (!window.Yes) return;
+
+                try
+                {
+                    System.IO.Directory.Delete(project.GetAbsolutePath(relativePath));
+                }
+                catch (System.Exception ex)
+                {
+                    CodeEditor2.Controller.AppendLog("failed to delete " + relativePath + ":" + ex.Message);
+                }
+
+                NavigatePanelNode? parentNode = node.Parent as NavigatePanelNode;
+                if (parentNode != null)
+                {
+                    UpdateFolder(parentNode);
+                }
+
+                return;
+            }
+
+
+        }
+
+
+        private void menuItem_OpenInExplorer_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
+            if (node == null) return;
+
+            if (node is FolderNode)
+            {
+                FolderNode? folderNode = node as FolderNode;
+                if (folderNode == null) throw new System.Exception();
+                Data.Folder? folder = folderNode.Folder;
+                if (folder == null || folder.Project == null) return;
+                string folderPath = folder.Project.GetAbsolutePath(folder.RelativePath).Replace('\\', System.IO.Path.DirectorySeparatorChar);
+
+                if (System.OperatingSystem.IsLinux())
+                {
+                    System.Diagnostics.Process.Start("thunar " + folderPath + " &");
+                }
+                else
+                {
+                    System.Diagnostics.Process.Start("EXPLORER.EXE", folderPath);
+                }
+            }
+            else if (node is FileNode)
+            {
+                FileNode? fileNode = node as FileNode;
+                if (fileNode == null) throw new System.Exception();
+                Data.File? file = fileNode.FileItem;
+                if (file == null || file.Project == null) return;
+                string filePath = file.Project.GetAbsolutePath(file.RelativePath).Replace('\\', System.IO.Path.DirectorySeparatorChar);
+
+                if (System.OperatingSystem.IsLinux())
+                {
+                }
+                else
+                {
+                    System.Diagnostics.Process.Start("EXPLORER.EXE", "/select,\"" + file.Project.GetAbsolutePath(file.RelativePath) + "\"");
+                }
+            }
+        }
+
     }
 }
