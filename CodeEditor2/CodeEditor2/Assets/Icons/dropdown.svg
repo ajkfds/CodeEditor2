@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--?xml version="1.0" encoding="utf-8"?-->
+
+<!-- Generator: Adobe Illustrator 15.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+
+<svg
+   version="1.1"
+   id="_x32_"
+   x="0px"
+   y="0px"
+   width="256"
+   height="512"
+   viewBox="0 0 256 512"
+   style="opacity:1"
+   xml:space="preserve"
+   sodipodi:docname="dropdown.svg"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs2">
+	
+	
+</defs><sodipodi:namedview
+   id="namedview2"
+   pagecolor="#ffffff"
+   bordercolor="#000000"
+   borderopacity="0.25"
+   inkscape:showpageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#d1d1d1"
+   inkscape:zoom="1.0908203"
+   inkscape:cx="271.35542"
+   inkscape:cy="280.06446"
+   inkscape:window-width="2256"
+   inkscape:window-height="1398"
+   inkscape:window-x="-11"
+   inkscape:window-y="-11"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="_x32_" />
+<style
+   type="text/css"
+   id="style1">
+
+	.st0{fill:#4B4B4B;}
+
+</style>
+<path
+   class="st0"
+   d="m 239.54648,190.46799 c 0.76617,-1.35362 0.79636,-3.08391 0.0585,-4.49997 -0.73786,-1.35361 -2.12302,-2.20365 -3.62707,-2.20365 H 129.97381 23.939532 c -1.504049,0 -2.889205,0.85004 -3.627074,2.20365 -0.737867,1.41606 -0.707674,3.14836 0.05849,4.49997 L 126.37505,380.03273 c 0.73787,1.35363 2.12302,2.17143 3.59687,2.17143 1.44555,0 2.83071,-0.8178 3.56857,-2.17143 z"
+   style="fill:#4b4b4b;stroke-width:1.94968"
+   id="path2" />
+</svg>

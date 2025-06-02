@@ -3,12 +3,14 @@ using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using CodeEditor2.CodeEditor.CodeComplete;
 using CodeEditor2.CodeEditor.PopupMenu;
-using CodeEditor2.Data;
+using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
 using CodeEditor2.Views;
+using ExCSS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,8 +41,34 @@ namespace CodeEditor2
         //    return Global.mainForm.BackColor;
         //}
 
+        
+        public static bool SelectText(Data.ITextFile textFile,int index,int length)
+        {
+            Data.TextReference textReference = new Data.TextReference(textFile, index, length);
+            return true;
+        }
 
-        internal static async Task AddProject(Project project)
+        public static bool SelectText(Data.TextReference textReference)
+        {
+            Data.ITextFile? file = textReference.TextFile;
+            if (file == null) return false;
+
+            Data.File? currentFile = NavigatePanel.GetSelectedFile();
+            if (file != currentFile)
+            {
+                NavigatePanelNode node = file.NavigatePanelNode;
+                NavigatePanel.SelectNode(node);
+            }
+            CodeEditor.SetSelection(textReference.StartIndex, textReference.StartIndex + textReference.Length);
+            return true;
+        }
+
+        public static void AddSelectHistory(Data.TextReference textReference)
+        {
+            Global.mainView.AddSelectHistory(textReference);
+        }
+
+        internal static async Task AddProject(Data.Project project)
         {
             if (Global.Projects.ContainsKey(project.Name))
             {
@@ -54,7 +82,7 @@ namespace CodeEditor2
             }
         }
 
-        private static async Task addProject(Project project)
+        private static async Task addProject(Data.Project project)
         {
             // add project node
             Global.navigateView.AddProject(project);
@@ -217,7 +245,7 @@ namespace CodeEditor2
             public static void Save()
             {
                 if (Global.codeView.CodeDocument == null) return;
-                TextFile? textFile = Global.codeView.CodeDocument.TextFile;
+                Data.TextFile? textFile = Global.codeView.CodeDocument.TextFile;
                 if (textFile == null) return;
                 textFile.Save();
             }
@@ -329,6 +357,10 @@ namespace CodeEditor2
                 );
             }
 
+            public static void SelectNode(NavigatePanelNode node)
+            {
+                Global.navigateView.SelectNode(node);
+            }
             public static ContextMenu GetContextMenu()
             {
                 return Global.navigateView.ContextMenu;

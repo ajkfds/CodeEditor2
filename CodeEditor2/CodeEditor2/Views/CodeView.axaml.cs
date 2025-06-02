@@ -112,6 +112,7 @@ namespace CodeEditor2.Views
             _textEditor.TextArea.Caret.PositionChanged += Caret_PositionChanged;
             _textEditor.TextArea.SelectionChanged += TextArea_SelectionChanged;
             _textEditor.TextArea.RightClickMovesCaret = true;
+            _textEditor.TextArea.TextView.PointerPressed += TextView_PointerPressed;
 
             // KeyDown Event tunneled to avoid cursor and tab event elemination
             //_textEditor.TextArea.KeyDown += TextArea_KeyDown;
@@ -171,6 +172,8 @@ namespace CodeEditor2.Views
         }
 
 
+
+
         internal ContextMenu contextMenu = new ContextMenu();
 
 
@@ -194,7 +197,20 @@ namespace CodeEditor2.Views
             codeViewPopup.TextArea_PointerMoved(sender, e);
         }
 
+        private bool clicked = false;
+        private void TextView_PointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            clicked = true;
+        }
 
+        private void addPositionHistory()
+        {
+            int? index = _textEditor.TextArea.Caret.Offset;
+            if (index == null) return;
+            ITextFile? textFile = Controller.CodeEditor.GetTextFile();
+            if (textFile == null) return;
+            Controller.AddSelectHistory(new TextReference(textFile, (int)index, 0));
+        }
 
         /// <summary>
         /// Called from textEditor
@@ -203,8 +219,17 @@ namespace CodeEditor2.Views
         ulong prevVersion = 0;
         private void Caret_PositionChanged(object? sender, EventArgs e)
         {
-            if (skipEvents) return;
-            if (CodeDocument == null) return;
+            if (skipEvents || CodeDocument == null)
+            {
+                clicked = false;
+                return;
+            }
+
+            if(clicked && CodeDocument.caretIndex != _textEditor.TextArea.Caret.Offset)
+            {
+                addPositionHistory();
+            }
+            clicked = false;
 
             // update caret position in CodeDocument
             // ( all code CodeDocument must have it's unique caret position
@@ -301,6 +326,7 @@ namespace CodeEditor2.Views
         public void SetTextFile(Data.TextFile textFile,bool parseEntry)
         {
             if (TextFile != null) TextFile.StoredVerticalScrollPosition = _textEditor.VerticalOffset;
+            if (TextFile == textFile) return;
 
             skipEvents = true;
 
@@ -343,6 +369,7 @@ namespace CodeEditor2.Views
 
             skipEvents = false;
 
+            Controller.AddSelectHistory(new TextReference(textFile, _textEditor.CaretOffset,0));
             Controller.Tabs.SelectTab(Global.mainView.EditorTabItem);
             Controller.CodeEditor.Refresh();
         }

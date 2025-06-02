@@ -1,6 +1,9 @@
-﻿using Avalonia;
+﻿using AjkAvaloniaLibs.Views;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
@@ -29,14 +32,109 @@ public partial class MainView : UserControl
         SplitterColumn1.BorderBrush = new SolidColorBrush(Color.FromArgb(255,50,50,50));
         SplitterColumn1.BorderThickness = new Thickness(1, 0, 1, 0);
 
+        {
+            Image image = new Image();
+            image.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/leftArrow.svg", Avalonia.Media.Colors.White);
+            image.Width = FontSize;
+            image.Height = FontSize;
+            RenderOptions.SetBitmapInterpolationMode(image, Avalonia.Media.Imaging.BitmapInterpolationMode.HighQuality);
+            Button backButton = new Button() { Content = image, Background = this.Background};
+            backButton.Click += BackButton_Click;
+            ToolBar.Children.Add(backButton);
+            {
+                Image dropdownImage = new Image();
+                dropdownImage.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/dropdown.svg", Avalonia.Media.Colors.White);
+                dropdownImage.Width = FontSize;
+                dropdownImage.Height = FontSize;
+                RenderOptions.SetBitmapInterpolationMode(dropdownImage, Avalonia.Media.Imaging.BitmapInterpolationMode.HighQuality);
+                
+                var backDropdownButton = new Button { Content = dropdownImage, Height = FontSize * 2, Background = this.Background };
+                backDropdownButton.Margin = new Thickness(0, backDropdownButton.Margin.Top, 0, backDropdownButton.Margin.Bottom);
+                backDropdownButton.Padding = new Thickness(0, backDropdownButton.Padding.Top, 0, backDropdownButton.Padding.Bottom);
+                backDropdownButton.Click += BackDropdownButton_Click;
+                backDropdownButton.ContextMenu = backContectMenu;
+                ToolBar.Children.Add(backDropdownButton);
+            }
+        }
+        {
+            Image image = new Image();
+            image.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/rightArrow.svg", Avalonia.Media.Colors.White);
+            image.Width = FontSize;
+            image.Height = FontSize;
+            RenderOptions.SetBitmapInterpolationMode(image, Avalonia.Media.Imaging.BitmapInterpolationMode.HighQuality);
+            Button forwardBtn = new Button() { Content = image, Background = this.Background };
+            forwardBtn.Click += ForwardBtn_Click;
+            ToolBar.Children.Add(forwardBtn);
+        }
+
         //        TabControl0.
         initializeMenuItem_File();
 
         timer.Interval = new TimeSpan(1);
         timer.Tick += Timer_Tick;
         timer.Start();
-
     }
+
+    private void BackDropdownButton_Click(object? sender, RoutedEventArgs e)
+    {
+        backContectMenu.Items.Clear();
+        foreach (TextReference textRef in selectHistories)
+        {
+            MenuItem menuItem = new MenuItem();
+            ITextFile? textFile = textRef.TextFile;
+            if (textFile == null) continue; // skip if text file is not available
+            menuItem.Header = textRef.Caption;
+            menuItem.Margin = new Thickness(2, 2, 2, 2);
+            menuItem.Padding = new Thickness(2, 2, 2, 2);
+            menuItem.Click += (s, e) =>
+            {
+                Controller.SelectText(textRef);
+                currentHistoryIndex = selectHistories.IndexOf(textRef);
+                backContectMenu.Close();
+            };
+            backContectMenu.Items.Add(menuItem);
+        }
+
+        backContectMenu.Open();
+    }
+
+    private ContextMenu backContectMenu = new ContextMenu();
+
+    private void ForwardBtn_Click(object? sender, RoutedEventArgs e)
+    {
+        int index = currentHistoryIndex - 1;
+        if(index < 0 || selectHistories.Count <= index) return;
+        Controller.SelectText(selectHistories[index]);
+        currentHistoryIndex--;
+    }
+   
+    private void BackButton_Click(object? sender, RoutedEventArgs e)
+    {
+        int index = currentHistoryIndex+1;
+        if (selectHistories.Count <= index) return;
+        Controller.SelectText(selectHistories[index]);
+        currentHistoryIndex++;
+    }
+
+    private Popup backDropdownMenu;
+
+    private List<TextReference>　selectHistories = new List<TextReference>();
+    private const int selectHistoryMaxCount = 20;
+    private int currentHistoryIndex = -1;
+    public void AddSelectHistory(TextReference textReference)
+    {
+        for(int i = 0;i<=currentHistoryIndex; i++)
+        {
+            selectHistories.RemoveAt(0);
+        }
+        currentHistoryIndex = -1; // reset current index when new history is added
+        selectHistories.Insert(0,textReference);
+        if(selectHistories.Count > selectHistoryMaxCount)
+        {
+            selectHistories.RemoveAt(0);
+        }
+    }
+
     private async void Timer_Tick(object? sender, EventArgs e)
     {
         // should launch after main window shown

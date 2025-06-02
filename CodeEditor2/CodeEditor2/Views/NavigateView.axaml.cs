@@ -24,7 +24,7 @@ namespace CodeEditor2.Views
             TreeControl.ToggleButtonColor = Color.FromRgb(200, 200, 200);
         }
 
-        public void AddProject(Project project)
+        internal void AddProject(Project project)
         {
             ProjectNode pNode = new NavigatePanel.ProjectNode(project);
             TreeControl.Nodes.Add(pNode);
@@ -32,10 +32,15 @@ namespace CodeEditor2.Views
             pNode.Update();
         }
 
-        public NavigatePanelNode? GetSelectedNode()
+        internal NavigatePanelNode? GetSelectedNode()
         {
             NavigatePanelNode? node = TreeControl.GetSelectedNode() as NavigatePanelNode;
             return node;
+        }
+
+        internal void SelectNode(NavigatePanelNode node)
+        {
+            TreeControl.SelectNode(node);
         }
 
         public ProjectNode? GetProjectNode(string projectName)

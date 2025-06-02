@@ -9,5 +9,10 @@
         <FluentTheme />
 		<StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
 		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
+		<Style Selector="MenuItem">
+			<Setter Property="FontSize" Value="12"/>
+			<Setter Property="Padding" Value="8 2 8 2"/>
+		</Style>
 	</Application.Styles>
+
 </Application>

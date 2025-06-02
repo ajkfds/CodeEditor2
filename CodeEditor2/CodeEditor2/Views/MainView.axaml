@@ -40,6 +40,9 @@
 				
 			</MenuItem>
 		</Menu>
+
+		<StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Name="ToolBar">
+		</StackPanel>
 		
 		<Grid RowDefinitions="*, 4, 100" Name="MainArea">
 			<Grid ColumnDefinitions="200, 4, *, 4, 200" Grid.Row="0">
