@@ -65,24 +65,37 @@ namespace CodeEditor2.CodeEditor.PopupHint
                 ToolTip.SetIsOpen(codeView.Editor, false);
             }
             popupInex = headIndex;
+            if (codeView.PopupTextBlock.Inlines == null) throw new Exception();
 
-            PopupItem? pItem = codeView.TextFile.GetPopupItem(codeView.CodeDocument.Version, index);
-            if (pItem == null || pItem.ItemCount == 0)
+            codeView.PopupTextBlock.Inlines.Clear();
+//            CodeEditor2.CodeEditor.TextBlockMessages messages = new TextBlockMessages(codeView.PopupTextBlock);
+            PopupItem? popupItem = codeView.TextFile.GetPopupItem(codeView.CodeDocument.Version, index);
+            if (popupItem != null && popupItem.ItemCount > 0)
+            {
+                popupItem.RemoveLastNewLine();
+                popupItem.AppendToTextBlock(codeView.PopupTextBlock);
+            }
+
+
+            if (codeView.PopupTextBlock.Inlines.Count == 0)//pItem == null || pItem.Inlines == null || pItem.Inlines.Count == 0)
             {
                 ToolTip.SetIsOpen(codeView.Editor, false);
                 return;
             }
-            //            ToolTip.SetIsOpen(codeView.Editor, false);
-            //            ToolTip.SetIsOpen(codeView.Editor, true);
-            codeView.PopupColorLabel.Clear();
-            codeView.PopupColorLabel.Add(pItem);
+
+
+            //.Inlines.Clear();
+            //codeView.PopupColorLabel.Add(pItem);
 
             //            ToolTip.SetIsOpen(codeView.Editor, false); // close once to update pop-up window position
-            if (pItem.GetItems().Count != 0)
+            //if (pItem.GetItems().Count != 0)
             {
                 //                ToolTip.SetIsOpen(codeView.Editor, false);
                 ToolTip.SetIsOpen(codeView.Editor, true);
             }
         }
+
+
     }
+
 }

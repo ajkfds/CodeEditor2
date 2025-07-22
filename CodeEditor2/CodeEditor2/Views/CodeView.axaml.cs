@@ -126,7 +126,6 @@ namespace CodeEditor2.Views
 
 
 
-
             PopupMenu.Selected += PopupMenu_Selected;
 
             // textmate
