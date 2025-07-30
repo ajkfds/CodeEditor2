@@ -113,7 +113,7 @@ namespace CodeEditor2.Data
 
         protected CodeEditor.CodeDocument? document = null;
 
-        public virtual CodeEditor.CodeDocument CodeDocument
+        public virtual CodeEditor.CodeDocument? CodeDocument
         {
             get
             {

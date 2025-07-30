@@ -414,6 +414,7 @@ namespace CodeEditor2.Views
             _markerRenderer.ClearMark();
 
             if (TextFile == null) return;
+            if (TextFile.CodeDocument == null) return;
             _markerRenderer.SetMarks(TextFile.CodeDocument.Marks.marks);
 
             if (CodeDocument != null) CodeDocument.Changing += CodeDocument_Changing;
