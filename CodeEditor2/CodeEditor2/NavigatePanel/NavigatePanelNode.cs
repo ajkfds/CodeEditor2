@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using Avalonia.Controls;
 using AjkAvaloniaLibs.Controls;
+using System.Xml.Linq;
 
 namespace CodeEditor2.NavigatePanel
 {
@@ -201,6 +202,18 @@ namespace CodeEditor2.NavigatePanel
                     menuItem_AddFolder.Click += menuItem_AddFolder_Click;
                     menuItem_Add.Items.Add(menuItem_AddFolder);
                 }
+
+                {
+                    MenuItem menuItem_AddBlankFile = CodeEditor2.Global.CreateMenuItem(
+                    "Blank File",
+                    "MenuItem_AddBlankFile",
+                    "CodeEditor2/Assets/Icons/paper2.svg",
+                    Avalonia.Media.Color.FromArgb(100, 100, 100, 255)
+                    );
+                    menuItem_AddBlankFile.Click += menuItem_AddBlankFile_Click;
+                    menuItem_Add.Items.Add(menuItem_AddBlankFile);
+                }
+
             }
             {
                 MenuItem menuItem_Delete = CodeEditor2.Global.CreateMenuItem("Delete", "MenuItem_Delete");
@@ -274,6 +287,44 @@ namespace CodeEditor2.NavigatePanel
             System.IO.Directory.CreateDirectory(project.GetAbsolutePath(relativePath + folderName));
 
             UpdateFolder(node);
+        }
+
+        private async void menuItem_AddBlankFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
+            if (node == null) return;
+            Project project = GetProject();
+
+            string relativePath = getRelativeFolderPath(node);
+            if (!relativePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) relativePath += System.IO.Path.DirectorySeparatorChar;
+
+            Tools.InputWindow window = new Tools.InputWindow("Create Blank File", "new File Name");
+            await window.ShowDialog(Controller.GetMainWindow());
+
+            if (window.Cancel) return;
+            string fileName = window.InputText.Trim();
+            string path = project.GetAbsolutePath(relativePath + fileName);
+
+            if (System.IO.File.Exists(path))
+            {
+                CodeEditor2.Controller.AppendLog("! already exist " + path, Avalonia.Media.Colors.Red);
+            }
+            else
+            {
+                try
+                {
+                    using (System.IO.StreamWriter sw = new System.IO.StreamWriter(path))
+                    {
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Controller.AppendLog("** error : NavigatePanelMenu.addBlankFile", Avalonia.Media.Colors.Red);
+                    Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
+                }
+            }
+
+            CodeEditor2.Controller.NavigatePanel.UpdateFolder(node);
         }
 
         private async void menuItem_Delete_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
