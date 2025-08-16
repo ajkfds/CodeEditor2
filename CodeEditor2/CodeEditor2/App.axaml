@@ -13,6 +13,14 @@
 			<Setter Property="FontSize" Value="12"/>
 			<Setter Property="Padding" Value="8 2 8 2"/>
 		</Style>
+		<!--kill popup fade in/out-->
+		<Style Selector="Popup">
+			<Setter Property="Transitions">
+				<Setter.Value>
+					<Transitions/>
+				</Setter.Value>
+			</Setter>
+		</Style>
 	</Application.Styles>
 
 </Application>
