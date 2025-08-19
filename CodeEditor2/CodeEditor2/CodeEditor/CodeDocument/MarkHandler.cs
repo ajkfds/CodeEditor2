@@ -52,7 +52,7 @@ namespace CodeEditor2.CodeEditor
                 mark.LastOffset = index + length;
                 lock (marks)
                 {
-                    marks.Add(mark);
+                    if (mark.LastOffset > mark.Offset) marks.Add(mark);
                 }
 				return;
             }
@@ -64,7 +64,7 @@ namespace CodeEditor2.CodeEditor
 
                 lock (marks)
                 {
-                    marks.Add(mark);
+                    if (mark.LastOffset > mark.Offset) marks.Add(mark);
                 }
             }
             for (int i = startLine + 1; i < lastLine; i++)
@@ -75,9 +75,9 @@ namespace CodeEditor2.CodeEditor
 
                 lock (marks)
                 {
-                    marks.Add(mark);
+                    if (mark.LastOffset > mark.Offset) marks.Add(mark);
                 }
-			}
+            }
 			{ // last line
                 CodeDrawStyle.MarkDetail mark = createDetail(codeDocument.TextFile.DrawStyle.MarkStyle[value]);
 				mark.Offset = codeDocument.GetLineStartIndex(lastLine);
@@ -85,7 +85,7 @@ namespace CodeEditor2.CodeEditor
 
                 lock (marks)
                 {
-                    marks.Add(mark);
+					if(mark.LastOffset > mark.Offset) marks.Add(mark);
                 }
             }
         }
@@ -111,28 +111,28 @@ namespace CodeEditor2.CodeEditor
 			SetMarkAt(index, 1, value);
 		}
 
-		public void RemoveMarkAt(int index, byte value)
-		{
-			if (codeDocument.TextDocument == null) return;
-			if (codeDocument.TextFile == null) return;
-			//            marks[index] &= (byte)((1 << value) ^ 0xff);
-		}
-		public void RemoveMarkAt(int index, int length, byte value)
-		{
-			for (int i = index; i < index + length; i++)
-			{
-				RemoveMarkAt(i, value);
-			}
-		}
+		//public void RemoveMarkAt(int index, byte value)
+		//{
+		//	if (codeDocument.TextDocument == null) return;
+		//	if (codeDocument.TextFile == null) return;
+		//	//            marks[index] &= (byte)((1 << value) ^ 0xff);
+		//}
+//		public void RemoveMarkAt(int index, int length, byte value)
+//		{
+//			for (int i = index; i < index + length; i++)
+//			{
+//				RemoveMarkAt(i, value);
+//			}
+//		}
 
-		public void RemoveMarks()
-		{
-//            if (CurrentMarks == null) return;
-//            lock (CurrentMarks)
+//		public void RemoveMarks()
+//		{
+////            if (CurrentMarks == null) return;
+//            lock (marks)
 //            {
-              marks.Clear();
+//	             marks.Clear();
 //            }
-        }
+//        }
 
 
 	}
