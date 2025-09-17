@@ -23,12 +23,33 @@ namespace CodeEditor2
     {
         public static void AppendLog(string message)
         {
-            Global.logView.AppendLog(message);
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Global.logView.AppendLog(message);
+            }
+            else
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    Global.logView.AppendLog(message);
+                });
+            }
+
             System.Diagnostics.Debug.Print(message);
         }
         public static void AppendLog(string message, Avalonia.Media.Color color)
         {
-            Global.logView.AppendLog(message, color);
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Global.logView.AppendLog(message, color);
+            }
+            else
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    Global.logView.AppendLog(message, color);
+                });
+            }
         }
 
         public static Window GetMainWindow()
