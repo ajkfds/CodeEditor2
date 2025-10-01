@@ -25,6 +25,10 @@ namespace CodeEditor2.Views
                 AjkAvaloniaLibs.Controls.ListViewItem item = new AjkAvaloniaLibs.Controls.ListViewItem(m);
                 Dispatcher.UIThread.Post(() => appendLog(item));
             }
+            Dispatcher.UIThread.Post(() =>
+            {
+                ListView.Scroll(ListView.Items.Last());
+            }, DispatcherPriority.Background);
         }
 
         public void AppendLog(string message,Avalonia.Media.Color color)
@@ -36,6 +40,10 @@ namespace CodeEditor2.Views
                 AjkAvaloniaLibs.Controls.ListViewItem item = new AjkAvaloniaLibs.Controls.ListViewItem(m, color);
                 Dispatcher.UIThread.Post(() => appendLog(item));
             }
+            Dispatcher.UIThread.Post(() =>
+            {
+                ListView.Scroll(ListView.Items.Last());
+            }, DispatcherPriority.Background);
         }
 
         private void appendLog(ListViewItem item)
@@ -45,7 +53,6 @@ namespace CodeEditor2.Views
             {
                 ListView.Items.RemoveAt(0);
             }
-            ListView.Scroll(ListView.Items.Last());
         }
     }
 }
