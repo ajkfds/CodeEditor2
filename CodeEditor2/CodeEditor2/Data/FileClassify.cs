@@ -76,10 +76,9 @@ namespace CodeEditor2.Data
             if (commands.Count == 0) return false;
             return true;
         }
-        public bool IsMatched(string relativePath,out string type)
+        public string? GetFileType(string relativePath,string? defaultType)
         {
-            bool active = false;
-            type = "";
+            string? type = defaultType;
 
             foreach (Item item in commands)
             {
@@ -89,19 +88,18 @@ namespace CodeEditor2.Data
                 {
                     if (item.append)
                     {
-                        active = true;
                         type = item.type;
                     }
                     else
                     {
                         if(type == item.type)
                         {
-                            active = false;
+                            type = null;
                         }
                     }
                 }
             }
-            return active;
+            return type;
         }
         
         private class Item

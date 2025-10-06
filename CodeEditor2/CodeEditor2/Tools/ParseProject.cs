@@ -55,7 +55,7 @@ namespace CodeEditor2.Tools
         {
             // parse items
             int i = 0;
-            int workerThreads = 8;
+            int workerThreads = 1;// 8;
 
             System.Collections.Concurrent.BlockingCollection<Data.TextFile> fileQueue = new System.Collections.Concurrent.BlockingCollection<Data.TextFile>();
 
@@ -100,6 +100,7 @@ namespace CodeEditor2.Tools
                 foreach (ParseProjectUnit task in tasks)
                 {
                     if (task.Complete) completeTasks++;
+                
                 }
                 if (completeTasks == tasks.Count) break;
             }

@@ -9,11 +9,13 @@ using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Timers;
+using System.Threading.Tasks;
 using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
 using System.Xml.Linq;
 using CodeEditor2.FileTypes;
 using Avalonia.Threading;
+using System.Threading;
 
 namespace CodeEditor2.Data
 {
@@ -226,7 +228,6 @@ namespace CodeEditor2.Data
         #region FileSystemWatcher
 
         protected FileSystemWatcher? fileSystemWatcher;
-        protected Timer fsTimer = new Timer();
         protected void startFileSystemWatcher()
         {
             fileSystemWatcher = new FileSystemWatcher();
@@ -245,62 +246,81 @@ namespace CodeEditor2.Data
             fileSystemWatcher.Deleted += FileSystemWatcher_Deleted;
 
             fileSystemWatcher.EnableRaisingEvents = true;
-
-            fsTimer.Interval = 10;
-            fsTimer.Elapsed += FsTimer_Elapsed;
-            fsTimer.Start();
         }
 
 
-        Dictionary<string, FileSystemEventArgs> fileSystemEvents = new Dictionary<string, FileSystemEventArgs>();
-        private void addFileSystemEvent(FileSystemEventArgs e)
-        {
-            lock (fileSystemEvents)
-            {
-                while (fileSystemEvents.ContainsKey(e.FullPath))
+        /*        Dictionary<string, FileSystemEventArgs> fileSystemEvents = new Dictionary<string, FileSystemEventArgs>();
+                private void addFileSystemEvent(FileSystemEventArgs e)
                 {
-                    FileSystemEventArgs prevE = fileSystemEvents[e.FullPath];
-                    switch (prevE.ChangeType)
+                    lock (fileSystemEvents)
                     {
-                        case WatcherChangeTypes.Changed:
-                            fileSystemEvents.Remove(prevE.FullPath);
-                            break;
-                        case WatcherChangeTypes.Created:
-                            fileSystemEvents.Remove(prevE.FullPath);
-                            break;
-                        case WatcherChangeTypes.Deleted:
-                            fileSystemEvents.Remove(prevE.FullPath);
-                            break;
-                        case WatcherChangeTypes.Renamed:
-                            fileSystemEvents.Remove(prevE.FullPath);
-                            break;
+                        while (fileSystemEvents.ContainsKey(e.FullPath))
+                        {
+                            FileSystemEventArgs prevE = fileSystemEvents[e.FullPath];
+                            switch (prevE.ChangeType)
+                            {
+                                case WatcherChangeTypes.Changed:
+                                    fileSystemEvents.Remove(prevE.FullPath);
+                                    break;
+                                case WatcherChangeTypes.Created:
+                                    fileSystemEvents.Remove(prevE.FullPath);
+                                    break;
+                                case WatcherChangeTypes.Deleted:
+                                    fileSystemEvents.Remove(prevE.FullPath);
+                                    break;
+                                case WatcherChangeTypes.Renamed:
+                                    fileSystemEvents.Remove(prevE.FullPath);
+                                    break;
+                            }
+                        }
+                        fileSystemEvents.Add(e.FullPath, e);
+                        fsTimer.Enabled = true;
                     }
                 }
-                fileSystemEvents.Add(e.FullPath, e);
-                fsTimer.Enabled = true;
-            }
-        }
+        */
 
+        private System.Threading.Timer changeDebounceTimer;
+        private const int debounceTime_ms = 100;
         private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
-            addFileSystemEvent(e);
+            changeDebounceTimer?.Dispose();
+            changeDebounceTimer = new System.Threading.Timer(async _ =>
+            {
+                await FileChangedAsync(sender, e);
+            }, null, 100, Timeout.Infinite);
+            Task.Run(() => {  });
         }
 
         private void FileSystemWatcher_Renamed(object sender, RenamedEventArgs e)
         {
-            addFileSystemEvent(e);
         }
 
         private void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
         {
-            addFileSystemEvent(e);
         }
 
         private void FileSystemWatcher_Deleted(object sender, FileSystemEventArgs e)
         {
-            addFileSystemEvent(e);
         }
 
+        private async Task FileChangedAsync(object sender, FileSystemEventArgs e)
+        {
+            
+                if (e.FullPath == FileClassify.AbsolutePath)
+                {
+                    FileClassify.Reload();
+                    return;
+                }
+
+                Controller.AppendLog(e.Name + " changed");
+                string relativePath = GetRelativePath(e.FullPath);
+                Data.File? file = GetItem(relativePath) as Data.File;
+                if (file == null) return;
+                Data.ITextFile? textFile = file as Data.ITextFile;
+                if (textFile == null) return;
+                Dispatcher.UIThread.Post(() => fileChaned(textFile));
+        }
+        /*
         private void FsTimer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             lock (fileSystemEvents)
@@ -332,6 +352,7 @@ namespace CodeEditor2.Data
                 }
             }
         }
+        */
         private void fileChaned(Data.ITextFile textFile)
         {
             if (textFile.Dirty)
@@ -348,8 +369,7 @@ namespace CodeEditor2.Data
                 }
             }
         }
-
-
+ 
         #endregion
 
 

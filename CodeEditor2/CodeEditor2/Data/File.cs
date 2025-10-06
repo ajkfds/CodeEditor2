@@ -23,22 +23,26 @@ namespace CodeEditor2.Data
         public static File Create(string relativePath, Project project, Item parent)
         {
             // check registered filetype
-            if (project.FileClassify.HasDefinition())
+            string? fileTypeKey = null;
+            foreach (var fileType in Global.FileTypes)
             {
-                project.FileClassify.IsMatched(relativePath, out string type);
-                if (Global.FileTypes.ContainsKey(type))
+                if (fileType.Value.IsThisFileType(relativePath, project))
                 {
-                    FileTypes.FileType fileType = Global.FileTypes[type];
-                    return fileType.CreateFile(relativePath, project);
+                    fileTypeKey = fileType.Key;
                 }
             }
 
-            foreach (var fileType in Global.FileTypes)
+            if (project.FileClassify.HasDefinition())
             {
-                if (fileType.Value.IsThisFileType(relativePath, project)) return fileType.Value.CreateFile(relativePath, project);
+                fileTypeKey = project.FileClassify.GetFileType(relativePath, fileTypeKey);
             }
 
-           
+            if (fileTypeKey != null && Global.FileTypes.ContainsKey(fileTypeKey))
+            {
+                FileTypes.FileType fileType = Global.FileTypes[fileTypeKey];
+                return fileType.CreateFile(relativePath, project);
+            }
+
             string name;
             if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
             {

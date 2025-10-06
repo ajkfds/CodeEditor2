@@ -157,7 +157,7 @@ namespace CodeEditor2.Data
         protected DateTime? loadedFileLastWriteTime;
         private void loadDocumentFromFile()
         {
-            try
+//            try
             {
                 if (document == null)
                 {
@@ -168,16 +168,19 @@ namespace CodeEditor2.Data
                     loadedFileLastWriteTime = System.IO.File.GetLastWriteTime(AbsolutePath);
 
                     string text = sr.ReadToEnd();
-                    document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
+                    lock (document)
+                    {
+                        document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
+                    }
                     //document.Replace(0, document.Length, 0, text);
                     //document.ClearHistory();
                     document.Clean();
                 }
             }
-            catch
-            {
-                document = null;
-            }
+//            catch
+//            {
+//                document = null;
+//            }
         }
 
         //public string GetMd5Hash()
