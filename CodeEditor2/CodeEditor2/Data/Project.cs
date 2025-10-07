@@ -121,6 +121,31 @@ namespace CodeEditor2.Data
             return project;
         }
 
+        public FileTypes.FileType? GetFileType(string relativePath)
+        {
+            // check registered filetype
+            string? fileTypeKey = null;
+            foreach (var fileType in Global.FileTypes)
+            {
+                if (fileType.Value.IsThisFileType(relativePath, this))
+                {
+                    fileTypeKey = fileType.Key;
+                }
+            }
+
+            if (FileClassify.HasDefinition())
+            {
+                fileTypeKey = FileClassify.GetFileType(relativePath, fileTypeKey);
+            }
+
+            if (fileTypeKey != null && Global.FileTypes.ContainsKey(fileTypeKey))
+            {
+                FileTypes.FileType fileType = Global.FileTypes[fileTypeKey];
+                return fileType;
+            }
+            return null;
+        }
+
         private static void initProject(Project project)
         {
             if (Created != null) Created(project);

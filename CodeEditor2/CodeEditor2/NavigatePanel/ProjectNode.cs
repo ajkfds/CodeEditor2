@@ -30,6 +30,11 @@ namespace CodeEditor2.NavigatePanel
                 return Item as Project;
             }
         }
+        public override void OnSelected()
+        {
+            base.OnSelected();
+            Update();
+        }
         public override void UpdateVisual()
         {
             if (Dispatcher.UIThread.CheckAccess())

@@ -45,9 +45,22 @@ namespace CodeEditor2.NavigatePanel
         }
         private void _updateVisual()
         {
+            List<AjkAvaloniaLibs.Libs.Icons.OverrideIcon> overrideIcons = new List<AjkAvaloniaLibs.Libs.Icons.OverrideIcon>();
+
+            if (Folder != null && Folder.Link)
+            {
+                overrideIcons.Add(new AjkAvaloniaLibs.Libs.Icons.OverrideIcon()
+                {
+                    SvgPath = "CodeEditor2/Assets/Icons/share.svg",
+                    Color = Avalonia.Media.Color.FromArgb(255, 255, 255, 200),
+                    OverridePosition = AjkAvaloniaLibs.Libs.Icons.OverridePosition.Fill
+                });
+            }
+
             Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/folder.svg",
-                    Color.FromArgb(100, 100, 150, 255)
+                    Color.FromArgb(100, 100, 150, 255),
+                    overrideIcons
                     );
             string text = "null";
             Folder? folder = Folder;

@@ -49,17 +49,17 @@ namespace CodeEditor2.NavigatePanel
 
         private bool link = false;
 
-        public bool Link
-        {
-            get
-            {
-                return link;
-            }
-            set
-            {
-                link = value;
-            }
-        }
+        //public bool Link
+        //{
+        //    get
+        //    {
+        //        return link;
+        //    }
+        //    set
+        //    {
+        //        link = value;
+        //    }
+        //}
 
         private WeakReference<Item>? itemRef;
         public Item? Item

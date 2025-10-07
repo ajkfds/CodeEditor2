@@ -22,27 +22,15 @@ namespace CodeEditor2.Data
 
         public static File Create(string relativePath, Project project, Item parent)
         {
-            // check registered filetype
-            string? fileTypeKey = null;
-            foreach (var fileType in Global.FileTypes)
+            FileTypes.FileType? fileType = project.GetFileType(relativePath);
+            if(fileType != null)
             {
-                if (fileType.Value.IsThisFileType(relativePath, project))
-                {
-                    fileTypeKey = fileType.Key;
-                }
+                File file = fileType.CreateFile(relativePath, project);
+                file.FileType = fileType;
+                return file;
             }
 
-            if (project.FileClassify.HasDefinition())
-            {
-                fileTypeKey = project.FileClassify.GetFileType(relativePath, fileTypeKey);
-            }
-
-            if (fileTypeKey != null && Global.FileTypes.ContainsKey(fileTypeKey))
-            {
-                FileTypes.FileType fileType = Global.FileTypes[fileTypeKey];
-                return fileType.CreateFile(relativePath, project);
-            }
-
+            // undefined file
             string name;
             if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
             {
@@ -66,6 +54,7 @@ namespace CodeEditor2.Data
             return fileItem;
         }
 
+        public FileTypes.FileType? FileType { get; set; }
         public string AbsolutePath
         {
             get

@@ -279,7 +279,7 @@ namespace CodeEditor2.Data
         {
             NavigatePanel.NavigatePanelNode node;
             node = CreateNode();
-            if (node != null) node.Link = true;
+//            if (node != null) node.Link = true;
             return node;
         }
 
