@@ -133,31 +133,24 @@ namespace CodeEditor2.Data
                 {
                     // https://github.com/securifybv/ShellLink
                     Securify.ShellLink.Shortcut shortcut = Securify.ShellLink.Shortcut.ReadFromFile(absoluteFilePath);
-                    string path = shortcut.LinkTargetIDList.Path;
-                    if(path.Length>=2 && path.Substring(1, 1) == ":") // absolute path
-                    {
-                        if (path.Substring(0, 2) != Project.GetAbsolutePath("").Substring(0, 2))
-                        { // diffent drive cannnot make relative path
-                            continue;
-                        }
-                        // convert link to relative path
-                        //string basePath = Project.GetAbsolutePath(RelativePath);
-                        //if (!basePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) basePath += System.IO.Path.DirectorySeparatorChar;
-                        //Uri u1 = new Uri(basePath);
-                        //Uri u2 = new Uri(path);
-                        //Uri relativeUri = u1.MakeRelativeUri(u2);
-                        //string relativeLinkPath = Uri.UnescapeDataString(relativeUri.ToString());
-                        //shortcut.LinkTargetIDList.Path = relativeLinkPath;
-                        //shortcut.WriteToFile(absoluteFilePath);
-                    }
-                    else
-                    {
-                        path = Project.GetAbsolutePath(path);
+                    string absoluteLinkPath = shortcut.LinkTargetIDList.Path;
+                    if((shortcut.LinkFlags | Securify.ShellLink.Flags.LinkFlags.HasRelativePath) == 0) // don't have relative path
+                    { // add relative path
+                        string basePath = Project.GetAbsolutePath(RelativePath);
+                        if (!basePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) basePath += System.IO.Path.DirectorySeparatorChar;
+                        Uri u1 = new Uri(basePath);
+                        Uri u2 = new Uri(absoluteLinkPath);
+                        Uri relativeUri = u1.MakeRelativeUri(u2);
+                        string relativeLinkPath = Uri.UnescapeDataString(relativeUri.ToString());
+                        shortcut.LinkFlags |= Securify.ShellLink.Flags.LinkFlags.HasRelativePath;
+                        shortcut.StringData.WorkingDir = ".";
+                        shortcut.StringData.RelativePath = relativeLinkPath;
+                        shortcut.WriteToFile(absoluteFilePath);
                     }
 
                     if (shortcut.FileAttributes.HasFlag(Securify.ShellLink.Flags.FileAttributesFlags.FILE_ATTRIBUTE_DIRECTORY))
                     { // directory
-                        Folder item = Create(Project.GetRelativePath(path), Project, this);
+                        Folder item = Create(Project.GetRelativePath(absoluteLinkPath), Project, this);
                         item.Link = true;
                         if (Project != null && Project.ignoreList.Contains(item.Name))
                         {
