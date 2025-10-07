@@ -50,11 +50,11 @@ namespace CodeEditor2.Parser
                 }
                 else if (lineText.StartsWith("+"))
                 {
-                    colorLine(Style.Color.Header, line);
+                    colorLine(Style.Color.Identifier, line);
                 }
                 else if (lineText.StartsWith("-"))
                 {
-                    colorLine(Style.Color.Header, line);
+                    colorLine(Style.Color.Register, line);
                 }
             }
         }
