@@ -49,6 +49,8 @@ public partial class App : Application
         // register text filetype
         FileTypes.TextFile textFileType = new FileTypes.TextFile();
         Global.FileTypes.Add(textFileType.ID, textFileType);
+        FileTypes.FileClassifyFile fileClassifyFile = new FileTypes.FileClassifyFile();
+        Global.FileTypes.Add(fileClassifyFile.ID, fileClassifyFile);
 
         // load pulgins
         List<CodeEditor2Plugin.IPlugin> plugins = new List<CodeEditor2Plugin.IPlugin>();
