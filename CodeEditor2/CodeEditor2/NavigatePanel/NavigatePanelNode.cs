@@ -406,7 +406,7 @@ namespace CodeEditor2.NavigatePanel
 
                 if (System.OperatingSystem.IsLinux())
                 {
-                    System.Diagnostics.Process.Start("thunar " + folderPath + " &");
+                    System.Diagnostics.Process.Start("nautilus " + folderPath + " &");
                 }
                 else
                 {
