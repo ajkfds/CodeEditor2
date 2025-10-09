@@ -112,7 +112,19 @@ namespace CodeEditor2
             CodeEditor2.Tools.ParseProject parser = new Tools.ParseProject();
             ProjectNode? projectNode = Global.navigateView.GetProjectNode(project.Name);
             if (projectNode == null) return;
-            await parser.Run(projectNode); 
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                await parser.Run(projectNode);
+            }
+            else
+            {
+                Dispatcher.UIThread.Post(
+                async () =>
+                {
+                    await parser.Run(projectNode);
+                }
+                );
+            }
         }
 
         //public static Menu GetMenuStrip()
