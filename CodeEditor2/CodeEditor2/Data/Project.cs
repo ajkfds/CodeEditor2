@@ -309,11 +309,10 @@ namespace CodeEditor2.Data
         private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
             changeDebounceTimer?.Dispose();
-            changeDebounceTimer = new System.Threading.Timer(async _ =>
+            changeDebounceTimer = new System.Threading.Timer( _ =>
             {
-                await FileChangedAsync(sender, e);
+                FileChanged(sender, e);
             }, null, 100, Timeout.Infinite);
-            Task.Run(() => {  });
         }
 
         private void FileSystemWatcher_Renamed(object sender, RenamedEventArgs e)
@@ -326,11 +325,15 @@ namespace CodeEditor2.Data
 
         private void FileSystemWatcher_Deleted(object sender, FileSystemEventArgs e)
         {
+            changeDebounceTimer?.Dispose();
+            changeDebounceTimer = new System.Threading.Timer(_ =>
+            {
+                FileDeleted(sender, e);
+            }, null, 100, Timeout.Infinite);
         }
 
-        private async Task FileChangedAsync(object sender, FileSystemEventArgs e)
+        private void FileChanged(object sender, FileSystemEventArgs e)
         {
-            
                 if (e.FullPath == FileClassify.AbsolutePath)
                 {
                     FileClassify.Reload();
@@ -345,39 +348,6 @@ namespace CodeEditor2.Data
                 if (textFile == null) return;
                 Dispatcher.UIThread.Post(() => fileChaned(textFile));
         }
-        /*
-        private void FsTimer_Elapsed(object? sender, ElapsedEventArgs e)
-        {
-            lock (fileSystemEvents)
-            {
-                while (fileSystemEvents.Count != 0)
-                {
-                    System.IO.FileSystemEventArgs? fs = fileSystemEvents.Values.FirstOrDefault();
-                    if(fs == null)
-                    {
-                        throw new Exception();
-                    }
-                    fileSystemEvents.Remove(fs.FullPath);
-                    {
-                        if(fs.FullPath == FileClassify.AbsolutePath)
-                        {
-                            FileClassify.Reload();
-                            return;
-                        }
-
-                        Controller.AppendLog(fs.Name + " changed");
-                        string relativePath = GetRelativePath(fs.FullPath);
-                        Data.File? file = GetItem(relativePath) as Data.File;
-                        if (file == null) return;
-                        Data.ITextFile? textFile = file as Data.ITextFile;
-                        if (textFile == null) return;
-                        Dispatcher.UIThread.Post(() => fileChaned(textFile));
-                    }
-
-                }
-            }
-        }
-        */
         private void fileChaned(Data.ITextFile textFile)
         {
             if (textFile.Dirty)
@@ -394,7 +364,18 @@ namespace CodeEditor2.Data
                 }
             }
         }
- 
+
+        private void FileDeleted(object sender, FileSystemEventArgs e)
+        {
+            Controller.AppendLog(e.Name + " deleted");
+            string relativePath = GetRelativePath(e.FullPath);
+            Data.File? file = GetItem(relativePath) as Data.File;
+            if (file == null) return;
+            file.DisposeRequested = true;
+            Data.ITextFile? textFile = file as Data.ITextFile;
+            if (textFile == null) return;
+            Dispatcher.UIThread.Post(() => fileChaned(textFile));
+        }
         #endregion
 
 

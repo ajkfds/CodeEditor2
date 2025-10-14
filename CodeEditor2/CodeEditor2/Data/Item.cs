@@ -70,6 +70,8 @@ namespace CodeEditor2.Data
             }
         }
 
+        public virtual bool DisposeRequested { get; set; } = false;
+
         public virtual bool Ignore
         {
             get; set;

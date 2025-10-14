@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
 using DynamicData.Binding;
 using DynamicData.Kernel;
@@ -54,6 +55,14 @@ namespace CodeEditor2.Data
             return fileItem;
         }
 
+        public void CheckFileType()
+        {
+            FileTypes.FileType? fileType = Project.GetFileType(RelativePath);
+            if (FileType != fileType)
+            {
+                DisposeRequested = true;
+            }
+        }
         public FileTypes.FileType? FileType { get; set; }
         public string AbsolutePath
         {

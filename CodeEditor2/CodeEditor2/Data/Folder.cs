@@ -85,6 +85,7 @@ namespace CodeEditor2.Data
 
         public override void Update()
         {
+            if (Project == null) throw new Exception();
             string absolutePath = Project.GetAbsolutePath(RelativePath);
 
             // get folder contents
@@ -96,8 +97,8 @@ namespace CodeEditor2.Data
             catch
             {
                 // path is not exist
-
-                System.Diagnostics.Debugger.Break();
+                DisposeRequested = true;
+                Items.Clear();
                 return;
             }
             string[] absoluteFolderPaths = System.IO.Directory.GetDirectories(absolutePath);
@@ -125,6 +126,11 @@ namespace CodeEditor2.Data
 
                 if (items.ContainsKey(name))
                 {
+                    if (items[name] is File)
+                    {
+                        ((File)items[name]).CheckFileType();
+                    }
+                    if (items[name].DisposeRequested) continue;
                     currentItems.Add(items[name]);
                     continue;
                 }
