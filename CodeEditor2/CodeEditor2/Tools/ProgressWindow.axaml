@@ -13,13 +13,13 @@
 		WindowStartupLocation="CenterOwner"
         Title="ProgressWindow">
 	<Border 
-		CornerRadius="10" 
 		VerticalAlignment="Center" 
 		Padding="10" 
 		Background="#606060"
 		BorderBrush="#404040"
 		BorderThickness="2"
 		>
+		<!--Border CornerRadius="10"-->
 		<StackPanel>
 			<TextBlock Name="TitleText" Text="Title" HorizontalAlignment="Center" FontWeight="10" FontSize="16"/>
 			<TextBlock Name="MessageText" FontSize="12">Parsing...</TextBlock>
