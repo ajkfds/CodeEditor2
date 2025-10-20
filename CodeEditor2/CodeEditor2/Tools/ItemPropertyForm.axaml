@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:CodeEditor2.ViewModels;assembly=CodeEditor2"
+        xmlns:views="clr-namespace:CodeEditor2.Views;assembly=CodeEditor2"
+        xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Controls;assembly=AjkAvaloniaLibs"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
+        x:Class="CodeEditor2.Tools.ItemPropertyForm"
+        Title="Property">
+	<Grid RowDefinitions="*,Auto" Margin="4">
+		<TabControl Grid.Row="0">
+			<TabItem Header="Item" FontSize="14" Name="ItemTab">
+				<StackPanel Orientation="Vertical">
+					<TextBlock>Relative Path</TextBlock>
+					<TextBox Name="RelativePathText" IsReadOnly="True"></TextBox>
+					<TextBlock>File Type</TextBlock>
+					<TextBox Name="FileTYpeText" IsReadOnly="True"></TextBox>
+				</StackPanel>
+			</TabItem>
+		</TabControl>
+		<StackPanel Grid.Row="1" HorizontalAlignment="Right" Orientation="Horizontal">
+			<Button Name="CancelButton">Cancel</Button>
+			<Button Name="OkButton">OK</Button>
+		</StackPanel>
+	</Grid>
+
+
+</Window>

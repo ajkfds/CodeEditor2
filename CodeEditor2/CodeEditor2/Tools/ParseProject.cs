@@ -31,7 +31,7 @@ namespace CodeEditor2.Tools
             CodeEditor2.Global.StopBackGroundParse = true;
 
             // data update
-            projectNode.HierarchicalVisibleUpdate();
+            await projectNode.HierarchicalVisibleUpdateAsync();
             items = projectNode.Project.FindItems(
                 (x) => (x is Data.TextFile),
                 (x) => (false)

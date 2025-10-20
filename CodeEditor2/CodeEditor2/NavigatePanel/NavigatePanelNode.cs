@@ -110,34 +110,43 @@ namespace CodeEditor2.NavigatePanel
         }
         public override void OnExpand()
         {
-            HierarchicalVisibleUpdate();
+            Task.Run(
+                async () =>
+                {
+                    await HierarchicalVisibleUpdateAsync();
+                }
+            );
         }
 
         public override void OnCollapse()
         {
-            HierarchicalVisibleUpdate();
+            Task.Run(
+                async () =>
+                {
+                    await HierarchicalVisibleUpdateAsync();
+                }
+            );
         }
 
-
-
-
-        public virtual void HierarchicalVisibleUpdate()
+        public async virtual Task HierarchicalVisibleUpdateAsync()
         {
-            HierarchicalVisibleUpdate(0, IsExpanded);
+            await HierarchicalVisibleUpdateAsync(0, IsExpanded);
         }
 
-        public virtual void HierarchicalVisibleUpdate(int depth, bool expanded)
+        public async virtual Task HierarchicalVisibleUpdateAsync(int depth, bool expanded)
         {
             Update();
             if (depth > 100) return;
             if (!expanded) return;
-            Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                foreach (NavigatePanelNode node in Nodes)
+            await Dispatcher.UIThread.InvokeAsync(
+                async () =>
                 {
-                    node.HierarchicalVisibleUpdate(depth + 1, node.IsExpanded);
+                    foreach (NavigatePanelNode node in Nodes)
+                    {
+                        await node.HierarchicalVisibleUpdateAsync(depth + 1, node.IsExpanded);
+                    }
                 }
-            });
+            );
         }
 
 

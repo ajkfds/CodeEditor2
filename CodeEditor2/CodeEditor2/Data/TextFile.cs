@@ -261,7 +261,7 @@ namespace CodeEditor2.Data
         //}
 
         // parse this text file hierarchy
-        public void ParseHierarchy(Action<ITextFile> action)
+        public async Task ParseHierarchy(Action<ITextFile> action)
         {
             //parse complete id list
             List<string> parsedIds = new List<string>();
@@ -271,7 +271,7 @@ namespace CodeEditor2.Data
 
             if (NavigatePanelNode != null)
             {
-                NavigatePanelNode.HierarchicalVisibleUpdate();
+                await NavigatePanelNode.HierarchicalVisibleUpdateAsync();
             }
 //            System.Diagnostics.Debug.Print("### TextFile.ParseHierarchy compelet " + parsedIds.Count.ToString() + "module parsed");
         }

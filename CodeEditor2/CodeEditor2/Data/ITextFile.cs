@@ -33,7 +33,7 @@ namespace CodeEditor2.Data
         void Dispose();
 
         void Update();
-        void ParseHierarchy(Action<ITextFile> action);
+        Task ParseHierarchy(Action<ITextFile> action);
 
         NavigatePanel.NavigatePanelNode NavigatePanelNode { get; }
         DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode);
