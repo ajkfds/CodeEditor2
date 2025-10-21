@@ -211,19 +211,27 @@ namespace CodeEditor2.Data
 
         public virtual List<Item> FindItems(Func<Item, bool> match, Func<Item, bool> stop)
         {
+            return FindItems(match, stop, null);
+        }
+        public virtual List<Item> FindItems(Func<Item, bool> match, Func<Item, bool> stop, Action<Item>? action)
+        {
             List<Item> result = new List<Item>();
-            findItems(result, match, stop);
+            findItems(result, match, stop,action);
             return result;
         }
 
-        protected void findItems(List<Item> result, Func<Item, bool> match, Func<Item, bool> stop)
+        protected void findItems(List<Item> result, Func<Item, bool> match, Func<Item, bool> stop, Action<Item>? action)
         {
             lock (Items)
             {
                 foreach (Item item in items.Values)
                 {
-                    if (match(item)) result.Add(item);
-                    if (!stop(item)) item.findItems(result, match, stop);
+                    if (match(item))
+                    {
+                        result.Add(item);
+                        if(action != null) action(item);
+                    }
+                    if (!stop(item)) item.findItems(result, match, stop,action);
                 }
             }
         }

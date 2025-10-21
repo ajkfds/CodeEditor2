@@ -113,7 +113,7 @@ namespace CodeEditor2
             ProjectNode? projectNode = Global.navigateView.GetProjectNode(project.Name);
             if (projectNode == null) return;
             
-            Dispatcher.UIThread.Post(
+            await Dispatcher.UIThread.InvokeAsync(
                 async () =>
                 {
                     await parser.Run(projectNode);

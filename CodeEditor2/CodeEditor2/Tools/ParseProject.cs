@@ -3,12 +3,14 @@ using Avalonia.Threading;
 using CodeEditor2.CodeEditor;
 using CodeEditor2.Data;
 using CodeEditor2.NavigatePanel;
+using Securify.ShellLink.Structures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Quic;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using static CodeEditor2.CodeEditor.ParsedDocument;
 
@@ -19,7 +21,6 @@ namespace CodeEditor2.Tools
 
         // to pase thread
         //private Tools.ProgressWindow progressWindow;
-        List<Data.Item> items;
 //        private volatile bool abort = false;
 
         public async Task Run(NavigatePanel.ProjectNode projectNode)
@@ -32,17 +33,12 @@ namespace CodeEditor2.Tools
 
             // data update
             await projectNode.HierarchicalVisibleUpdateAsync();
-            items = projectNode.Project.FindItems(
-                (x) => (x is Data.TextFile),
-                (x) => (false)
-                );
 
             ProgressWindow progress = new ProgressWindow();
             progress.Title = "Loading " + projectNode.Text;
-            progress.ProgressMaxValue = items.Count;
 
             progress.LoadedAction = async (progressWindow) => {
-                await runParse(progressWindow);
+                await runParse(progressWindow,projectNode.Project);
                 progressWindow.Close();
             };
             await progress.ShowDialog(Global.mainWindow);
@@ -50,30 +46,39 @@ namespace CodeEditor2.Tools
         }
 
 
-        private async Task runParse(ProgressWindow progressWindow)
+        private async Task runParse(ProgressWindow progressWindow, Project project)
         {
             // parse items
-            int i = 0;
             int workerThreads = 8;
 
-            System.Collections.Concurrent.BlockingCollection<Data.TextFile> fileQueue = new System.Collections.Concurrent.BlockingCollection<Data.TextFile>();
-            foreach (Data.Item item in items)
-            {
-                Data.TextFile textFile = (Data.TextFile)item;
-                if (textFile == null) continue;
-                fileQueue.Add(textFile);
-            }
-            fileQueue.CompleteAdding();
+            var channel = Channel.CreateUnbounded<Data.TextFile>();
+            ChannelWriter<Data.TextFile> writer = channel.Writer;
+            ChannelReader<Data.TextFile> reader = channel.Reader;
 
             List<Task> tasks = new List<Task>();
             for (int t = 0; t < workerThreads; t++)
             {
-                ParseProjectUnit parseProjectUnit = new ParseProjectUnit();
+                ParseProjectUnit parseProjectUnit = new ParseProjectUnit(t.ToString());
                 Task task = parseProjectUnit.Run(
-                        fileQueue,
+                        reader,
                         progressWindow
                         );
+                tasks.Add(task);
             }
+
+            List<Item> items = project.FindItems(
+                (x) => (x is Data.TextFile),
+                (x) => (false),
+                (x) => {
+                    Data.TextFile textFile = (Data.TextFile)x;
+                    if (textFile != null)
+                    {
+                        writer.WriteAsync(textFile);
+                        progressWindow.ProgressMaxValue++;
+                    }
+                }
+                );
+            writer.Complete();
 
             await Task.WhenAll(tasks);
         }
