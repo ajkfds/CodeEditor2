@@ -43,7 +43,6 @@ namespace CodeEditor2
         public static System.Threading.Thread? UIThread = null;
 
         public static bool Abort = false;
-        public static volatile bool StopBackGroundParse = false;
 
         public static int count = 0;
 

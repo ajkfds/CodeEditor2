@@ -161,9 +161,9 @@ namespace CodeEditor2.Views
                 else _textEditor.FontSize = _textEditor.FontSize > 1 ? _textEditor.FontSize - 1 : 1;
             }, RoutingStrategies.Bubble, true);
 
-            timer.Interval = new TimeSpan(0, 0, 0, 0, 10);
-            timer.Tick += Timer_Tick;
-            timer.Start();
+            //timer.Interval = new TimeSpan(0, 0, 0, 0, 10);
+            //timer.Tick += Timer_Tick;
+            //timer.Start();
 
 
             contextMenu.Padding = new Avalonia.Thickness(10, 0, 10, 0);
@@ -177,7 +177,7 @@ namespace CodeEditor2.Views
 
 
 
-        internal DispatcherTimer timer = new DispatcherTimer();
+//        internal DispatcherTimer timer = new DispatcherTimer();
         internal HighlightRenderer _highlightRenderer;
         internal MarkerRenderer _markerRenderer;
         internal FoldingManager _foldingManager;
@@ -292,12 +292,12 @@ namespace CodeEditor2.Views
             if (skipEvents) return;
         }
 
-        private void Timer_Tick(object? sender, EventArgs e)
-        {
-            // Get background parser Result
-            codeViewParser.Timer_Tick(sender, e);
-            if (Global.Abort) timer.Stop();
-        }
+        //private void Timer_Tick(object? sender, EventArgs e)
+        //{
+        //    // Get background parser Result
+        //    codeViewParser.Timer_Tick(sender, e);
+        //    if (Global.Abort) timer.Stop();
+        //}
 
 
         public void Redraw()
