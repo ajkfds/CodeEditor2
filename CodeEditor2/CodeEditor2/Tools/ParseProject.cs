@@ -24,6 +24,8 @@ namespace CodeEditor2.Tools
 
         public async Task Run(NavigatePanel.ProjectNode projectNode)
         {
+            if (!Dispatcher.UIThread.CheckAccess()) throw new Exception();
+
             if (projectNode.Project == null) throw new Exception();
 
             projectNode.Project.Update(); // must be launch on UI thread
@@ -39,45 +41,22 @@ namespace CodeEditor2.Tools
             progress.Title = "Loading " + projectNode.Text;
             progress.ProgressMaxValue = items.Count;
 
-            progress.LoadedAction = async (p) => {
-                await runParse(p);
-                p.Close();
+            progress.LoadedAction = async (progressWindow) => {
+                await runParse(progressWindow);
+                progressWindow.Close();
             };
             await progress.ShowDialog(Global.mainWindow);
 
         }
 
 
-        private async Task runParse(ProgressWindow progress)
+        private async Task runParse(ProgressWindow progressWindow)
         {
             // parse items
             int i = 0;
             int workerThreads = 8;
 
             System.Collections.Concurrent.BlockingCollection<Data.TextFile> fileQueue = new System.Collections.Concurrent.BlockingCollection<Data.TextFile>();
-
-            List<ParseProjectUnit> tasks = new List<ParseProjectUnit>();
-            for (int t = 0; t < workerThreads; t++)
-            {
-                tasks.Add(new ParseProjectUnit("ParseProject" + t.ToString()));
-                tasks[t].Run(
-                    fileQueue,
-                    (
-                        (f) =>
-                        {
-                            Dispatcher.UIThread.Post(
-                                new Action(() =>
-                                {
-                                    progress.ProgressValue = i;
-                                    progress.Message = f.Name;
-                                    i++;
-                                })
-                                );
-                        }
-                    )
-                );
-            }
-
             foreach (Data.Item item in items)
             {
                 Data.TextFile textFile = (Data.TextFile)item;
@@ -86,21 +65,17 @@ namespace CodeEditor2.Tools
             }
             fileQueue.CompleteAdding();
 
-            while (!fileQueue.IsCompleted)
+            List<Task> tasks = new List<Task>();
+            for (int t = 0; t < workerThreads; t++)
             {
-                await Task.Delay(10);
+                ParseProjectUnit parseProjectUnit = new ParseProjectUnit();
+                Task task = parseProjectUnit.Run(
+                        fileQueue,
+                        progressWindow
+                        );
             }
 
-            while (true)
-            {
-                int completeTasks = 0;
-                foreach (ParseProjectUnit task in tasks)
-                {
-                    if (task.Complete) completeTasks++;
-                
-                }
-                if (completeTasks == tasks.Count) break;
-            }
+            await Task.WhenAll(tasks);
         }
     }
 }

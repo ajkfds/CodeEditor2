@@ -1,6 +1,9 @@
-﻿using CodeEditor2.CodeEditor.Parser;
+﻿using Avalonia.Controls;
+using Avalonia.Threading;
+using CodeEditor2.CodeEditor.Parser;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,77 +12,42 @@ namespace CodeEditor2.Tools
 {
     internal class ParseProjectUnit
     {
-        public ParseProjectUnit(string name)
+        public ParseProjectUnit()
         {
-            this.name = name;
         }
 
-        private string name;
 
-        public void Run(System.Collections.Concurrent.BlockingCollection<Data.TextFile> files, Action<Data.TextFile> startParse)
+        public async Task Run(System.Collections.Concurrent.BlockingCollection<Data.TextFile> files, ProgressWindow progressWindow)
         {
-            this.fileQueue = files;
-            this.startParse = startParse;
-
-            if (thread != null) return;
-            thread = new System.Threading.Thread(() => { worker(); });
-            thread.Name = name;
-            thread.Start();
-        }
-
-        System.Threading.Thread thread = null;
-        public volatile bool Complete = false;
-
-        private System.Collections.Concurrent.BlockingCollection<Data.TextFile> fileQueue;
-        Action<Data.TextFile> startParse;
-
-        private void worker()
-        {
-            foreach (Data.TextFile file in fileQueue.GetConsumingEnumerable())
+            foreach (Data.TextFile file in files.GetConsumingEnumerable())
             {
-                parse(file);
+                await parse(file,progressWindow);
             }
-            Complete = true;
         }
 
-        private void parse(Data.TextFile textFile)
+        private async Task parse(Data.TextFile textFile, ProgressWindow progressWindow)
         {
-            DocumentParser parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.LoadParse,null);
-            if (parser == null)
-            {
-                textFile.CodeDocument.LockThreadToUI();
-                return;
-            }
+            DocumentParser? parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.LoadParse,null);
+            if (parser == null) return;
+
             parser.Document._tag = "TextParserTask:"+textFile.Name;
-
-            if (textFile != null) startParse(textFile);
-//            System.Diagnostics.Debug.Print("# ParseProjectUnit.Parse " + textFile.ID);
             parser.Parse();
+            if (parser.ParsedDocument == null) return;
 
-            textFile.CodeDocument.CopyColorMarkFrom(parser.Document);
-
-            if (textFile.ParsedDocument != null)
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                CodeEditor.ParsedDocument oldParsedDocument = textFile.ParsedDocument;
-                textFile.ParsedDocument = null;
-                oldParsedDocument.Dispose();
-            }
+                textFile.AcceptParsedDocument(parser.ParsedDocument);
+            });
 
-            textFile.AcceptParsedDocument(parser.ParsedDocument);
-//            System.Diagnostics.Debug.Print("# ParseProjectUnit.Accept "+textFile.ID);
-            textFile.Close();
-            if(parser.ParseMode == DocumentParser.ParseModeEnum.LoadParse)
-            {
-                textFile.ReparseRequested = true;
-            }
+            Dispatcher.UIThread.Invoke(
+                () => {
+                    if(progressWindow.ProgressMaxValue> progressWindow.ProgressValue+1) progressWindow.ProgressValue++;
+                    progressWindow.Message = textFile.Name;
+                }
+            );
 
-            //gc++;
-            //if (gc > 100)
-            //{
-            //    System.GC.Collect();
-            //    gc = 0;
-            //    System.Diagnostics.Debug.Print("process memory " + (Environment.WorkingSet / 1024 / 1024).ToString() + "Mbyte");
-            //}
+            //            textFile.Close();
+            textFile.ReparseRequested = true;
         }
     }
 }
