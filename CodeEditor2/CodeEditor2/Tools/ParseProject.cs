@@ -52,7 +52,7 @@ namespace CodeEditor2.Tools
         {
             // parse items
             int i = 0;
-            int workerThreads = 1;// 8;
+            int workerThreads = 8;
 
             System.Collections.Concurrent.BlockingCollection<Data.TextFile> fileQueue = new System.Collections.Concurrent.BlockingCollection<Data.TextFile>();
 

@@ -171,49 +171,6 @@ namespace CodeEditor2.Data
         public List<string> ignoreList = new List<string>();
 
 
-        // get parse target
-        //        private List<Item> parseItems = new List<Item>();
-
-        private Dictionary<string, Item> parseItems = new Dictionary<string, Item>();
-        public Item? FetchReparseTarget()
-        {
-            lock (parseItems)
-            {
-                if (parseItems.Count == 0) return null;
-                string key = parseItems.Keys.First();
-                Item item = parseItems[key];
-
-                //if (item == null) return null;
-                //while (
-                //    (item as TextFile) != null &&
-                //    (item as TextFile).ParsedDocument != null &&
-                //    (item as TextFile).IsCodeDocumentCashed &&
-                //    (item as TextFile).CodeDocument != null &&
-                //    (item as TextFile).ParsedDocument.Version == (item as TextFile).CodeDocument.Version
-                //    )
-                //{
-                //    parseItems.Remove(key);
-                //    key = parseItems.Keys.First<string>();
-                //    item = parseItems[key];
-                //    if (item == null) return null;
-                //}
-                //parseItems.Remove(key);
-                //return item;
-            }
-            return null;
-        }
-
-        public void AddReparseTarget(Item item)
-        {
-            lock (parseItems)
-            {
-                if (!parseItems.ContainsKey(item.ID))
-                {
-                    System.Diagnostics.Debug.Print("entry add parse:" + item.ID);
-                    parseItems.Add(item.ID, item);
-                }
-            }
-        }
 
         // path control
         public string GetAbsolutePath(string relativePath)
@@ -273,36 +230,6 @@ namespace CodeEditor2.Data
             fileSystemWatcher.EnableRaisingEvents = true;
         }
 
-
-        /*        Dictionary<string, FileSystemEventArgs> fileSystemEvents = new Dictionary<string, FileSystemEventArgs>();
-                private void addFileSystemEvent(FileSystemEventArgs e)
-                {
-                    lock (fileSystemEvents)
-                    {
-                        while (fileSystemEvents.ContainsKey(e.FullPath))
-                        {
-                            FileSystemEventArgs prevE = fileSystemEvents[e.FullPath];
-                            switch (prevE.ChangeType)
-                            {
-                                case WatcherChangeTypes.Changed:
-                                    fileSystemEvents.Remove(prevE.FullPath);
-                                    break;
-                                case WatcherChangeTypes.Created:
-                                    fileSystemEvents.Remove(prevE.FullPath);
-                                    break;
-                                case WatcherChangeTypes.Deleted:
-                                    fileSystemEvents.Remove(prevE.FullPath);
-                                    break;
-                                case WatcherChangeTypes.Renamed:
-                                    fileSystemEvents.Remove(prevE.FullPath);
-                                    break;
-                            }
-                        }
-                        fileSystemEvents.Add(e.FullPath, e);
-                        fsTimer.Enabled = true;
-                    }
-                }
-        */
 
         private System.Threading.Timer changeDebounceTimer;
         private const int debounceTime_ms = 100;
