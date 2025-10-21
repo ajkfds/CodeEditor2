@@ -55,7 +55,7 @@ namespace CodeEditor2.CodeEditor.Parser
                             toBackgroundStock.Clear();
                         }
                     }
-                    parser = textFile?.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse);
+                    parser = textFile?.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse,null);
                 }
 
 

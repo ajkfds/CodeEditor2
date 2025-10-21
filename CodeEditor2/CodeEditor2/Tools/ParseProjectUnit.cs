@@ -44,7 +44,7 @@ namespace CodeEditor2.Tools
 
         private void parse(Data.TextFile textFile)
         {
-            DocumentParser parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.LoadParse);
+            DocumentParser parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.LoadParse,null);
             if (parser == null)
             {
                 textFile.CodeDocument.LockThreadToUI();

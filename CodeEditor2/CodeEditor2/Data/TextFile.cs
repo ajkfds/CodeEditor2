@@ -220,7 +220,7 @@ namespace CodeEditor2.Data
         }
 
 
-        public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode)
+        public virtual DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode,System.Threading.CancellationToken? token)
         {
             return null;
         }
@@ -296,7 +296,7 @@ namespace CodeEditor2.Data
             }
             else
             {
-                DocumentParser? parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse);
+                DocumentParser? parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse,null);
                 if (parser != null)
                 {
                     parser.Parse();
@@ -328,7 +328,7 @@ namespace CodeEditor2.Data
 
             if (textFile.ReparseRequested)
             {
-                DocumentParser? parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse);
+                DocumentParser? parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse,null);
                 if (parser != null)
                 {
                     parser.Parse();

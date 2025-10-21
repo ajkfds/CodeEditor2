@@ -24,8 +24,14 @@ public partial class ItemPropertyForm : Window
             }
         }
 
+        Initialized += ItemPropertyForm_Initialized;
         OkButton.Click += OkButton_Click;
         CancelButton.Click += CancelButton_Click;
+    }
+
+    private void ItemPropertyForm_Initialized(object? sender, System.EventArgs e)
+    {
+        _node.UpdatePropertyForm(this);
     }
 
     private NavigatePanel.NavigatePanelNode _node;

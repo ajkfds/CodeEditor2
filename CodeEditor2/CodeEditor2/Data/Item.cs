@@ -285,7 +285,7 @@ namespace CodeEditor2.Data
             return node;
         }
 
-        public virtual DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode)
+        public virtual DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode,System.Threading.CancellationToken? token)
         {
             return null;
         }

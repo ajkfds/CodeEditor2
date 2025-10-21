@@ -36,7 +36,7 @@ namespace CodeEditor2.Data
         Task ParseHierarchy(Action<ITextFile> action);
 
         NavigatePanel.NavigatePanelNode NavigatePanelNode { get; }
-        DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode);
+        DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token);
 
         // textFile
         CodeEditor.CodeDocument? CodeDocument { get; }

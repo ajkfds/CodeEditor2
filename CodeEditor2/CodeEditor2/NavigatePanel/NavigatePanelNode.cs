@@ -244,6 +244,27 @@ namespace CodeEditor2.NavigatePanel
                 contextMenu.Items.Add(menuItem_OpenInExplorer);
             }
 
+            {
+                MenuItem menuItem_OpenProperty = CodeEditor2.Global.CreateMenuItem(
+                    "Property",
+                    "MenuItem_Property",
+                    "CodeEditor2/Assets/Icons/gear.svg",
+                    Avalonia.Media.Color.FromArgb(100, 200, 200, 255)
+                    );
+                menuItem_OpenProperty.Click += menuItem_OpenProperty_Click;
+                contextMenu.Items.Add(menuItem_OpenProperty);
+            }
+        }
+
+        public async void menuItem_OpenProperty_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            Tools.ItemPropertyForm form = new Tools.ItemPropertyForm(this);
+            await form.ShowDialog(Controller.GetMainWindow());
+        }
+
+        public virtual void UpdatePropertyForm(Tools.ItemPropertyForm form)
+        {
+
         }
         public void UpdateFolder(NavigatePanelNode node)
         {
@@ -261,6 +282,7 @@ namespace CodeEditor2.NavigatePanel
                 folderNode.Update();
             }
         }
+
         private string getRelativeFolderPath(NavigatePanelNode node)
         {
             FileNode? fileNode = node as FileNode;

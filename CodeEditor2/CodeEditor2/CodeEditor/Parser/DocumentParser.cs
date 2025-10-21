@@ -10,7 +10,7 @@ namespace CodeEditor2.CodeEditor.Parser
     public class DocumentParser : IDisposable
     {
         [SetsRequiredMembers]
-        public DocumentParser(Data.TextFile textFile, ParseModeEnum parseMode)
+        public DocumentParser(Data.TextFile textFile, ParseModeEnum parseMode, System.Threading.CancellationToken? token)
         {
             Document = new CodeDocument(textFile);
             Document.CopyTextOnlyFrom(textFile.CodeDocument);
