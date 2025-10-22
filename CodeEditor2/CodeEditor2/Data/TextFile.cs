@@ -71,11 +71,9 @@ namespace CodeEditor2.Data
         {
             get
             {
-                CodeEditor2.CodeEditor.CodeDocument doc = CodeDocument;
-                CodeEditor2.CodeEditor.ParsedDocument? parsedDocument = ParsedDocument;
-                if (doc == null) return false;
-                if (parsedDocument == null) return false;
-                if (doc.Version == parsedDocument.Version) return true;
+                if (CodeDocument == null) return false;
+                if (ParsedDocument == null) return false;
+                if (CodeDocument.Version == ParsedDocument.Version) return true;
                 return false;
             }
         }

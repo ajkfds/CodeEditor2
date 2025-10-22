@@ -39,6 +39,7 @@ namespace CodeEditor2.Tools
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 textFile.AcceptParsedDocument(parser.ParsedDocument);
+                textFile.ReparseRequested = true;
             });
 
             Dispatcher.UIThread.Invoke(
@@ -48,8 +49,7 @@ namespace CodeEditor2.Tools
                 }
             );
 
-            //            textFile.Close();
-            textFile.ReparseRequested = true;
+            textFile.Close();
         }
     }
 }
