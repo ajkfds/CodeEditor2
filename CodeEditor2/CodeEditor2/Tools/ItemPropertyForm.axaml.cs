@@ -24,10 +24,16 @@ public partial class ItemPropertyForm : Window
             }
         }
 
+        node.InitializePropertyForm(this);
+
         Initialized += ItemPropertyForm_Initialized;
         OkButton.Click += OkButton_Click;
         CancelButton.Click += CancelButton_Click;
     }
+
+    public TabControl TabControl { get => Tabs; }
+    public Button OkButtonControl { get => OkButton; }
+    public Button CancelButtonControl { get => CancelButton; }
 
     private void ItemPropertyForm_Initialized(object? sender, System.EventArgs e)
     {

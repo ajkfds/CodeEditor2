@@ -1,4 +1,7 @@
 ﻿using Avalonia.Media;
+using Avalonia.Threading;
+using CodeEditor2.Data;
+using CodeEditor2.Tools;
 using HarfBuzzSharp;
 using SkiaSharp;
 using System;
@@ -8,8 +11,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Data = CodeEditor2.Data;
-using CodeEditor2.Data;
-using Avalonia.Threading;
 
 
 namespace CodeEditor2.NavigatePanel

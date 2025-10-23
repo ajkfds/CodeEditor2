@@ -107,7 +107,7 @@ namespace CodeEditor2.Data
 
             Project project = new Project(name, actualPath, "");
 
-            initProject(project);
+            initProject(project,null);
             return project;
         }
 
@@ -117,7 +117,7 @@ namespace CodeEditor2.Data
 
             project.ignoreList = setup.IgnoreList;
 
-            initProject(project);
+            initProject(project,setup);
             return project;
         }
 
@@ -146,9 +146,10 @@ namespace CodeEditor2.Data
             return null;
         }
 
-        private static void initProject(Project project)
+        public static Action<Project,Setup?>? Created;
+        private static void initProject(Project project,Setup? setup)
         {
-            if (Created != null) Created(project);
+            if (Created != null) Created(project,setup);
             project.startFileSystemWatcher();
         }
 
@@ -166,7 +167,6 @@ namespace CodeEditor2.Data
             fileSystemWatcher = null;
         }
 
-        public static Action<Project>? Created;
 
         public List<string> ignoreList = new List<string>();
 

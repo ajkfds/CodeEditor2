@@ -9,7 +9,7 @@
         x:Class="CodeEditor2.Tools.ItemPropertyForm"
         Title="Property">
 	<Grid RowDefinitions="*,Auto" Margin="4">
-		<TabControl Grid.Row="0">
+		<TabControl Grid.Row="0" Name="Tabs">
 			<TabItem Header="Item" FontSize="14" Name="ItemTab">
 				<StackPanel Orientation="Vertical">
 					<TextBlock>Relative Path</TextBlock>

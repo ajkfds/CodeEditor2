@@ -1,6 +1,10 @@
-﻿using Avalonia.Media;
-using HarfBuzzSharp;
+﻿using AjkAvaloniaLibs.Controls;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Threading;
 using CodeEditor2.Data;
+using CodeEditor2.Tools;
+using HarfBuzzSharp;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -8,9 +12,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Threading;
-using Avalonia.Controls;
-using AjkAvaloniaLibs.Controls;
 using System.Xml.Linq;
 
 namespace CodeEditor2.NavigatePanel
@@ -262,6 +263,14 @@ namespace CodeEditor2.NavigatePanel
             await form.ShowDialog(Controller.GetMainWindow());
         }
 
+        public virtual void InitializePropertyForm(ItemPropertyForm form)
+        {
+            Project project = GetProject();
+            foreach (var property in project.ProjectProperties.Values)
+            {
+                property.InitializePropertyForm(form,this,project);
+            }
+        }
         public virtual void UpdatePropertyForm(Tools.ItemPropertyForm form)
         {
 

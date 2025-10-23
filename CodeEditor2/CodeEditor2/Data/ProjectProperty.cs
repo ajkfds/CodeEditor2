@@ -1,11 +1,13 @@
-﻿using System;
+﻿using AjkAvaloniaLibs.Libs.Json;
+using Avalonia.Controls;
+using CodeEditor2.Tools;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using AjkAvaloniaLibs.Libs.Json;
-using System.Text.Json.Serialization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace CodeEditor2.Data
 {
@@ -26,6 +28,10 @@ namespace CodeEditor2.Data
 
         }
 
+
+        public virtual void InitializePropertyForm(ItemPropertyForm form,CodeEditor2.NavigatePanel.NavigatePanelNode node,Project project)
+        {
+        }
         public virtual Setup CreateSetup()
         {
             return new Setup(this);
