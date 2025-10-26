@@ -167,6 +167,7 @@ namespace CodeEditor2.NavigatePanel
         {
             createContextMenu();
         }
+
         public Project GetProject()
         {
             Project? project = null;

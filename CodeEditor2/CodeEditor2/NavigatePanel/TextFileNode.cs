@@ -59,7 +59,7 @@ namespace CodeEditor2.NavigatePanel
                 return;
             }
 
-            if (textFile.CodeDocument.IsDirty)
+            if (textFile.CodeDocument != null && textFile.CodeDocument.IsDirty)
             {
                 Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/text.svg",
