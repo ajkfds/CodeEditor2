@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor.Parser
@@ -41,6 +42,10 @@ namespace CodeEditor2.CodeEditor.Parser
         }
 
         public virtual void Parse()
+        {
+            Parse(null);
+        }
+        public virtual void Parse(CancellationToken? cancellationToken)
         {
         }
 

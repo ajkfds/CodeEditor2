@@ -379,7 +379,14 @@ namespace CodeEditor2
                 Dispatcher.UIThread.Post(
                     new Action(() =>
                     {
-                        Global.navigateView.InvalidateVisual();
+                        try
+                        {
+                            Global.navigateView.InvalidateVisual();
+                        }
+                        catch (Exception ex)
+                        {
+                            CodeEditor2.Controller.AppendLog("#Exception " + ex.Message, Avalonia.Media.Colors.Red);
+                        }
                     })
                 );
             }

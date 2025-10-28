@@ -13,9 +13,13 @@
 
   
   <ItemGroup>
+    <AvaloniaXaml Remove="Lint\**" />
     <AvaloniaXaml Remove="新しいフォルダー1\**" />
+    <Compile Remove="Lint\**" />
     <Compile Remove="新しいフォルダー1\**" />
+    <EmbeddedResource Remove="Lint\**" />
     <EmbeddedResource Remove="新しいフォルダー1\**" />
+    <None Remove="Lint\**" />
     <None Remove="新しいフォルダー1\**" />
   </ItemGroup>
 
@@ -47,10 +51,6 @@
     <ProjectReference Include="..\..\..\AjkAvaloniaLibs\AjkAvaloniaLibs\AjkAvaloniaLibs.csproj" />
     <ProjectReference Include="..\..\..\AvaloniaEdit\src\AvaloniaEdit\AvaloniaEdit.csproj" />
     <ProjectReference Include="..\..\..\CodeEditor2Plugin\CodeEditor2Plugin\CodeEditor2Plugin\CodeEditor2Plugin.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Lint\" />
   </ItemGroup>
 
   <ItemGroup>
