@@ -17,8 +17,23 @@ namespace CodeEditor2.Setups
 {
     public class Setup
     {
+        public　static string ApplicationName { get; set; } = "CodeEditor2";
+        public static string Path { get; set; } = "History.json";
+        public DateTime LastUpdate { get; set; } = DateTime.Now;
 
-        public void SaveSetup(string path)
+        public List<History> Historys { set; get; } = new List<History>();
+
+        public class History
+        {
+            public History() { }
+            public string Name { set; get; } = "";
+            public DateTime LastAccessed { set; get; }
+            public string AbsolutePath { get; set; } = "";
+
+            public int? PinnedOrder = null;
+        }
+
+        public void SaveSetup()
         {
             LastUpdate = DateTime.Now;
 
@@ -27,114 +42,28 @@ namespace CodeEditor2.Setups
                 WriteIndented = true,
                 Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
             };
-            options.Converters.Add(new ProjectPropertyJsonConverter());
 
-            ProjectSetups.Clear();
-            foreach (Project project in Global.Projects.Values)
-            {
-                ProjectSetups.Add(project.CreateSetup());
-            }
-
-            using (FileStream file = System.IO.File.Create(path))
+            using (FileStream file = System.IO.File.Create(Path))
             {
                 System.Text.Json.JsonSerializer.Serialize(file, this, options);
             }
 
         }
-        public async Task LoadSetup(string path)
+        public void LoadSetup()
         {
             JsonSerializerOptions options = new()
             {
                 WriteIndented = true,
                 Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
             };
-            options.Converters.Add(new ProjectPropertyJsonConverter());
 
-            ProjectSetups.Clear();
-            foreach (Project project in Global.Projects.Values)
-            {
-                ProjectSetups.Add(project.CreateSetup());
-            }
-
-            if(!System.IO.File.Exists(path)) return;
-            using (FileStream file = System.IO.File.Open(path, FileMode.Open))
+            if (!System.IO.File.Exists(Path)) return;
+            using (FileStream file = System.IO.File.Open(Path, FileMode.Open))
             {
                 Setup? setup = System.Text.Json.JsonSerializer.Deserialize<Setup>(file, options);
-                if (setup == null) return;
-
-                if (setup.ApplicationName != ApplicationName) return;
-                LastUpdate = setup.LastUpdate;
-                foreach (var projectSetup in setup.ProjectSetups)
-                {
-                    if (projectSetup == null) continue;
-                    if (Global.Projects.ContainsKey(projectSetup.Name)) continue;
-
-                    Project project = Project.Create(projectSetup);
-                    await CodeEditor2.Controller.AddProject(project);
-                }
+                if( setup != null) Global.Setup = setup;
             }
         }
-
-        public class ProjectPropertyJsonConverter : JsonConverter<ProjectProperty.Setup>
-        {
-            public override ProjectProperty.Setup Read(
-                ref Utf8JsonReader reader,
-                Type typeToConvert,
-                JsonSerializerOptions options)
-            {
-                long index = reader.TokenStartIndex;
-                JsonElement je = JsonElement.ParseValue(ref reader);
-                JsonElement jid;
-
-                je.TryGetProperty("ID", out jid);
-                string? id = jid.GetString();
-                if (id == null) return null;
-                if (Global.ProjectPropertyDeserializers.ContainsKey(id))
-                {
-                    return Global.ProjectPropertyDeserializers[id](je, options);
-                }
-
-                return null;
-            }
-
-            public override void Write(
-                Utf8JsonWriter writer,
-                ProjectProperty.Setup value,
-                JsonSerializerOptions options)
-            {
-                value.Write(writer, options);
-            }
-        }
-
-//        public class ProjectPropertyJsonConverter2 : JsonConverter<Dictionary<string,ProjectProperty.Setup>>
-//        {
-//            public override Dictionary<string, ProjectProperty.Setup> Read(
-//                ref Utf8JsonReader reader,
-//                Type typeToConvert,
-//                JsonSerializerOptions options)
-//            {
-//                long index = reader.TokenStartIndex;
-//                JsonElement je = JsonElement.ParseValue(ref reader);
-//                //JsonObject jo = JsonObject.Create(reader);
-
-//                return (Dictionary<string, ProjectProperty.Setup>)JsonSerializer.Deserialize(ref reader, typeof(Dictionary<string, ProjectProperty.Setup>), options);
-//            }
-
-//            public override void Write(
-//                Utf8JsonWriter writer,
-//                Dictionary<string, ProjectProperty.Setup> value,
-//                JsonSerializerOptions options)
-//            {
-////                value.Write(writer, options);
-//            }
-//        }
-
-
-        // json serialize items
-        public string ApplicationName { get; set; } = "CodeEditor2";
-        public DateTime LastUpdate { get; set; } = DateTime.Now;
-        public List<Project.Setup> ProjectSetups { set; get; } = new List<Project.Setup>();
-
 
     }
 }

@@ -25,6 +25,7 @@ namespace CodeEditor2
         public static Dictionary<string, Func<JsonElement, JsonSerializerOptions, ProjectProperty.Setup>> ProjectPropertyDeserializers
             = new Dictionary<string, Func<JsonElement, JsonSerializerOptions, ProjectProperty.Setup>>();
 
+        public static Solution Solution = new Solution();
         public static Setup Setup = new Setup();
 
         internal static Views.CodeView codeView;
@@ -46,7 +47,6 @@ namespace CodeEditor2
 
         public static int count = 0;
 
-//        public static Tools.ProgressWindow? ProgressWindow;
 
         public static MenuItem CreateMenuItem (string header,string name)
         {

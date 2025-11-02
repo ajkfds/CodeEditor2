@@ -137,26 +137,24 @@ public partial class MainView : UserControl
 
     private async void Timer_Tick(object? sender, EventArgs e)
     {
-        // should launch after main window shown
-        timer.Stop();
-        // read setup file
+        //// should launch after main window shown
+        //timer.Stop();
+        //// read setup file
 
-        await initialize();
+        //await initialize();
     }
 
     private DispatcherTimer timer = new DispatcherTimer();
 
-    private const string setupFileName = "CodeEditor2.json";
-
-    private async Task initialize()
+    public async Task Initialize()
     {
         try
         {
-            if(!System.IO.File.Exists(setupFileName))
+            if(!System.IO.File.Exists(Global.Solution.AbsolutePath))
             {
                 return;
             }
-            await Global.Setup.LoadSetup(setupFileName);
+            await Global.Solution.LoadSetup(Global.Solution.AbsolutePath);
         }
         catch(Exception ex)
         {
@@ -258,7 +256,7 @@ public partial class MainView : UserControl
 
     private void MenuItem_File_SaveProjects_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        Global.Setup.SaveSetup(setupFileName);
+        Global.Solution.SaveSetup(Global.Solution.AbsolutePath);
     }
 
     private void MenuItem_File_Save_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

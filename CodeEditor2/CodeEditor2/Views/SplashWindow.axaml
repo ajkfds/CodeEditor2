@@ -1,0 +1,34 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
+        x:Class="CodeEditor2.Views.SplashWindow"
+        Title="SplashWindow">
+	<StackPanel Orientation="Vertical">
+		<TextBlock FontSize="25" FontWeight="Bold" Margin="6" Name="TitleText">CodeEditor2</TextBlock>
+		<Grid ColumnDefinitions="80*,4,30*">
+			<ScrollViewer VerticalScrollBarVisibility="Auto">
+				<StackPanel Grid.Column="0" Orientation="Vertical" Margin="4" Name="HistoryStackPanel">
+				</StackPanel>
+			</ScrollViewer>
+
+			<GridSplitter Grid.Column="1" ResizeDirection="Columns"></GridSplitter>
+			<StackPanel Grid.Column="2" Orientation="Vertical" Margin="4">
+				<TextBlock>Get Started</TextBlock>
+				<Button Name="CreateNewSolutionButton" HorizontalAlignment="Stretch">
+					<StackPanel Orientation="Vertical">
+						<TextBlock FontSize="20" FontWeight="Bold" >Create New Solution</TextBlock>
+						<TextBlock>Create new solution to get started</TextBlock>
+					</StackPanel>
+				</Button>
+				<Button Name="OpenSolutionButton" HorizontalAlignment="Stretch">
+					<StackPanel Orientation="Vertical">
+						<TextBlock FontSize="20" FontWeight="Bold" >Open Solution</TextBlock>
+						<TextBlock>Open existing project</TextBlock>
+					</StackPanel>
+				</Button>
+			</StackPanel>
+		</Grid>
+	</StackPanel>
+</Window>
