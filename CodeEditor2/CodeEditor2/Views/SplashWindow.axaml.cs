@@ -1,7 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
+using CodeEditor2.Data;
 using CodeEditor2.Setups;
 using Splat;
 using System;
@@ -53,6 +55,8 @@ public partial class SplashWindow : Window
         Global.Solution.Name = history.Name;
         Global.Solution.AbsolutePath = history.AbsolutePath;
         openMainWindow();
+
+        this.Close();
     }
 
     private async void OpenSolutionButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -77,6 +81,8 @@ public partial class SplashWindow : Window
 
         Global.Solution.AbsolutePath = uri.LocalPath + Uri.UnescapeDataString(uri.Fragment);
         openMainWindow();
+
+        this.Close();
     }
 
     private async void CreateNewSolutionButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -100,7 +106,7 @@ public partial class SplashWindow : Window
         Global.Solution.AbsolutePath = uri.LocalPath + Uri.UnescapeDataString(uri.Fragment);
 
         string name = "";
-        name = Path.GetFileName(Global.Solution.AbsolutePath);
+        name = System.IO.Path.GetFileName(Global.Solution.AbsolutePath);
         if (name.EndsWith(Solution.FileExtention))
         {
             name = name.Substring(0, name.Length - Solution.FileExtention.Length);
@@ -109,6 +115,15 @@ public partial class SplashWindow : Window
 
         Global.Solution.Name = name;
         openMainWindow();
+
+        string? path = System.IO.Path.GetDirectoryName(Global.Solution.AbsolutePath);
+        if(path != null)
+        {
+            Data.Project newProject = Project.Create(path);
+            await Controller.AddProject(newProject);
+        }
+        
+        this.Close();
     }
 
     private async void openMainWindow()
@@ -131,12 +146,12 @@ public partial class SplashWindow : Window
                     LastAccessed = DateTime.Now,
                     Name = Global.Solution.Name
                 }); ;
-            Global.Setup.SaveSetup();
         }
         else
         {
             history.LastAccessed = DateTime.Now;
         }
+        Global.Setup.SaveSetup();
 
         MainWindow mainWindow = new MainWindow();
         Global.currentWindow = mainWindow;
@@ -144,8 +159,6 @@ public partial class SplashWindow : Window
         initialize();
         mainWindow.Show();
         await mainWindow.MainView0.Initialize();
-
-        this.Close();
     }
 
     private void initialize()

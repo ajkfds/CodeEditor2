@@ -8,6 +8,7 @@ using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
 using DynamicData.Binding;
 using DynamicData.Kernel;
+using Svg;
 
 
 namespace CodeEditor2.Data
@@ -90,5 +91,6 @@ namespace CodeEditor2.Data
         {
             base.Update();
         }
+
     }
 }

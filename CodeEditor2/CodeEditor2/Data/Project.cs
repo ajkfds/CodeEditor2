@@ -45,6 +45,7 @@ namespace CodeEditor2.Data
             return setup;
         }
 
+        [Newtonsoft.Json.JsonIgnore]
         public FileClassify FileClassify { get; set; }
 
         // setup object to convert project to json file
@@ -235,6 +236,9 @@ namespace CodeEditor2.Data
         private const int debounceTime_ms = 100;
         private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
+            if (e.FullPath.Contains(System.IO.Path.PathSeparator + ".git" + System.IO.Path.PathSeparator)) return;
+            if (e.FullPath.Contains(System.IO.Path.PathSeparator + ".cashe" + System.IO.Path.PathSeparator)) return;
+
             changeDebounceTimer?.Dispose();
             changeDebounceTimer = new System.Threading.Timer( _ =>
             {

@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Input;
 using AvaloniaEdit.Document;
 using CodeEditor2.CodeEditor;
@@ -8,10 +9,14 @@ using CodeEditor2.CodeEditor.PopupHint;
 using CodeEditor2.CodeEditor.PopupMenu;
 using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
+using Svg;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO.Hashing;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.Data
@@ -86,6 +91,20 @@ namespace CodeEditor2.Data
 
             ParsedDocument = newParsedDocument;
             Update();
+
+            //Task.Run(
+            //    async () =>
+            //    {
+            //        try
+            //        {
+            //            await CreateCashe();
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
+            //        }
+            //    }
+            //);
         }
         public virtual void Close()
         {
@@ -339,5 +358,40 @@ namespace CodeEditor2.Data
                 }
             }
         }
+        //public async Task<string?> GetXxHash()
+        //{
+        //    if (CodeDocument == null) return null;
+
+        //    string text = CodeDocument.CreateString();
+        //    await Task.Run(() => { return System.IO.Hasg });
+        //}
+
+        public virtual string CasheId
+        {
+            get
+            {
+                //byte[] data = Encoding.UTF8.GetBytes(AbsolutePath);
+                //byte[] hashBytes = XxHash64.Hash(data);
+                //string hex = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                string hex = AbsolutePath.Replace(@"\", "_").Replace("/", "_").Replace(":","_").Replace(".", "_")+".json";
+                return hex;
+            }
+        }
+        public virtual async Task<bool> CreateCashe()
+        {
+            //if (ParsedDocument == null) return false;
+            //ParsedDocument casheObject = ParsedDocument;
+            //string path = Project.RootPath + System.IO.Path.DirectorySeparatorChar + ".cashe";
+            //if (!System.IO.Path.Exists(path)) System.IO.Directory.CreateDirectory(path);
+
+            //path = path + System.IO.Path.DirectorySeparatorChar + CasheId;
+            //string json = JsonSerializer.Serialize(casheObject); 
+            //using(System.IO.StreamWriter sw = new System.IO.StreamWriter(path))
+            //{
+            //    await sw.WriteAsync(json);
+            //}
+            return true;
+        }
+
     }
 }

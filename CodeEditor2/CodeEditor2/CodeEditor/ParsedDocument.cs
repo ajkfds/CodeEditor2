@@ -1,9 +1,10 @@
-﻿using System;
+﻿using CodeEditor2.CodeEditor.Parser;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using CodeEditor2.CodeEditor.Parser;
 
 namespace CodeEditor2.CodeEditor
 {
@@ -20,6 +21,7 @@ namespace CodeEditor2.CodeEditor
             textFileRef = new WeakReference<Data.TextFile>(textFile);
         }
 
+        [Newtonsoft.Json.JsonIgnore]
         public long ObjectID
         {
             get
@@ -37,11 +39,13 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
+        [Newtonsoft.Json.JsonIgnore]
         public List<CodeDocument> LockedDocument = new List<CodeDocument>();
 
         public readonly DocumentParser.ParseModeEnum ParseMode;
 
         private System.WeakReference<Data.TextFile> textFileRef;
+        [Newtonsoft.Json.JsonIgnore]
         public Data.Item? Item
         {
             get
@@ -55,6 +59,7 @@ namespace CodeEditor2.CodeEditor
         /// <summary>
         /// 
         /// </summary>
+        [Newtonsoft.Json.JsonIgnore]
         public Data.TextFile? TextFile
         {
             get
@@ -65,6 +70,7 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
+        [Newtonsoft.Json.JsonIgnore]
         public Data.Project? Project
         {
             get
@@ -73,13 +79,14 @@ namespace CodeEditor2.CodeEditor
                 return Item.Project;
             }
         }
+        [Newtonsoft.Json.JsonIgnore]
         public ulong Version { get; set; }
 
         public virtual void Dispose()
         {
         }
 
-
+        [JsonInclude]
         public List<Message> Messages = new List<Message>();
 
         public class Message
@@ -87,6 +94,8 @@ namespace CodeEditor2.CodeEditor
             public int Index { get; protected set; }
             public int Length { get; protected set; }
             public string Text { get; protected set; } = "";
+
+            [Newtonsoft.Json.JsonIgnore]
             public Data.Project? Project { get; protected set; } = null;
             public virtual MessageView.MessageNode? CreateMessageNode()
             {

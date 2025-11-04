@@ -114,31 +114,5 @@ namespace CodeEditor2.Setups
                 value.Write(writer, options);
             }
         }
-
-//        public class ProjectPropertyJsonConverter2 : JsonConverter<Dictionary<string,ProjectProperty.Setup>>
-//        {
-//            public override Dictionary<string, ProjectProperty.Setup> Read(
-//                ref Utf8JsonReader reader,
-//                Type typeToConvert,
-//                JsonSerializerOptions options)
-//            {
-//                long index = reader.TokenStartIndex;
-//                JsonElement je = JsonElement.ParseValue(ref reader);
-//                //JsonObject jo = JsonObject.Create(reader);
-
-//                return (Dictionary<string, ProjectProperty.Setup>)JsonSerializer.Deserialize(ref reader, typeof(Dictionary<string, ProjectProperty.Setup>), options);
-//            }
-
-//            public override void Write(
-//                Utf8JsonWriter writer,
-//                Dictionary<string, ProjectProperty.Setup> value,
-//                JsonSerializerOptions options)
-//            {
-////                value.Write(writer, options);
-//            }
-//        }
-
-
-
     }
 }
