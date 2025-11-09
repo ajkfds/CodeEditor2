@@ -69,7 +69,7 @@ namespace CodeEditor2.CodeEditor.Parser
 
         private async Task runParse(TextFile textFile, System.Threading.CancellationToken token)
         {
-            DocumentParser? parser = textFile?.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse, null);
+            DocumentParser? parser = textFile?.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse, token);
             if (parser == null) return;
             parser.Parse();
             if (parser.ParsedDocument == null) return;

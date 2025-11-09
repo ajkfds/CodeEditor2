@@ -243,7 +243,7 @@ namespace CodeEditor2.Views
             if (prevVersion != version && caretLine != prevCaretLine)
             {
                 prevVersion = version;
-                codeViewParser.EntryParse();
+                if(!Global.StopParse) codeViewParser.EntryParse();
             }
 
             // store caretLine
@@ -312,13 +312,13 @@ namespace CodeEditor2.Views
             // copy mark fro CodeDocument to Renderer
             _markerRenderer.ClearMark();
 
-            if (TextFile == null) return;
+            if (TextFile == null || TextFile.CodeDocument == null) return;
             _markerRenderer.SetMarks(TextFile.CodeDocument.Marks.marks);
         }
 
         public void UpdateFoldings()
         {
-            if (TextFile == null) return;
+            if (TextFile == null || TextFile.CodeDocument == null) return;
             _foldingManager.UpdateFoldings(TextFile.CodeDocument.Foldings.Foldings,-1);
         }
 
@@ -363,7 +363,7 @@ namespace CodeEditor2.Views
 
             _textEditor.ScrollToVerticalOffset(TextFile.StoredVerticalScrollPosition);
 
-            if (parseEntry) codeViewParser.EntryParse();
+            if (parseEntry && !Global.StopParse) codeViewParser.EntryParse();
             attachToCodeDocument();
 
             updateEditorContextMenu();

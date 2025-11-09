@@ -14,12 +14,15 @@ namespace CodeEditor2.CodeEditor
     /// </summary>
     public class ParsedDocument : IDisposable
     {
-        public ParsedDocument(Data.TextFile textFile, ulong version, DocumentParser.ParseModeEnum parseMode)
+        public ParsedDocument(Data.TextFile textFile, string key, ulong version, DocumentParser.ParseModeEnum parseMode)
         {
             this.Version = version;
             this.ParseMode = parseMode;
+            this.Key = key;
             textFileRef = new WeakReference<Data.TextFile>(textFile);
         }
+
+        public string Key { get; set; }
 
         [Newtonsoft.Json.JsonIgnore]
         public long ObjectID

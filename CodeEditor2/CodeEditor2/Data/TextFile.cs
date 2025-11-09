@@ -379,17 +379,19 @@ namespace CodeEditor2.Data
         }
         public virtual async Task<bool> CreateCashe()
         {
-            //if (ParsedDocument == null) return false;
-            //ParsedDocument casheObject = ParsedDocument;
-            //string path = Project.RootPath + System.IO.Path.DirectorySeparatorChar + ".cashe";
-            //if (!System.IO.Path.Exists(path)) System.IO.Directory.CreateDirectory(path);
+            if (!Global.ActivateCashe) return true;
+            
+            if (ParsedDocument == null) return false;
+            ParsedDocument casheObject = ParsedDocument;
+            string path = Project.RootPath + System.IO.Path.DirectorySeparatorChar + ".cashe";
+            if (!System.IO.Path.Exists(path)) System.IO.Directory.CreateDirectory(path);
 
-            //path = path + System.IO.Path.DirectorySeparatorChar + CasheId;
-            //string json = JsonSerializer.Serialize(casheObject); 
-            //using(System.IO.StreamWriter sw = new System.IO.StreamWriter(path))
-            //{
-            //    await sw.WriteAsync(json);
-            //}
+            path = path + System.IO.Path.DirectorySeparatorChar + CasheId;
+            string json = JsonSerializer.Serialize(casheObject);
+            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(path))
+            {
+                await sw.WriteAsync(json);
+            }
             return true;
         }
 
