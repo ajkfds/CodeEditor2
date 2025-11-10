@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Threading;
 using AvaloniaEdit.Document;
 using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.CodeComplete;
@@ -9,14 +10,18 @@ using CodeEditor2.CodeEditor.PopupHint;
 using CodeEditor2.CodeEditor.PopupMenu;
 using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Svg;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.IO.Hashing;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.Data
@@ -366,6 +371,7 @@ namespace CodeEditor2.Data
         //    await Task.Run(() => { return System.IO.Hasg });
         //}
 
+        public static readonly SemaphoreSlim CasheSemaphore = new SemaphoreSlim(1, 1);
         public virtual string CasheId
         {
             get
@@ -373,25 +379,98 @@ namespace CodeEditor2.Data
                 //byte[] data = Encoding.UTF8.GetBytes(AbsolutePath);
                 //byte[] hashBytes = XxHash64.Hash(data);
                 //string hex = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-                string hex = AbsolutePath.Replace(@"\", "_").Replace("/", "_").Replace(":","_").Replace(".", "_")+".json";
+                string hex = RelativePath.Replace(@"\", "_").Replace("/", "_").Replace(":","_").Replace(".", "_")+".json";
                 return hex;
             }
         }
+        public ParsedDocument? GetCashedParsedDocument()
+        {
+            if (!Global.ActivateCashe) return null;
+
+            string path = Project.RootPath + System.IO.Path.DirectorySeparatorChar + ".cashe";
+            if (!System.IO.Path.Exists(path)) System.IO.Directory.CreateDirectory(path);
+            System.Diagnostics.Debug.Print("entry json " + path);
+
+            path = path + System.IO.Path.DirectorySeparatorChar + CasheId;
+            if (!System.IO.File.Exists(path)) return null;
+
+            var settings = new Newtonsoft.Json.JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto,
+                Formatting = Formatting.Indented,
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new DefaultContractResolver
+                {
+                    IgnoreSerializableInterface = true,
+                    IgnoreSerializableAttribute = true
+                }
+            };
+            var serializer = Newtonsoft.Json.JsonSerializer.Create(settings);
+
+            ParsedDocument? parsedDocument;
+            try
+            {
+                using (var reader = new StreamReader(path))
+                using (var jsonReader = new JsonTextReader(reader))
+                {
+                    parsedDocument = serializer.Deserialize<ParsedDocument>(jsonReader);
+                }
+            }
+            catch (Exception exception)
+            {
+                CodeEditor2.Controller.AppendLog("exp " + exception.Message);
+                return null;
+            }
+            return parsedDocument;
+        }
+
         public virtual async Task<bool> CreateCashe()
         {
-            if (!Global.ActivateCashe) return true;
-            
+            if (!CodeEditor2.Global.ActivateCashe) return true;
+
             if (ParsedDocument == null) return false;
+
+            await TextFile.CasheSemaphore.WaitAsync();
+
             ParsedDocument casheObject = ParsedDocument;
             string path = Project.RootPath + System.IO.Path.DirectorySeparatorChar + ".cashe";
             if (!System.IO.Path.Exists(path)) System.IO.Directory.CreateDirectory(path);
+            System.Diagnostics.Debug.Print("entry json " + path);
 
             path = path + System.IO.Path.DirectorySeparatorChar + CasheId;
-            string json = JsonSerializer.Serialize(casheObject);
-            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(path))
+
+            var settings = new Newtonsoft.Json.JsonSerializerSettings
             {
-                await sw.WriteAsync(json);
+                TypeNameHandling = TypeNameHandling.Auto,
+                Formatting = Formatting.Indented,
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new DefaultContractResolver
+                {
+                    IgnoreSerializableInterface = true,
+                    IgnoreSerializableAttribute = true
+                }
+            };
+            var serializer = Newtonsoft.Json.JsonSerializer.Create(settings);
+
+            try
+            {
+                System.Diagnostics.Debug.Print("start json " + path);
+                using (var writer = new StreamWriter(path))
+                using (var jsonWriter = new JsonTextWriter(writer))
+                {
+                    serializer.Serialize(jsonWriter, casheObject);
+                }
+                System.Diagnostics.Debug.Print("complete json " + path);
             }
+            catch (Exception exception)
+            {
+                CodeEditor2.Controller.AppendLog("exp " + exception.Message);
+            }
+            finally
+            {
+                TextFile.CasheSemaphore.Release();
+            }
+
             return true;
         }
 

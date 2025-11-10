@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
+using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.Parser;
 using System;
 using System.Collections.Generic;
@@ -29,18 +30,30 @@ namespace CodeEditor2.Tools
 
         private async Task parse(Data.TextFile textFile, ProgressWindow progressWindow)
         {
-            DocumentParser? parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.LoadParse,null);
-            if (parser == null) return;
-
-            parser.Document._tag = "TextParserTask:"+textFile.Name;
-            parser.Parse();
-            if (parser.ParsedDocument == null) return;
-
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            ParsedDocument? cashedParsedDocument = textFile.GetCashedParsedDocument();
+            if (cashedParsedDocument != null)
+            { 
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    textFile.AcceptParsedDocument(cashedParsedDocument);
+                    textFile.ReparseRequested = true;
+                });
+            }
+            else
             {
-                textFile.AcceptParsedDocument(parser.ParsedDocument);
-                textFile.ReparseRequested = true;
-            });
+                DocumentParser? parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.LoadParse, null);
+                if (parser == null) return;
+
+                parser.Document._tag = "TextParserTask:" + textFile.Name;
+                parser.Parse();
+                if (parser.ParsedDocument == null) return;
+
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    textFile.AcceptParsedDocument(parser.ParsedDocument);
+                    textFile.ReparseRequested = true;
+                });
+            }
 
             Dispatcher.UIThread.Invoke(
                 () => {

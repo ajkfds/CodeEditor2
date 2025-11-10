@@ -89,7 +89,7 @@ namespace CodeEditor2.CodeEditor
         {
         }
 
-        [JsonInclude]
+        [Newtonsoft.Json.JsonIgnore]
         public List<Message> Messages = new List<Message>();
 
         public class Message
