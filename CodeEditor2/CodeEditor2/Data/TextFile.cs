@@ -383,7 +383,7 @@ namespace CodeEditor2.Data
                 return hex;
             }
         }
-        public ParsedDocument? GetCashedParsedDocument()
+        public virtual ParsedDocument? GetCashedParsedDocument()
         {
             if (!Global.ActivateCashe) return null;
 
