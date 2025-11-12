@@ -48,7 +48,7 @@ namespace CodeEditor2
         public static int count = 0;
 
         public static bool StopParse = false;
-        public static bool ActivateCashe = true;
+        public static bool ActivateCashe = false;
 
 
         public static MenuItem CreateMenuItem (string header,string name)
