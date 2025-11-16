@@ -30,11 +30,11 @@ namespace CodeEditor2.CodeEditor.TextDecollation
 
         protected override void ColorizeLine(DocumentLine line)
         {
+            CodeDocument? codeDocument = Global.mainView.CodeView.CodeDocument;
+            if (codeDocument == null) return;
+
             lock (this)
             {
-                if (Global.mainView.CodeView.CodeDocument == null) return;
-
-                CodeDocument codeDocument = Global.mainView.CodeView.CodeDocument;
                 if (!codeDocument.TextColors.LineInformation.ContainsKey(line.LineNumber)) return;
                 LineInformation lineInfo = codeDocument.TextColors.LineInformation[line.LineNumber];
 
@@ -42,8 +42,7 @@ namespace CodeEditor2.CodeEditor.TextDecollation
                 {
                     foreach (var color in lineInfo.Colors)
                     {
-//                        if (line.Offset > color.Offset | color.Offset + color.Length > line.EndOffset) continue;
-                        if ( color.Offset<0 | color.Offset + color.Length > line.Length ) continue;
+                        if ( color.Offset　<　0 || line.Length < color.Offset + color.Length  ) continue;
                         ChangeLinePart(
                             color.Offset + line.Offset,
                             color.Offset + line.Offset + color.Length,
