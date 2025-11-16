@@ -53,6 +53,12 @@ namespace CodeEditor2.Data
 
         }
 
+        public virtual string Key {
+            get
+            {
+                return RelativePath;
+            }
+        }
         public TextFile ToTextFile()
         {
             return this;
