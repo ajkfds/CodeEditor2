@@ -5,5 +5,5 @@
              xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Controls;assembly=AjkAvaloniaLibs"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
              x:Class="CodeEditor2.Views.LogView">
-	<ajkctrl:ListViewControl Name="ListView" />
+	<ajkctrl:ListViewControl Name="ListView" FontSize="10"/>
 </UserControl>
