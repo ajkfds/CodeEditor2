@@ -111,7 +111,7 @@ namespace CodeEditor2.Views
 
         private void PopupMenuView_KeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
         {
-            if (e.Key == Avalonia.Input.Key.Return | e.Key == Avalonia.Input.Key.Enter)
+            if (e.Key == Avalonia.Input.Key.Return | e.Key == Avalonia.Input.Key.Enter | e.Key == Avalonia.Input.Key.Tab)
             {
                 ChooseItem();
                 return;
