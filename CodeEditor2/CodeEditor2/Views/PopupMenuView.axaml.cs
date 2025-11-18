@@ -48,22 +48,22 @@ namespace CodeEditor2.Views
             if (TextBox0.Text == null) return;
             string targetText = TextBox0.Text.ToLower();
 
-            foreach (PopupMenuItem item in Global.codeView.codeViewPopupMenu.PopupMenuItems)
+            foreach (ToolItem item in Global.codeView.codeViewPopupMenu.PopupMenuItems)
             {
                 if (item.Text == null) continue;
                 if(targetText == "")
                 {
-                    topHititems.Add(item);
+                    topHititems.Add(item.CreatePopupMenuItem());
                     continue;
                 }
 
                 if (item.Text.ToLower().StartsWith(targetText))
                 {
-                    topHititems.Add(item);
+                    topHititems.Add(item.CreatePopupMenuItem());
                 }
                 else if(item.Text.ToLower().Contains(targetText))
                 {
-                    partialHititems.Add(item);
+                    partialHititems.Add(item.CreatePopupMenuItem());
                 }
             }
 
@@ -103,9 +103,9 @@ namespace CodeEditor2.Views
             TextBox0.Text = "";
             ListView.Items.Clear();
 
-            foreach (PopupMenuItem item in Global.codeView.codeViewPopupMenu.PopupMenuItems)
+            foreach (ToolItem item in Global.codeView.codeViewPopupMenu.PopupMenuItems)
             {
-                ListView.Items.Add(item);
+                ListView.Items.Add(item.CreatePopupMenuItem());
             }
         }
 

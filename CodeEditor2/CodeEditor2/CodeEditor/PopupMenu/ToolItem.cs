@@ -19,6 +19,14 @@ namespace CodeEditor2.CodeEditor.PopupMenu
 
         }
 
+        public string Text
+        {
+            get
+            {
+                return text;
+            }
+        }
+
         public virtual PopupMenuItem CreatePopupMenuItem()
         {
             PopupMenuItem popupMenuItem = new PopupMenuItem(text);

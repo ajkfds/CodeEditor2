@@ -27,7 +27,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
 
         // tool selection form /////////////////////////////////////////////////////////////////////////
 
-        public List<PopupMenuItem> PopupMenuItems = new List<PopupMenuItem>();
+        public List<ToolItem> PopupMenuItems = new List<ToolItem>();
 
         public PopupMenuView? OpenAutoComplete(List<ToolItem> candidates)
         {
@@ -46,7 +46,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             //            Avalonia.Point position = transformedBound.Clip.Position;
 
             PopupMenuItems.Clear();
-            foreach (ToolItem item in candidates) { PopupMenuItems.Add(item.CreatePopupMenuItem()); }
+            foreach (ToolItem item in candidates) { PopupMenuItems.Add(item); }
 
             flyout.ShowMode = FlyoutShowMode.Standard;
             flyout.Placement = PlacementMode.AnchorAndGravity;
@@ -84,7 +84,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             if (codeView.TextFile == null) return;
             PopupMenuView popupMenuView = (PopupMenuView)flyout.Content;
             PopupMenuItems.Clear();
-            foreach (ToolItem item in candidates) { PopupMenuItems.Add(item.CreatePopupMenuItem()); }
+            foreach (ToolItem item in candidates) { PopupMenuItems.Add(item); }
 
             popupMenuView.ListView.Items.Clear();
             foreach (ToolItem item in candidates)
@@ -111,7 +111,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             //            Avalonia.Point position = transformedBound.Clip.Position;
 
             PopupMenuItems.Clear();
-            foreach (ToolItem item in candidates) { PopupMenuItems.Add(item.CreatePopupMenuItem()); }
+            foreach (ToolItem item in candidates) { PopupMenuItems.Add(item); }
 
             flyout.ShowMode = FlyoutShowMode.Standard;
             flyout.Placement = PlacementMode.AnchorAndGravity;
@@ -172,7 +172,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             //    );
 
             PopupMenuItems.Clear();
-            foreach (ToolItem item in tools) { PopupMenuItems.Add(item.CreatePopupMenuItem()); }
+            foreach (ToolItem item in tools) { PopupMenuItems.Add(item); }
 
             flyout.ShowMode = FlyoutShowMode.Standard;
             flyout.Placement = PlacementMode.AnchorAndGravity;
