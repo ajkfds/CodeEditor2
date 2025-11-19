@@ -437,39 +437,7 @@ namespace CodeEditor2.NavigatePanel
             NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
             if (node == null) return;
 
-            if (node is FolderNode)
-            {
-                FolderNode? folderNode = node as FolderNode;
-                if (folderNode == null) throw new System.Exception();
-                Data.Folder? folder = folderNode.Folder;
-                if (folder == null || folder.Project == null) return;
-                string folderPath = folder.Project.GetAbsolutePath(folder.RelativePath).Replace('\\', System.IO.Path.DirectorySeparatorChar);
-
-                if (System.OperatingSystem.IsLinux())
-                {
-                    System.Diagnostics.Process.Start("nautilus " + folderPath + " &");
-                }
-                else
-                {
-                    System.Diagnostics.Process.Start("EXPLORER.EXE", folderPath);
-                }
-            }
-            else if (node is FileNode)
-            {
-                FileNode? fileNode = node as FileNode;
-                if (fileNode == null) throw new System.Exception();
-                Data.File? file = fileNode.FileItem;
-                if (file == null || file.Project == null) return;
-                string filePath = file.Project.GetAbsolutePath(file.RelativePath).Replace('\\', System.IO.Path.DirectorySeparatorChar);
-
-                if (System.OperatingSystem.IsLinux())
-                {
-                }
-                else
-                {
-                    System.Diagnostics.Process.Start("EXPLORER.EXE", "/select,\"" + file.Project.GetAbsolutePath(file.RelativePath) + "\"");
-                }
-            }
+            if(Controller.NavigatePanel.OpenInExploererClicked != null) Controller.NavigatePanel.OpenInExploererClicked(node);
         }
 
     }

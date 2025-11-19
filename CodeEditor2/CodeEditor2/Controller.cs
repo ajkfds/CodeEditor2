@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using AjkAvaloniaLibs.Controls;
+using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using CodeEditor2.CodeEditor.CodeComplete;
@@ -391,6 +392,7 @@ namespace CodeEditor2
                 );
             }
 
+            public static Action<CodeEditor2.NavigatePanel.NavigatePanelNode>? OpenInExploererClicked = null;
             public static void SelectNode(NavigatePanelNode node)
             {
                 Global.navigateView.SelectNode(node);
