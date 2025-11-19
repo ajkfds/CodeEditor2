@@ -25,12 +25,19 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             {
                 return text;
             }
+            set
+            {
+                text= value;
+            }
         }
+
+        public Avalonia.Media.IImage? IconImage { get; set; }
 
         public virtual PopupMenuItem CreatePopupMenuItem()
         {
             PopupMenuItem popupMenuItem = new PopupMenuItem(text);
             popupMenuItem.Selected += new Action(() => { Apply(); });
+            popupMenuItem.Image = IconImage;
             return popupMenuItem;
         }
 

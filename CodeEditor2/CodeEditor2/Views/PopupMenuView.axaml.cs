@@ -53,7 +53,8 @@ namespace CodeEditor2.Views
                 if (item.Text == null) continue;
                 if(targetText == "")
                 {
-                    topHititems.Add(item.CreatePopupMenuItem());
+                    PopupMenuItem popupItem = item.CreatePopupMenuItem();
+                    topHititems.Add(popupItem);
                     continue;
                 }
 
@@ -63,7 +64,8 @@ namespace CodeEditor2.Views
                 }
                 else if(item.Text.ToLower().Contains(targetText))
                 {
-                    partialHititems.Add(item.CreatePopupMenuItem());
+                    PopupMenuItem popupItem = item.CreatePopupMenuItem();
+                    partialHititems.Add(popupItem);
                 }
             }
 

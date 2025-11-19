@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static AjkAvaloniaLibs.Libs.Icons;
 
 namespace CodeEditor2.CodeEditor.CodeComplete
 {
@@ -20,11 +21,19 @@ namespace CodeEditor2.CodeEditor.CodeComplete
     {
         public AutocompleteItem(string text, byte colorIndex, Color color) :base(text)
         {
-            this.text = text;
+            this.Text = text;
             this.colorIndex = colorIndex;
             Color = color;
         }
+        public AutocompleteItem(string text, byte colorIndex, Color color,int minMatchSize) : base(text)
+        {
+            this.Text = text;
+            this.colorIndex = colorIndex;
+            Color = color;
+            MinMatchSize = minMatchSize;
+        }
 
+        public int MinMatchSize = 1;
         public void Clean()
         {
         }
@@ -51,10 +60,6 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         {
             this.codeDocument = codeDocument;
         }
-
-
-        private string text;
-        public string Text { get { return text; } }
 
         public byte ColorIndex
         {
@@ -99,7 +104,12 @@ namespace CodeEditor2.CodeEditor.CodeComplete
 
         public override PopupMenuItem CreatePopupMenuItem()
         {
-            PopupMenuItem popupMenuItem = new PopupMenuItem(text);
+            PopupMenuItem popupMenuItem = new PopupMenuItem(Text);
+            popupMenuItem.Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                "CodeEditor2/Assets/Icons/gear.svg",
+                Color
+                );
+
             popupMenuItem.ForeColor = Color;
             popupMenuItem.Selected += new Action(() => { Apply(); });
             return popupMenuItem;
