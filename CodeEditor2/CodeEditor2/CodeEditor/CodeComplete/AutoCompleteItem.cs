@@ -25,19 +25,19 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             this.colorIndex = colorIndex;
             Color = color;
         }
-        public AutocompleteItem(string text, byte colorIndex, Color color,int minMatchSize) : base(text)
+        public AutocompleteItem(string text, byte colorIndex, Color color,string svgPath) : base(text)
         {
             this.Text = text;
             this.colorIndex = colorIndex;
             Color = color;
-            MinMatchSize = minMatchSize;
+            this.svgPath = svgPath; 
         }
 
-        public int MinMatchSize = 1;
         public void Clean()
         {
         }
 
+        private string? svgPath = null;
 
         // Use this property if you want to show a fancy UIElement in the list.
 
@@ -105,10 +105,13 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         public override PopupMenuItem CreatePopupMenuItem()
         {
             PopupMenuItem popupMenuItem = new PopupMenuItem(Text);
-            popupMenuItem.Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
-                "CodeEditor2/Assets/Icons/gear.svg",
-                Color
-                );
+            if(svgPath != null)
+            {
+                popupMenuItem.Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                    svgPath,
+                    Color
+                    );
+            }
 
             popupMenuItem.ForeColor = Color;
             popupMenuItem.Selected += new Action(() => { Apply(); });
