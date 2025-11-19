@@ -154,6 +154,7 @@ public partial class SplashWindow : Window
         Global.Setup.SaveSetup();
 
         MainWindow mainWindow = new MainWindow();
+        mainWindow.Title = Setups.Setup.ApplicationName + " " + Global.Solution.Name;
         Global.currentWindow = mainWindow;
 
         initialize();
