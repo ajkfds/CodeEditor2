@@ -215,11 +215,13 @@ namespace CodeEditor2.Data
         {
             fileSystemWatcher = new FileSystemWatcher();
             fileSystemWatcher.Path = RootPath;
-            fileSystemWatcher.NotifyFilter =
-                NotifyFilters.LastWrite
-                | NotifyFilters.FileName
-                | NotifyFilters.DirectoryName
-                ;
+            if (System.OperatingSystem.IsWindows())
+            {
+                fileSystemWatcher.NotifyFilter =
+                    NotifyFilters.LastWrite
+                    | NotifyFilters.FileName
+                    | NotifyFilters.DirectoryName;
+            }
             fileSystemWatcher.Filter = "";
             fileSystemWatcher.IncludeSubdirectories = true;
 
