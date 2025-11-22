@@ -6,7 +6,10 @@
         x:Class="CodeEditor2.Views.SplashWindow"
         Title="SplashWindow">
 	<StackPanel Orientation="Vertical">
-		<TextBlock FontSize="25" FontWeight="Bold" Margin="6" Name="TitleText">CodeEditor2</TextBlock>
+		<StackPanel Orientation="Horizontal">
+			<Image Height="25" Width="25" Name="SymbolImage" Margin="10 0 10 0"/>
+			<TextBlock FontSize="25" FontWeight="Bold" Margin="6" Name="TitleText" HorizontalAlignment="Center">CodeEditor2</TextBlock>
+		</StackPanel>
 		<Grid ColumnDefinitions="80*,4,30*">
 			<ScrollViewer VerticalScrollBarVisibility="Auto">
 				<StackPanel Grid.Column="0" Orientation="Vertical" Margin="4" Name="HistoryStackPanel">

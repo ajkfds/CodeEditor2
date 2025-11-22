@@ -18,7 +18,11 @@ public partial class SplashWindow : Window
     public SplashWindow()
     {
         InitializeComponent();
+        Title = Setups.Setup.ApplicationName;
         TitleText.Text = Setups.Setup.ApplicationName;
+        if(Setups.Setup.GetIconImage!=null) SymbolImage.Source = Setups.Setup.GetIconImage();
+
+        Setups.Setup.InitializeWindow(this);
 
         CreateNewSolutionButton.Click += CreateNewSolutionButton_Click;
         OpenSolutionButton.Click += OpenSolutionButton_Click;

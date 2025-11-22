@@ -11,6 +11,7 @@ public partial class MainWindow : Window
         Global.mainWindow = this;
 
         InitializeComponent();
+        Setups.Setup.InitializeWindow(this);
 
         Loaded += MainWindow_Loaded;
 
