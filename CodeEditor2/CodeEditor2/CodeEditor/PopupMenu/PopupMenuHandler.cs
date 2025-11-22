@@ -66,21 +66,8 @@ namespace CodeEditor2.CodeEditor.PopupMenu
         }
         public void UpdateAutoComplete(List<ToolItem> candidates)
         {
-            //System.Diagnostics.Debug.Print("## OpenCustomSelection");
-            //PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
-            //if (flyout == null) return;
-            //if (flyout.IsOpen) return;
-            //if (codeView.TextFile == null) return;
-
-            //TransformedBounds? tBound = Global.codeView.Editor.GetTransformedBounds();
-            //if (tBound == null) return;
-            ////            TransformedBounds transformedBound = (TransformedBounds)tBound;
-            //var caretRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
-
-
             PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
             if (flyout == null) return;
-//            if (flyout.IsOpen) return;
             if (codeView.TextFile == null) return;
             PopupMenuView popupMenuView = (PopupMenuView)flyout.Content;
             PopupMenuItems.Clear();
@@ -251,7 +238,6 @@ namespace CodeEditor2.CodeEditor.PopupMenu
 
         public void StartInteractiveSnippet(InteractiveSnippet interactiveSnippet)
         {
-//            System.Diagnostics.Debug.Print("## CodeViewSetupMenu.StartInteractiveSnippet");
             AbortInteractiveSnippet();
             Snippet = interactiveSnippet;
         }
@@ -259,22 +245,18 @@ namespace CodeEditor2.CodeEditor.PopupMenu
         public void AbortInteractiveSnippet()
         {
             if (Snippet == null) return;
-//            System.Diagnostics.Debug.Print("## CodeViewSetupMenu.AbortInteractiveSnippet for snippet");
             Snippet.Aborted();
             Snippet = null;
         }
 
         public void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
-//            System.Diagnostics.Debug.Print("## TextArea_KeyDown for snippet enter");
             if (Snippet == null) return;
             Snippet.KeyDown(sender, e, codeView.PopupMenu);
-//            System.Diagnostics.Debug.Print("## TextArea_KeyDown for snippet leave");
         }
         public void TextEntering(object? sender, TextInputEventArgs e)
         {
             if (Snippet == null) return;
-//            System.Diagnostics.Debug.Print("## TextEntering for snippet");
             Snippet.BeforeKeyDown(sender, e, codeView.PopupMenu);
         }
 
