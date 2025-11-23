@@ -136,7 +136,8 @@ namespace CodeEditor2.NavigatePanel
 
         public async virtual Task HierarchicalVisibleUpdateAsync(int depth, bool expanded)
         {
-            Update();
+            await Dispatcher.UIThread.InvokeAsync(Update);
+
             if (depth > 100) return;
             if (!expanded) return;
             await Dispatcher.UIThread.InvokeAsync(

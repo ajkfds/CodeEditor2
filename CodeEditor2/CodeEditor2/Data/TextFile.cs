@@ -289,9 +289,8 @@ namespace CodeEditor2.Data
         //}
 
         // parse this text file hierarchy
-        public async Task ParseHierarchy(Action<ITextFile> action)
+        public async Task ParseHierarchyAsync(Action<ITextFile> action)
         {
-            //parse complete id list
             List<string> parsedIds = new List<string>();
 
             parseHierarchy(this, parsedIds, action);

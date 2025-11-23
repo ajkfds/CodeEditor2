@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using CodeEditor2.CodeEditor.Parser;
 
 namespace CodeEditor2.Data
@@ -242,8 +243,21 @@ namespace CodeEditor2.Data
         {
         }
 
-        public virtual void Update() { }
-
+        public virtual void Update()
+        {
+            if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
+        }
+        public async System.Threading.Tasks.Task UpdateAsync()
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Update();
+            }
+            else
+            {
+                await Dispatcher.UIThread.InvokeAsync(Update);
+            }
+        }
 
         public static Action<ContextMenu>? CustomizeItemEditorContextMenu;
 
@@ -290,7 +304,6 @@ namespace CodeEditor2.Data
         {
             NavigatePanel.NavigatePanelNode node;
             node = CreateNode();
-//            if (node != null) node.Link = true;
             return node;
         }
 
