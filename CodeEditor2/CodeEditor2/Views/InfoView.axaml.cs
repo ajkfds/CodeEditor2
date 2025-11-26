@@ -36,13 +36,17 @@ namespace CodeEditor2.Views
 
         public void UpdateMessages(CodeEditor.ParsedDocument parsedDocument)
         {
-            Items.Clear();
 
-            if (parsedDocument != null)
+            lock (Items)
             {
-                foreach (CodeEditor.ParsedDocument.Message message in parsedDocument.Messages)
+                Items.Clear();
+
+                if (parsedDocument != null)
                 {
-                    Items.Add(message.CreateMessageNode().ListBoxItem());
+                    foreach (CodeEditor.ParsedDocument.Message message in parsedDocument.Messages)
+                    {
+                        Items.Add(message.CreateMessageNode().ListBoxItem());
+                    }
                 }
             }
 

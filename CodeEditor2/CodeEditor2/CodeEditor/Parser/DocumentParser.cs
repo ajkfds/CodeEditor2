@@ -41,11 +41,11 @@ namespace CodeEditor2.CodeEditor.Parser
             PostEditParse
         }
 
-        public virtual void Parse()
+        public virtual async Task Parse()
         {
-            Parse(null);
+            await Parse(null);
         }
-        public virtual void Parse(CancellationToken? cancellationToken)
+        public virtual async Task Parse(CancellationToken? cancellationToken)
         {
         }
 

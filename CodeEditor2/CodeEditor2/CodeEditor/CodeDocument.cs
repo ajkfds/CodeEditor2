@@ -35,6 +35,7 @@ namespace CodeEditor2.CodeEditor
 
         public CodeDocument(Data.TextFile textFile, bool textOnly) : this()
         {
+            textFileRef = new WeakReference<Data.TextFile>(textFile);
             textDocument = new TextDocument();
             initialize();
         }
@@ -342,6 +343,7 @@ namespace CodeEditor2.CodeEditor
 
         public void CopyTextOnlyFrom(CodeDocument document)
         {
+            if (document == null) return;
             var snap = document.textDocument.CreateSnapshot();
             textDocument.Text = snap.Text;
             Version = document.Version;

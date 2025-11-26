@@ -185,32 +185,61 @@ namespace CodeEditor2.Data
         protected DateTime? loadedFileLastWriteTime;
         private void loadDocumentFromFile()
         {
-//            try
+            try
             {
                 if (document == null)
                 {
                     document = new CodeEditor.CodeDocument(this);
                 }
-                using (System.IO.StreamReader sr = new System.IO.StreamReader(AbsolutePath))
+                
+                loadedFileLastWriteTime = System.IO.File.GetLastWriteTime(AbsolutePath);
+                string text = readStableText(AbsolutePath);
+                lock (document)
                 {
-                    loadedFileLastWriteTime = System.IO.File.GetLastWriteTime(AbsolutePath);
-
-                    string text = sr.ReadToEnd();
-                    lock (document)
-                    {
-                        document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
-                    }
-                    //document.Replace(0, document.Length, 0, text);
-                    //document.ClearHistory();
-                    document.Clean();
+                    document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
                 }
+                document.Clean();
             }
-//            catch
-//            {
-//                document = null;
-//            }
+            catch
+            {
+                document = null;
+            }
         }
 
+        private string readStableText(string path)
+        {
+            const int maxRetry = 3;
+            const int delayMs = 50;
+
+            for(int i = 0; i < maxRetry; i++)
+            {
+                var infoBefore = new FileInfo(path);
+                long lengthBefore = infoBefore.Exists ? infoBefore.Length : -1;
+                DateTime writeBefore = infoBefore.Exists ? infoBefore.LastWriteTimeUtc : DateTime.MinValue;
+
+                using var fs = new FileStream(
+                    path, FileMode.Open, FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete, 4096, FileOptions.SequentialScan);
+                using var sr = new StreamReader(fs, Encoding.UTF8, true);
+
+                string text = sr.ReadToEnd();
+
+                var infoAfter = new FileInfo(path);
+                long lengthAfter = infoAfter.Exists ? infoAfter.Length : -1;
+                DateTime writeAfter = infoAfter.Exists ? infoAfter.LastWriteTimeUtc : DateTime.MinValue;
+
+                if (lengthBefore == lengthAfter && writeBefore == writeAfter) return text;
+
+                Thread.Sleep(delayMs);
+            }
+
+            using var fs2 = new FileStream(
+                path, FileMode.Open, FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete, 4096, FileOptions.SequentialScan);
+            using var sr2 = new StreamReader(fs2, Encoding.UTF8, true);
+
+            return sr2.ReadToEnd();
+        }
         //public string GetMd5Hash()
         //{
         //    //if (document == null) return "";
@@ -293,7 +322,7 @@ namespace CodeEditor2.Data
         {
             List<string> parsedIds = new List<string>();
 
-            parseHierarchy(this, parsedIds, action);
+            await parseHierarchy(this, parsedIds, action);
             Update();
 
             if (NavigatePanelNode != null)
@@ -303,7 +332,7 @@ namespace CodeEditor2.Data
 //            System.Diagnostics.Debug.Print("### TextFile.ParseHierarchy compelet " + parsedIds.Count.ToString() + "module parsed");
         }
 
-        private void parseHierarchy(Data.Item item, List<string> parsedIds, Action<ITextFile> action)
+        private async Task parseHierarchy(Data.Item item, List<string> parsedIds, Action<ITextFile> action)
         {
             if (item == null) return;
             Data.ITextFile? textFile = item as Data.TextFile;
@@ -326,7 +355,7 @@ namespace CodeEditor2.Data
                 DocumentParser? parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse,null);
                 if (parser != null)
                 {
-                    parser.Parse();
+                    await parser.Parse();
                     if (parser.ParsedDocument == null)
                     {
 //                        System.Diagnostics.Debug.Print("### TextFileparseHierarchy not parsed : " + textFile.ID + "," + parsedIds.Count.ToString() + "module parsed");
@@ -350,7 +379,7 @@ namespace CodeEditor2.Data
 
             foreach (Data.Item subitem in items)
             {
-                parseHierarchy(subitem, parsedIds, action);
+                await parseHierarchy(subitem, parsedIds, action);
             }
 
             if (textFile.ReparseRequested)
@@ -358,7 +387,7 @@ namespace CodeEditor2.Data
                 DocumentParser? parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse,null);
                 if (parser != null)
                 {
-                    parser.Parse();
+                    await parser.Parse();
                     if (parser.ParsedDocument == null) return;
                     textFile.AcceptParsedDocument(parser.ParsedDocument);
 
