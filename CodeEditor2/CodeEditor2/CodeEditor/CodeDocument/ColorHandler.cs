@@ -99,7 +99,10 @@ namespace CodeEditor2.CodeEditor
             else
             {
                 LineInformation lineInfo = GetLineInformation(lineStart.LineNumber);
-                lineInfo.Colors.Add(new LineInformation.Color(index - codeDocument.GetLineStartIndex(lineStart.LineNumber), codeDocument.GetLineLength(lineStart.LineNumber) - (index - codeDocument.GetLineStartIndex(lineStart.LineNumber)), color));
+                lock (lineInfo.Colors)
+                {
+                    lineInfo.Colors.Add(new LineInformation.Color(index - codeDocument.GetLineStartIndex(lineStart.LineNumber), codeDocument.GetLineLength(lineStart.LineNumber) - (index - codeDocument.GetLineStartIndex(lineStart.LineNumber)), color));
+                }
 
                 lineInfo = GetLineInformation(lineLast.LineNumber);
                 lock (lineInfo.Colors)

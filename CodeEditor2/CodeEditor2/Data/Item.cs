@@ -247,7 +247,7 @@ namespace CodeEditor2.Data
         {
             if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
         }
-        public async System.Threading.Tasks.Task UpdateAsync()
+        public virtual async System.Threading.Tasks.Task UpdateAsync()
         {
             if (Dispatcher.UIThread.CheckAccess())
             {
