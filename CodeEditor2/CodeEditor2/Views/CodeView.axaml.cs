@@ -246,8 +246,11 @@ namespace CodeEditor2.Views
                 if(!Global.StopParse) codeViewParser.EntryParse();
             }
 
+
             // store caretLine
             prevCaretLine = caretLine;
+
+            codeViewPopupMenu.Caret_PositionChanged(sender, e);
         }
 
 

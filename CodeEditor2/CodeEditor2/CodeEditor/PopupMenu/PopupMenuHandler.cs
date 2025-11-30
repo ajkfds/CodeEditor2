@@ -260,6 +260,11 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             Snippet.BeforeKeyDown(sender, e, codeView.PopupMenu);
         }
 
+        public void Caret_PositionChanged(object? sender, EventArgs e)
+        {
+            if (Snippet == null) return;
+            Snippet.Caret_PositionChanged(sender, e);
+        }
         public void TextEntered(object? sender, TextInputEventArgs e)
         {
             if (Snippet == null) return;
