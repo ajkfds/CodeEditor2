@@ -45,7 +45,7 @@ namespace CodeEditor2.Tools
                 if (parser == null) return;
 
                 parser.Document._tag = "TextParserTask:" + textFile.Name;
-                parser.Parse();
+                await parser.Parse();
                 if (parser.ParsedDocument == null) return;
 
                 await Dispatcher.UIThread.InvokeAsync(() =>
@@ -58,7 +58,7 @@ namespace CodeEditor2.Tools
             Dispatcher.UIThread.Invoke(
                 () => {
                     if(progressWindow.ProgressMaxValue> progressWindow.ProgressValue+1) progressWindow.ProgressValue++;
-                    progressWindow.Message = name+" : "+textFile.Name;
+                    progressWindow.Message = name + " : " + textFile.Name;
                 }
             );
 

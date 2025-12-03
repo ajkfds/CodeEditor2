@@ -42,14 +42,13 @@ namespace CodeEditor2.Tools
                 progressWindow.Close();
             };
             await progress.ShowDialog(Global.mainWindow);
-
         }
 
 
         private async Task runParse(ProgressWindow progressWindow, Project project)
         {
             // parse items
-            int workerThreads = 8;
+            int workerThreads = Environment.ProcessorCount;
 
             var channel = Channel.CreateUnbounded<Data.TextFile>();
             ChannelWriter<Data.TextFile> writer = channel.Writer;
