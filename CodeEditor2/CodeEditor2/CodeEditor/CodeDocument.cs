@@ -87,6 +87,8 @@ namespace CodeEditor2.CodeEditor
         public HIghLightHandler HighLights;
         public FoldingHandler Foldings;
 
+        public string NewLine = "\n";
+
         public Action<object?, DocumentChangeEventArgs>? Changing = null;
 
         #region ThreadControl
