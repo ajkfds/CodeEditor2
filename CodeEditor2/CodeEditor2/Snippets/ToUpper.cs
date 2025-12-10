@@ -20,9 +20,9 @@ namespace CodeEditor2.Snippets
             if (file == null) return;
             CodeEditor.CodeDocument codeDocument = file.CodeDocument;
 
-            string replaceText = codeDocument.CreateString(codeDocument.SelectionStart, codeDocument.SelectionLast - codeDocument.SelectionStart).ToUpper();
+            string replaceText = codeDocument.CreateString(codeDocument.SelectionStart, codeDocument.SelectionLast - codeDocument.SelectionStart+1).ToUpper();
 
-            codeDocument.Replace(codeDocument.SelectionStart, codeDocument.SelectionLast - codeDocument.SelectionStart, 0, replaceText);
+            codeDocument.Replace(codeDocument.SelectionStart, codeDocument.SelectionLast - codeDocument.SelectionStart+1, 0, replaceText);
         }
 
     }
