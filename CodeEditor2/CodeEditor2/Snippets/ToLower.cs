@@ -17,8 +17,8 @@ namespace CodeEditor2.Snippets
         {
             Data.TextFile? file = CodeEditor2.Controller.CodeEditor.GetTextFile();
             if (file == null) return;
-            CodeEditor.CodeDocument codeDocument = file.CodeDocument;
-
+            CodeEditor.CodeDocument? codeDocument = file.CodeDocument;
+            if (codeDocument == null) return;
             string replaceText = codeDocument.CreateString(codeDocument.SelectionStart, codeDocument.SelectionLast - codeDocument.SelectionStart+1).ToLower();
 
             codeDocument.Replace(codeDocument.SelectionStart, codeDocument.SelectionLast - codeDocument.SelectionStart+1, 0, replaceText);
