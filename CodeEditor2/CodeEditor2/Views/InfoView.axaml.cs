@@ -4,6 +4,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Collections.ObjectModel;
 using Avalonia.Styling;
 using Avalonia.Layout;
+using System.Linq;
 
 namespace CodeEditor2.Views
 {
@@ -43,7 +44,7 @@ namespace CodeEditor2.Views
 
                 if (parsedDocument != null)
                 {
-                    foreach (CodeEditor.ParsedDocument.Message message in parsedDocument.Messages)
+                    foreach (CodeEditor.ParsedDocument.Message message in parsedDocument.Messages.ToList())
                     {
                         Items.Add(message.CreateMessageNode().ListBoxItem());
                     }

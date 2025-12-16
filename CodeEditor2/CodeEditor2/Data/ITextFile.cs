@@ -29,7 +29,6 @@ namespace CodeEditor2.Data
 
         List<Item> FindItems(Func<Item, bool> match, Func<Item, bool> stop);
 
-        bool ParseValid { get; }
         void Dispose();
 
         void Update();

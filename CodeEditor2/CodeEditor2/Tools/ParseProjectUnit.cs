@@ -45,7 +45,7 @@ namespace CodeEditor2.Tools
                 if (parser == null) return;
 
                 parser.Document._tag = "TextParserTask:" + textFile.Name;
-                await parser.Parse();
+                await parser.ParseAsync();
                 if (parser.ParsedDocument == null) return;
 
                 await Dispatcher.UIThread.InvokeAsync(() =>

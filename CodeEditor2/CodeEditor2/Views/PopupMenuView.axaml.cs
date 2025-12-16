@@ -29,6 +29,7 @@ namespace CodeEditor2.Views
             LostFocus += PopupMenuView_LostFocus;
             TextBox0.TextChanged += TextBox0_TextChanged;
 
+            ListView.MaxHeight = FontSize * 15;
 
             if (ListView.Items.Count > 0)
             {

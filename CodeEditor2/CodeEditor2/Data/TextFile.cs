@@ -83,16 +83,6 @@ namespace CodeEditor2.Data
 
         public virtual CodeEditor.ParsedDocument? ParsedDocument { get; set; }
 
-        public bool ParseValid
-        {
-            get
-            {
-                if (CodeDocument == null) return false;
-                if (ParsedDocument == null) return false;
-                if (CodeDocument.Version == ParsedDocument.Version) return true;
-                return false;
-            }
-        }
 
         public virtual void AcceptParsedDocument(CodeEditor2.CodeEditor.ParsedDocument newParsedDocument)
         {
@@ -344,7 +334,7 @@ namespace CodeEditor2.Data
             action(textFile);
             parsedIds.Add(textFile.ID);
 
-            if (textFile.ParseValid & !textFile.ReparseRequested)
+            if (!textFile.ReparseRequested)
             {
 //                System.Diagnostics.Debug.Print("### TextFileparseHierarchy parse skip : " + textFile.ID);
                 textFile.Update();
@@ -355,7 +345,7 @@ namespace CodeEditor2.Data
                 DocumentParser? parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse,null);
                 if (parser != null)
                 {
-                    await parser.Parse();
+                    await parser.ParseAsync();
                     if (parser.ParsedDocument == null)
                     {
 //                        System.Diagnostics.Debug.Print("### TextFileparseHierarchy not parsed : " + textFile.ID + "," + parsedIds.Count.ToString() + "module parsed");
@@ -387,7 +377,7 @@ namespace CodeEditor2.Data
                 DocumentParser? parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse,null);
                 if (parser != null)
                 {
-                    await parser.Parse();
+                    await parser.ParseAsync();
                     if (parser.ParsedDocument == null) return;
                     textFile.AcceptParsedDocument(parser.ParsedDocument);
 

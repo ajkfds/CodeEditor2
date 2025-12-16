@@ -41,7 +41,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             if (tBound == null) return null;
             //            TransformedBounds transformedBound = (TransformedBounds)tBound;
             var caretRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
-
+            
 
             //            Avalonia.Point position = transformedBound.Clip.Position;
 

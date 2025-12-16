@@ -39,7 +39,7 @@ namespace CodeEditor2.Parser
             }
         }
 
-        public override async Task Parse()
+        public override async Task ParseAsync()
         {
             for (int line = 1; line < Document.Lines; line++)
             {

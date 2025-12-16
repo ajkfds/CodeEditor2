@@ -71,7 +71,7 @@ namespace CodeEditor2.CodeEditor.Parser
         {
             DocumentParser? parser = textFile?.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse, token);
             if (parser == null) return;
-            parser.Parse();
+            await parser.ParseAsync();
             if (parser.ParsedDocument == null) return;
 
             Data.TextFile targetTextFile = parser.TextFile;
