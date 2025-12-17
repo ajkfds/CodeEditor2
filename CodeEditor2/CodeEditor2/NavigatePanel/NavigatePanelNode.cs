@@ -143,7 +143,7 @@ namespace CodeEditor2.NavigatePanel
             await Dispatcher.UIThread.InvokeAsync(
                 async () =>
                 {
-                    foreach (NavigatePanelNode node in Nodes)
+                    foreach (NavigatePanelNode node in Nodes.ToList())
                     {
                         await node.HierarchicalVisibleUpdateAsync(depth + 1, node.IsExpanded);
                     }
