@@ -1,4 +1,5 @@
-﻿using Avalonia.Threading;
+﻿using Avalonia.Remote.Protocol;
+using Avalonia.Threading;
 using CodeEditor2.Data;
 using System;
 using System.Collections.Generic;
@@ -69,6 +70,70 @@ namespace CodeEditor2.CodeEditor.Parser
 
         private async Task runParse(TextFile textFile, System.Threading.CancellationToken token)
         {
+            await runSingleParse(textFile, token);
+
+            //DocumentParser? parser = textFile?.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse, token);
+            //if (parser == null) return;
+            //await parser.ParseAsync();
+            //if (parser.ParsedDocument == null) return;
+
+            //Data.TextFile targetTextFile = parser.TextFile;
+            //CodeDocument? targetCodeDocument = targetTextFile.CodeDocument;
+
+            //if (targetTextFile == null || targetCodeDocument == null)
+            //{
+            //    parser.Dispose();
+            //    return;
+            //}
+
+            //token.ThrowIfCancellationRequested();
+
+            //Controller.AppendLog("complete edit parse ID :" + parser.TextFile.ID);
+
+            //await Dispatcher.UIThread.InvokeAsync(
+            //    () =>
+            //    {
+            //        // If the version of the parsed document is already outdated, discard the parse result.
+            //        if (targetCodeDocument.Version != parser.ParsedDocument.Version)
+            //        {
+            //            Controller.AppendLog("edit parsed mismatch " + DateTime.Now.ToString() + "ver" + targetCodeDocument.Version + "<-" + parser.ParsedDocument.Version);
+            //            parser.Dispose();
+            //            return;
+            //        }
+            //        parser.TextFile.AcceptParsedDocument(parser.ParsedDocument);
+
+            //        Data.ITextFile? currentTextFile = Controller.CodeEditor.GetTextFile();
+            //        targetCodeDocument.CopyColorMarkFrom(parser.Document);
+
+            //        if (currentTextFile == null || currentTextFile != targetTextFile)
+            //        {
+            //            return;
+            //        }
+
+            //        // update current view
+            //        Controller.CodeEditor.Refresh();
+            //        Controller.MessageView.Update(parser.ParsedDocument);
+            //    }
+            //);
+
+            token.ThrowIfCancellationRequested();
+
+            if (textFile == null) return;
+            List<Data.Item> items = textFile.Items.Values.ToList();
+            foreach (Data.Item item in items)
+            {
+                token.ThrowIfCancellationRequested();
+                if (item is not TextFile) continue;
+                TextFile subFile = (TextFile)item;
+                if (!subFile.ReparseRequested) continue;
+                await runSingleParse(subFile, token);
+
+                token.ThrowIfCancellationRequested();
+            }
+        }
+
+        private async Task runSingleParse(TextFile textFile, System.Threading.CancellationToken token)
+        {
             DocumentParser? parser = textFile?.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse, token);
             if (parser == null) return;
             await parser.ParseAsync();
@@ -82,6 +147,8 @@ namespace CodeEditor2.CodeEditor.Parser
                 parser.Dispose();
                 return;
             }
+
+            token.ThrowIfCancellationRequested();
 
             Controller.AppendLog("complete edit parse ID :" + parser.TextFile.ID);
 
@@ -110,8 +177,8 @@ namespace CodeEditor2.CodeEditor.Parser
                     Controller.MessageView.Update(parser.ParsedDocument);
                 }
             );
-
         }
+
 
     }
 
