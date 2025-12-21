@@ -269,18 +269,29 @@ namespace CodeEditor2.Data
                 await checkUpdate.ShowDialog(Controller.GetMainWindow());
                 if (checkUpdate.Yes)
                 {
+                    document = null;
+                    LoadDocumentFromFile();
+                    if(Controller.NavigatePanel.GetSelectedFile() == this)
+                    {
+                        await Controller.CodeEditor.SetTextFileAsync(this);
+                    }
+                    Controller.CodeEditor.Refresh();
                 }
                 else
                 {
-
+                    
                 }
             }
             else
             {
                 document = null;
+                LoadDocumentFromFile();
+                if (Controller.NavigatePanel.GetSelectedFile() == this)
+                {
+                    await Controller.CodeEditor.SetTextFileAsync(this);
+                }
+                Controller.CodeEditor.Refresh();
             }
-            //if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
-            //Controller.AppendLog("#Exception TextFile.OnChangedExternally",Avalonia.Media.Colors.Red);
         }
         public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode,System.Threading.CancellationToken? token)
         {

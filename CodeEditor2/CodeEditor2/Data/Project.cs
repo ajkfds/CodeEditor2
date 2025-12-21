@@ -265,8 +265,10 @@ namespace CodeEditor2.Data
             }, null, 100, Timeout.Infinite);
         }
 
-        private void FileChanged(object sender, FileSystemEventArgs e)
+        private async void FileChanged(object sender, FileSystemEventArgs e)
         {
+            try
+            {
                 if (e.FullPath == FileClassify.AbsolutePath)
                 {
                     FileClassify.Reload();
@@ -279,24 +281,30 @@ namespace CodeEditor2.Data
                 if (file == null) return;
                 Data.ITextFile? textFile = file as Data.ITextFile;
                 if (textFile == null) return;
-                Dispatcher.UIThread.Post(() => fileChaned(textFile));
+                await Dispatcher.UIThread.InvokeAsync(async () => { await fileChaned(textFile); });
+            }
+            catch
+            {
+                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+            }
         }
         private async Task fileChaned(Data.ITextFile textFile)
         {
             if (textFile.Dirty)
             {
-                Controller.AppendLog(textFile.RelativePath + " file edit conflict!",Avalonia.Media.Colors.Red);
+                Controller.AppendLog(textFile.RelativePath + " file edit conflict!", Avalonia.Media.Colors.Red);
+                await textFile.UpdateAsync();
             }
             else
             {
-                DateTime lastWriteTime = System.IO.File.GetLastWriteTime(GetAbsolutePath(textFile.RelativePath));
-                if (textFile.LoadedFileLastWriteTime != lastWriteTime)
-                {
-                    textFile.LoadFormFile();
+                await textFile.UpdateAsync();
+                //DateTime lastWriteTime = System.IO.File.GetLastWriteTime(GetAbsolutePath(textFile.RelativePath));
+                //if (textFile.LoadedFileLastWriteTime != lastWriteTime)
+                //{
+                //    textFile.LoadFormFile();
 
-                    // fire and forget
-                    _ = Dispatcher.UIThread.InvokeAsync(async () => { await textFile.UpdateAsync(); });
-                }
+                //    // fire and forget
+                //}
             }
         }
 
