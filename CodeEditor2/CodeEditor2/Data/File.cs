@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -93,6 +94,7 @@ namespace CodeEditor2.Data
         }
         public record FileStatus(long Size, DateTime LastWriteTimeUtc);
         public FileStatus? CashedStatus { get; set; } = null;
+
 
         public override async Task UpdateAsync()
         {

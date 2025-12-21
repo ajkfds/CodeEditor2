@@ -261,37 +261,49 @@ namespace CodeEditor2.Data
             return new TextFileNode(this);
         }
 
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         public override async Task OnChangedExternallyAsync()
         {
-            if( Dirty )
+            if (_semaphore.CurrentCount == 0) return;
+
+            await _semaphore.WaitAsync();
+            try
             {
-                Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
-                await checkUpdate.ShowDialog(Controller.GetMainWindow());
-                if (checkUpdate.Yes)
+                if (Dirty)
+                {
+                    Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
+                    await checkUpdate.ShowDialog(Controller.GetMainWindow());
+                    if (checkUpdate.Yes)
+                    {
+                        document = null;
+                        LoadDocumentFromFile();
+                        if (Controller.NavigatePanel.GetSelectedFile() == this)
+                        {
+                            await Controller.CodeEditor.SetTextFileAsync(this);
+                        }
+                        Controller.CodeEditor.Refresh();
+                    }
+                    else
+                    {
+
+                    }
+                }
+                else
                 {
                     document = null;
                     LoadDocumentFromFile();
-                    if(Controller.NavigatePanel.GetSelectedFile() == this)
+                    if (Controller.NavigatePanel.GetSelectedFile() == this)
                     {
                         await Controller.CodeEditor.SetTextFileAsync(this);
                     }
                     Controller.CodeEditor.Refresh();
                 }
-                else
-                {
-                    
-                }
             }
-            else
+            finally
             {
-                document = null;
-                LoadDocumentFromFile();
-                if (Controller.NavigatePanel.GetSelectedFile() == this)
-                {
-                    await Controller.CodeEditor.SetTextFileAsync(this);
-                }
-                Controller.CodeEditor.Refresh();
+                _semaphore.Release();
             }
+
         }
         public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode,System.Threading.CancellationToken? token)
         {
