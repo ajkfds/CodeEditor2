@@ -31,10 +31,17 @@ namespace CodeEditor2.NavigatePanel
                 return Item as Project;
             }
         }
-        public override void OnSelected()
+        public override async void OnSelected()
         {
-            base.OnSelected();
-            Update();
+            try
+            {
+                base.OnSelected();
+                await UpdateAsync();
+            }
+            catch
+            {
+                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+            }
         }
         public override void UpdateVisual()
         {

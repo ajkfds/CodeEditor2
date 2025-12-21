@@ -72,8 +72,6 @@ namespace CodeEditor2.Data
             }
         }
 
-        public virtual bool DisposeRequested { get; set; } = false;
-
         public virtual bool Ignore
         {
             get; set;
@@ -100,6 +98,35 @@ namespace CodeEditor2.Data
             get { return items; }
         }
 
+        public virtual void CheckStatus()
+        {
+
+        }
+
+        private bool isDeleted = false;
+        public virtual bool IsDeleted
+        {
+            get
+            {
+                return isDeleted;
+            }
+            set 
+            {
+                isDeleted = value;
+                if (isDeleted)
+                {
+                    if(Parent != null && Parent.Items.ContainsKey(Name))
+                    {
+                        Parent.Items.Remove(Name);
+                    }
+                    Dispose();
+                }
+                else
+                {
+                    if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+                }
+            }
+        }
 
         /// <summary>
         /// This is a collection class for holding child Items. It has the functionality of both a dictionary and a list.
@@ -243,20 +270,9 @@ namespace CodeEditor2.Data
         {
         }
 
-        public virtual void Update()
+        public virtual System.Threading.Tasks.Task UpdateAsync()
         {
-            if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
-        }
-        public virtual async System.Threading.Tasks.Task UpdateAsync()
-        {
-            if (Dispatcher.UIThread.CheckAccess())
-            {
-                Update();
-            }
-            else
-            {
-                await Dispatcher.UIThread.InvokeAsync(Update);
-            }
+            return Task.CompletedTask;
         }
 
         public static Action<ContextMenu>? CustomizeItemEditorContextMenu;

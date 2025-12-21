@@ -24,12 +24,12 @@ namespace CodeEditor2.Views
             TreeControl.ToggleButtonColor = Color.FromRgb(200, 200, 200);
         }
 
-        internal void AddProject(Project project)
+        internal async System.Threading.Tasks.Task AddProject(Project project)
         {
             ProjectNode pNode = new NavigatePanel.ProjectNode(project);
             TreeControl.Nodes.Add(pNode);
 
-            pNode.Update();
+            await pNode.UpdateAsync();
         }
 
         internal NavigatePanelNode? GetSelectedNode()
@@ -72,20 +72,20 @@ namespace CodeEditor2.Views
             return project;
         }
 
-        public void UpdateFolder(NavigatePanelNode node)
+        public async System.Threading.Tasks.Task UpdateFolderAsync(NavigatePanelNode node)
         {
             FileNode? fileNode = node as FileNode;
             if (fileNode != null)
             {
                 NavigatePanelNode? parentNode = fileNode.Parent as NavigatePanelNode;
                 if (parentNode == null) throw new System.Exception();
-                UpdateFolder(parentNode);
+                await UpdateFolderAsync(parentNode);
             }
 
             FolderNode? folderNode = node as FolderNode;
             if (folderNode != null)
             {
-                folderNode.Update();
+                await folderNode.UpdateAsync();
             }
         }
 

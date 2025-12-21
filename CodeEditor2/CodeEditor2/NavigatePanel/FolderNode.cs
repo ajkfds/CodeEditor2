@@ -72,62 +72,67 @@ namespace CodeEditor2.NavigatePanel
         public override void OnSelected()
         {
             base.OnSelected();
-            Update();
-        }
-        public override void Update()
-        {
-            Dispatcher.UIThread.InvokeAsync(() =>
+
+            try
             {
-                Folder? folder = Folder;
-                if (folder == null)
-                {
-                    Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
-                        "CodeEditor2/Assets/Icons/questionDocument.svg",
-                        Avalonia.Media.Color.FromArgb(100, 200, 200, 200),
-                        "CodeEditor2/Assets/Icons/questionDocument.svg",
-                        Avalonia.Media.Color.FromArgb(255, 255, 255, 200)
-                        );
-                    Nodes.Clear();
-                    return;
-                }
+                Task.Run(UpdateAsync);
+            }
+            catch
+            {
+                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+            }
+        }
+        public override async Task UpdateAsync()
+        {
+            Folder? folder = Folder;
+            if (folder == null)
+            {
+                Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                    "CodeEditor2/Assets/Icons/questionDocument.svg",
+                    Avalonia.Media.Color.FromArgb(100, 200, 200, 200),
+                    "CodeEditor2/Assets/Icons/questionDocument.svg",
+                    Avalonia.Media.Color.FromArgb(255, 255, 255, 200)
+                    );
+                Nodes.Clear();
+                return;
+            }
 
-                folder.Update();
+            await folder.UpdateAsync();
 
-                List<Item> addItems = new List<Item>();
-                foreach (Item item in folder.Items.Values)
-                {
-                    addItems.Add(item);
-                }
+            List<Item> addItems = new List<Item>();
+            foreach (Item item in folder.Items.Values)
+            {
+                addItems.Add(item);
+            }
 
-                List<NavigatePanelNode> removeNodes = new List<NavigatePanelNode>();
-                foreach (NavigatePanelNode node in Nodes)
-                {
-                    removeNodes.Add(node);
-                }
+            List<NavigatePanelNode> removeNodes = new List<NavigatePanelNode>();
+            foreach (NavigatePanelNode node in Nodes)
+            {
+                removeNodes.Add(node);
+            }
 
-                foreach (Item item in Folder.Items.Values)
+            foreach (Item item in Folder.Items.Values)
+            {
+                if (removeNodes.Contains(item.NavigatePanelNode))
                 {
-                    if (removeNodes.Contains(item.NavigatePanelNode))
-                    {
-                        removeNodes.Remove(item.NavigatePanelNode);
-                    }
-                    if (Nodes.Contains(item.NavigatePanelNode))
-                    {
-                        addItems.Remove(item);
-                    }
+                    removeNodes.Remove(item.NavigatePanelNode);
                 }
+                if (Nodes.Contains(item.NavigatePanelNode))
+                {
+                    addItems.Remove(item);
+                }
+            }
 
-                foreach (NavigatePanelNode nodes in removeNodes)
-                {
-                    Nodes.Remove(nodes);
-                }
+            foreach (NavigatePanelNode nodes in removeNodes)
+            {
+                Nodes.Remove(nodes);
+            }
 
-                foreach (Item item in addItems)
-                {
-                    if (item == null) continue;
-                    Nodes.Add(item.NavigatePanelNode);
-                }
-            });
+            foreach (Item item in addItems)
+            {
+                if (item == null) continue;
+                Nodes.Add(item.NavigatePanelNode);
+            }
         }
 
     }

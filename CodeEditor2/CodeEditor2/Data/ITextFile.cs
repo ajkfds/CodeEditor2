@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static CodeEditor2.Data.File;
 
 namespace CodeEditor2.Data
 {
@@ -29,9 +30,11 @@ namespace CodeEditor2.Data
 
         List<Item> FindItems(Func<Item, bool> match, Func<Item, bool> stop);
 
+        FileStatus? CashedStatus { get; set; }
+
+        void CheckStatus();
         void Dispose();
 
-        void Update();
         Task UpdateAsync();
         Task ParseHierarchyAsync(Action<ITextFile> action);
 
@@ -43,7 +46,7 @@ namespace CodeEditor2.Data
         bool IsCodeDocumentCashed { get; }
 
         CodeEditor.ParsedDocument? ParsedDocument { get; set; }
-        void AcceptParsedDocument(CodeEditor.ParsedDocument newParsedDocument);
+        Task AcceptParsedDocumentAsync(CodeEditor.ParsedDocument newParsedDocument);
 
         void LoadFormFile();
         bool ReparseRequested { get; }

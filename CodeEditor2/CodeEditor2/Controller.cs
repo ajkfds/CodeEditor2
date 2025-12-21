@@ -217,12 +217,12 @@ namespace CodeEditor2
 
         public static class CodeEditor
         {
-            public static void SetTextFile(Data.TextFile textFile)
+            public static async Task SetTextFileAsync(Data.TextFile textFile)
             {
                 if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
-                SetTextFile(textFile, true);
+                await SetTextFileAsync(textFile, true);
             }
-            public static void SetTextFile(Data.TextFile textFile,bool parseEntry)
+            public static async Task SetTextFileAsync(Data.TextFile textFile,bool parseEntry)
             {
                 if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
                 if (textFile == null)
@@ -233,7 +233,7 @@ namespace CodeEditor2
                 else
                 {
                     //Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
-                    Global.codeView.SetTextFile(textFile,parseEntry);
+                    await Global.codeView.SetTextFileAsync(textFile,parseEntry);
                     //Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
                     //Global.mainForm.mainTab.TabPages[0].Text = textFile.Name;
                     //Global.mainForm.mainTab.SelectedTab = Global.mainForm.mainTab.TabPages[0];
@@ -473,9 +473,9 @@ namespace CodeEditor2
                 return Global.navigateView.GetProject(node);
             }
 
-            public static void UpdateFolder(NavigatePanelNode node)
+            public static async Task UpdateFolder(NavigatePanelNode node)
             {
-                Global.navigateView.UpdateFolder(node);
+                await Global.navigateView.UpdateFolderAsync(node);
             }
 
             //public static void Refresh()

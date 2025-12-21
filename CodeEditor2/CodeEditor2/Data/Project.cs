@@ -281,7 +281,7 @@ namespace CodeEditor2.Data
                 if (textFile == null) return;
                 Dispatcher.UIThread.Post(() => fileChaned(textFile));
         }
-        private void fileChaned(Data.ITextFile textFile)
+        private async Task fileChaned(Data.ITextFile textFile)
         {
             if (textFile.Dirty)
             {
@@ -293,7 +293,9 @@ namespace CodeEditor2.Data
                 if (textFile.LoadedFileLastWriteTime != lastWriteTime)
                 {
                     textFile.LoadFormFile();
-                    textFile.Update();
+
+                    // fire and forget
+                    _ = Dispatcher.UIThread.InvokeAsync(async () => { await textFile.UpdateAsync(); });
                 }
             }
         }
@@ -304,7 +306,7 @@ namespace CodeEditor2.Data
             string relativePath = GetRelativePath(e.FullPath);
             Data.File? file = GetItem(relativePath) as Data.File;
             if (file == null) return;
-            file.DisposeRequested = true;
+            file.IsDeleted = true;
             Data.ITextFile? textFile = file as Data.ITextFile;
             if (textFile == null) return;
             Dispatcher.UIThread.Post(() => fileChaned(textFile));

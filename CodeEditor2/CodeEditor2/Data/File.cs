@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
+using Avalonia.Threading;
 using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
+using DynamicData;
 using DynamicData.Binding;
 using DynamicData.Kernel;
 using Svg;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 
 namespace CodeEditor2.Data
@@ -21,6 +24,7 @@ namespace CodeEditor2.Data
         }
 
         public static List<WeakReference<File>> FileWeakReferences = new List<WeakReference<File>>();
+
 
         public static File Create(string relativePath, Project project, Item parent)
         {
@@ -56,12 +60,13 @@ namespace CodeEditor2.Data
             return fileItem;
         }
 
+
         public void CheckFileType()
         {
             FileTypes.FileType? fileType = Project.GetFileType(RelativePath);
             if (FileType != fileType)
             {
-                DisposeRequested = true;
+                IsDeleted = true;
             }
         }
         public FileTypes.FileType? FileType { get; set; }
@@ -86,10 +91,33 @@ namespace CodeEditor2.Data
         {
             return new FileNode(this);
         }
+        public record FileStatus(long Size, DateTime LastWriteTimeUtc);
+        public FileStatus? CashedStatus { get; set; } = null;
 
-        public override void Update()
+        public override async Task UpdateAsync()
         {
-            base.Update();
+            await base.UpdateAsync();
+            if (!System.IO.File.Exists(AbsolutePath))
+            {
+                IsDeleted = true;
+                return;
+            }
+
+            var info = new FileInfo(AbsolutePath);
+            var newState = new FileStatus(info.Length, info.LastWriteTimeUtc);
+            if (CashedStatus == null)
+            {
+                CashedStatus = newState;
+            }
+            else
+            {
+                await Task.Run(OnChangedExternallyAsync);
+            }
+        }
+
+        public virtual Task OnChangedExternallyAsync()
+        {
+            return Task.CompletedTask;
         }
 
     }

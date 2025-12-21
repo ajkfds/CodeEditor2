@@ -83,9 +83,8 @@ namespace CodeEditor2.Data
             return null;
         }
 
-        public override void Update()
+        public override async Task UpdateAsync()
         {
-            if (Project == null) throw new Exception();
             string absolutePath = Project.GetAbsolutePath(RelativePath);
 
             // get folder contents
@@ -97,7 +96,7 @@ namespace CodeEditor2.Data
             catch
             {
                 // path is not exist
-                DisposeRequested = true;
+                IsDeleted = true;
                 Items.Clear();
                 return;
             }
@@ -130,7 +129,7 @@ namespace CodeEditor2.Data
                     {
                         ((File)items[name]).CheckFileType();
                     }
-                    if (items[name].DisposeRequested) continue;
+                    if (items[name].IsDeleted) continue;
                     currentItems.Add(items[name]);
                     continue;
                 }
@@ -139,42 +138,41 @@ namespace CodeEditor2.Data
                 {
                     if (System.OperatingSystem.IsWindows())
                     {
-                        // https://github.com/securifybv/ShellLink
-                        Securify.ShellLink.Shortcut shortcut = Securify.ShellLink.Shortcut.ReadFromFile(absoluteFilePath);
-                        string absoluteLinkPath = shortcut.LinkTargetIDList.Path;
-                        if ((shortcut.LinkFlags | Securify.ShellLink.Flags.LinkFlags.HasRelativePath) == 0) // don't have relative path
-                        { // add relative path
-                            string basePath = Project.GetAbsolutePath(RelativePath);
-                            if (!basePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) basePath += System.IO.Path.DirectorySeparatorChar;
-                            Uri u1 = new Uri(basePath);
-                            Uri u2 = new Uri(absoluteLinkPath);
-                            Uri relativeUri = u1.MakeRelativeUri(u2);
-                            string relativeLinkPath = Uri.UnescapeDataString(relativeUri.ToString());
-                            shortcut.LinkFlags |= Securify.ShellLink.Flags.LinkFlags.HasRelativePath;
-                            shortcut.StringData.WorkingDir = ".";
-                            shortcut.StringData.RelativePath = relativeLinkPath;
-                            shortcut.WriteToFile(absoluteFilePath);
-                        }
+                        //// https://github.com/securifybv/ShellLink
+                        //Securify.ShellLink.Shortcut shortcut = Securify.ShellLink.Shortcut.ReadFromFile(absoluteFilePath);
+                        //string absoluteLinkPath = shortcut.LinkTargetIDList.Path;
+                        //if ((shortcut.LinkFlags | Securify.ShellLink.Flags.LinkFlags.HasRelativePath) == 0) // don't have relative path
+                        //{ // add relative path
+                        //    string basePath = Project.GetAbsolutePath(RelativePath);
+                        //    if (!basePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) basePath += System.IO.Path.DirectorySeparatorChar;
+                        //    Uri u1 = new Uri(basePath);
+                        //    Uri u2 = new Uri(absoluteLinkPath);
+                        //    Uri relativeUri = u1.MakeRelativeUri(u2);
+                        //    string relativeLinkPath = Uri.UnescapeDataString(relativeUri.ToString());
+                        //    shortcut.LinkFlags |= Securify.ShellLink.Flags.LinkFlags.HasRelativePath;
+                        //    shortcut.StringData.WorkingDir = ".";
+                        //    shortcut.StringData.RelativePath = relativeLinkPath;
+                        //    shortcut.WriteToFile(absoluteFilePath);
+                        //}
 
-                        if (shortcut.FileAttributes.HasFlag(Securify.ShellLink.Flags.FileAttributesFlags.FILE_ATTRIBUTE_DIRECTORY))
-                        { // directory
-                            Folder item = Create(Project.GetRelativePath(absoluteLinkPath), Project, this);
-                            item.Link = true;
-                            if (Project != null && Project.ignoreList.Contains(item.Name))
-                            {
-                                continue;
-                            }
-                            if (items.ContainsKey(item.Name))
-                            {
-                                currentItems.Add(items[item.Name]);
-                                continue;
-                            }
-                            items.Add(item.Name, item);
-                            currentItems.Add(item);
-                            item.Update();
-                            continue;
-                        }
-
+                        //if (shortcut.FileAttributes.HasFlag(Securify.ShellLink.Flags.FileAttributesFlags.FILE_ATTRIBUTE_DIRECTORY))
+                        //{ // directory
+                        //    Folder item = Create(Project.GetRelativePath(absoluteLinkPath), Project, this);
+                        //    item.Link = true;
+                        //    if (Project != null && Project.ignoreList.Contains(item.Name))
+                        //    {
+                        //        continue;
+                        //    }
+                        //    if (items.ContainsKey(item.Name))
+                        //    {
+                        //        currentItems.Add(items[item.Name]);
+                        //        continue;
+                        //    }
+                        //    items.Add(item.Name, item);
+                        //    currentItems.Add(item);
+                        //    item.Update();
+                        //    continue;
+                        //}
                     }
                 }
 
@@ -193,32 +191,21 @@ namespace CodeEditor2.Data
                 if (body.Contains(System.IO.Path.DirectorySeparatorChar)) body = body.Substring(body.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
                 if (body.StartsWith(".")) continue;
 
-                //if(Project.FileClassify.HasDefinition())
-                //{
-                //    string relativePath = Project.GetRelativePath(absoluteFolderPath);
-                //    Project.FileClassify.IsMatched(relativePath, out string type);
-                //    if (Global.FileTypes.ContainsKey(type))
-                //    {
-                //        FileTypes.FileType fileType = Global.FileTypes[type];
-                //        return fileType.CreateFile(relativePath, project);
-                //    }
-                //}
-
                 if (items.ContainsKey(body))
                 {
                     currentItems.Add(items[body]);
                     continue;
                 }
 
-                Folder item = Create(Project.GetRelativePath(absoluteFolderPath), Project, this);
+                Folder folder = Create(Project.GetRelativePath(absoluteFolderPath), Project, this);
                 Project? project = this as Project;
-                if (project != null && project.ignoreList.Contains(item.Name))
+                if (project != null && project.ignoreList.Contains(folder.Name))
                 {
                     continue;
                 }
-                items.Add(item.Name, item);
-                currentItems.Add(item);
-                item.Update();
+                items.Add(folder.Name, folder);
+                currentItems.Add(folder);
+                await folder.UpdateAsync();
             }
 
             // remove unused items
@@ -241,15 +228,18 @@ namespace CodeEditor2.Data
                 //        removeItems.Add(item);
                 //    }
                 //}
-                if(!currentItems.Contains(item)) removeItems.Add(item);
+                if (!currentItems.Contains(item))
+                {
+                    removeItems.Add(item);
+                }
             }
 
             foreach (Item item in removeItems)
             {
-                items.Remove(item.Name);
-                item.Dispose();
+                item.IsDeleted = true;
+//                items.Remove(item.Name);
+//                item.Dispose();
             }
-
         }
 
         protected override NavigatePanelNode CreateNode()

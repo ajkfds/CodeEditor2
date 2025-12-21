@@ -31,9 +31,9 @@ namespace CodeEditor2.Data
             return fileItem;
         }
 
-        public override void AcceptParsedDocument(ParsedDocument newParsedDocument)
+        public override async Task AcceptParsedDocumentAsync(ParsedDocument newParsedDocument)
         {
-            base.AcceptParsedDocument(newParsedDocument);
+            await base.AcceptParsedDocumentAsync(newParsedDocument);
             Project.FileClassify = new FileClassify(Project);
         }
 

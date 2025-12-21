@@ -152,26 +152,32 @@ namespace CodeEditor2.CodeEditor.Parser
 
             Controller.AppendLog("complete edit parse ID :" + parser.TextFile.ID);
 
+            // If the version of the parsed document is already outdated, discard the parse result.
+            if (targetCodeDocument.Version != parser.ParsedDocument.Version)
+            {
+                Controller.AppendLog("edit parsed mismatch " + DateTime.Now.ToString() + "ver" + targetCodeDocument.Version + "<-" + parser.ParsedDocument.Version);
+                parser.Dispose();
+                return;
+            }
+
+            Data.ITextFile? currentTextFile = null;
+            await Dispatcher.UIThread.InvokeAsync(
+                async () => { 
+                    await parser.TextFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
+                    currentTextFile = Controller.CodeEditor.GetTextFile();
+                });
+            
+
+            targetCodeDocument.CopyColorMarkFrom(parser.Document);
+
+            if (currentTextFile == null || currentTextFile != targetTextFile)
+            {
+                return;
+            }
+
             await Dispatcher.UIThread.InvokeAsync(
                 () =>
                 {
-                    // If the version of the parsed document is already outdated, discard the parse result.
-                    if (targetCodeDocument.Version != parser.ParsedDocument.Version)
-                    {
-                        Controller.AppendLog("edit parsed mismatch " + DateTime.Now.ToString() + "ver" + targetCodeDocument.Version + "<-" + parser.ParsedDocument.Version);
-                        parser.Dispose();
-                        return;
-                    }
-                    parser.TextFile.AcceptParsedDocument(parser.ParsedDocument);
-
-                    Data.ITextFile? currentTextFile = Controller.CodeEditor.GetTextFile();
-                    targetCodeDocument.CopyColorMarkFrom(parser.Document);
-
-                    if (currentTextFile == null || currentTextFile != targetTextFile)
-                    {
-                        return;
-                    }
-
                     // update current view
                     Controller.CodeEditor.Refresh();
                     Controller.MessageView.Update(parser.ParsedDocument);

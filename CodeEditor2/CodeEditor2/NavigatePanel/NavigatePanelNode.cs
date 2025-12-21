@@ -79,8 +79,9 @@ namespace CodeEditor2.NavigatePanel
         /// <summary>
         /// update this node and children
         /// </summary>
-        public virtual void Update()
+        public virtual Task UpdateAsync()
         {
+            return Task.CompletedTask;
         }
 
         public virtual void UpdateVisual()
@@ -95,18 +96,18 @@ namespace CodeEditor2.NavigatePanel
         /// <summary>
         /// update all nodes under this node
         /// </summary>
-        public virtual void HierarchicalUpdate()
+        public virtual async Task HierarchicalUpdateAsync()
         {
-            HierarchicalUpdate(0);
+            await HierarchicalUpdateAsync(0);
         }
 
-        public virtual void HierarchicalUpdate(int depth)
+        public virtual async Task HierarchicalUpdateAsync(int depth)
         {
-            Update();
+            await UpdateAsync();
             if (depth > 100) return;
             foreach (NavigatePanelNode node in Nodes)
             {
-                node.HierarchicalUpdate(depth + 1);
+                await node.HierarchicalUpdateAsync(depth + 1);
             }
         }
         public override void OnExpand()
@@ -136,7 +137,7 @@ namespace CodeEditor2.NavigatePanel
 
         public async virtual Task HierarchicalVisibleUpdateAsync(int depth, bool expanded)
         {
-            await Dispatcher.UIThread.InvokeAsync(Update);
+            await UpdateAsync();
 
             if (depth > 100) return;
             if (!expanded) return;
@@ -277,20 +278,20 @@ namespace CodeEditor2.NavigatePanel
         {
 
         }
-        public void UpdateFolder(NavigatePanelNode node)
+        public async Task UpdateFolder(NavigatePanelNode node)
         {
             FileNode? fileNode = node as FileNode;
             if (fileNode != null)
             {
                 NavigatePanelNode? parentNode = fileNode.Parent as NavigatePanelNode;
                 if (parentNode == null) throw new System.Exception();
-                UpdateFolder(parentNode);
+                await UpdateFolder(parentNode);
             }
 
             FolderNode? folderNode = node as FolderNode;
             if (folderNode != null)
             {
-                folderNode.Update();
+                await folderNode.UpdateAsync();
             }
         }
 

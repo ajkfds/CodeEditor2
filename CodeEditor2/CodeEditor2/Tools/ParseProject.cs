@@ -29,7 +29,7 @@ namespace CodeEditor2.Tools
 
             if (projectNode.Project == null) throw new Exception();
 
-            projectNode.Project.Update(); // must be launch on UI thread
+            await projectNode.Project.UpdateAsync(); // must be launch on UI thread
 
             // data update
             await projectNode.HierarchicalVisibleUpdateAsync();

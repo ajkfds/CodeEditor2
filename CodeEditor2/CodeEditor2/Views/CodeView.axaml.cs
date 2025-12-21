@@ -327,7 +327,7 @@ namespace CodeEditor2.Views
 
         private bool skipEvents = false;
 
-        public void SetTextFile(Data.TextFile textFile,bool parseEntry)
+        public async Task SetTextFileAsync(Data.TextFile textFile,bool parseEntry)
         {
             if (TextFile != null) TextFile.StoredVerticalScrollPosition = _textEditor.VerticalOffset;
             if (TextFile == textFile) return;
@@ -361,7 +361,7 @@ namespace CodeEditor2.Views
             }
             else
             {
-                textFile.AcceptParsedDocument(textFile.ParsedDocument);
+                await textFile.AcceptParsedDocumentAsync(textFile.ParsedDocument);
             }
 
             _textEditor.ScrollToVerticalOffset(TextFile.StoredVerticalScrollPosition);

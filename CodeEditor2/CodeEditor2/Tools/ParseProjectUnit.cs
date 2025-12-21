@@ -33,11 +33,8 @@ namespace CodeEditor2.Tools
             ParsedDocument? cashedParsedDocument = textFile.GetCashedParsedDocument();
             if (cashedParsedDocument != null)
             { 
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    textFile.AcceptParsedDocument(cashedParsedDocument);
-                    textFile.ReparseRequested = true;
-                });
+                await textFile.AcceptParsedDocumentAsync(cashedParsedDocument);
+                textFile.ReparseRequested = true;
             }
             else
             {
@@ -48,11 +45,8 @@ namespace CodeEditor2.Tools
                 await parser.ParseAsync();
                 if (parser.ParsedDocument == null) return;
 
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    textFile.AcceptParsedDocument(parser.ParsedDocument);
-                    textFile.ReparseRequested = true;
-                });
+                await textFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
+                textFile.ReparseRequested = true;
             }
 
             Dispatcher.UIThread.Invoke(

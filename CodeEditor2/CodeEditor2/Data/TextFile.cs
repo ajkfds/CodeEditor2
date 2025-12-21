@@ -84,28 +84,14 @@ namespace CodeEditor2.Data
         public virtual CodeEditor.ParsedDocument? ParsedDocument { get; set; }
 
 
-        public virtual void AcceptParsedDocument(CodeEditor2.CodeEditor.ParsedDocument newParsedDocument)
+        public virtual async Task AcceptParsedDocumentAsync(CodeEditor2.CodeEditor.ParsedDocument newParsedDocument)
         {
             CodeEditor2.CodeEditor.ParsedDocument? oldParsedDocument = ParsedDocument;
             ParsedDocument = null;
             if (oldParsedDocument != null) oldParsedDocument.Dispose();
 
             ParsedDocument = newParsedDocument;
-            Update();
-
-            //Task.Run(
-            //    async () =>
-            //    {
-            //        try
-            //        {
-            //            await CreateCashe();
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
-            //        }
-            //    }
-            //);
+            await UpdateAsync();
         }
         public virtual void Close()
         {
@@ -125,7 +111,7 @@ namespace CodeEditor2.Data
 
         public virtual void LoadFormFile()
         {
-            loadDocumentFromFile();
+            LoadDocumentFromFile();
         }
 
 
@@ -137,11 +123,11 @@ namespace CodeEditor2.Data
             {
                 if (document == null)
                 {
-                    loadDocumentFromFile();
+                    LoadDocumentFromFile();
                 }
                 else
                 {
-                    loadedFileLastWriteTime = null;
+                    CashedStatus = null;
                 }
                 if (document == null) throw new Exception();
                 return document;
@@ -161,19 +147,21 @@ namespace CodeEditor2.Data
                 sw.Write(CodeDocument.CreateString());
             }
             CodeDocument.Clean();
-            loadedFileLastWriteTime = System.IO.File.GetLastWriteTime(AbsolutePath);
+
+            var info = new FileInfo(AbsolutePath);
+            CashedStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
         }
 
         public virtual DateTime? LoadedFileLastWriteTime
         {
             get
             {
-                return loadedFileLastWriteTime;
+                if (CashedStatus == null) return null;
+                return CashedStatus.LastWriteTimeUtc;
             }
         }
 
-        protected DateTime? loadedFileLastWriteTime;
-        private void loadDocumentFromFile()
+        protected virtual void LoadDocumentFromFile()
         {
             try
             {
@@ -181,13 +169,16 @@ namespace CodeEditor2.Data
                 {
                     document = new CodeEditor.CodeDocument(this);
                 }
-                
-                loadedFileLastWriteTime = System.IO.File.GetLastWriteTime(AbsolutePath);
-                string text = readStableText(AbsolutePath);
+
+                var info = new FileInfo(AbsolutePath);
+                CashedStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
+
+                string text = ReadStableText(AbsolutePath);
                 lock (document)
                 {
                     document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
                 }
+                document.ClearHistory();
                 document.Clean();
             }
             catch
@@ -196,7 +187,7 @@ namespace CodeEditor2.Data
             }
         }
 
-        private string readStableText(string path)
+        protected string ReadStableText(string path)
         {
             const int maxRetry = 3;
             const int delayMs = 50;
@@ -218,7 +209,11 @@ namespace CodeEditor2.Data
                 long lengthAfter = infoAfter.Exists ? infoAfter.Length : -1;
                 DateTime writeAfter = infoAfter.Exists ? infoAfter.LastWriteTimeUtc : DateTime.MinValue;
 
-                if (lengthBefore == lengthAfter && writeBefore == writeAfter) return text;
+                if (lengthBefore == lengthAfter && writeBefore == writeAfter)
+                {
+                    CashedStatus = new FileStatus(infoAfter.Length, infoAfter.LastWriteTimeUtc);
+                    return text;
+                }
 
                 Thread.Sleep(delayMs);
             }
@@ -266,8 +261,28 @@ namespace CodeEditor2.Data
             return new TextFileNode(this);
         }
 
+        public override async Task OnChangedExternallyAsync()
+        {
+            if( Dirty )
+            {
+                Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
+                await checkUpdate.ShowDialog(Controller.GetMainWindow());
+                if (checkUpdate.Yes)
+                {
+                }
+                else
+                {
 
-        public virtual DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode,System.Threading.CancellationToken? token)
+                }
+            }
+            else
+            {
+                document = null;
+            }
+            //if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+            //Controller.AppendLog("#Exception TextFile.OnChangedExternally",Avalonia.Media.Colors.Red);
+        }
+        public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode,System.Threading.CancellationToken? token)
         {
             return null;
         }
@@ -312,17 +327,16 @@ namespace CodeEditor2.Data
         {
             List<string> parsedIds = new List<string>();
 
-            await parseHierarchy(this, parsedIds, action);
-            Update();
+            await parseHierarchyAsync(this, parsedIds, action);
+            await UpdateAsync();
 
             if (NavigatePanelNode != null)
             {
                 await NavigatePanelNode.HierarchicalVisibleUpdateAsync();
             }
-//            System.Diagnostics.Debug.Print("### TextFile.ParseHierarchy compelet " + parsedIds.Count.ToString() + "module parsed");
         }
 
-        private async Task parseHierarchy(Data.Item item, List<string> parsedIds, Action<ITextFile> action)
+        private async Task parseHierarchyAsync(Data.Item item, List<string> parsedIds, Action<ITextFile> action)
         {
             if (item == null) return;
             Data.ITextFile? textFile = item as Data.TextFile;
@@ -330,14 +344,12 @@ namespace CodeEditor2.Data
             if (textFile.CodeDocument == null) return;
             if (parsedIds.Contains(textFile.ID)) return;
 
-//            System.Diagnostics.Debug.Print("# Try ParseHier "+textFile.ID);
             action(textFile);
             parsedIds.Add(textFile.ID);
 
             if (!textFile.ReparseRequested)
             {
-//                System.Diagnostics.Debug.Print("### TextFileparseHierarchy parse skip : " + textFile.ID);
-                textFile.Update();
+                await textFile.UpdateAsync();
                 textFile.CodeDocument.LockThreadToUI();
             }
             else
@@ -348,12 +360,10 @@ namespace CodeEditor2.Data
                     await parser.ParseAsync();
                     if (parser.ParsedDocument == null)
                     {
-//                        System.Diagnostics.Debug.Print("### TextFileparseHierarchy not parsed : " + textFile.ID + "," + parsedIds.Count.ToString() + "module parsed");
                         return;
                     }
-                    textFile.AcceptParsedDocument(parser.ParsedDocument);
-//                    System.Diagnostics.Debug.Print("### TextFileparseHierarchy parsed : " + textFile.ID+ ","+parsedIds.Count.ToString() + "module parsed");
-                    textFile.Update();
+                    await textFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
+                    await textFile.UpdateAsync();
                 }
             }
 
@@ -369,7 +379,7 @@ namespace CodeEditor2.Data
 
             foreach (Data.Item subitem in items)
             {
-                await parseHierarchy(subitem, parsedIds, action);
+                await parseHierarchyAsync(subitem, parsedIds, action);
             }
 
             if (textFile.ReparseRequested)
@@ -379,11 +389,11 @@ namespace CodeEditor2.Data
                 {
                     await parser.ParseAsync();
                     if (parser.ParsedDocument == null) return;
-                    textFile.AcceptParsedDocument(parser.ParsedDocument);
+                    await textFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
 
                     // textFile.Items.ParsedDocuments Disposed already
                     System.Diagnostics.Debug.Print("# Re-ParseHier.Accept " + textFile.ID);
-                    textFile.Update();
+                    await textFile.UpdateAsync();
                 }
             }
         }

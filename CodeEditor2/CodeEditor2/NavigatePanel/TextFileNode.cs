@@ -79,10 +79,17 @@ namespace CodeEditor2.NavigatePanel
             Controller.NavigatePanel.UpdateVisual();
         }
 
-        public override void OnSelected()
+        public override async void OnSelected()
         {
-            base.OnSelected();
-            if(TextFile != null) Controller.CodeEditor.SetTextFile(TextFile);
+            try
+            {
+                base.OnSelected();
+                if (TextFile != null) await Controller.CodeEditor.SetTextFileAsync(TextFile);
+            }
+            catch
+            {
+                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+            }
         }
 
     }
