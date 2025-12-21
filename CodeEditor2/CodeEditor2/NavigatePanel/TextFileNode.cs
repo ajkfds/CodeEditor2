@@ -27,22 +27,11 @@ namespace CodeEditor2.NavigatePanel
 
         public override void UpdateVisual()
         {
-            Dispatcher.UIThread.Post(() =>
+            if (!Dispatcher.UIThread.CheckAccess())
             {
-                try
-                {
-                    _updateVisual();
-                }
-                catch (Exception ex)
-                {
-                    CodeEditor2.Controller.AppendLog("#Exception " + ex.Message, Avalonia.Media.Colors.Red);
-                    throw;
-                }
-            });
-        }
+                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+            }
 
-        public void _updateVisual()
-        {
             string text = "null";
             Data.TextFile? textFile = TextFile;
             if (textFile != null) text = textFile.Name;

@@ -141,15 +141,21 @@ namespace CodeEditor2.Data
         public virtual void Save()
         {
             if (CodeDocument == null) return;
-
-            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(AbsolutePath))
+            try
             {
-                sw.Write(CodeDocument.CreateString());
-            }
-            CodeDocument.Clean();
+                using (System.IO.StreamWriter sw = new System.IO.StreamWriter(AbsolutePath))
+                {
+                    sw.Write(CodeDocument.CreateString());
+                }
+                CodeDocument.Clean();
 
-            var info = new FileInfo(AbsolutePath);
-            CashedStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
+                var info = new FileInfo(AbsolutePath);
+                CashedStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
+            }
+            catch
+            {
+                Controller.AppendLog("Failed to save : "+RelativePath, Avalonia.Media.Colors.Red);
+            }
         }
 
         public virtual DateTime? LoadedFileLastWriteTime
@@ -180,6 +186,8 @@ namespace CodeEditor2.Data
                 }
                 document.ClearHistory();
                 document.Clean();
+
+                document.Version++;
             }
             catch
             {

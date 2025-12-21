@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Threading;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.TextMate;
 using CodeEditor2.NavigatePanel;
@@ -158,17 +159,26 @@ namespace CodeEditor2.CodeEditor
         {
         }
 
-        private void TextDocument_TextChanged(object? sender, EventArgs e)
+        private async void TextDocument_TextChanged(object? sender, EventArgs e)
         {
-            if (!IsDirty)
+            try
             {
-                Version++;
-                NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
-                node?.UpdateVisual();
+                if (!IsDirty)
+                {
+                    Version++;
+                    NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
+                    await Dispatcher.UIThread.InvokeAsync(
+                        () => { node?.UpdateVisual(); }
+                        );
+                }
+                else
+                {
+                    Version++;
+                }
             }
-            else
+            catch
             {
-                Version++;
+                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
             }
         }
 

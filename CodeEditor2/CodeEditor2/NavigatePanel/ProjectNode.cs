@@ -45,21 +45,11 @@ namespace CodeEditor2.NavigatePanel
         }
         public override void UpdateVisual()
         {
-            Dispatcher.UIThread.Post(() =>
+            if (!Dispatcher.UIThread.CheckAccess())
             {
-                try
-                {
-                    _updateVisual();
-                }
-                catch (Exception ex)
-                {
-                    CodeEditor2.Controller.AppendLog("#Exception " + ex.Message, Colors.Red);
-                    throw;
-                }
-            });
-        }
-        private void _updateVisual()
-        {
+                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+            }
+
             string text = "null";
             Project? project = Project;
             if (project != null) text = project.Name;
