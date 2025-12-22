@@ -110,24 +110,31 @@ namespace CodeEditor2.NavigatePanel
                 await node.HierarchicalUpdateAsync(depth + 1);
             }
         }
-        public override void OnExpand()
+        public override async void OnExpand()
         {
-            Task.Run(
-                async () =>
-                {
-                    await HierarchicalVisibleUpdateAsync();
-                }
-            );
+            try
+            {
+                await HierarchicalVisibleUpdateAsync();
+            }catch(Exception ex)
+            {
+                if(System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+                Controller.AppendLog("** error : NavigatePanelNode.OnExpand", Avalonia.Media.Colors.Red);
+                Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
+            }
         }
 
-        public override void OnCollapse()
+        public override async void OnCollapse()
         {
-            Task.Run(
-                async () =>
-                {
-                    await HierarchicalVisibleUpdateAsync();
-                }
-            );
+            try
+            {
+                await HierarchicalVisibleUpdateAsync();
+            }
+            catch (Exception ex)
+            {
+                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+                Controller.AppendLog("** error : NavigatePanelNode.OnCollapse", Avalonia.Media.Colors.Red);
+                Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
+            }
         }
 
         public async virtual Task HierarchicalVisibleUpdateAsync()
@@ -329,7 +336,7 @@ namespace CodeEditor2.NavigatePanel
 
             System.IO.Directory.CreateDirectory(project.GetAbsolutePath(relativePath + folderName));
 
-            UpdateFolder(node);
+            await UpdateFolder(node);
         }
 
         private async void menuItem_AddBlankFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -367,7 +374,7 @@ namespace CodeEditor2.NavigatePanel
                 }
             }
 
-            CodeEditor2.Controller.NavigatePanel.UpdateFolder(node);
+            await CodeEditor2.Controller.NavigatePanel.UpdateFolder(node);
         }
 
         private async void menuItem_Delete_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -397,7 +404,7 @@ namespace CodeEditor2.NavigatePanel
                 {
                     CodeEditor2.Controller.AppendLog("failed to delete " + relativePath + ":" + ex.Message);
                 }
-                UpdateFolder(node);
+                await UpdateFolder(node);
                 return;
             }
 
@@ -424,7 +431,7 @@ namespace CodeEditor2.NavigatePanel
                 NavigatePanelNode? parentNode = node.Parent as NavigatePanelNode;
                 if (parentNode != null)
                 {
-                    UpdateFolder(parentNode);
+                    await UpdateFolder(parentNode);
                 }
 
                 return;
