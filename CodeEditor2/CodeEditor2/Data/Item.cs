@@ -283,30 +283,17 @@ namespace CodeEditor2.Data
         }
 
 
-        protected WeakReference<NavigatePanel.NavigatePanelNode>? nodeRef;
+        protected NavigatePanel.NavigatePanelNode? node;
         public virtual NavigatePanel.NavigatePanelNode NavigatePanelNode
         {
             get
             {
-                NavigatePanel.NavigatePanelNode? node;
-                if (nodeRef == null)
-                {
-                    node = CreateNode();
-                    if (node == null) throw new Exception();
-                    nodeRef = new WeakReference<NavigatePanel.NavigatePanelNode>(node);
-                    return node;
-                }
-
-                if (nodeRef.TryGetTarget(out node)) return node;
-
-                node = CreateNode();
-                if (node == null) throw new Exception();
-                nodeRef = new WeakReference<NavigatePanel.NavigatePanelNode>(node);
+                if (node == null) node = CreateNode();
                 return node;
             }
             protected set
             {
-                nodeRef = new WeakReference<NavigatePanel.NavigatePanelNode>(value);
+                node = value;
             }
         }
         protected virtual NavigatePanel.NavigatePanelNode CreateNode()
