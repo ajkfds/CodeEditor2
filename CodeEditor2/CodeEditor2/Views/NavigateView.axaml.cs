@@ -22,6 +22,12 @@ namespace CodeEditor2.Views
             TreeControl.Background = new SolidColorBrush(Color.FromRgb(10,10,10));
             TreeControl.SelectedForegroundColor = Color.FromRgb(255, 255, 255);
             TreeControl.ToggleButtonColor = Color.FromRgb(200, 200, 200);
+            TreeControl.OnFontSizeChanged += OnFontSizeChaned;
+        }
+
+        internal void OnFontSizeChaned (double fontSize)
+        {
+            ContextMenu.FontSize = fontSize;
         }
 
         internal async System.Threading.Tasks.Task AddProject(Project project)

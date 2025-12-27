@@ -161,6 +161,11 @@ namespace CodeEditor2.Views
                 if (i.KeyModifiers != KeyModifiers.Control) return;
                 if (i.Delta.Y > 0) _textEditor.FontSize++;
                 else _textEditor.FontSize = _textEditor.FontSize > 1 ? _textEditor.FontSize - 1 : 1;
+
+                PopupTextBlock.FontSize = _textEditor.FontSize;
+                PopupMenu.FontSize = _textEditor.FontSize;
+
+
             }, RoutingStrategies.Bubble, true);
 
             //timer.Interval = new TimeSpan(0, 0, 0, 0, 10);
