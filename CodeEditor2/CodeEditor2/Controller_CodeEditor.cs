@@ -77,13 +77,13 @@ namespace CodeEditor2
                 startIndex = codeDocument.selectionStart;
                 lastIndex = codeDocument.selectionLast;
             }
-            public static void Save()
+            public static async Task SaveAsync()
             {
                 if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
                 if (Global.codeView.CodeDocument == null) return;
                 Data.TextFile? textFile = Global.codeView.CodeDocument.TextFile;
                 if (textFile == null) return;
-                textFile.Save();
+                await textFile.SaveAsync();
             }
 
             public static bool IsPopupMenuOpened

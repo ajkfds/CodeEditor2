@@ -136,26 +136,63 @@ namespace CodeEditor2.Data
             }
         }
 
-        public virtual void Save()
+        //public virtual void Save()
+        //{
+        //    if (CodeDocument == null) return;
+        //    try
+        //    {
+        //        using (System.IO.StreamWriter sw = new System.IO.StreamWriter(AbsolutePath))
+        //        {
+        //            sw.Write(CodeDocument.CreateString());
+        //        }
+        //        CodeDocument.Clean();
+
+        //        var info = new FileInfo(AbsolutePath);
+        //        CashedStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
+        //    }
+        //    catch
+        //    {
+        //        Controller.AppendLog("Failed to save : "+RelativePath, Avalonia.Media.Colors.Red);
+        //    }
+        //}
+        public async virtual Task SaveAsync()
         {
             if (CodeDocument == null) return;
+
+            string filePath = AbsolutePath;
+            string content = CodeDocument.CreateString();
+
             try
             {
-                using (System.IO.StreamWriter sw = new System.IO.StreamWriter(AbsolutePath))
+                using (FileStream fs = new FileStream(
+                                filePath,
+                                FileMode.Create, FileAccess.Write, FileShare.Read,
+                                bufferSize: 4096, useAsync: true))
                 {
-                    sw.Write(CodeDocument.CreateString());
-                }
-                CodeDocument.Clean();
+                    byte[] encodedText = Encoding.UTF8.GetBytes(content);
+                    await fs.WriteAsync(encodedText, 0, encodedText.Length);
 
-                var info = new FileInfo(AbsolutePath);
-                CashedStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
+                    // 重要：バッファに残っているデータを物理ファイルに書き出す
+                    await fs.FlushAsync();
+
+                    // ストリームを開いたまま（＝他プロセスの書き込みをブロックしたまま）
+                    // Windowsの場合、ハンドルの情報を介して取得することで、
+                    // 自分が書き込んだ直後の状態を確定できる。
+                    FileInfo fileInfo = new FileInfo(filePath);
+
+                    // Refreshを呼ぶことで、最新のメタデータをOSに問い合わせる
+                    fileInfo.Refresh();
+
+                    CashedStatus = new FileStatus(fileInfo.Length, fileInfo.LastWriteTimeUtc);
+                }
+
+                CodeDocument.Clean();
             }
-            catch
+            catch (IOException ex)
             {
-                Controller.AppendLog("Failed to save : "+RelativePath, Avalonia.Media.Colors.Red);
+                Console.WriteLine($"ファイルが他のプロセスで使用中、またはエラーが発生しました: {ex.Message}");
             }
         }
-
         public virtual DateTime? LoadedFileLastWriteTime
         {
             get

@@ -491,13 +491,15 @@ namespace CodeEditor2.Views
 
         private void TextArea_KeyDown(object? sender, KeyEventArgs e)
         {
-
             // TextArea.Keydown will not assert @ cursor key
             if (e.KeyModifiers == KeyModifiers.Control)
             {
                 if(e.Key == Key.S)
                 {
-                    Controller.CodeEditor.Save();
+                    Dispatcher.UIThread.Post(
+                        async () => { await Controller.CodeEditor.SaveAsync(); }
+                        );
+                    
                     e.Handled = true;
                     return;
                 }

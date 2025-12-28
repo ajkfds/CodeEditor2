@@ -261,7 +261,9 @@ public partial class MainView : UserControl
 
     private void MenuItem_File_Save_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        Controller.CodeEditor.Save();
+        Dispatcher.UIThread.Post(
+            async () => { await Controller.CodeEditor.SaveAsync();  }
+            );
         Controller.AppendLog("Saved");
     }
     private void MenuItem_File_Exit_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

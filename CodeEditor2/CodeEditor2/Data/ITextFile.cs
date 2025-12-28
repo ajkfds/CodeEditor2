@@ -54,7 +54,7 @@ namespace CodeEditor2.Data
 
         bool Dirty { get; }
 
-        void Save();
+        Task SaveAsync();
         DateTime? LoadedFileLastWriteTime { get; }
 
         //        void AfterKeyPressed(System.Windows.Forms.KeyPressEventArgs e);
