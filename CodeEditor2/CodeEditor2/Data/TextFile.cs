@@ -10,8 +10,6 @@ using CodeEditor2.CodeEditor.PopupHint;
 using CodeEditor2.CodeEditor.PopupMenu;
 using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Svg;
 using System;
 using System.Collections.Generic;
@@ -186,8 +184,6 @@ namespace CodeEditor2.Data
                 }
                 document.ClearHistory();
                 document.Clean();
-
-                document.Version++;
             }
             catch
             {
@@ -459,34 +455,59 @@ namespace CodeEditor2.Data
             path = path + System.IO.Path.DirectorySeparatorChar + CasheId;
             if (!System.IO.File.Exists(path)) return null;
 
-            var settings = new Newtonsoft.Json.JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.Auto,
-                Formatting = Formatting.Indented,
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                ContractResolver = new DefaultContractResolver
-                {
-                    IgnoreSerializableInterface = true,
-                    IgnoreSerializableAttribute = true
-                }
-            };
-            var serializer = Newtonsoft.Json.JsonSerializer.Create(settings);
+            /*
+// 1. シリアライズ時と同じ設定を用意する
+// (実際には、この options は使い回せるように static なプロパティなどに保持しておくのが効率的です)
+var options = new JsonSerializerOptions
+{
+    TypeInfoResolver = new DynamicHierarchyResolver(typeof(SyntaxNode), derivedMap)
+};
 
-            ParsedDocument? parsedDocument;
-            try
-            {
-                using (var reader = new StreamReader(path))
-                using (var jsonReader = new JsonTextReader(reader))
-                {
-                    parsedDocument = serializer.Deserialize<ParsedDocument>(jsonReader);
-                }
-            }
-            catch (Exception exception)
-            {
-                CodeEditor2.Controller.AppendLog("exp " + exception.Message);
-                return null;
-            }
-            return parsedDocument;
+// 2. JSON文字列（またはストリーム）から復元
+// 基底クラスを指定して呼び出すと、適切な派生クラスが返ってくる
+string json = "...(キャッシュファイルの内容)...";
+SyntaxNode? restoredNode = JsonSerializer.Deserialize<SyntaxNode>(json, options);
+
+// 3. 型判定をして利用
+if (restoredNode is IdentifierNode idNode)
+{
+    Console.WriteLine($"Identifier found: {idNode.Name}");
+}
+else if (restoredNode is LiteralNode litNode)
+{
+    Console.WriteLine($"Literal value: {litNode.Value}");
+}             
+             */
+
+            //var settings = new Newtonsoft.Json.JsonSerializerSettings
+            //{
+            //    TypeNameHandling = TypeNameHandling.Auto,
+            //    Formatting = Formatting.Indented,
+            //    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            //    ContractResolver = new DefaultContractResolver
+            //    {
+            //        IgnoreSerializableInterface = true,
+            //        IgnoreSerializableAttribute = true
+            //    }
+            //};
+            //var serializer = Newtonsoft.Json.JsonSerializer.Create(settings);
+
+            //ParsedDocument? parsedDocument;
+            //try
+            //{
+            //    //using (var reader = new StreamReader(path))
+            //    //using (var jsonReader = new JsonTextReader(reader))
+            //    //{
+            //    //    parsedDocument = serializer.Deserialize<ParsedDocument>(jsonReader);
+            //    //}
+            //}
+            //catch (Exception exception)
+            //{
+            //    CodeEditor2.Controller.AppendLog("exp " + exception.Message);
+            //    return null;
+            //}
+            //return parsedDocument;
+            return null;
         }
 
         public virtual async Task<bool> CreateCashe()
@@ -494,47 +515,82 @@ namespace CodeEditor2.Data
             if (!CodeEditor2.Global.ActivateCashe) return true;
 
             if (ParsedDocument == null) return false;
-
-            await TextFile.CasheSemaphore.WaitAsync();
-
+            
             ParsedDocument casheObject = ParsedDocument;
             string path = Project.RootPath + System.IO.Path.DirectorySeparatorChar + ".cashe";
             if (!System.IO.Path.Exists(path)) System.IO.Directory.CreateDirectory(path);
             System.Diagnostics.Debug.Print("entry json " + path);
 
-            path = path + System.IO.Path.DirectorySeparatorChar + CasheId;
-
-            var settings = new Newtonsoft.Json.JsonSerializerSettings
+            // 派生クラスのマッピングを動的に作成（リフレクションやプラグインロード時に構築）
+            var derivedMap = new Dictionary<string, Type>
             {
-                TypeNameHandling = TypeNameHandling.Auto,
-                Formatting = Formatting.Indented,
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                ContractResolver = new DefaultContractResolver
-                {
-                    IgnoreSerializableInterface = true,
-                    IgnoreSerializableAttribute = true
-                }
+//                { "id", typeof(IdentifierNode) },
+//                { "lit", typeof(LiteralNode) }
             };
-            var serializer = Newtonsoft.Json.JsonSerializer.Create(settings);
+
+            var options = new JsonSerializerOptions
+            {
+                TypeInfoResolver = new DynamicHierarchyResolver(typeof(ParsedDocument), derivedMap),
+                WriteIndented = true
+            };
 
             try
             {
-                System.Diagnostics.Debug.Print("start json " + path);
+                string json = JsonSerializer.Serialize<ParsedDocument>(casheObject, options);
                 using (var writer = new StreamWriter(path))
-                using (var jsonWriter = new JsonTextWriter(writer))
                 {
-                    serializer.Serialize(jsonWriter, casheObject);
+                    await writer.WriteAsync(json);
                 }
-                System.Diagnostics.Debug.Print("complete json " + path);
             }
             catch (Exception exception)
             {
                 CodeEditor2.Controller.AppendLog("exp " + exception.Message);
             }
-            finally
-            {
-                TextFile.CasheSemaphore.Release();
-            }
+
+
+
+            //// シリアライズ実行
+
+
+            /////////////////////////////////////////////////////////////////////////////
+
+
+            //if (ParsedDocument == null) return false;
+
+            //await TextFile.CasheSemaphore.WaitAsync();
+
+
+            //var settings = new Newtonsoft.Json.JsonSerializerSettings
+            //{
+            //    TypeNameHandling = TypeNameHandling.Auto,
+            //    Formatting = Formatting.Indented,
+            //    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            //    ContractResolver = new DefaultContractResolver
+            //    {
+            //        IgnoreSerializableInterface = true,
+            //        IgnoreSerializableAttribute = true
+            //    }
+            //};
+            //var serializer = Newtonsoft.Json.JsonSerializer.Create(settings);
+
+            //try
+            //{
+            //    System.Diagnostics.Debug.Print("start json " + path);
+            //    using (var writer = new StreamWriter(path))
+            //    using (var jsonWriter = new JsonTextWriter(writer))
+            //    {
+            //        serializer.Serialize(jsonWriter, casheObject);
+            //    }
+            //    System.Diagnostics.Debug.Print("complete json " + path);
+            //}
+            //catch (Exception exception)
+            //{
+            //    CodeEditor2.Controller.AppendLog("exp " + exception.Message);
+            //}
+            //finally
+            //{
+            //    TextFile.CasheSemaphore.Release();
+            //}
 
             return true;
         }

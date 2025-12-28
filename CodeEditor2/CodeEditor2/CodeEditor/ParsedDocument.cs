@@ -24,7 +24,6 @@ namespace CodeEditor2.CodeEditor
 
         public string Key { get; set; }
 
-        [Newtonsoft.Json.JsonIgnore]
         public long ObjectID
         {
             get
@@ -42,13 +41,13 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        [Newtonsoft.Json.JsonIgnore]
+        [JsonIgnore]
         public List<CodeDocument> LockedDocument = new List<CodeDocument>();
 
         public readonly DocumentParser.ParseModeEnum ParseMode;
 
         private System.WeakReference<Data.TextFile> textFileRef;
-        [Newtonsoft.Json.JsonIgnore]
+        [JsonIgnore]
         public Data.Item? Item
         {
             get
@@ -62,7 +61,7 @@ namespace CodeEditor2.CodeEditor
         /// <summary>
         /// 
         /// </summary>
-        [Newtonsoft.Json.JsonIgnore]
+        [JsonIgnore]
         public Data.TextFile? TextFile
         {
             get
@@ -73,7 +72,6 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        [Newtonsoft.Json.JsonIgnore]
         public Data.Project? Project
         {
             get
@@ -82,14 +80,12 @@ namespace CodeEditor2.CodeEditor
                 return Item.Project;
             }
         }
-        [Newtonsoft.Json.JsonIgnore]
         public ulong Version { get; set; }
 
         public virtual void Dispose()
         {
         }
 
-        [Newtonsoft.Json.JsonIgnore]
         public List<Message> Messages = new List<Message>();
 
         public class Message
@@ -98,7 +94,6 @@ namespace CodeEditor2.CodeEditor
             public int Length { get; protected set; }
             public string Text { get; protected set; } = "";
 
-            [Newtonsoft.Json.JsonIgnore]
             public Data.Project? Project { get; protected set; } = null;
             public virtual MessageView.MessageNode? CreateMessageNode()
             {
@@ -107,7 +102,6 @@ namespace CodeEditor2.CodeEditor
         }
 
         // keep object to avoid gc 
-        [Newtonsoft.Json.JsonIgnore]
         public List<object> KeepObject = new List<object>();
 
         //public virtual List<ajkControls.SelectionForm.SelectionItem> GetInputCandidates()

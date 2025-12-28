@@ -102,6 +102,7 @@ namespace CodeEditor2.Data
             if (!System.IO.File.Exists(AbsolutePath))
             {
                 IsDeleted = true;
+                await OnDeletedExternallyAsync();
                 return;
             }
 
@@ -119,6 +120,11 @@ namespace CodeEditor2.Data
                     CashedStatus = newState;
                 }
             }
+        }
+
+        public virtual Task OnDeletedExternallyAsync()
+        {
+            return Task.CompletedTask;
         }
 
         public virtual Task OnChangedExternallyAsync()

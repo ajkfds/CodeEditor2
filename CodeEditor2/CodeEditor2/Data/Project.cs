@@ -45,7 +45,6 @@ namespace CodeEditor2.Data
             return setup;
         }
 
-        [Newtonsoft.Json.JsonIgnore]
         public FileClassify FileClassify { get; set; }
 
         // setup object to convert project to json file

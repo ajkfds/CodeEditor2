@@ -17,7 +17,7 @@ namespace CodeEditor2.Views
         ItemPropertyForm form;
         CodeEditor2.NavigatePanel.NavigatePanelNode node;
         TextBox cashePathText = new TextBox();
-        CheckBox casheCheck = new CheckBox();
+        CheckBox casheCheck = new CheckBox() { Content = "Activate json Cashe" };
         public ProjectSetupTab(Project project, ItemPropertyForm form, CodeEditor2.NavigatePanel.NavigatePanelNode node)
         {
             this.project = project;
@@ -31,8 +31,6 @@ namespace CodeEditor2.Views
             tab.Content = gridConstructor.Grid;
 
             gridConstructor.AppendText("Project Options", true);
-            gridConstructor.AppendText("Activate json Cashe");
-
             gridConstructor.AppendContol(casheCheck,null);
 
             gridConstructor.AppendText("Cashe Path");
@@ -43,6 +41,7 @@ namespace CodeEditor2.Views
         }
         private void OkButtonControl_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+
             //if (this.compileOptionText.Text == null)
             //{
             //    projectProperty.CompileOption = "";
