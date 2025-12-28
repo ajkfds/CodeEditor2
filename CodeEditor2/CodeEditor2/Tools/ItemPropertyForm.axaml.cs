@@ -23,12 +23,19 @@ public partial class ItemPropertyForm : Window
                 FileTYpeText.Text = file.FileType.ToString();
             }
         }
-
+        Loaded += ItemPropertyForm_Loaded;
         node.InitializePropertyForm(this);
 
         Initialized += ItemPropertyForm_Initialized;
         OkButton.Click += OkButton_Click;
         CancelButton.Click += CancelButton_Click;
+    }
+
+    private void ItemPropertyForm_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        Position = new PixelPoint((int)(Position.X+Width*0.1), (int)(Position.Y+Height*0.1));
+        Width = Width * 0.8;
+        Height = Height * 0.8;
     }
 
     public TabControl TabControl { get => Tabs; }

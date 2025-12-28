@@ -270,6 +270,7 @@ namespace CodeEditor2.NavigatePanel
         public async void menuItem_OpenProperty_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             Tools.ItemPropertyForm form = new Tools.ItemPropertyForm(this);
+            form.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             await form.ShowDialog(Controller.GetMainWindow());
         }
 
