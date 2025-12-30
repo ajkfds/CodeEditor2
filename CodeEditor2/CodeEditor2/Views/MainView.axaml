@@ -50,6 +50,9 @@
 					<TabItem Header="Navigate" FontSize="12">
 						<views:NavigateView Name="NavigateView"/>
 					</TabItem>
+					<TabItem Header="FileType" FontSize="12">
+						
+					</TabItem>
 				</TabControl>
 
 				<GridSplitter Grid.Column="1" Name="SplitterColumn1" ResizeDirection="Columns"/>
