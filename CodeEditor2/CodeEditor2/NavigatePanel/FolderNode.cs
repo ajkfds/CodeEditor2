@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
 using CodeEditor2.Data;
@@ -72,8 +74,19 @@ namespace CodeEditor2.NavigatePanel
                 if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
             }
         }
+
         public override async Task UpdateAsync()
         {
+            await Dispatcher.UIThread.InvokeAsync(updateFolder);
+        }
+
+        private async Task updateFolder()
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+            }
+
             Folder? folder = Folder;
             if (folder == null)
             {
@@ -101,7 +114,7 @@ namespace CodeEditor2.NavigatePanel
                 removeNodes.Add(node);
             }
 
-            foreach (Item item in Folder.Items.Values)
+            foreach (Item item in folder.Items.Values)
             {
                 if (removeNodes.Contains(item.NavigatePanelNode))
                 {
@@ -123,6 +136,7 @@ namespace CodeEditor2.NavigatePanel
                 if (item == null) continue;
                 Nodes.Add(item.NavigatePanelNode);
             }
+
         }
 
     }

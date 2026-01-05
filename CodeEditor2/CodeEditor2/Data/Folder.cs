@@ -240,6 +240,11 @@ namespace CodeEditor2.Data
 //                items.Remove(item.Name);
 //                item.Dispose();
             }
+
+            items.Sort((a, b) =>
+            {
+                return string.Compare(a.Name, b.Name);
+            });
         }
 
         protected override NavigatePanelNode CreateNode()

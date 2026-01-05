@@ -51,7 +51,7 @@
 						<views:NavigateView Name="NavigateView"/>
 					</TabItem>
 					<TabItem Header="FileType" FontSize="12">
-						
+						<views:FileTypeView Name="FileTypeView"/>
 					</TabItem>
 				</TabControl>
 

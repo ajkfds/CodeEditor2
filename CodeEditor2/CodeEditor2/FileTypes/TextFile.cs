@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Avalonia.Media;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,5 +27,14 @@ namespace CodeEditor2.FileTypes
         {
             return Data.TextFile.Create(relativeFilePath, project);
         }
+
+        public override IImage GetIconImage()
+        {
+            return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                "CodeEditor2/Assets/Icons/text.svg",
+                Avalonia.Media.Color.FromArgb(100, 200, 200, 200)
+                );
+        }
+
     }
 }

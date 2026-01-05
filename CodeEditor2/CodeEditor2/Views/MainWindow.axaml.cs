@@ -48,6 +48,7 @@ public partial class MainWindow : Window
 
     private void MainWindow_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        MainView0.FileTypeView.UpdateVisual();
     }
 
     private void MainWindow_Closing(object? sender, WindowClosingEventArgs e)

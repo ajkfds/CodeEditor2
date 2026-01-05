@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Media;
 using CodeEditor2.Data;
 
 namespace CodeEditor2.FileTypes
@@ -15,6 +16,7 @@ namespace CodeEditor2.FileTypes
             return false;
         }
 
+        public bool Visible { get; set; } = true;
         public virtual File CreateFile(string relativeFilePath, Project project)
         {
             System.Diagnostics.Debugger.Break();
@@ -25,5 +27,14 @@ namespace CodeEditor2.FileTypes
         {
 
         }
+
+        public virtual IImage GetIconImage()
+        {
+            return AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+                "CodeEditor2/Assets/Icons/questionDocument.svg",
+                Avalonia.Media.Color.FromArgb(100, 200, 200, 200)
+                );
+        }
+
     }
 }

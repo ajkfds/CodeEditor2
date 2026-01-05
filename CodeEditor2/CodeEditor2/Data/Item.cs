@@ -205,6 +205,11 @@ namespace CodeEditor2.Data
                 }
             }
 
+            public void Sort(Comparison<Item> comparison)
+            {
+                itemList.Sort(comparison);
+            }
+
         }
 
 

@@ -14,6 +14,7 @@ using Svg;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Hashing;
 using System.Linq;
@@ -157,6 +158,7 @@ namespace CodeEditor2.Data
         //}
         public async virtual Task SaveAsync()
         {
+            Debug.Print("SaveAsync " + RelativePath);
             if (CodeDocument == null) return;
 
             string filePath = AbsolutePath;
@@ -204,23 +206,27 @@ namespace CodeEditor2.Data
 
         protected virtual void LoadDocumentFromFile()
         {
+            Debug.Print("LoadDocumentFromFile " + RelativePath);
             try
             {
-                if (document == null)
+                lock (this)
                 {
-                    document = new CodeEditor.CodeDocument(this);
-                }
+                    if (document == null)
+                    {
+                        document = new CodeEditor.CodeDocument(this);
+                    }
 
-                var info = new FileInfo(AbsolutePath);
-                CashedStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
+                    var info = new FileInfo(AbsolutePath);
+                    CashedStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
 
-                string text = ReadStableText(AbsolutePath);
-                lock (document)
-                {
-                    document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
+                    string text = ReadStableText(AbsolutePath);
+                    lock (document)
+                    {
+                        document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
+                    }
+                    document.ClearHistory();
+                    document.Clean();
                 }
-                document.ClearHistory();
-                document.Clean();
             }
             catch
             {
@@ -363,9 +369,20 @@ namespace CodeEditor2.Data
         }
         public virtual List<ToolItem>? GetToolItems(int index)
         {
-            return null;
+
+            if (CustomizeTooltem == null)
+            {
+                return null;
+            }
+            else
+            {
+                List<ToolItem> toolItems = new List<ToolItem>();
+                CustomizeTooltem?.Invoke(toolItems);
+                return toolItems;
+            }
         }
 
+        public static Action<List<ToolItem>>? CustomizeTooltem;
 
         public virtual void TextEntered(TextInputEventArgs e)
         {

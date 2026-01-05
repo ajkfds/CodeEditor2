@@ -33,7 +33,7 @@ namespace CodeEditor2.Data
             if(fileType != null)
             {
                 File file = fileType.CreateFile(relativePath, project);
-                file.FileType = fileType;
+                file.FileType = fileType;       
                 return file;
             }
 

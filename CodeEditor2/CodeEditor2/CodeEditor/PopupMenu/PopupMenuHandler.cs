@@ -137,7 +137,6 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             }
             tools.Add(new ToUpper());
             tools.Add(new ToLower());
-//            tools.Add(new LlmSnippet());
 
             if (tools.Count == 0)
             {

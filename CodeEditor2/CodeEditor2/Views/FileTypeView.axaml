@@ -2,7 +2,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="CodeEditor2.FileTypeView">
-  Welcome to Avalonia!
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
+             x:Class="CodeEditor2.Views.FileTypeView">
+	<ListBox Name="ListBox0"
+			 FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+ 			 FontWeight="Normal"
+			 Background="Black"
+			 Margin="0" Padding="2" FontSize="12"
+			 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+			 >
+	</ListBox>
 </UserControl>
