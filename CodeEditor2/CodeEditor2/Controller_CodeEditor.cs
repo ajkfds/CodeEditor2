@@ -216,6 +216,11 @@ namespace CodeEditor2
                     ClearHighlight();
                 });
             }
+
+            public static void EntryParse()
+            {
+                Dispatcher.UIThread.Invoke(Global.codeView.codeViewParser.EntryParse);
+            }
             public static void Refresh()
             {
                 if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
