@@ -14,16 +14,17 @@ namespace CodeEditor2
     {
         public static class CodeEditor
         {
-            public static async Task SetTextFileAsync(Data.TextFile textFile)
+            public static async Task SetTextFileAsync(Data.TextFile? textFile)
             {
                 if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
                 await SetTextFileAsync(textFile, true);
             }
-            public static async Task SetTextFileAsync(Data.TextFile textFile, bool parseEntry)
+            public static async Task SetTextFileAsync(Data.TextFile? textFile, bool parseEntry)
             {
                 if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
                 if (textFile == null)
                 {
+                    await Global.codeView.SetTextFileAsync(null,false);
                     //Global.codeView. .mainForm.editorPage.CodeEditor.SetTextFile(null);
                     //Global.mainForm.mainTab.TabPages[0].Text = "-";
                 }

@@ -332,7 +332,7 @@ namespace CodeEditor2.Views
 
         private bool skipEvents = false;
 
-        public async Task SetTextFileAsync(Data.TextFile textFile,bool parseEntry)
+        public async Task SetTextFileAsync(Data.TextFile? textFile,bool parseEntry)
         {
             if (TextFile != null) TextFile.StoredVerticalScrollPosition = _textEditor.VerticalOffset;
 //            if (TextFile == textFile) return;
