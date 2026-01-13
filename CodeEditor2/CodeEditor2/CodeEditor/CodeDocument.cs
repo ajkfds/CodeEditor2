@@ -383,6 +383,14 @@ namespace CodeEditor2.CodeEditor
 
         public void Replace(int index, int replaceLength, byte colorIndex, string text)
         {
+            if(!Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    Replace(index, replaceLength, colorIndex, text);
+                }).Wait();
+                return;
+            }
             if (textDocument == null) return;
             lock (this)
             {
