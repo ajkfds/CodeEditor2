@@ -289,22 +289,7 @@ namespace CodeEditor2.Data
         }
         private async Task fileChaned(Data.ITextFile textFile)
         {
-            if (textFile.Dirty)
-            {
-                Controller.AppendLog(textFile.RelativePath + " file edit conflict!", Avalonia.Media.Colors.Red);
-                await textFile.UpdateAsync();
-            }
-            else
-            {
-                await textFile.UpdateAsync();
-                //DateTime lastWriteTime = System.IO.File.GetLastWriteTime(GetAbsolutePath(textFile.RelativePath));
-                //if (textFile.LoadedFileLastWriteTime != lastWriteTime)
-                //{
-                //    textFile.LoadFormFile();
-
-                //    // fire and forget
-                //}
-            }
+            await textFile.UpdateAsync();
         }
 
         private void FileDeleted(object sender, FileSystemEventArgs e)

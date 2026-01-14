@@ -114,7 +114,7 @@ namespace CodeEditor2.Data
             }
             else
             {
-                if(CashedStatus.LastWriteTimeUtc != newState.LastWriteTimeUtc || CashedStatus.Size != newState.Size)
+                if(CashedStatus.LastWriteTimeUtc < newState.LastWriteTimeUtc || CashedStatus.Size != newState.Size)
                 {
                     await OnChangedExternallyAsync();
                     CashedStatus = newState;

@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using AvaloniaEdit.Document;
 using CodeEditor2.CodeEditor;
@@ -206,12 +207,12 @@ namespace CodeEditor2.Data
 
         protected virtual void LoadDocumentFromFile()
         {
-            bool selected = false;
-            if(CodeEditor2.Controller.CodeEditor.GetTextFile() == this)
-            {
-                CodeEditor2.Controller.CodeEditor.SetTextFileAsync(null).Wait();
-                selected = true;
-            }
+            //bool selected = false;
+            //if(CodeEditor2.Controller.CodeEditor.GetTextFile() == this)
+            //{
+            //    CodeEditor2.Controller.CodeEditor.SetTextFileAsync(null).Wait();
+            //    selected = true;
+            //}
             Debug.Print("LoadDocumentFromFile " + RelativePath);
             try
             {
@@ -233,11 +234,11 @@ namespace CodeEditor2.Data
                     document.ClearHistory();
                     document.Clean();
                 }
-                if (selected)
-                {
-                    CodeEditor2.Controller.CodeEditor.SetTextFileAsync(this).Wait();
-                    CodeEditor2.Controller.CodeEditor.EntryParse();
-                }
+                //if (selected)
+                //{
+                //    CodeEditor2.Controller.CodeEditor.SetTextFileAsync(this).Wait();
+                //    CodeEditor2.Controller.CodeEditor.EntryParse();
+                //}
             }
             catch
             {
