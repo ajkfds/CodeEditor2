@@ -58,6 +58,7 @@ public partial class ChatControl : UserControl
     // initialize
     private ScrollViewer scrollViewer;
     private bool _isInternalScrolling = false; // システムによるスクロール中かどうかのフラグ
+    private bool initialized = false;
     private void ListBox0_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         var scrollViewer = ListBox0.FindDescendantOfType<ScrollViewer>();
@@ -103,6 +104,15 @@ public partial class ChatControl : UserControl
             }
         };
         this.scrollViewer = scrollViewer;
+        if(!initialized)
+        {
+            initialized = true;
+            Dispatcher.UIThread.Post(async () =>
+            {
+                await ResetAsync();
+            });
+        }
+        //await ResetAsync();
     }
 
     public ObservableCollection<ChatItem> Items { get; set; } = new ObservableCollection<ChatItem>();
@@ -126,14 +136,18 @@ public partial class ChatControl : UserControl
 
 
     // external control
-    public async Task SetModelAsync(ILLMChatFrontEnd chatModel, LLMAgent? agent)
+    public void SetModel(ILLMChatFrontEnd chatModel, LLMAgent? agent)
     {
         this.chat = chatModel;
         this.agent = agent;
-        //        Model = model;
-        //        chat = new OpenRouterChat(Model, enableFunctionCalling);
-        //        Items.Add(new TextItem(Model.Caption + "\n"));
-        await ResetAsync();
+        if (initialized)
+        {
+            initialized = true;
+            Dispatcher.UIThread.Post(async () =>
+            {
+                await ResetAsync();
+            });
+        }
     }
 
     public async Task ResetAsync()
