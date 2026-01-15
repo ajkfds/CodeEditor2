@@ -125,10 +125,6 @@ namespace CodeEditor2.Data
                 {
                     LoadDocumentFromFile();
                 }
-                else
-                {
-                    CashedStatus = null;
-                }
                 if (document == null) throw new Exception();
                 return document;
             }
@@ -177,16 +173,7 @@ namespace CodeEditor2.Data
 
                     // 重要：バッファに残っているデータを物理ファイルに書き出す
                     await fs.FlushAsync();
-
-                    // ストリームを開いたまま（＝他プロセスの書き込みをブロックしたまま）
-                    // Windowsの場合、ハンドルの情報を介して取得することで、
-                    // 自分が書き込んだ直後の状態を確定できる。
-                    FileInfo fileInfo = new FileInfo(filePath);
-
-                    // Refreshを呼ぶことで、最新のメタデータをOSに問い合わせる
-                    fileInfo.Refresh();
-
-                    CashedStatus = new FileStatus(fileInfo.Length, fileInfo.LastWriteTimeUtc);
+                    loadFileHash = GetHash(content);
                 }
 
                 CodeDocument.Clean();
@@ -196,23 +183,26 @@ namespace CodeEditor2.Data
                 Console.WriteLine($"ファイルが他のプロセスで使用中、またはエラーが発生しました: {ex.Message}");
             }
         }
-        public virtual DateTime? LoadedFileLastWriteTime
-        {
-            get
-            {
-                if (CashedStatus == null) return null;
-                return CashedStatus.LastWriteTimeUtc;
-            }
-        }
+        //public virtual DateTime? LoadedFileLastWriteTime
+        //{
+        //    get
+        //    {
+        //        if (CashedStatus == null) return null;
+        //        return CashedStatus.LastWriteTimeUtc;
+        //    }
+        //}
 
+        /*
+         *
+         byte[] data = Encoding.UTF8.GetBytes(AbsolutePath);
+         byte[] hashBytes = XxHash64.Hash(data);
+         string hex = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+
+         */
+
+        protected string loadFileHash = "";
         protected virtual void LoadDocumentFromFile()
         {
-            //bool selected = false;
-            //if(CodeEditor2.Controller.CodeEditor.GetTextFile() == this)
-            //{
-            //    CodeEditor2.Controller.CodeEditor.SetTextFileAsync(null).Wait();
-            //    selected = true;
-            //}
             Debug.Print("LoadDocumentFromFile " + RelativePath);
             try
             {
@@ -223,22 +213,13 @@ namespace CodeEditor2.Data
                         document = new CodeEditor.CodeDocument(this);
                     }
 
-                    var info = new FileInfo(AbsolutePath);
-                    CashedStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
-
                     string text = ReadStableText(AbsolutePath);
-                    lock (document)
-                    {
-                        document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
-                    }
+                    loadFileHash = GetHash(text);
+
+                    document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
                     document.ClearHistory();
                     document.Clean();
                 }
-                //if (selected)
-                //{
-                //    CodeEditor2.Controller.CodeEditor.SetTextFileAsync(this).Wait();
-                //    CodeEditor2.Controller.CodeEditor.EntryParse();
-                //}
             }
             catch
             {
@@ -270,7 +251,6 @@ namespace CodeEditor2.Data
 
                 if (lengthBefore == lengthAfter && writeBefore == writeAfter)
                 {
-                    CashedStatus = new FileStatus(infoAfter.Length, infoAfter.LastWriteTimeUtc);
                     return text;
                 }
 
@@ -284,26 +264,13 @@ namespace CodeEditor2.Data
 
             return sr2.ReadToEnd();
         }
-        //public string GetMd5Hash()
-        //{
-        //    //if (document == null) return "";
-        //    //byte[] data = System.Text.Encoding.UTF8.GetBytes(document.CreateString());
 
-        //    //System.Security.Cryptography.MD5CryptoServiceProvider md5 =
-        //    //    new System.Security.Cryptography.MD5CryptoServiceProvider();
-
-        //    //byte[] bs = md5.ComputeHash(data);
-        //    //md5.Clear();
-
-        //    //System.Text.StringBuilder result = new System.Text.StringBuilder();
-        //    //foreach (byte b in bs)
-        //    //{
-        //    //    result.Append(b.ToString("x2"));
-        //    //}
-
-        //    return result.ToString();
-        //}
-
+        public string GetHash(string text)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(text);
+            byte[] hashBytes = XxHash64.Hash(data);
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        }
 
         public virtual CodeDrawStyle DrawStyle
         {
@@ -320,34 +287,26 @@ namespace CodeEditor2.Data
             return new TextFileNode(this);
         }
 
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-        public override async Task OnChangedExternallyAsync()
+        public override async Task UpdateAsync()
         {
-            if (_semaphore.CurrentCount == 0) return;
-
-            await _semaphore.WaitAsync();
-            try
+            await base.UpdateAsync();
+            if (!System.IO.File.Exists(AbsolutePath))
             {
-                if (Dirty)
-                {
-                    Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
-                    await checkUpdate.ShowDialog(Controller.GetMainWindow());
-                    if (checkUpdate.Yes)
-                    {
-                        document = null;
-                        LoadDocumentFromFile();
-                        if (Controller.NavigatePanel.GetSelectedFile() == this)
-                        {
-                            await Controller.CodeEditor.SetTextFileAsync(this);
-                        }
-                        Controller.CodeEditor.Refresh();
-                    }
-                    else
-                    {
+                IsDeleted = true;
+                await OnDeletedExternallyAsync();
+                return;
+            }
 
-                    }
-                }
-                else
+            string text = ReadStableText(AbsolutePath);
+            string newFileHash = GetHash(text);
+
+            if (newFileHash == loadFileHash) return;
+
+            if (Dirty)
+            {
+                Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
+                await checkUpdate.ShowDialog(Controller.GetMainWindow());
+                if (checkUpdate.Yes)
                 {
                     document = null;
                     LoadDocumentFromFile();
@@ -357,12 +316,21 @@ namespace CodeEditor2.Data
                     }
                     Controller.CodeEditor.Refresh();
                 }
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
+                else
+                {
 
+                }
+            }
+            else
+            {
+                document = null;
+                LoadDocumentFromFile();
+                if (Controller.NavigatePanel.GetSelectedFile() == this)
+                {
+                    await Controller.CodeEditor.SetTextFileAsync(this);
+                }
+                Controller.CodeEditor.Refresh();
+            }
         }
         public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode,System.Threading.CancellationToken? token)
         {

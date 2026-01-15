@@ -92,8 +92,8 @@ namespace CodeEditor2.Data
         {
             return new FileNode(this);
         }
-        public record FileStatus(long Size, DateTime LastWriteTimeUtc);
-        public FileStatus? CashedStatus { get; set; } = null;
+        //public record FileStatus(long Size, DateTime LastWriteTimeUtc);
+        //public FileStatus? CashedStatus { get; set; } = null;
 
 
         public override async Task UpdateAsync()
@@ -106,20 +106,20 @@ namespace CodeEditor2.Data
                 return;
             }
 
-            var info = new FileInfo(AbsolutePath);
-            var newState = new FileStatus(info.Length, info.LastWriteTimeUtc);
-            if (CashedStatus == null)
-            {
-                CashedStatus = newState;
-            }
-            else
-            {
-                if(CashedStatus.LastWriteTimeUtc < newState.LastWriteTimeUtc || CashedStatus.Size != newState.Size)
-                {
-                    await OnChangedExternallyAsync();
-                    CashedStatus = newState;
-                }
-            }
+            //var info = new FileInfo(AbsolutePath);
+            //var currentStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
+            //if (CashedStatus == null)
+            //{
+            //    CashedStatus = currentStatus;
+            //}
+            //else
+            //{
+            //    if(CashedStatus.LastWriteTimeUtc < currentStatus.LastWriteTimeUtc || CashedStatus.Size != currentStatus.Size)
+            //    {
+            //        await OnChangedExternallyAsync();
+            //        CashedStatus = currentStatus;
+            //    }
+            //}
         }
 
         public virtual Task OnDeletedExternallyAsync()
@@ -127,10 +127,10 @@ namespace CodeEditor2.Data
             return Task.CompletedTask;
         }
 
-        public virtual Task OnChangedExternallyAsync()
-        {
-            return Task.CompletedTask;
-        }
+        //public virtual Task OnChangedExternallyAsync()
+        //{
+        //    return Task.CompletedTask;
+        //}
 
     }
 }

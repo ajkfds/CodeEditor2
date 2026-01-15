@@ -334,19 +334,27 @@ namespace CodeEditor2.Views
 
         public async Task SetTextFileAsync(Data.TextFile? textFile,bool parseEntry)
         {
+            if(Dispatcher.UIThread.CheckAccess() == false)
+            {
+                await Dispatcher.UIThread.InvokeAsync(
+                    async () => { await SetTextFileAsync(textFile, parseEntry); }
+                    );
+                return;
+            }
+
+            lock (this)
+            {
+
+            }
             if (TextFile != null) TextFile.StoredVerticalScrollPosition = _textEditor.VerticalOffset;
-//            if (TextFile == textFile) return;
 
             skipEvents = true;
 
             if (codeViewPopupMenu.Snippet != null) codeViewPopupMenu.AbortInteractiveSnippet();
             if (codeViewPopupMenu.IsOpened) codeViewPopupMenu.HidePopupMenu();
 
+            if (CodeDocument != null) CodeDocument.Changing = null;
             FoldingManager.Uninstall(_foldingManager);
-            if (CodeDocument != null)
-            {
-                detachFromCodeDocument();
-            }
 
             if (textFile == null || textFile.CodeDocument == null)
             {
@@ -358,16 +366,6 @@ namespace CodeEditor2.Views
 
             // restore caret position
             _textEditor.CaretOffset = textFile.CodeDocument.CaretIndex;
-
-            // update ParseDocument Result to current Text
-            if(textFile.ParsedDocument == null)
-            {
-                textFile.ReparseRequested = true;
-            }
-            else
-            {
-                await textFile.AcceptParsedDocumentAsync(textFile.ParsedDocument);
-            }
 
             _textEditor.ScrollToVerticalOffset(TextFile.StoredVerticalScrollPosition);
 
@@ -381,6 +379,17 @@ namespace CodeEditor2.Views
             Controller.AddSelectHistory(new TextReference(textFile, _textEditor.CaretOffset,0));
             Controller.Tabs.SelectTab(Global.mainView.EditorTabItem);
             Controller.CodeEditor.Refresh();
+
+            // update ParseDocument Result to current Text
+            if (textFile.ParsedDocument == null)
+            {
+                textFile.ReparseRequested = true;
+            }
+            else
+            {
+                await textFile.AcceptParsedDocumentAsync(textFile.ParsedDocument);
+                Controller.CodeEditor.Refresh();
+            }
         }
         private void TextEditor_ContextRequested(object? sender, ContextRequestedEventArgs e)
         {
@@ -429,11 +438,6 @@ namespace CodeEditor2.Views
 
             if (CodeDocument != null) CodeDocument.Changing += CodeDocument_Changing;
             _foldingManager = FoldingManager.Install(_textEditor.TextArea);
-        }
-        private void detachFromCodeDocument()
-        {
-            if (CodeDocument != null) CodeDocument.Changing = null;
-            FoldingManager.Uninstall(_foldingManager);
         }
 
         public void ScrollToCaret()

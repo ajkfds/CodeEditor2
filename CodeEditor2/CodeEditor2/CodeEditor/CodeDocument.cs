@@ -152,6 +152,7 @@ namespace CodeEditor2.CodeEditor
         {
             TextColors.OnTextEdit(e);
             HighLights.OnTextEdit(e);
+            Foldings.OnTextEdit(e);
             if(Changing != null) Changing(sender, e);
         }
 
@@ -190,19 +191,7 @@ namespace CodeEditor2.CodeEditor
         private bool disposed = false;
         public void Dispose()
         {
-            //if (Global.mainForm.editorPage.CodeEditor.codeTextbox.Document == this)
-            //{
-            //    Global.mainForm.editorPage.CodeEditor.codeTextbox.Document = null;
-            //}
             disposed = true;
-            //chars.Dispose();
-            if (!textOnly)
-            {
-                //colors.Dispose();
-                //marks.Dispose();
-                //newLineIndex.Dispose();
-                //lineVisible.Dispose();
-            }
         }
 
         public bool IsDisposed
@@ -406,19 +395,6 @@ namespace CodeEditor2.CodeEditor
             if (index > Length) return 0;
             return textDocument.GetLineByOffset(index).LineNumber;
         }
-
-        //public int GetVisibleLine(int line)
-        //{
-        //    lock (this)
-        //    {
-        //        int visibleLine = 0;
-        //        for (int l = 0; l < line; l++)
-        //        {
-        //            if (lineVisible[l]) visibleLine++;
-        //        }
-        //        return visibleLine;
-        //    }
-        //}
 
 
         public int GetLineStartIndex(int line)

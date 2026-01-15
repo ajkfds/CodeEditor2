@@ -30,7 +30,7 @@ namespace CodeEditor2.Data
 
         List<Item> FindItems(Func<Item, bool> match, Func<Item, bool> stop);
 
-        FileStatus? CashedStatus { get; set; }
+        //FileStatus? CashedStatus { get; set; }
 
         void CheckStatus();
         void Dispose();
@@ -55,7 +55,6 @@ namespace CodeEditor2.Data
         bool Dirty { get; }
 
         Task SaveAsync();
-        DateTime? LoadedFileLastWriteTime { get; }
 
         //        void AfterKeyPressed(System.Windows.Forms.KeyPressEventArgs e);
         //        void AfterKeyDown(System.Windows.Forms.KeyEventArgs e);
