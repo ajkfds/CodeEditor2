@@ -150,6 +150,7 @@ namespace CodeEditor2.CodeEditor
         }
         private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
         {
+            Version++;
             TextColors.OnTextEdit(e);
             HighLights.OnTextEdit(e);
             Foldings.OnTextEdit(e);
@@ -166,7 +167,7 @@ namespace CodeEditor2.CodeEditor
             {
                 if (!IsDirty)
                 {
-                    Version++;
+//                    Version++;
                     NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
                     await Dispatcher.UIThread.InvokeAsync(
                         () => { node?.UpdateVisual(); }
@@ -174,7 +175,7 @@ namespace CodeEditor2.CodeEditor
                 }
                 else
                 {
-                    Version++;
+//                    Version++;
                 }
             }
             catch

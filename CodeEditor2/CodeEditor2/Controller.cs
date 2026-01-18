@@ -24,33 +24,41 @@ namespace CodeEditor2
     {
         public static void AppendLog(string message)
         {
-            if (Dispatcher.UIThread.CheckAccess())
-            {
-                Global.logView.AppendLog(message);
-            }
-            else
+            if (!Dispatcher.UIThread.CheckAccess())
             {
                 Dispatcher.UIThread.Post(() =>
                 {
-                    Global.logView.AppendLog(message);
+                    AppendLog(message);
                 });
+                return;
             }
-
-            System.Diagnostics.Debug.Print(message);
+            Global.logView.AppendLog(message);
         }
         public static void AppendLog(string message, Avalonia.Media.Color color)
         {
-            if (Dispatcher.UIThread.CheckAccess())
-            {
-                Global.logView.AppendLog(message, color);
-            }
-            else
+            if (!Dispatcher.UIThread.CheckAccess())
             {
                 Dispatcher.UIThread.Post(() =>
                 {
-                    Global.logView.AppendLog(message, color);
+                    AppendLog(message, color);
                 });
+                return;
             }
+
+            Global.logView.AppendLog(message, color);
+        }
+
+        public static async Task<WeakReference<ListViewItem>> AppendLogAndGetItem(string message, Avalonia.Media.Color color)
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                await Dispatcher.UIThread.InvokeAsync(async() => { 
+                    return await AppendLogAndGetItem(message, color); }
+                );
+                return null;
+            }
+
+            return Global.logView.AppendLogAndGetLastItem(message, color);
         }
 
         public static Window GetMainWindow()

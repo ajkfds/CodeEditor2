@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using AjkAvaloniaLibs.Controls;
+using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media.TextFormatting;
@@ -40,7 +41,8 @@ namespace CodeEditor2.Data
             {
                 name = relativePath;
             }
-            TextFile fileItem = new TextFile() {
+            TextFile fileItem = new TextFile()
+            {
                 Project = project,
                 RelativePath = relativePath,
                 Name = name
@@ -53,7 +55,8 @@ namespace CodeEditor2.Data
 
         }
 
-        public virtual string Key {
+        public virtual string Key
+        {
             get
             {
                 return RelativePath;
@@ -134,28 +137,10 @@ namespace CodeEditor2.Data
             }
         }
 
-        //public virtual void Save()
-        //{
-        //    if (CodeDocument == null) return;
-        //    try
-        //    {
-        //        using (System.IO.StreamWriter sw = new System.IO.StreamWriter(AbsolutePath))
-        //        {
-        //            sw.Write(CodeDocument.CreateString());
-        //        }
-        //        CodeDocument.Clean();
-
-        //        var info = new FileInfo(AbsolutePath);
-        //        CashedStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
-        //    }
-        //    catch
-        //    {
-        //        Controller.AppendLog("Failed to save : "+RelativePath, Avalonia.Media.Colors.Red);
-        //    }
-        //}
         public async virtual Task SaveAsync()
         {
-            Debug.Print("SaveAsync " + RelativePath);
+            WeakReference<ListViewItem> itemRef = await Controller.AppendLogAndGetItem("Save " + RelativePath + "...", Avalonia.Media.Colors.Green);
+
             if (CodeDocument == null) return;
 
             string filePath = AbsolutePath;
@@ -177,10 +162,17 @@ namespace CodeEditor2.Data
                 }
 
                 CodeDocument.Clean();
+                if (itemRef.TryGetTarget(out var item))
+                {
+                    item.Text = item.Text + " complete";
+                }
             }
             catch (IOException ex)
             {
-                Console.WriteLine($"ファイルが他のプロセスで使用中、またはエラーが発生しました: {ex.Message}");
+                if (itemRef.TryGetTarget(out var item)){
+                    item.Text = item.Text + " failed to write textfile";
+                }
+                //                Console.WriteLine($"ファイルが他のプロセスで使用中、またはエラーが発生しました: {ex.Message}");
             }
         }
         //public virtual DateTime? LoadedFileLastWriteTime
@@ -232,7 +224,7 @@ namespace CodeEditor2.Data
             const int maxRetry = 3;
             const int delayMs = 50;
 
-            for(int i = 0; i < maxRetry; i++)
+            for (int i = 0; i < maxRetry; i++)
             {
                 var infoBefore = new FileInfo(path);
                 long lengthBefore = infoBefore.Exists ? infoBefore.Length : -1;
@@ -332,7 +324,7 @@ namespace CodeEditor2.Data
                 Controller.CodeEditor.Refresh();
             }
         }
-        public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode,System.Threading.CancellationToken? token)
+        public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token)
         {
             return null;
         }
@@ -415,7 +407,7 @@ namespace CodeEditor2.Data
             }
             else
             {
-                DocumentParser? parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse,null);
+                DocumentParser? parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse, null);
                 if (parser != null)
                 {
                     await parser.ParseAsync();
@@ -445,7 +437,7 @@ namespace CodeEditor2.Data
 
             if (textFile.ReparseRequested)
             {
-                DocumentParser? parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse,null);
+                DocumentParser? parser = item.CreateDocumentParser(DocumentParser.ParseModeEnum.BackgroundParse, null);
                 if (parser != null)
                 {
                     await parser.ParseAsync();
@@ -474,7 +466,7 @@ namespace CodeEditor2.Data
                 //byte[] data = Encoding.UTF8.GetBytes(AbsolutePath);
                 //byte[] hashBytes = XxHash64.Hash(data);
                 //string hex = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-                string hex = RelativePath.Replace(@"\", "_").Replace("/", "_").Replace(":","_").Replace(".", "_")+".json";
+                string hex = RelativePath.Replace(@"\", "_").Replace("/", "_").Replace(":", "_").Replace(".", "_") + ".json";
                 return hex;
             }
         }
@@ -549,7 +541,7 @@ else if (restoredNode is LiteralNode litNode)
             if (!CodeEditor2.Global.ActivateCashe) return true;
 
             if (ParsedDocument == null) return false;
-            
+
             ParsedDocument casheObject = ParsedDocument;
             string path = Project.RootPath + System.IO.Path.DirectorySeparatorChar + ".cashe";
             if (!System.IO.Path.Exists(path)) System.IO.Directory.CreateDirectory(path);
@@ -558,8 +550,8 @@ else if (restoredNode is LiteralNode litNode)
             // 派生クラスのマッピングを動的に作成（リフレクションやプラグインロード時に構築）
             var derivedMap = new Dictionary<string, Type>
             {
-//                { "id", typeof(IdentifierNode) },
-//                { "lit", typeof(LiteralNode) }
+                //                { "id", typeof(IdentifierNode) },
+                //                { "lit", typeof(LiteralNode) }
             };
 
             var options = new JsonSerializerOptions
