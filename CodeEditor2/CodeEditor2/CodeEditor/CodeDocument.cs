@@ -153,6 +153,7 @@ namespace CodeEditor2.CodeEditor
             Version++;
             TextColors.OnTextEdit(e);
             HighLights.OnTextEdit(e);
+            Marks.OnTextEdit(e);
             Foldings.OnTextEdit(e);
             if(Changing != null) Changing(sender, e);
         }
