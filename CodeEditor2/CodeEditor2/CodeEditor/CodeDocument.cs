@@ -208,7 +208,7 @@ namespace CodeEditor2.CodeEditor
         {
             CleanVersion = Version;
             NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
-            node?.UpdateVisual();
+            Dispatcher.UIThread.Post(() => { node?.UpdateVisual(); });
         }
 
         public void ClearHistory()

@@ -140,9 +140,9 @@ namespace CodeEditor2.CodeEditor.Parser
             if (parser.ParsedDocument == null) return;
 
             Data.TextFile targetTextFile = parser.TextFile;
-            CodeDocument? targetCodeDocument = targetTextFile.CodeDocument;
+            CodeDocument targetCodeDocument = await targetTextFile.GetCodeDocumentAsync();
 
-            if (targetTextFile == null || targetCodeDocument == null)
+            if (targetTextFile == null)
             {
                 parser.Dispose();
                 return;

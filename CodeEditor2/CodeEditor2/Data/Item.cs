@@ -183,18 +183,18 @@ namespace CodeEditor2.Data
             set 
             {
                 isDeleted = value;
-                if (isDeleted)
-                {
-                    if(Parent != null && Parent.Items.ContainsKey(Name))
-                    {
-                        Parent.Items.Remove(Name);
-                    }
-                    Dispose();
-                }
-                else
-                {
-                    if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
-                }
+                //if (isDeleted)
+                //{
+                //    if(Parent != null && Parent.Items.ContainsKey(Name))
+                //    {
+                //        Parent.Items.Remove(Name);
+                //    }
+                //    Dispose();
+                //}
+                //else
+                //{
+                //    if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+                //}
             }
         }
 
@@ -340,6 +340,10 @@ namespace CodeEditor2.Data
             }
         }
 
+        public virtual Task SyncStatus()
+        {
+            return Task.CompletedTask;
+        }
 
         public virtual void Dispose()
         {

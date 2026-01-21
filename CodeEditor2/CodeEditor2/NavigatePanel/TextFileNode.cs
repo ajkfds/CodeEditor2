@@ -1,5 +1,6 @@
 ﻿using Avalonia.Media;
 using Avalonia.Threading;
+using CodeEditor2.CodeEditor;
 using ExCSS;
 using HarfBuzzSharp;
 using SkiaSharp;
@@ -47,7 +48,8 @@ namespace CodeEditor2.NavigatePanel
                 return;
             }
 
-            if (textFile.CodeDocument != null && textFile.CodeDocument.IsDirty)
+            CodeDocument? document = textFile.CodeDocument;
+            if (document != null && document.IsDirty)
             {
                 Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/text.svg",

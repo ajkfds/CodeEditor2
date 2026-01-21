@@ -47,7 +47,8 @@ namespace CodeEditor2.NavigatePanel
         {
             if (!Dispatcher.UIThread.CheckAccess())
             {
-                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+                Dispatcher.UIThread.Invoke(() => { UpdateVisual(); });
+                return;
             }
 
             string text = "null";

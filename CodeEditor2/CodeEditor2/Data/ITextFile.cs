@@ -41,14 +41,15 @@ namespace CodeEditor2.Data
         NavigatePanel.NavigatePanelNode NavigatePanelNode { get; }
         DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token);
 
+
         // textFile
-        CodeEditor.CodeDocument? CodeDocument { get; }
+        CodeDocument CodeDocument { get; }
+        Task<CodeEditor.CodeDocument> GetCodeDocumentAsync();
         bool IsCodeDocumentCashed { get; }
 
         CodeEditor.ParsedDocument? ParsedDocument { get; set; }
         Task AcceptParsedDocumentAsync(CodeEditor.ParsedDocument newParsedDocument);
 
-        void LoadFormFile();
         bool ReparseRequested { get; }
         // projectItem
 

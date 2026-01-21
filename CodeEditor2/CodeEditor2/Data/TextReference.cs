@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using CodeEditor2.CodeEditor;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +19,10 @@ namespace CodeEditor2.Data
             StartIndex = startIndex;
             Length = length;
             Caption = textFile.Name;
-            if(textFile.CodeDocument != null)
+            CodeDocument? document = textFile.CodeDocument;
+            if(document != null)
             {
-                int line = textFile.CodeDocument.GetLineAt(startIndex);
+                int line = document.GetLineAt(startIndex);
                 Caption = Caption + " : line" + line.ToString();
             }
         }

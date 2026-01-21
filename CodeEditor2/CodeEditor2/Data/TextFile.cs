@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Hashing;
 using System.Linq;
@@ -24,6 +25,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.Data
 {
@@ -99,41 +101,35 @@ namespace CodeEditor2.Data
         public virtual void Close()
         {
             if (Dirty) return;
-            if (CodeDocument == null) return;
-            CodeDocument.Dispose();
+            if (document == null) return;
+            document.Dispose();
         }
 
         public virtual bool Dirty
         {
             get
             {
-                if (CodeDocument == null) return false;
-                return CodeDocument.IsDirty;
+                if (document == null) return false;
+                return document.IsDirty;
             }
-        }
-
-        public virtual void LoadFormFile()
-        {
-            LoadDocumentFromFile();
         }
 
 
         protected CodeEditor.CodeDocument? document = null;
 
-        public virtual CodeEditor.CodeDocument? CodeDocument
+        public virtual async Task<CodeEditor.CodeDocument> GetCodeDocumentAsync()
+        {
+            await FileCheck();
+            if (document == null) throw new Exception();
+            return document;
+        }
+        public virtual CodeDocument CodeDocument
         {
             get
             {
-                if (document == null)
-                {
-                    LoadDocumentFromFile();
-                }
+                if (document == null) Task.Run(FileCheck).Wait();
                 if (document == null) throw new Exception();
                 return document;
-            }
-            protected set
-            {
-                document = value;
             }
         }
 
@@ -141,82 +137,128 @@ namespace CodeEditor2.Data
         {
             WeakReference<ListViewItem> itemRef = await Controller.AppendLogAndGetItem("Save " + RelativePath + "...", Avalonia.Media.Colors.Green);
 
-            if (CodeDocument == null) return;
+            if (document == null) return;
 
             string filePath = AbsolutePath;
-            string content = CodeDocument.CreateString();
+            string saveText = document.CreateString();
+            ulong savedVersion = document.Version;
 
+            string? newHash = null;
+            await Task.Run(
+                async() => {
+                    newHash = await SaveTextAndGetHash(saveText);
+                }
+            );
+
+            if(newHash == null)
+            {
+                Controller.AppendLog("filed to save " + AbsolutePath,Avalonia.Media.Colors.Red);
+                return;
+            }
+            if (savedVersion == document.Version) document.Clean();
+            loadFileHash = newHash;
+        }
+
+        public async Task<string?> SaveTextAndGetHash(string text)
+        {
             try
             {
                 using (FileStream fs = new FileStream(
-                                filePath,
+                                AbsolutePath,
                                 FileMode.Create, FileAccess.Write, FileShare.Read,
                                 bufferSize: 4096, useAsync: true))
                 {
-                    byte[] encodedText = Encoding.UTF8.GetBytes(content);
+                    byte[] encodedText = Encoding.UTF8.GetBytes(text);
                     await fs.WriteAsync(encodedText, 0, encodedText.Length);
-
-                    // 重要：バッファに残っているデータを物理ファイルに書き出す
                     await fs.FlushAsync();
-                    loadFileHash = GetHash(content);
-                }
-
-                CodeDocument.Clean();
-                if (itemRef.TryGetTarget(out var item))
-                {
-                    item.Text = item.Text + " complete";
+                    return GetHash(text);
                 }
             }
-            catch (IOException ex)
+            catch (IOException)
             {
-                if (itemRef.TryGetTarget(out var item)){
-                    item.Text = item.Text + " failed to write textfile";
-                }
-                //                Console.WriteLine($"ファイルが他のプロセスで使用中、またはエラーが発生しました: {ex.Message}");
+                return null;
             }
         }
-        //public virtual DateTime? LoadedFileLastWriteTime
-        //{
-        //    get
-        //    {
-        //        if (CashedStatus == null) return null;
-        //        return CashedStatus.LastWriteTimeUtc;
-        //    }
-        //}
-
-        /*
-         *
-         byte[] data = Encoding.UTF8.GetBytes(AbsolutePath);
-         byte[] hashBytes = XxHash64.Hash(data);
-         string hex = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-
-         */
 
         protected string loadFileHash = "";
-        protected virtual void LoadDocumentFromFile()
+
+        protected virtual void CreateCodeDocument()
         {
-            Debug.Print("LoadDocumentFromFile " + RelativePath);
-            try
+            document = new CodeEditor.CodeDocument(this);
+        }
+        protected virtual async Task FileCheck()
+        {
+            bool initialLoad = false;
+            bool dirty = false;
+            if (document == null)
             {
-                lock (this)
+                initialLoad = true;
+                CreateCodeDocument();
+                if (document == null) throw new Exception();
+            }
+            else
+            {
+                dirty = document.IsDirty;
+            }
+
+            string? text = null;
+            await Task.Run(() => { text = GetFileText(); }); // run at background
+
+            if(text == null) // failed to read
+            {
+                IsDeleted = true;
+                return;
+            }
+
+            string newHash = "";
+            await Task.Run(() => { newHash = GetHash(text); });
+            if (newHash == loadFileHash) return;
+
+            if (dirty & !initialLoad)
+            {
+                Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
+                await checkUpdate.ShowDialog(Controller.GetMainWindow());
+                if (!checkUpdate.Yes) // keep current file
                 {
-                    if (document == null)
-                    {
-                        document = new CodeEditor.CodeDocument(this);
-                    }
-
-                    string text = ReadStableText(AbsolutePath);
-                    loadFileHash = GetHash(text);
-
-                    document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
-                    document.ClearHistory();
-                    document.Clean();
+                    loadFileHash = newHash;
+                    return;
                 }
             }
-            catch
+
+            document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
+            loadFileHash = newHash;
+
+            if (initialLoad)
             {
-                document = null;
+                document.ClearHistory();
+                document.Clean();
             }
+
+            if (Controller.NavigatePanel.GetSelectedFile() == this)
+            {
+                Controller.CodeEditor.Refresh();
+            }
+        }
+
+        protected string? GetFileText()
+        {
+            if (!System.IO.File.Exists(AbsolutePath))
+            {
+                return null;
+            }
+
+            string? text = null;
+            try
+            {
+                text = ReadStableText(AbsolutePath);
+            }
+            catch (FileNotFoundException)
+            {
+            }
+            catch (IOException)
+            {
+            }
+            return text;
         }
 
         protected string ReadStableText(string path)
@@ -282,47 +324,10 @@ namespace CodeEditor2.Data
         public override async Task UpdateAsync()
         {
             await base.UpdateAsync();
-            if (!System.IO.File.Exists(AbsolutePath))
-            {
-                IsDeleted = true;
-                await OnDeletedExternallyAsync();
-                return;
-            }
 
-            string text = ReadStableText(AbsolutePath);
-            string newFileHash = GetHash(text);
-
-            if (newFileHash == loadFileHash) return;
-
-            if (Dirty)
-            {
-                Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
-                await checkUpdate.ShowDialog(Controller.GetMainWindow());
-                if (checkUpdate.Yes)
-                {
-                    document = null;
-                    LoadDocumentFromFile();
-                    if (Controller.NavigatePanel.GetSelectedFile() == this)
-                    {
-                        await Controller.CodeEditor.SetTextFileAsync(this);
-                    }
-                    Controller.CodeEditor.Refresh();
-                }
-                else
-                {
-
-                }
-            }
-            else
-            {
-                document = null;
-                LoadDocumentFromFile();
-                if (Controller.NavigatePanel.GetSelectedFile() == this)
-                {
-                    await Controller.CodeEditor.SetTextFileAsync(this);
-                }
-                Controller.CodeEditor.Refresh();
-            }
+            Dispatcher.UIThread.Post(async() => {
+                await FileCheck();
+            });
         }
         public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token)
         {
@@ -394,7 +399,7 @@ namespace CodeEditor2.Data
             if (item == null) return;
             Data.ITextFile? textFile = item as Data.TextFile;
             if (textFile == null) return;
-            if (textFile.CodeDocument == null) return;
+            if (document == null) return;
             if (parsedIds.Contains(textFile.ID)) return;
 
             action(textFile);
@@ -403,7 +408,8 @@ namespace CodeEditor2.Data
             if (!textFile.ReparseRequested)
             {
                 await textFile.UpdateAsync();
-                textFile.CodeDocument.LockThreadToUI();
+                document.LockThreadToUI();
+//                textFile.CodeDocument.LockThreadToUI();
             }
             else
             {

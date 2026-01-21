@@ -18,7 +18,8 @@ namespace CodeEditor2.Parser
         public FileClassifyParser(Data.FileClassifyFile file, DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token) : base(file, parseMode,token)
         {
             this.Document = new CodeEditor2.CodeEditor.CodeDocument(file); // use verilog codeDocument
-            this.Document.CopyTextOnlyFrom(file.CodeDocument);
+            CodeDocument? document = file.CodeDocument;
+            this.Document.CopyTextOnlyFrom(document);
             this.ParseMode = parseMode;
             this.TextFile = file as CodeEditor2.Data.TextFile;
 

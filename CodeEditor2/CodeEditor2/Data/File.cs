@@ -79,6 +79,21 @@ namespace CodeEditor2.Data
             }
         }
 
+        public virtual Task PostSyncCheck()
+        {
+            Task.Run(async () => { await SyncCheck(); });
+            return Task.CompletedTask;
+        }
+
+        private async Task SyncCheck()
+        {
+            if (!System.IO.File.Exists(AbsolutePath))
+            {
+                IsDeleted = true;
+                await OnDeletedExternallyAsync();
+                return;
+            }
+        }
         public bool IsSameAs(File file)
         {
             if (RelativePath != file.RelativePath) return false;
@@ -99,12 +114,6 @@ namespace CodeEditor2.Data
         public override async Task UpdateAsync()
         {
             await base.UpdateAsync();
-            if (!System.IO.File.Exists(AbsolutePath))
-            {
-                IsDeleted = true;
-                await OnDeletedExternallyAsync();
-                return;
-            }
 
             //var info = new FileInfo(AbsolutePath);
             //var currentStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
