@@ -256,6 +256,11 @@ namespace CodeEditor2.Data
                 return itemDict.ContainsValue(item);
             }
 
+            public bool TryGetValue(string key, out Item? value)
+            {
+                return itemDict.TryGetValue(key, out value);
+            }
+
             public void Clear()
             {
                 itemList.Clear();

@@ -46,22 +46,12 @@ namespace CodeEditor2.NavigatePanel
         public override void OnSelected()
         {
             base.OnSelected();
-            //foreach(var obj in CodeEditor2.Controller.NavigatePanel.GetContextMenu().Items)
-            //{
-            //    MenuItem? item = obj as MenuItem;
-            //    if (item == null) continue;
-            //    switch (item.Name)
-            //    {
-            //        case "MenuItem_Add":
-            //        case "MenuItem_Delete":
-            //        case "MenuItem_OpenInExplorer":
-            //            item.IsVisible = true;
-            //            break;
-            //        default:
-            //            item.IsVisible = false;
-            //            break;
-            //    }
-            //}
+
+            File? file = FileItem;
+            if (file!= null) 
+            {
+                Dispatcher.UIThread.Post( async() => { await file.UpdateAsync(); });
+            }
         }
     }
 }

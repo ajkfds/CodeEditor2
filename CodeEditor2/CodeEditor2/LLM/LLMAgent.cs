@@ -159,9 +159,11 @@ namespace CodeEditor2.LLM
                     }
                 }
                 sb.AppendLine("Usage:");
+                sb.AppendLine("```xml");
                 sb.AppendLine("<" + tool.Name + " >");
                 sb.Append(usage.ToString());
                 sb.AppendLine("</" + tool.Name + " >");
+                sb.AppendLine("```");
                 sb.AppendLine("");
             }
         }

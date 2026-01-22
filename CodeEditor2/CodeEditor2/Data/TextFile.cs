@@ -225,8 +225,17 @@ namespace CodeEditor2.Data
                 }
             }
 
-            document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
-            loadFileHash = newHash;
+            if (Dispatcher.UIThread.CheckAccess() | initialLoad)
+            {
+                document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
+            }
+            else
+            {
+                await Dispatcher.UIThread.InvokeAsync(() => {
+                    document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
+                });
+            }
+                loadFileHash = newHash;
 
             if (initialLoad)
             {
