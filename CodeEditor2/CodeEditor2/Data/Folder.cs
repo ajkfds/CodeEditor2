@@ -88,10 +88,13 @@ namespace CodeEditor2.Data
             string absolutePath = Project.GetAbsolutePath(RelativePath);
 
             // get folder contents
-            string[] absoluteFilePaths;
+            string[] absoluteFilePaths = new string[] { };
             try
             {
-                absoluteFilePaths = System.IO.Directory.GetFiles(absolutePath);
+                await Task.Run(() =>
+                {
+                    absoluteFilePaths = System.IO.Directory.GetFiles(absolutePath);
+                });
             }
             catch
             {
@@ -101,6 +104,7 @@ namespace CodeEditor2.Data
                 return;
             }
             string[] absoluteFolderPaths = System.IO.Directory.GetDirectories(absolutePath);
+
             List<Item> currentItems = new List<Item>();
 
             // add new files
