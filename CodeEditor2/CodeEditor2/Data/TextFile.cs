@@ -12,6 +12,7 @@ using CodeEditor2.CodeEditor.PopupHint;
 using CodeEditor2.CodeEditor.PopupMenu;
 using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
+using Microsoft.Playwright;
 using Svg;
 using System;
 using System.Collections.Generic;
@@ -88,7 +89,12 @@ namespace CodeEditor2.Data
 
         public virtual CodeEditor.ParsedDocument? ParsedDocument { get; set; }
 
-
+        private ParseWorker? ParseWorker = null;
+        public void PostParse()
+        {
+            ParseWorker = new ParseWorker();
+            Task.Run(async () => { await ParseWorker.Parse(this); });
+        }
         public virtual async Task AcceptParsedDocumentAsync(CodeEditor2.CodeEditor.ParsedDocument newParsedDocument)
         {
             CodeEditor2.CodeEditor.ParsedDocument? oldParsedDocument = ParsedDocument;
