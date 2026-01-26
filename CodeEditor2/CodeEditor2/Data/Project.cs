@@ -1,21 +1,22 @@
-﻿using CodeEditor2.Setups;
+﻿using Avalonia.Threading;
+using CodeEditor2.FileTypes;
+using CodeEditor2.Setups;
 //using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Text;
-using System.Text.Json.Serialization;
-using System.Timers;
-using System.Threading.Tasks;
 using System.Text.Json;
-using System.Diagnostics.CodeAnalysis;
-using System.Xml.Linq;
-using CodeEditor2.FileTypes;
-using Avalonia.Threading;
+using System.Text.Json.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Timers;
+using System.Xml.Linq;
 
 namespace CodeEditor2.Data
 {
@@ -209,6 +210,10 @@ namespace CodeEditor2.Data
 
         #region FileSystemWatcher
 
+        private readonly int _debounceMilliseconds = 500;
+        private readonly ConcurrentDictionary<string, System.Threading.Timer> _timers = new();
+
+        private System.Threading.Timer changeDebounceTimer;
         protected FileSystemWatcher? fileSystemWatcher;
         protected void startFileSystemWatcher()
         {
@@ -224,85 +229,78 @@ namespace CodeEditor2.Data
             fileSystemWatcher.Filter = "";
             fileSystemWatcher.IncludeSubdirectories = true;
 
-            fileSystemWatcher.Created += FileSystemWatcher_Created;
+//            fileSystemWatcher.Created += FileSystemWatcher_Created;
             fileSystemWatcher.Changed += FileSystemWatcher_Changed;
             fileSystemWatcher.Renamed += FileSystemWatcher_Renamed;
-            fileSystemWatcher.Deleted += FileSystemWatcher_Deleted;
+            fileSystemWatcher.Deleted += FileSystemWatcher_Changed;
 
             fileSystemWatcher.EnableRaisingEvents = true;
+            changeDebounceTimer = new System.Threading.Timer(FileChanged, null, Timeout.Infinite, Timeout.Infinite);
         }
 
 
-        private System.Threading.Timer changeDebounceTimer;
-        private const int debounceTime_ms = 100;
         private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
             if (e.FullPath.Contains(System.IO.Path.DirectorySeparatorChar + ".git" + System.IO.Path.DirectorySeparatorChar)) return;
             if (e.FullPath.Contains(System.IO.Path.DirectorySeparatorChar + ".cashe" + System.IO.Path.DirectorySeparatorChar)) return;
 
-            changeDebounceTimer?.Dispose();
-            changeDebounceTimer = new System.Threading.Timer( _ =>
-            {
-                FileChanged(sender, e);
-            }, null, 100, Timeout.Infinite);
+            string filePath = e.FullPath;
+
+            // パスをキーにしてタイマーを取得または新規作成
+            _timers.AddOrUpdate(
+                filePath,
+                // 新規作成時：タイマーをセット
+                path => new System.Threading.Timer(FileChanged, path, _debounceMilliseconds, Timeout.Infinite),
+                // 既存時：時間をリセット（デバウンス）
+                (path, existingTimer) =>
+                {
+                    existingTimer.Change(_debounceMilliseconds, Timeout.Infinite);
+                    return existingTimer;
+                }
+            );
         }
 
         private void FileSystemWatcher_Renamed(object sender, RenamedEventArgs e)
         {
         }
 
-        private void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
-        {
-        }
 
-        private void FileSystemWatcher_Deleted(object sender, FileSystemEventArgs e)
+        private void FileChanged(object? state)
         {
-            changeDebounceTimer?.Dispose();
-            changeDebounceTimer = new System.Threading.Timer(_ =>
-            {
-                FileDeleted(sender, e);
-            }, null, 100, Timeout.Infinite);
-        }
-
-        private async void FileChanged(object sender, FileSystemEventArgs e)
-        {
+            string? filePath = state as string;
+            if (string.IsNullOrEmpty(filePath)) return;
+            
             try
             {
-                if (e.FullPath == FileClassify.AbsolutePath)
-                {
-                    FileClassify.Reload();
-                    return;
-                }
-
-                Controller.AppendLog(e.Name + " changed");
-                string relativePath = GetRelativePath(e.FullPath);
+                Controller.AppendLog(filePath + " changed");
+                string relativePath = GetRelativePath(filePath);
                 Data.File? file = GetItem(relativePath) as Data.File;
                 if (file == null) return;
                 Data.ITextFile? textFile = file as Data.ITextFile;
                 if (textFile == null) return;
-                await Dispatcher.UIThread.InvokeAsync(async () => { await fileChaned(textFile); });
+                Dispatcher.UIThread.Post(() => textFile.CheckStatus());
             }
             catch
             {
                 if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
             }
         }
-        private async Task fileChaned(Data.ITextFile textFile)
-        {
-            await textFile.UpdateAsync();
-        }
+        //private async Task fileChaned(Data.ITextFile textFile)
+        //{
+        //    await textFile.UpdateAsync();
+        //}
 
-        private void FileDeleted(object sender, FileSystemEventArgs e)
-        {
-            Controller.AppendLog(e.Name + " deleted");
-            string relativePath = GetRelativePath(e.FullPath);
-            Data.File? file = GetItem(relativePath) as Data.File;
-            if (file == null) return;
-            file.IsDeleted = true;
-            Data.ITextFile? textFile = file as Data.ITextFile;
-            if (textFile == null) return;
-            Dispatcher.UIThread.Post(() => fileChaned(textFile));
-        }
+        //private void FileDeleted(object sender, FileSystemEventArgs e)
+        //{
+        //    Controller.AppendLog(e.Name + " deleted");
+        //    string relativePath = GetRelativePath(e.FullPath);
+        //    Data.File? file = GetItem(relativePath) as Data.File;
+        //    if (file == null) return;
+        //    file.IsDeleted = true;
+        //    Data.ITextFile? textFile = file as Data.ITextFile;
+        //    if (textFile == null) return;
+        //    Dispatcher.UIThread.Post(() => fileChaned(textFile));
+        //}
         #endregion
 
 

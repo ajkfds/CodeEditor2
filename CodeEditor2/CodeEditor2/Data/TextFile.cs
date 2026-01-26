@@ -139,30 +139,39 @@ namespace CodeEditor2.Data
             }
         }
 
+        private readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
         public async virtual Task SaveAsync()
         {
-            WeakReference<ListViewItem> itemRef = await Controller.AppendLogAndGetItem("Save " + RelativePath + "...", Avalonia.Media.Colors.Green);
-
-            if (document == null) return;
-
-            string filePath = AbsolutePath;
-            string saveText = document.CreateString();
-            ulong savedVersion = document.Version;
-
-            string? newHash = null;
-            await Task.Run(
-                async() => {
-                    newHash = await SaveTextAndGetHash(saveText);
-                }
-            );
-
-            if(newHash == null)
+            await _fileSemaphore.WaitAsync();
+            try
             {
-                Controller.AppendLog("filed to save " + AbsolutePath,Avalonia.Media.Colors.Red);
-                return;
+                WeakReference<ListViewItem> itemRef = await Controller.AppendLogAndGetItem("Save " + RelativePath + "...", Avalonia.Media.Colors.Green);
+
+                if (document == null) return;
+
+                string filePath = AbsolutePath;
+                string saveText = document.CreateString();
+                ulong savedVersion = document.Version;
+
+                string? newHash = null;
+                await Task.Run(
+                    async () => {
+                        newHash = await SaveTextAndGetHash(saveText);
+                    }
+                );
+
+                if (newHash == null)
+                {
+                    Controller.AppendLog("filed to save " + AbsolutePath, Avalonia.Media.Colors.Red);
+                    return;
+                }
+                if (savedVersion == document.Version) document.Clean();
+                loadFileHash = newHash;
             }
-            if (savedVersion == document.Version) document.Clean();
-            loadFileHash = newHash;
+            finally
+            {
+                _fileSemaphore.Release();
+            }
         }
 
         public async Task<string?> SaveTextAndGetHash(string text)
@@ -194,64 +203,82 @@ namespace CodeEditor2.Data
         }
         protected virtual async Task FileCheck()
         {
-            bool initialLoad = false;
-            bool dirty = false;
-            if (document == null)
+            await _fileSemaphore.WaitAsync();
+            try
             {
-                initialLoad = true;
-                CreateCodeDocument();
-                if (document == null) throw new Exception();
-            }
-            else
-            {
-                dirty = document.IsDirty;
-            }
-
-            string? text = null;
-            await Task.Run(() => { text = GetFileText(); }); // run at background
-
-            if(text == null) // failed to read
-            {
-                IsDeleted = true;
-                return;
-            }
-
-            string newHash = "";
-            await Task.Run(() => { newHash = GetHash(text); });
-            if (newHash == loadFileHash) return;
-
-            if (dirty & !initialLoad)
-            {
-                Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
-                await checkUpdate.ShowDialog(Controller.GetMainWindow());
-                if (!checkUpdate.Yes) // keep current file
+                bool initialLoad = false;
+                bool dirty = false;
+                if (document == null)
                 {
-                    loadFileHash = newHash;
+                    initialLoad = true;
+                    CreateCodeDocument();
+                    if (document == null) throw new Exception();
+                }
+                else
+                {
+                    dirty = document.IsDirty;
+                }
+
+                string? text = null;
+                await Task.Run(() => { text = GetFileText(); }); // run at background
+
+                if (text == null) // failed to read
+                {
+                    IsDeleted = true;
                     return;
                 }
-            }
 
-            if (Dispatcher.UIThread.CheckAccess() | initialLoad)
-            {
-                document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
-            }
-            else
-            {
-                await Dispatcher.UIThread.InvokeAsync(() => {
+                string newHash = "";
+                await Task.Run(() => { newHash = GetHash(text); });
+                if (newHash == loadFileHash) {
+                    Controller.AppendLog("FileCheck_match new:" + newHash + ",load:" + loadFileHash);
+                    return;
+                }
+                Controller.AppendLog("FileCheck_mismatch new:" + newHash + ",load:" + loadFileHash);
+
+                if (dirty & !initialLoad)
+                {
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
+                        await checkUpdate.ShowDialog(Controller.GetMainWindow());
+                        if (!checkUpdate.Yes) // keep current file
+                        {
+                            loadFileHash = newHash;
+                            return;
+                        }
+                    });
+                }
+
+                if (Dispatcher.UIThread.CheckAccess() | initialLoad)
+                {
                     document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
-                });
-            }
+                    document.Clean();
+                }
+                else
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
+                        document.Clean();
+                    });
+                }
                 loadFileHash = newHash;
+                Controller.AppendLog("FileCheck_load load:" + loadFileHash);
 
-            if (initialLoad)
-            {
-                document.ClearHistory();
-                document.Clean();
+                if (initialLoad)
+                {
+                    document.ClearHistory();
+                }
+
+                if (Controller.NavigatePanel.GetSelectedFile() == this)
+                {
+                    Controller.CodeEditor.Refresh();
+                }
             }
-
-            if (Controller.NavigatePanel.GetSelectedFile() == this)
+            finally
             {
-                Controller.CodeEditor.Refresh();
+                _fileSemaphore.Release();
             }
         }
 
@@ -344,6 +371,14 @@ namespace CodeEditor2.Data
                 await FileCheck();
             });
         }
+
+        public override void CheckStatus()
+        {
+            Dispatcher.UIThread.Post(async () => {
+                await FileCheck();
+            });
+        }
+
         public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token)
         {
             return null;
