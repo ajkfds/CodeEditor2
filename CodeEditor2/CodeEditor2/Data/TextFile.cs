@@ -203,7 +203,10 @@ namespace CodeEditor2.Data
         }
         protected virtual async Task FileCheck()
         {
-            await _fileSemaphore.WaitAsync();
+            if(!await _fileSemaphore.WaitAsync(0))
+            {
+                return;
+            }
             try
             {
                 bool initialLoad = false;
@@ -231,10 +234,10 @@ namespace CodeEditor2.Data
                 string newHash = "";
                 await Task.Run(() => { newHash = GetHash(text); });
                 if (newHash == loadFileHash) {
-                    Controller.AppendLog("FileCheck_match new:" + newHash + ",load:" + loadFileHash);
+//                    Controller.AppendLog("FileCheck_match new:" + newHash + ",load:" + loadFileHash);
                     return;
                 }
-                Controller.AppendLog("FileCheck_mismatch new:" + newHash + ",load:" + loadFileHash);
+//                Controller.AppendLog("FileCheck_mismatch new:" + newHash + ",load:" + loadFileHash);
 
                 if (dirty & !initialLoad)
                 {
@@ -264,7 +267,7 @@ namespace CodeEditor2.Data
                     });
                 }
                 loadFileHash = newHash;
-                Controller.AppendLog("FileCheck_load load:" + loadFileHash);
+//                Controller.AppendLog("FileCheck_load load:" + loadFileHash);
 
                 if (initialLoad)
                 {
@@ -305,31 +308,24 @@ namespace CodeEditor2.Data
 
         protected string ReadStableText(string path)
         {
-            const int maxRetry = 3;
+            const int maxRetry = 10;
             const int delayMs = 50;
 
+            long lengthBefore = 0;
             for (int i = 0; i < maxRetry; i++)
             {
-                var infoBefore = new FileInfo(path);
-                long lengthBefore = infoBefore.Exists ? infoBefore.Length : -1;
-                DateTime writeBefore = infoBefore.Exists ? infoBefore.LastWriteTimeUtc : DateTime.MinValue;
-
                 using var fs = new FileStream(
                     path, FileMode.Open, FileAccess.Read,
                     FileShare.ReadWrite | FileShare.Delete, 4096, FileOptions.SequentialScan);
                 using var sr = new StreamReader(fs, Encoding.UTF8, true);
 
                 string text = sr.ReadToEnd();
-
-                var infoAfter = new FileInfo(path);
-                long lengthAfter = infoAfter.Exists ? infoAfter.Length : -1;
-                DateTime writeAfter = infoAfter.Exists ? infoAfter.LastWriteTimeUtc : DateTime.MinValue;
-
-                if (lengthBefore == lengthAfter && writeBefore == writeAfter)
+                long lengthAfter = text.Length;
+                if(lengthAfter == lengthBefore)
                 {
                     return text;
                 }
-
+                lengthBefore = lengthAfter;
                 Thread.Sleep(delayMs);
             }
 
