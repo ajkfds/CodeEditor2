@@ -98,27 +98,15 @@ namespace CodeEditor2.CodeEditor.Parser
                 return;
             }
 
-            Data.ITextFile? currentTextFile = null;
             await Dispatcher.UIThread.InvokeAsync(
                 async () => {
                     await parser.TextFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
-                    currentTextFile = Controller.CodeEditor.GetTextFile();
-                });
-
-
-            targetCodeDocument.CopyColorMarkFrom(parser.Document);
-
-            if (currentTextFile == null || currentTextFile != targetTextFile)
-            {
-                return;
-            }
-
-            await Dispatcher.UIThread.InvokeAsync(
-                () =>
-                {
+                    targetCodeDocument.CopyColorMarkFrom(parser.Document);
                     // update current view
-                    Controller.CodeEditor.Refresh();
-                    Controller.MessageView.Update(parser.ParsedDocument);
+                    if (Controller.NavigatePanel.GetSelectedFile() == targetTextFile)
+                    {
+                        targetTextFile.PostRefresh();
+                    }
                 }
             );
         }

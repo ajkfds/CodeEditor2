@@ -80,6 +80,7 @@ namespace CodeEditor2.NavigatePanel
             await Dispatcher.UIThread.InvokeAsync(updateFolder);
         }
 
+
         private async Task updateFolder()
         {
             if (!Dispatcher.UIThread.CheckAccess())

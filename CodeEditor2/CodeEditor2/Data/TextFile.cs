@@ -95,14 +95,15 @@ namespace CodeEditor2.Data
             ParseWorker = new ParseWorker();
             Task.Run(async () => { await ParseWorker.Parse(this); });
         }
-        public virtual async Task AcceptParsedDocumentAsync(CodeEditor2.CodeEditor.ParsedDocument newParsedDocument)
+        public virtual Task AcceptParsedDocumentAsync(CodeEditor2.CodeEditor.ParsedDocument newParsedDocument)
         {
             CodeEditor2.CodeEditor.ParsedDocument? oldParsedDocument = ParsedDocument;
             ParsedDocument = null;
             if (oldParsedDocument != null) oldParsedDocument.Dispose();
 
             ParsedDocument = newParsedDocument;
-            await UpdateAsync();
+            PostRefresh();
+            return Task.CompletedTask;
         }
         public virtual void Close()
         {
@@ -283,6 +284,16 @@ namespace CodeEditor2.Data
             {
                 _fileSemaphore.Release();
             }
+        }
+
+        public void PostRefresh()
+        {
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    if(Controller.CodeEditor.GetTextFile() == this) Controller.CodeEditor.Refresh();
+                    if(ParsedDocument !=null) Controller.MessageView.Update(ParsedDocument);
+                });
         }
 
         protected string? GetFileText()

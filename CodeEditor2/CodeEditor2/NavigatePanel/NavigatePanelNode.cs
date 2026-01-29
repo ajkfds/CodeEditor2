@@ -114,7 +114,10 @@ namespace CodeEditor2.NavigatePanel
         {
             try
             {
-                await HierarchicalVisibleUpdateAsync();
+                _ = Task.Run(async() =>
+                {
+                    await HierarchicalVisibleUpdateAsync();
+                });
             }catch(Exception ex)
             {
                 if(System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
@@ -127,7 +130,10 @@ namespace CodeEditor2.NavigatePanel
         {
             try
             {
-                await HierarchicalVisibleUpdateAsync();
+                _ = Task.Run(async () =>
+                {
+                    await HierarchicalVisibleUpdateAsync();
+                });
             }
             catch (Exception ex)
             {

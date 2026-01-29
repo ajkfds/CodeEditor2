@@ -38,6 +38,9 @@ namespace CodeEditor2.Data
         Task UpdateAsync();
         Task ParseHierarchyAsync(Action<ITextFile> action);
 
+        void PostParse();
+        void PostRefresh();
+
         NavigatePanel.NavigatePanelNode NavigatePanelNode { get; }
         DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token);
 
