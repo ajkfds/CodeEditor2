@@ -110,11 +110,11 @@ namespace CodeEditor2.NavigatePanel
                 await node.HierarchicalUpdateAsync(depth + 1);
             }
         }
-        public override async void OnExpand()
+        public override void OnExpand()
         {
             try
             {
-                _ = Task.Run(async() =>
+                Task.Run(async() =>
                 {
                     await HierarchicalVisibleUpdateAsync();
                 });
@@ -126,11 +126,11 @@ namespace CodeEditor2.NavigatePanel
             }
         }
 
-        public override async void OnCollapse()
+        public override void OnCollapse()
         {
             try
             {
-                _ = Task.Run(async () =>
+                Task.Run(async () =>
                 {
                     await HierarchicalVisibleUpdateAsync();
                 });

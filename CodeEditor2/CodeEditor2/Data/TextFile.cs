@@ -293,6 +293,7 @@ namespace CodeEditor2.Data
                 {
                     if(Controller.CodeEditor.GetTextFile() == this) Controller.CodeEditor.Refresh();
                     if(ParsedDocument !=null) Controller.MessageView.Update(ParsedDocument);
+                    if (NavigatePanelNode != null) NavigatePanelNode.UpdateVisual();
                 });
         }
 

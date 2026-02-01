@@ -107,6 +107,7 @@ namespace CodeEditor2.CodeEditor.Parser
                     {
                         targetTextFile.PostRefresh();
                     }
+                    targetTextFile.NavigatePanelNode.UpdateVisual();
                 }
             );
         }
