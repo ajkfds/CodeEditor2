@@ -208,16 +208,22 @@ namespace CodeEditor2.Data
 
             public void Add(string key, Item item)
             {
-                if (itemDict.ContainsKey(key)) return;
-                itemList.Add(item);
-                itemDict.Add(key, item);
+                lock (itemList)
+                {
+                    if (itemDict.ContainsKey(key)) return;
+                    itemList.Add(item);
+                    itemDict.Add(key, item);
+                }
             }
 
             public void Insert(int index, string key, Item item)
             {
-                if (itemDict.ContainsKey(key)) return;
-                itemList.Insert(index, item);
-                itemDict.Add(key, item);
+                lock (itemList)
+                {
+                    if (itemDict.ContainsKey(key)) return;
+                    itemList.Insert(index, item);
+                    itemDict.Add(key, item);
+                }
             }
 
             public int IndexOf(Item item)
@@ -243,8 +249,11 @@ namespace CodeEditor2.Data
 
             public void Remove(string key)
             {
-                itemList.Remove(itemDict[key]);
-                itemDict.Remove(key);
+                lock (itemList)
+                {
+                    itemList.Remove(itemDict[key]);
+                    itemDict.Remove(key);
+                }
             }
             public bool ContainsKey(string key)
             {
@@ -282,7 +291,10 @@ namespace CodeEditor2.Data
 
             public void Sort(Comparison<Item> comparison)
             {
-                itemList.Sort(comparison);
+                lock (itemList)
+                {
+                    itemList.Sort(comparison);
+                }
             }
 
         }

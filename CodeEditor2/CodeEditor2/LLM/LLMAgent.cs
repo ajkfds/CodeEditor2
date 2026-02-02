@@ -81,7 +81,7 @@ namespace CodeEditor2.LLM
 
                     AIFunctionArguments args = new AIFunctionArguments();
                     string innerContent = match.Groups["params"].Value;
-                    var paramMatches = Regex.Matches(innerContent, @"<(?<key>\w+)>(?<value>.*?)</\k<key>>");
+                    var paramMatches = Regex.Matches(innerContent, @"<(?<key>\w+)>(?<value>.*?)</\k<key>>", RegexOptions.Singleline);
                     foreach (Match p in paramMatches)
                     {
                         args.Add(p.Groups["key"].Value, p.Groups["value"].Value);
