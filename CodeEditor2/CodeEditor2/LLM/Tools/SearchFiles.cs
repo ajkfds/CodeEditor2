@@ -16,6 +16,7 @@ namespace CodeEditor2.LLM.Tools
 {
     public class SearchFiles : LLMTool
     {
+        public SearchFiles(Data.Project project) : base(project) { }
         /*
         ## search_files
         Description: 
@@ -64,7 +65,6 @@ namespace CodeEditor2.LLM.Tools
         { 
             try
             {
-                CodeEditor2.Data.Project? project = GetProject();
                 if (project == null) return "Failed to execute tool. Cannot get current project.";
 
                 // 1. パスの正規化と安全性のチェック

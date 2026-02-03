@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Threading;
 using CodeEditor2.Data;
 using CodeEditor2.Tools;
@@ -62,6 +63,8 @@ namespace CodeEditor2.NavigatePanel
                     );
         }
 
+        public static new Action<ContextMenu>? CustomizeSpecificNodeContextMenu;
+        protected override Action<ContextMenu>? customizeSpecificNodeContextMenu => CustomizeSpecificNodeContextMenu;
 
     }
 }

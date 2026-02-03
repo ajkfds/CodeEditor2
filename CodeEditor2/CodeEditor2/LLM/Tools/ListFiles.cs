@@ -12,6 +12,7 @@ namespace CodeEditor2.LLM.Tools
 {
     public class ListFiles:LLMTool
     {
+        public ListFiles(Data.Project project) : base(project) { }
         /*
         ## list_files
         Description: Request to list files and directories within the specified directory. If recursive is true, it will list all files and directories recursively. If recursive is false or not provided, it will only list the top-level contents. Do not use this tool to confirm the existence of files you may have created, as the user will let you know if the files were created successfully or not.
@@ -57,7 +58,6 @@ namespace CodeEditor2.LLM.Tools
         {
             try
             {
-                CodeEditor2.Data.Project? project = GetProject();
                 if (project == null) return "Failed to execute tool. Cannot get current project.";
 
                 // 1. パスの安全性を確認

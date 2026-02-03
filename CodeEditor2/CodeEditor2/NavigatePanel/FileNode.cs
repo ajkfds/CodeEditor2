@@ -50,8 +50,16 @@ namespace CodeEditor2.NavigatePanel
             File? file = FileItem;
             if (file!= null) 
             {
-                Dispatcher.UIThread.Post( async() => { await file.UpdateAsync(); });
+                Dispatcher.UIThread.Post( async() => { 
+                    await file.UpdateAsync();
+                    file.CheckStatus();
+                });
             }
         }
+
+        public static new Action<ContextMenu>? CustomizeSpecificNodeContextMenu;
+        protected override Action<ContextMenu>? customizeSpecificNodeContextMenu => CustomizeSpecificNodeContextMenu;
+
+
     }
 }

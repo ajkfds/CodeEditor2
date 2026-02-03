@@ -199,6 +199,9 @@ namespace CodeEditor2.NavigatePanel
 
 
         public static Action<ContextMenu>? CustomizeNavigateNodeContextMenu;
+        public static Action<ContextMenu>? CustomizeSpecificNodeContextMenu;
+
+        protected virtual Action<ContextMenu>? customizeSpecificNodeContextMenu => CustomizeSpecificNodeContextMenu;
         // Context Menu
         //public virtual void CustomizeContextMenu(ContextMenu contextMenu)
         //{
@@ -248,6 +251,7 @@ namespace CodeEditor2.NavigatePanel
             }
             contextMenu.Items.Add(new Separator());
 
+            customizeSpecificNodeContextMenu?.Invoke(contextMenu);
             CustomizeNavigateNodeContextMenu?.Invoke(contextMenu);
 
             {

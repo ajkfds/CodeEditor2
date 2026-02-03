@@ -140,5 +140,9 @@ namespace CodeEditor2.NavigatePanel
 
         }
 
+        public static new Action<ContextMenu>? CustomizeSpecificNodeContextMenu;
+        protected override Action<ContextMenu>? customizeSpecificNodeContextMenu => CustomizeSpecificNodeContextMenu;
+
+
     }
 }

@@ -11,22 +11,13 @@ namespace CodeEditor2.LLM.Tools
 {
     public abstract class LLMTool
     {
+        public LLMTool(Data.Project project)
+        {
+            this.project = project;
+        }
+        protected Data.Project project;
         public abstract AIFunction GetAIFunction();
 
         public virtual string XmlExample { get; } = "";
-
-        public Data.Project? GetProject()
-        {
-            var node = CodeEditor2.Controller.NavigatePanel.GetSelectedNode();
-            if (node == null) return null;
-
-            CodeEditor2.Data.Project? project = null;
-            if (node is CodeEditor2.NavigatePanel.FileNode)
-            {
-                project = ((CodeEditor2.NavigatePanel.FileNode)node).FileItem?.Project;
-            }
-            if (project == null) project = node.GetProject();
-            return project;
-        }
     }
 }

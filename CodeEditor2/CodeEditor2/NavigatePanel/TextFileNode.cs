@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Threading;
 using CodeEditor2.CodeEditor;
 using ExCSS;
@@ -80,6 +81,9 @@ namespace CodeEditor2.NavigatePanel
                 if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
             }
         }
+
+        public static new Action<ContextMenu>? CustomizeSpecificNodeContextMenu;
+        protected override Action<ContextMenu>? customizeSpecificNodeContextMenu => CustomizeSpecificNodeContextMenu;
 
     }
 }

@@ -15,6 +15,7 @@ namespace CodeEditor2.LLM.Tools
 {
     public class ReadFile : LLMTool
     {
+        public ReadFile(Data.Project project) : base(project) { }
         /*
         ## read_file
         Description: Request to read the contents of a file at the specified path. Use this when you need to examine the contents of an existing file you do not know the contents of, for example to analyze code, review text files, or extract information from configuration files. Automatically extracts raw text from PDF and DOCX files. May not be suitable for other types of binary files, as it returns the raw content as a string.
@@ -58,7 +59,6 @@ namespace CodeEditor2.LLM.Tools
         {
             try
             {
-                CodeEditor2.Data.Project? project = GetProject();
                 if (project == null) return "Failed to execute tool. Cannot get current project.";
 
                 // 1. パスの正規化と安全性のチェック
