@@ -33,12 +33,23 @@ namespace CodeEditor2.LLM.Tools
         }
         </write_to_file>
          */
+        public override string XmlExample { get; } = """
+            ```xml
+            <write_to_file>
+            <path>File path here</path>
+            <content>
+            Your file content here
+            </content>
+            </write_to_file>
+            ```
+            """;
 
         public override AIFunction GetAIFunction() { return AIFunctionFactory.Create(Run, "write_to_file"); }
 
         [Description("""
             Request to write content to a file at the specified path. If the file exists, it will be overwritten with the provided content. 
             If the file doesn't exist, it will be created. This tool will automatically create any directories needed to write the file.
+            出力コンテキストサイズが小さいため、一度に出力するファイルサイズは100行以内とする。それを超える場合はいったん一部を出力した後、replace_in_fileで複数回に分けて更新すること。
             """)]
             
         public string Run(

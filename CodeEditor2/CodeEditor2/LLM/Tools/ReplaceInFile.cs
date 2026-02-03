@@ -62,10 +62,22 @@ namespace CodeEditor2.LLM.Tools
          */
         public override AIFunction GetAIFunction() { return AIFunctionFactory.Create(Run, "replace_in_file"); }
 
+        public override string XmlExample { get; } = """
+            ```xml
+            <replace_in_file>
+            <path>File path here</path>
+            <diff>
+            Search and replace blocks here
+            </diff>
+            </replace_in_file>         
+            ```
+            """;
+
 
         [Description("""
             Request to replace sections of content in an existing file using SEARCH/REPLACE blocks that define exact changes to specific parts of the file. 
             This tool should be used when you need to make targeted changes to specific parts of a file.
+            出力コンテキストサイズが小さいため、一度に出力するファイルサイズは100行以内とする。それを超える場合はいったん一部を出力した後、replace_in_fileで複数回に分けて更新すること。
             """)]
         public async Task<string> Run(
         [Description("The path of the file to modify (relative to the project root directory")]

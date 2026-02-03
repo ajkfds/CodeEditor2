@@ -32,6 +32,15 @@ namespace CodeEditor2.LLM.Tools
          */
         public override AIFunction GetAIFunction() { return AIFunctionFactory.Create(Run, "search_files"); }
 
+        public override string XmlExample { get; } = """
+            ```xml
+            <search_files>
+            <path>Directory path here</path>
+            <regex>Your regex pattern here</regex>
+            <file_pattern>file pattern here (optional)</file_pattern>
+            </search_files>
+            ```
+            """;
 
         [Description("""
             Request to perform a regex search across files in a specified directory, providing context-rich results. 

@@ -39,6 +39,13 @@ namespace CodeEditor2.LLM.Tools
         //}
         public override AIFunction GetAIFunction() { return AIFunctionFactory.Create(Run, "read_file"); }
 
+        public override string XmlExample { get; } = """
+            ```xml
+            <read_file>
+            <path>File path here</path>
+            </read_file>         
+            ```
+            """;
 
         [Description("""
             Request to read the contents of a file at the specified path. 

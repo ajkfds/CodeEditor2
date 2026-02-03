@@ -33,6 +33,15 @@ namespace CodeEditor2.LLM.Tools
 
         public override AIFunction GetAIFunction() { return AIFunctionFactory.Create(Run, "list_files"); }
 
+        public override string XmlExample { get; } = """
+            ```xml
+            <list_files>
+            <path>Directory path here</path>
+            </list_files>         
+            ```
+            """;
+
+
         // エージェントが混乱しないよう、通常無視すべきディレクトリ
         private static readonly string[] ExcludedDirectories = { ".git", "node_modules", "bin", "obj", ".vs" };
 

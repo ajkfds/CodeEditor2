@@ -13,6 +13,8 @@ namespace CodeEditor2.LLM.Tools
     {
         public abstract AIFunction GetAIFunction();
 
+        public virtual string XmlExample { get; } = "";
+
         public Data.Project? GetProject()
         {
             var node = CodeEditor2.Controller.NavigatePanel.GetSelectedNode();
