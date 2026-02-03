@@ -291,8 +291,11 @@ namespace CodeEditor2.Data
             Dispatcher.UIThread.Post(
                 () =>
                 {
-                    if(Controller.CodeEditor.GetTextFile() == this) Controller.CodeEditor.Refresh();
-                    if(ParsedDocument !=null) Controller.MessageView.Update(ParsedDocument);
+                    if (Controller.CodeEditor.GetTextFile() == this)
+                    {
+                        Controller.CodeEditor.Refresh();
+                        if (ParsedDocument != null) Controller.MessageView.Update(ParsedDocument);
+                    }
                     if (NavigatePanelNode != null) NavigatePanelNode.UpdateVisual();
                 });
         }
