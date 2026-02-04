@@ -35,6 +35,10 @@ namespace CodeEditor2
             {
                 Global.navigateView.SelectNode(node);
             }
+            public static void RemoveNode(NavigatePanelNode node)
+            {
+                Global.navigateView.RemoveNode(node);
+            }
             public static ContextMenu GetContextMenu()
             {
                 return Global.navigateView.ContextMenu;

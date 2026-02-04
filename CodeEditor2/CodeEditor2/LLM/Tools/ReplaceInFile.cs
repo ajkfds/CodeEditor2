@@ -127,14 +127,14 @@ namespace CodeEditor2.LLM.Tools
                     return $"Error: File not found at '{path}'.";
 
                 // 2. ファイル内容の読み込み（改行コードを正規化して扱うのがコツ）
-                string fileContent = System.IO.File.ReadAllText(fullPath, Encoding.UTF8);
+                string fileContent = System.IO.File.ReadAllText(fullPath, Encoding.UTF8).Replace("\r\n", "\n");
 
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // 3. SEARCH/REPLACE ブロックのパース
                 // 正規表現でブロックを抽出します
                 var blockRegex = new Regex(@"------- SEARCH\r?\n(.*?)\r?\n=======\r?\n(.*?)\r?\n\+\+\+\+\+\+\+ REPLACE", RegexOptions.Singleline);
-                var matches = blockRegex.Matches(diff);
+                var matches = blockRegex.Matches(diff.Replace("\r\n", "\n"));
 
                 if (matches.Count == 0)
                     return "Error: No valid SEARCH/REPLACE blocks found. Please check your format.";

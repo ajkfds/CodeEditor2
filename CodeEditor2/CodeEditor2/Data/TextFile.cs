@@ -89,11 +89,10 @@ namespace CodeEditor2.Data
 
         public virtual CodeEditor.ParsedDocument? ParsedDocument { get; set; }
 
-        private ParseWorker? ParseWorker = null;
         public void PostParse()
         {
-            ParseWorker = new ParseWorker();
-            Task.Run(async () => { await ParseWorker.Parse(this); });
+            ParseWorker parseWorker = new ParseWorker();
+            Task.Run(async () => { await parseWorker.Parse(this); });
         }
         public virtual Task AcceptParsedDocumentAsync(CodeEditor2.CodeEditor.ParsedDocument newParsedDocument)
         {

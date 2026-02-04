@@ -241,7 +241,7 @@ namespace CodeEditor2.Data
             foreach (Item item in removeItems)
             {
                 item.IsDeleted = true;
-//                items.Remove(item.Name);
+                items.Remove(item.Name);
 //                item.Dispose();
             }
 

@@ -6,6 +6,7 @@ using Avalonia.Platform.Storage;
 using CodeEditor2.Data;
 using CodeEditor2.NavigatePanel;
 using Microsoft.CodeAnalysis;
+using Microsoft.VisualBasic;
 using Splat;
 using System.Collections.Generic;
 using System.Text;
@@ -49,6 +50,10 @@ namespace CodeEditor2.Views
             TreeControl.SelectNode(node);
         }
 
+        internal void RemoveNode(NavigatePanelNode node)
+        {
+            TreeControl.Nodes.Remove(node);
+        }
         public ProjectNode? GetProjectNode(string projectName)
         {
             ProjectNode? ret = null;

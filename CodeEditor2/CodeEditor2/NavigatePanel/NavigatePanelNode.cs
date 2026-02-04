@@ -180,6 +180,12 @@ namespace CodeEditor2.NavigatePanel
         }
         public override void OnSelected()
         {
+            if(Item == null || Item.IsDeleted)
+            {
+                Controller.NavigatePanel.RemoveNode(this);
+                return;
+            }
+
             createContextMenu();
         }
 
