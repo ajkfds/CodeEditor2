@@ -83,9 +83,13 @@ namespace CodeEditor2.LLM.Tools
                     Directory.CreateDirectory(directoryPath);
                 }
 
+
                 // 3. ファイルの書き込み (UTF-8)
                 // LLMからの出力は意図せず不完全な場合があるため、上書きは慎重に行われます
-                File.WriteAllText(fullPath, content, Encoding.UTF8);
+                content = content.Replace("\r\n", "\n");
+                if (!content.EndsWith("\n")) content = content + "\n";
+
+                File.WriteAllText(fullPath, content);
 
                 return $"Success: Content successfully written to '{path}'.";
             }

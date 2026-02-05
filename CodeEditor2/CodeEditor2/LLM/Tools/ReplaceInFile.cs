@@ -127,7 +127,7 @@ namespace CodeEditor2.LLM.Tools
                     return $"Error: File not found at '{path}'.";
 
                 // 2. ファイル内容の読み込み（改行コードを正規化して扱うのがコツ）
-                string fileContent = System.IO.File.ReadAllText(fullPath, Encoding.UTF8).Replace("\r\n", "\n");
+                string fileContent = System.IO.File.ReadAllText(fullPath).Replace("\r\n", "\n");
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -159,7 +159,7 @@ namespace CodeEditor2.LLM.Tools
                 }
 
                 // 5. 保存
-                System.IO.File.WriteAllText(fullPath, updatedContent, Encoding.UTF8);
+                System.IO.File.WriteAllText(fullPath, updatedContent);
 
                 await Task.Delay(0);
                 return $"Success: Applied {matches.Count} change(s) to '{path}'.";
