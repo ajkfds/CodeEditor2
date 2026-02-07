@@ -27,12 +27,12 @@ namespace CodeEditor2.Data
         public static List<WeakReference<File>> FileWeakReferences = new List<WeakReference<File>>();
 
 
-        public static File Create(string relativePath, Project project, Item parent)
+        public static async Task<File> CreateAsync(string relativePath, Project project, Item parent)
         {
             FileTypes.FileType? fileType = project.GetFileType(relativePath);
             if(fileType != null)
             {
-                File file = fileType.CreateFile(relativePath, project);
+                File file = await fileType.CreateFile(relativePath, project);
                 file.FileType = fileType;       
                 return file;
             }

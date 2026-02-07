@@ -181,7 +181,7 @@ namespace CodeEditor2.Data
                 }
 
                 {
-                    File item = File.Create(Project.GetRelativePath(absoluteFilePath), Project, this);
+                    File item = await File.CreateAsync(Project.GetRelativePath(absoluteFilePath), Project, this);
                     items.Add(item.Name, item);
                     currentItems.Add(item);
                 }

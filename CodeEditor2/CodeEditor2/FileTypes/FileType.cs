@@ -17,10 +17,10 @@ namespace CodeEditor2.FileTypes
         }
 
         public bool Visible { get; set; } = true;
-        public virtual File CreateFile(string relativeFilePath, Project project)
+        public virtual Task<File> CreateFile(string relativeFilePath, Project project)
         {
             System.Diagnostics.Debugger.Break();
-            return null;
+            return Task.FromResult<File>(null);
         }
 
         public virtual void CreateNewFile(string relativeFilePath,Project project)

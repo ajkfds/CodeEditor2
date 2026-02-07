@@ -23,9 +23,9 @@ namespace CodeEditor2.FileTypes
             return false;
         }
 
-        public override Data.File CreateFile(string relativeFilePath, Data.Project project)
+        public override async Task<Data.File?> CreateFile(string relativeFilePath, Data.Project project)
         {
-            return Data.TextFile.Create(relativeFilePath, project);
+            return await Data.TextFile.CreateAsync(relativeFilePath, project);
         }
 
         public override IImage GetIconImage()

@@ -21,9 +21,9 @@ namespace CodeEditor2.FileTypes
             return false;
         }
 
-        public override CodeEditor2.Data.File CreateFile(string relativeFilePath, CodeEditor2.Data.Project project)
+        public override async Task<CodeEditor2.Data.File> CreateFile(string relativeFilePath, CodeEditor2.Data.Project project)
         {
-            return Data.FileClassifyFile.Create(relativeFilePath, project);
+            return await Data.FileClassifyFile.CreateAsync(relativeFilePath, project);
         }
     }
 }

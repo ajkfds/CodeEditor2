@@ -32,8 +32,8 @@ namespace CodeEditor2.Data
 {
     public class TextFile : File, ITextFile
     {
-        public TextFile() : base() { }
-        public static TextFile Create(string relativePath, Project project)
+        protected TextFile() : base() { }
+        public static async Task<TextFile> CreateAsync(string relativePath, Project project)
         {
             string name;
             if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
@@ -50,9 +50,11 @@ namespace CodeEditor2.Data
                 RelativePath = relativePath,
                 Name = name
             };
+            await fileItem.FileCheck();
 
             return fileItem;
         }
+        protected CodeEditor.CodeDocument document;
         public virtual void ModifyEditorContextMenu(ContextMenu contextMenu)
         {
 
@@ -119,10 +121,6 @@ namespace CodeEditor2.Data
                 return document.IsDirty;
             }
         }
-
-
-        protected CodeEditor.CodeDocument? document = null;
-
         public virtual async Task<CodeEditor.CodeDocument> GetCodeDocumentAsync()
         {
             await FileCheck();
