@@ -133,6 +133,7 @@ namespace CodeEditor2.Data
 
         public virtual Task OnDeletedExternallyAsync()
         {
+            Remove();
             return Task.CompletedTask;
         }
 

@@ -12,6 +12,7 @@ using CodeEditor2.CodeEditor.PopupHint;
 using CodeEditor2.CodeEditor.PopupMenu;
 using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
+using CodeEditor2.Tools;
 using Microsoft.Playwright;
 using Svg;
 using System;
@@ -51,7 +52,7 @@ namespace CodeEditor2.Data
                 Name = name
             };
             await fileItem.FileCheck();
-
+            if (fileItem.document == null) System.Diagnostics.Debugger.Break();
             return fileItem;
         }
         protected CodeEditor.CodeDocument document;
@@ -131,9 +132,27 @@ namespace CodeEditor2.Data
         {
             get
             {
-                if (document == null) Task.Run(FileCheck).Wait();
-                if (document == null) throw new Exception();
                 return document;
+            }
+        }
+
+        public override void Remove()
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Remove();
+                return;
+            }
+
+            if(Controller.NavigatePanel.GetSelectedFile() == this)
+            {
+                Controller.NavigatePanel.SelectNode(Project.NavigatePanelNode);
+            }
+
+            if (Parent != null)
+            {
+                if (Parent.Items.ContainsKey(Name)) Parent.Items.Remove(Name);
+                Parent.NavigatePanelNode.UpdateVisual();
             }
         }
 
@@ -201,10 +220,12 @@ namespace CodeEditor2.Data
         }
         protected virtual async Task FileCheck()
         {
-            if(!await _fileSemaphore.WaitAsync(0))
+            if(!await FileIO.FileExists(AbsolutePath))
             {
+                Remove();
                 return;
             }
+
             try
             {
                 bool initialLoad = false;
@@ -221,7 +242,7 @@ namespace CodeEditor2.Data
                 }
 
                 string? text = null;
-                await Task.Run(() => { text = GetFileText(); }); // run at background
+                text = await FileIO.GetFileText(AbsolutePath);
 
                 if (text == null) // failed to read
                 {
@@ -229,13 +250,10 @@ namespace CodeEditor2.Data
                     return;
                 }
 
-                string newHash = "";
-                await Task.Run(() => { newHash = GetHash(text); });
+                string newHash = newHash = GetHash(text);
                 if (newHash == loadFileHash) {
-//                    Controller.AppendLog("FileCheck_match new:" + newHash + ",load:" + loadFileHash);
                     return;
                 }
-//                Controller.AppendLog("FileCheck_mismatch new:" + newHash + ",load:" + loadFileHash);
 
                 if (dirty & !initialLoad)
                 {
@@ -265,7 +283,6 @@ namespace CodeEditor2.Data
                     });
                 }
                 loadFileHash = newHash;
-//                Controller.AppendLog("FileCheck_load load:" + loadFileHash);
 
                 if (initialLoad)
                 {
@@ -277,9 +294,9 @@ namespace CodeEditor2.Data
                     Controller.CodeEditor.Refresh();
                 }
             }
-            finally
+            catch
             {
-                _fileSemaphore.Release();
+                if(System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
             }
         }
 
@@ -297,57 +314,7 @@ namespace CodeEditor2.Data
                 });
         }
 
-        protected string? GetFileText()
-        {
-            if (!System.IO.File.Exists(AbsolutePath))
-            {
-                return null;
-            }
 
-            string? text = null;
-            try
-            {
-                text = ReadStableText(AbsolutePath);
-            }
-            catch (FileNotFoundException)
-            {
-            }
-            catch (IOException)
-            {
-            }
-            return text;
-        }
-
-        protected string ReadStableText(string path)
-        {
-            const int maxRetry = 10;
-            const int delayMs = 50;
-
-            long lengthBefore = 0;
-            for (int i = 0; i < maxRetry; i++)
-            {
-                using var fs = new FileStream(
-                    path, FileMode.Open, FileAccess.Read,
-                    FileShare.ReadWrite | FileShare.Delete, 4096, FileOptions.SequentialScan);
-                using var sr = new StreamReader(fs, Encoding.UTF8, true);
-
-                string text = sr.ReadToEnd();
-                long lengthAfter = text.Length;
-                if(lengthAfter == lengthBefore)
-                {
-                    return text;
-                }
-                lengthBefore = lengthAfter;
-                Thread.Sleep(delayMs);
-            }
-
-            using var fs2 = new FileStream(
-                path, FileMode.Open, FileAccess.Read,
-                FileShare.ReadWrite | FileShare.Delete, 4096, FileOptions.SequentialScan);
-            using var sr2 = new StreamReader(fs2, Encoding.UTF8, true);
-
-            return sr2.ReadToEnd();
-        }
 
         public string GetHash(string text)
         {

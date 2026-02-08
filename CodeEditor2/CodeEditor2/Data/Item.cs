@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -183,20 +184,23 @@ namespace CodeEditor2.Data
             set 
             {
                 isDeleted = value;
-                //if (isDeleted)
-                //{
-                //    if(Parent != null && Parent.Items.ContainsKey(Name))
-                //    {
-                //        Parent.Items.Remove(Name);
-                //    }
-                //    Dispose();
-                //}
-                //else
-                //{
-                //    if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
-                //}
             }
         }
+
+        public virtual void Remove()
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Remove();
+                return;
+            }
+            if (Parent != null)
+            {
+                if(Parent.Items.ContainsKey(Name)) Parent.Items.Remove(Name);
+                Parent.NavigatePanelNode.UpdateVisual();
+            }
+        }
+
 
         /// <summary>
         /// This is a collection class for holding child Items. It has the functionality of both a dictionary and a list.

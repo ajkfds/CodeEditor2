@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CodeEditor2.NavigatePanel;
+using CodeEditor2.Tools;
 
 namespace CodeEditor2.Data
 {
@@ -91,19 +92,17 @@ namespace CodeEditor2.Data
             string[] absoluteFilePaths = new string[] { };
             try
             {
-                await Task.Run(() =>
-                {
-                    absoluteFilePaths = System.IO.Directory.GetFiles(absolutePath);
-                });
+                absoluteFilePaths = await FileIO.GetFiles(absolutePath);
             }
             catch
             {
                 // path is not exist
                 IsDeleted = true;
                 Items.Clear();
+                Remove();
                 return;
             }
-            string[] absoluteFolderPaths = System.IO.Directory.GetDirectories(absolutePath);
+            string[] absoluteFolderPaths = await FileIO.GetDirectories(absolutePath);
 
             List<Item> currentItems = new List<Item>();
 
@@ -242,7 +241,6 @@ namespace CodeEditor2.Data
             {
                 item.IsDeleted = true;
                 items.Remove(item.Name);
-//                item.Dispose();
             }
 
             items.Sort((a, b) =>

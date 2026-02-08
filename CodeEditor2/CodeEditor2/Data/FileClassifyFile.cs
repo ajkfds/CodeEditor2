@@ -10,7 +10,7 @@ namespace CodeEditor2.Data
 {
     public class FileClassifyFile : CodeEditor2.Data.TextFile
     {
-        public static new FileClassifyFile Create(string relativePath, CodeEditor2.Data.Project project)
+        public static FileClassifyFile Create(string relativePath, CodeEditor2.Data.Project project)
         {
             string name;
             if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
