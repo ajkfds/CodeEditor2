@@ -233,12 +233,16 @@ public partial class ChatControl : UserControl
             tools = agent.Tools;
             if (tools.Count == 0) tools = null;
         }
-        await Complete(command, tools, cancellationTokenSource.Token);
+        string? funcret = command;
+        while(funcret != null)
+        {
+            funcret = await Complete(funcret, tools, cancellationTokenSource.Token);
+        }
     }
 
-    private async Task Complete(string command, IList<AITool>? tools, CancellationToken cancellation)
+    private async Task<string?> Complete(string command, IList<AITool>? tools, CancellationToken cancellation)
     {
-        if (chat == null) return;
+        if (chat == null) return null;
         // reentrant lock
         inputAcceptable = false;
 
@@ -326,10 +330,7 @@ public partial class ChatControl : UserControl
             if (agent != null)
             {
                 string? funcRet = await agent.ParseResponceAsync(result, cancellation);
-                if (funcRet != null)
-                {
-                    await Complete(funcRet, tools, cancellation);
-                }
+                return funcRet;
             }
         }
         catch (Exception ex)
@@ -341,6 +342,7 @@ public partial class ChatControl : UserControl
             inputAcceptable = true;
             cancellationTokenSource = new CancellationTokenSource();
         }
+        return null;
     }
 
     public async IAsyncEnumerable<string> GetAsyncCollectionChatResult(string command, IList<AITool>? tools, [EnumeratorCancellation] CancellationToken cancellation)
