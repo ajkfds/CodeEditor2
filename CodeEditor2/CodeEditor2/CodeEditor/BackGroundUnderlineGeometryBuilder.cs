@@ -132,6 +132,7 @@ namespace CodeEditor2.CodeEditor
 
             foreach (VisualLine vl in textView.VisualLines)
             {
+                if (vl.IsDisposed) continue;
                 int vlStartOffset = vl.FirstDocumentLine.Offset;
                 if (vlStartOffset > segmentEnd)
                     break;
