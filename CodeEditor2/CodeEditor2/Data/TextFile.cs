@@ -273,6 +273,9 @@ namespace CodeEditor2.Data
                 {
                     document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
                     document.Clean();
+                    loadFileHash = newHash;
+                    if (initialLoad) document.ClearHistory();
+                    if (Controller.NavigatePanel.GetSelectedFile() == this) Controller.CodeEditor.Refresh();
                 }
                 else
                 {
@@ -280,18 +283,10 @@ namespace CodeEditor2.Data
                     {
                         document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
                         document.Clean();
+                        loadFileHash = newHash;
+                        if (initialLoad) document.ClearHistory();
+                        if (Controller.NavigatePanel.GetSelectedFile() == this) Controller.CodeEditor.Refresh();
                     });
-                }
-                loadFileHash = newHash;
-
-                if (initialLoad)
-                {
-                    document.ClearHistory();
-                }
-
-                if (Controller.NavigatePanel.GetSelectedFile() == this)
-                {
-                    Controller.CodeEditor.Refresh();
                 }
             }
             catch
