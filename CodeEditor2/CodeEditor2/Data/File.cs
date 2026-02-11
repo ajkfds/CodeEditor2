@@ -85,6 +85,10 @@ namespace CodeEditor2.Data
             return Task.CompletedTask;
         }
 
+        public Tests.TestResult? TestResult { get; set; } = null;
+
+        public Action<Task> GetTestResults;
+
         private async Task SyncCheck()
         {
             if (!System.IO.File.Exists(AbsolutePath))
