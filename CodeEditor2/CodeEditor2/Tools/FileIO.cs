@@ -18,7 +18,7 @@ namespace CodeEditor2.Tools
     {
 
         private static bool RestrictToSingleAccess = true;
-        private static int TimeoutSeconds = 5;
+        private static int TimeoutSeconds = 20;
         private static readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
 
         public static async Task AppendFileLists(string path, EnumerationOptions options, string[] ExcludedDirectories,Data.Project project, StringBuilder sb)
@@ -40,7 +40,7 @@ namespace CodeEditor2.Tools
                 }
 
                 return true;
-            }), TimeSpan.FromSeconds(5));
+            }), TimeSpan.FromSeconds(TimeoutSeconds));
         }
         public static async Task<FileInfo> GetFileInfo(string path)
         {
@@ -48,7 +48,7 @@ namespace CodeEditor2.Tools
             {
                 if (!System.IO.File.Exists(path)) throw new FileNotFoundException();
                 return GetFileInfo(path);
-            }), TimeSpan.FromSeconds(5));
+            }), TimeSpan.FromSeconds(TimeoutSeconds));
         }
         public static async Task<string[]> GetFiles(string path)
         {
@@ -56,7 +56,7 @@ namespace CodeEditor2.Tools
             {
                 if (!System.IO.Directory.Exists(path)) throw new FileNotFoundException();
                 return System.IO.Directory.GetFiles(path);
-            }), TimeSpan.FromSeconds(5));
+            }), TimeSpan.FromSeconds(TimeoutSeconds));
         }
 
         public static async Task<string[]> GetDirectories(string path)
@@ -66,7 +66,7 @@ namespace CodeEditor2.Tools
                 if (!System.IO.Directory.Exists(path)) throw new FileNotFoundException();
 
                 return System.IO.Directory.GetDirectories(path);
-            }), TimeSpan.FromSeconds(5));
+            }), TimeSpan.FromSeconds(TimeoutSeconds));
         }
         public static async Task<string> GetFileText(string path)
         {
@@ -81,7 +81,7 @@ namespace CodeEditor2.Tools
 
                 string text = sr.ReadToEnd();
                 return text;
-            }), TimeSpan.FromSeconds(5));
+            }), TimeSpan.FromSeconds(TimeoutSeconds));
         }
 
 
@@ -92,7 +92,7 @@ namespace CodeEditor2.Tools
                 return await WithTimeout(Task.Run(() =>
                 {
                     return System.IO.File.Exists(path);
-                }), TimeSpan.FromSeconds(5));
+                }), TimeSpan.FromSeconds(TimeoutSeconds));
             }
             catch (TimeoutException)
             {
