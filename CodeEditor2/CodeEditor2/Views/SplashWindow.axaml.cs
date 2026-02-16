@@ -63,6 +63,7 @@ public partial class SplashWindow : Window
         this.Close();
     }
 
+    // Open exsisted solution.set solution and open mainwindow
     private async void OpenSolutionButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         var files = await this.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
@@ -132,6 +133,8 @@ public partial class SplashWindow : Window
 
     private async void openMainWindow()
     {
+        // update opened Solution history file
+
         Setups.Setup.History? history = Global.Setup.Historys
             .Find((x) =>
             {
@@ -157,13 +160,15 @@ public partial class SplashWindow : Window
         }
         Global.Setup.SaveSetup();
 
+
         MainWindow mainWindow = new MainWindow();
         mainWindow.Title = Setups.Setup.ApplicationName + " " + Global.Solution.Name;
         Global.currentWindow = mainWindow;
 
         initialize();
         mainWindow.Show();
-        await mainWindow.MainView0.Initialize();
+
+        await mainWindow.MainView0.Initialize(); // load projects in solution
     }
 
     private void initialize()

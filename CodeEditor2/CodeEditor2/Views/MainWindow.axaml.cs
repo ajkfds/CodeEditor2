@@ -34,9 +34,11 @@ public partial class MainWindow : Window
 
     private async Task MainWindow_ActivatedAsync(object? sender, System.EventArgs e)
     {
+        // update navigatepanel selected file 
         Data.File? file = Controller.NavigatePanel.GetSelectedFile();
         if (file != null) await file.UpdateAsync();
 
+        // update text file if the file is not same as the navigatepanel selected file
         Data.TextFile? textFile = Controller.CodeEditor.GetTextFile();
         if(textFile != null && textFile != file)
         {
