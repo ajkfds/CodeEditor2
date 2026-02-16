@@ -51,7 +51,8 @@ namespace CodeEditor2
         public static bool StopParse = false;
         public static bool ActivateCashe = false;
 
-
+        public static bool CasheEnable = false;
+        public static string CashePath = "";
         public static MenuItem CreateMenuItem (string header,string name)
         {
             MenuItem menuItem = new MenuItem();

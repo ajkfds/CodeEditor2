@@ -170,6 +170,14 @@ namespace CodeEditor2.Data
                 string saveText = document.CreateString();
                 ulong savedVersion = document.Version;
 
+                if (Global.CasheEnable)
+                {
+                    using (System.IO.StreamWriter sw = new StreamWriter(Project.GetCahsePath(RelativePath)))
+                    {
+                        await sw.WriteAsync(saveText);
+                    }
+                }
+
                 string? newHash = null;
                 await Task.Run(
                     async () => {
@@ -198,7 +206,7 @@ namespace CodeEditor2.Data
                 using (FileStream fs = new FileStream(
                                 AbsolutePath,
                                 FileMode.Create, FileAccess.Write, FileShare.Read,
-                                bufferSize: 4096, useAsync: true))
+                                bufferSize: 4096*32, useAsync: true))
                 {
                     byte[] encodedText = Encoding.UTF8.GetBytes(text);
                     await fs.WriteAsync(encodedText, 0, encodedText.Length);
@@ -220,7 +228,21 @@ namespace CodeEditor2.Data
         }
         protected virtual async Task FileCheck()
         {
-            if(!await FileIO.FileExists(AbsolutePath))
+            if(document == null && Global.CasheEnable)
+            {
+                CreateCodeDocument();
+                using (System.IO.StreamReader sr = new StreamReader(Project.GetCahsePath(RelativePath)))
+                {
+                    string text = await sr.ReadToEndAsync();
+                    string newHash = newHash = GetHash(text);
+                    document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
+                    document.Clean();
+                    loadFileHash = newHash;
+                    document.ClearHistory();
+                }
+            }
+
+            if (!await FileIO.FileExists(AbsolutePath))
             {
                 Remove();
                 return;

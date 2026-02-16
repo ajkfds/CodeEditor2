@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using CodeEditor2.NavigatePanel;
@@ -84,6 +85,7 @@ namespace CodeEditor2.Data
             return null;
         }
 
+        private bool firstAccess = true;
         public override async Task UpdateAsync()
         {
             string absolutePath = Project.GetAbsolutePath(RelativePath);
@@ -92,7 +94,20 @@ namespace CodeEditor2.Data
             string[] absoluteFilePaths = new string[] { };
             try
             {
-                absoluteFilePaths = await FileIO.GetFiles(absolutePath);
+                if(firstAccess && Global.CasheEnable)
+                {
+                    string[] casheFilePaths = System.IO.Directory.GetFiles(Project.GetCahsePath(RelativePath));
+                    List<string> absPaths = new List<string>();
+                    foreach (string path in casheFilePaths)
+                    {
+                        absPaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
+                    }
+                    absoluteFilePaths = absPaths.ToArray();
+                }
+                else
+                {
+                    absoluteFilePaths = await FileIO.GetFiles(absolutePath);
+                }
             }
             catch
             {
@@ -103,6 +118,21 @@ namespace CodeEditor2.Data
                 return;
             }
             string[] absoluteFolderPaths = await FileIO.GetDirectories(absolutePath);
+            if(firstAccess&& Global.CasheEnable)
+            {
+                string[] casheFolderPaths = System.IO.Directory.GetDirectories(Project.GetCahsePath(RelativePath));
+                List<string> absPaths = new List<string>();
+                foreach(string path in casheFolderPaths)
+                {
+                    absPaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
+                }
+                absoluteFolderPaths = absPaths.ToArray();
+            }
+            else
+            {
+                absoluteFolderPaths = await FileIO.GetDirectories(absolutePath);
+            }
+            firstAccess = false;
 
             List<Item> currentItems = new List<Item>();
 

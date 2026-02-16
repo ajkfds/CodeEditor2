@@ -191,6 +191,39 @@ namespace CodeEditor2.Data
             return absolutePath;
         }
 
+        public string GetCahsePath(string relativePath)
+        {
+            string basePath = Global.CashePath;
+            if (!basePath.EndsWith(Path.DirectorySeparatorChar)) basePath += Path.DirectorySeparatorChar;
+            basePath += Name+ Path.DirectorySeparatorChar;
+
+            string filePath = relativePath;
+
+            basePath = basePath.Replace("%", "%25");
+            filePath = filePath.Replace("%", "%25");
+
+            Uri u1 = new Uri(basePath);
+            Uri u2 = new Uri(u1, filePath);
+            string cashePath = u2.LocalPath;
+            cashePath = cashePath.Replace("%25", "%");
+
+            return cashePath;
+        }
+        public string GetRelativePathFromCashePath(string cashePath)
+        {
+            string basePath = Global.CashePath;
+            if (!basePath.EndsWith(Path.DirectorySeparatorChar)) basePath += Path.DirectorySeparatorChar;
+            basePath += Name + Path.DirectorySeparatorChar;
+
+            Uri u1 = new Uri(basePath);
+            Uri u2 = new Uri(cashePath);
+            Uri relativeUri = u1.MakeRelativeUri(u2);
+            string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+
+            relativePath = relativePath.Replace('/', System.IO.Path.DirectorySeparatorChar);
+            return relativePath;
+        }
+
         public string GetRelativePath(string fullPath)
         {
             string basePath = RootPath;
