@@ -59,6 +59,28 @@ namespace CodeEditor2.Tools
             }), TimeSpan.FromSeconds(TimeoutSeconds));
         }
 
+        public static async IAsyncEnumerable<FileSystemInfo> EnumerateFilesAsync(string path)
+        {
+            var di = new DirectoryInfo(path);
+            var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true };
+
+            // 列挙自体は同期処理だが、Task.Run内で回すことで非同期ストリーム化
+            var items = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
+
+            foreach (var item in items)
+            {
+                // 1件ごとに呼び出し元へ戻す。
+                // ここで必要に応じて Task.Yield() などを挟むとより細かく制御可能
+                yield return item;
+            }
+        }
+
+//        // 呼び出し側
+//        await foreach (var item in EnumerateFilesAsync(@"C:\Target"))
+//{
+//    Console.WriteLine(item.FullName);
+//}
+
         public static async Task<string[]> GetDirectories(string path)
         {
             return await WithTimeout(Task.Run(() =>

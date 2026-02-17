@@ -69,7 +69,7 @@ namespace CodeEditor2.LLM
         // Function Call
         private async Task<string?> ParseExecutePersudoFunctionCall(string responce, CancellationToken cancellationToken)
         {
-            var match = Regex.Match(responce, @"<(?<tool>\w+)>(?<params>.*?)</\k<tool>>", RegexOptions.Singleline);
+            var match = Regex.Match(responce, @"<\s*(?<tool>\w+)\s*>(?<params>.*?)</\s*\k<tool>\s*>", RegexOptions.Singleline);
 
             if (match.Success)
             {
@@ -97,7 +97,7 @@ namespace CodeEditor2.LLM
                 }
                 catch
                 {
-                    return "illagal function call";
+                    return "illagal function call. use xml code markdown tag for tool call";
                 }
             }
             return null;

@@ -124,7 +124,8 @@ namespace CodeEditor2.Data
         }
         public virtual async Task<CodeEditor.CodeDocument> GetCodeDocumentAsync()
         {
-            await FileCheck();
+            PostFileCheck();
+//            await FileCheck();
             if (document == null) throw new Exception();
             return document;
         }
@@ -225,6 +226,11 @@ namespace CodeEditor2.Data
         protected virtual void CreateCodeDocument()
         {
             document = new CodeEditor.CodeDocument(this);
+        }
+
+        protected void PostFileCheck()
+        {
+            Task.Run(async () => { await FileCheck(); });
         }
         protected virtual async Task FileCheck()
         {
@@ -358,17 +364,12 @@ namespace CodeEditor2.Data
         public override async Task UpdateAsync()
         {
             await base.UpdateAsync();
-
-            Dispatcher.UIThread.Post(async() => {
-                await FileCheck();
-            });
+            PostFileCheck();
         }
 
         public override void CheckStatus()
         {
-            Dispatcher.UIThread.Post(async () => {
-                await FileCheck();
-            });
+            PostFileCheck();
         }
 
         public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token)

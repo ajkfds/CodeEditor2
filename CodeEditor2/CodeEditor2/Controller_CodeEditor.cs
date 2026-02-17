@@ -16,25 +16,19 @@ namespace CodeEditor2
         {
             public static async Task SetTextFileAsync(Data.TextFile? textFile)
             {
-                if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
                 await SetTextFileAsync(textFile, true);
             }
             public static async Task SetTextFileAsync(Data.TextFile? textFile, bool parseEntry)
             {
-                if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
                 if (textFile == null)
                 {
                     await Global.codeView.SetTextFileAsync(null,false);
-                    //Global.codeView. .mainForm.editorPage.CodeEditor.SetTextFile(null);
                     //Global.mainForm.mainTab.TabPages[0].Text = "-";
                 }
                 else
                 {
-                    //Global.mainForm.editorPage.CodeEditor.AbortInteractiveSnippet();
                     await Global.codeView.SetTextFileAsync(textFile, parseEntry);
-                    //Global.mainForm.editorPage.CodeEditor.SetTextFile(textFile);
                     //Global.mainForm.mainTab.TabPages[0].Text = textFile.Name;
-                    //Global.mainForm.mainTab.SelectedTab = Global.mainForm.mainTab.TabPages[0];
                 }
             }
 

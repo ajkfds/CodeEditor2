@@ -11,8 +11,8 @@ namespace CodeEditor2.CodeEditor.Parser
 {
     public class ParseWorker
     {
-        private static Task? _currentTask;
-        private static CancellationTokenSource? _cts;
+        private Task? _currentTask;
+        private CancellationTokenSource? _cts;
 
         public async Task Parse(Data.TextFile textFile)
         {
@@ -88,7 +88,7 @@ namespace CodeEditor2.CodeEditor.Parser
 
             token.ThrowIfCancellationRequested();
 
-            Controller.AppendLog("complete edit parse ID :" + parser.TextFile.ID);
+            Controller.AppendLog("complete edit parse ID :" + parser.TextFile.ID,Avalonia.Media.Colors.Yellow);
 
             // If the version of the parsed document is already outdated, discard the parse result.
             if (targetCodeDocument.Version != parser.ParsedDocument.Version)
@@ -103,7 +103,7 @@ namespace CodeEditor2.CodeEditor.Parser
                     await parser.TextFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
                     targetCodeDocument.CopyColorMarkFrom(parser.Document);
                     // update current view
-                    if (Controller.NavigatePanel.GetSelectedFile() == targetTextFile)
+                    if(Controller.CodeEditor.GetTextFile() == textFile)
                     {
                         targetTextFile.PostRefresh();
                     }

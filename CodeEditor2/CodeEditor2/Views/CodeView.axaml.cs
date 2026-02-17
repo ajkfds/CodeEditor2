@@ -342,43 +342,41 @@ namespace CodeEditor2.Views
                 return;
             }
 
-            lock (this)
-            {
-
-            }
-            if (TextFile != null) TextFile.StoredVerticalScrollPosition = _textEditor.VerticalOffset;
 
             skipEvents = true;
+            { // remove current CodeDocument event and folding
+                // store current scroll position
+                if (TextFile != null) TextFile.StoredVerticalScrollPosition = _textEditor.VerticalOffset;
 
-            if (codeViewPopupMenu.Snippet != null) codeViewPopupMenu.AbortInteractiveSnippet();
-            if (codeViewPopupMenu.IsOpened) codeViewPopupMenu.HidePopupMenu();
+                if (codeViewPopupMenu.Snippet != null) codeViewPopupMenu.AbortInteractiveSnippet();
+                if (codeViewPopupMenu.IsOpened) codeViewPopupMenu.HidePopupMenu();
 
-            if (CodeDocument != null) CodeDocument.Changing = null;
-            FoldingManager.Uninstall(_foldingManager);
+                if (CodeDocument != null) CodeDocument.Changing = null;
+                FoldingManager.Uninstall(_foldingManager);
+            }
 
             if (textFile == null || textFile.CodeDocument == null)
             {
                 TextFile = null;
+                skipEvents = false;
                 return;
             }
 
-            TextFile = textFile;
+            { // set new CodeDocument and event
+                TextFile = textFile;
 
-            // restore caret position
-            _textEditor.CaretOffset = textFile.CodeDocument.CaretIndex;
+                // restore caret position
+                _textEditor.CaretOffset = textFile.CodeDocument.CaretIndex;
+                _textEditor.ScrollToVerticalOffset(TextFile.StoredVerticalScrollPosition);
 
-            _textEditor.ScrollToVerticalOffset(TextFile.StoredVerticalScrollPosition);
-
-            if (parseEntry && !Global.StopParse) codeViewParser.EntryParse();
-            attachToCodeDocument();
-
-            updateEditorContextMenu();
-
-            skipEvents = false;
+                if (parseEntry && !Global.StopParse) codeViewParser.EntryParse();
+                attachToCodeDocument();
+                updateEditorContextMenu();
+            }
 
             Controller.AddSelectHistory(new TextReference(textFile, _textEditor.CaretOffset,0));
             Controller.Tabs.SelectTab(Global.mainView.EditorTabItem);
-            Controller.CodeEditor.Refresh();
+//            Controller.CodeEditor.Refresh();
 
             // update ParseDocument Result to current Text
             if (textFile.ParsedDocument == null)
@@ -388,8 +386,9 @@ namespace CodeEditor2.Views
             else
             {
                 await textFile.AcceptParsedDocumentAsync(textFile.ParsedDocument);
-                Controller.CodeEditor.Refresh();
             }
+            skipEvents = false;
+            Controller.CodeEditor.Refresh();
         }
         private void TextEditor_ContextRequested(object? sender, ContextRequestedEventArgs e)
         {
@@ -519,10 +518,6 @@ namespace CodeEditor2.Views
 
         // tool selection form /////////////////////////////////////////////////////////////////////////
 
-
-
-        //        public List<PopupMenuItem> PopupMenuItems = new List<PopupMenuItem>();
-
         public void OpenCustomSelection(List<ToolItem> candidates)
         {
             codeViewPopupMenu.OpenCustomSelection(candidates);
@@ -556,22 +551,7 @@ namespace CodeEditor2.Views
             if (skipEvents) return;
             codeViewPopupMenu.TextEntering(sender, e);
 
-
-//            if (e.Text.Length > 0 && _completionWindow != null)
-            {
-                //if (!char.IsLetterOrDigit(e.Text[0]))
-                //{
-                //    // Whenever a non-letter is typed while the completion window is open,
-                //    // insert the currently selected element.
-                //    _completionWindow.CompletionList.RequestInsertion(e);
-                //}
-            }
-
-//            _insightWindow?.Hide();
-
             TextFile?.TextEntering(e);
-            // Do not set e.Handled=true.
-            // We still want to insert the character that was typed.
         }
 
 

@@ -18,12 +18,12 @@ namespace CodeEditor2.CodeEditor.Parser
         }
 
         private Views.CodeView codeView;
-        private ParseWorker worker = new ParseWorker();
 
         public void EntryParse()
         {
             if (codeView.TextFile == null) return;
             TextFile textFile = codeView.TextFile;
+            ParseWorker worker = new ParseWorker();
 
             // fire and forget
             Task.Run(async () => { await worker.Parse(textFile); });
