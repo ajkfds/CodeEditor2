@@ -69,10 +69,6 @@ public partial class MainView : UserControl
 
         //        TabControl0.
         initializeMenuItem_File();
-
-        timer.Interval = new TimeSpan(1);
-        timer.Tick += Timer_Tick;
-        timer.Start();
     }
 
     private void BackDropdownButton_Click(object? sender, RoutedEventArgs e)
@@ -135,16 +131,7 @@ public partial class MainView : UserControl
         }
     }
 
-    private async void Timer_Tick(object? sender, EventArgs e)
-    {
-        //// should launch after main window shown
-        //timer.Stop();
-        //// read setup file
 
-        //await initialize();
-    }
-
-    private DispatcherTimer timer = new DispatcherTimer();
 
     public async Task Initialize()
     {
@@ -271,6 +258,10 @@ public partial class MainView : UserControl
     }
 
     private void MenuItem_Click_1(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+    }
+
+    private void MenuItem_Click_2(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
     }
 
