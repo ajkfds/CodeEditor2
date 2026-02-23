@@ -20,10 +20,10 @@ namespace CodeEditor2.Data
     /// All items represent specific folders or files, and project/Directory/File objects are all represented as items that inherit from Item.
     /// This Item holds the associated data, and that data is reflected in the UI.
     /// </summary>
-    [JsonDerivedType(typeof(Item), typeDiscriminator: "Item")]
-    [JsonDerivedType(typeof(Folder), typeDiscriminator: "Folder")]
-    [JsonDerivedType(typeof(Project), typeDiscriminator: "Project")]
-    [JsonDerivedType(typeof(TextFile), typeDiscriminator: "TextFile")]
+//    [JsonDerivedType(typeof(Item), typeDiscriminator: "Item")]
+//    [JsonDerivedType(typeof(Folder), typeDiscriminator: "Folder")]
+//    [JsonDerivedType(typeof(Project), typeDiscriminator: "Project")]
+//    [JsonDerivedType(typeof(TextFile), typeDiscriminator: "TextFile")]
     public class Item : IDisposable
     {
         protected Item() { }
@@ -71,6 +71,13 @@ namespace CodeEditor2.Data
                 parent = new WeakReference<Item>(value);
             }
         }
+
+        static Item()
+        {
+            Data.Item.PolymorphicResolver.DerivedTypes.Add(new JsonDerivedType(typeof(Data.Project)));
+            Data.Item.PolymorphicResolver.DerivedTypes.Add(new JsonDerivedType(typeof(Data.File)));
+            Data.Item.PolymorphicResolver.DerivedTypes.Add(new JsonDerivedType(typeof(Data.Folder)));
+        }
         public static class PolymorphicResolver
         {
             // プラグイン等から見つかった派生クラスをここに登録していく
@@ -79,20 +86,21 @@ namespace CodeEditor2.Data
             public static void MyTypeResolver(JsonTypeInfo jsonTypeInfo)
             {
                 if (jsonTypeInfo.Type == typeof(Item))
+//                if (typeof(Item).IsAssignableFrom(jsonTypeInfo.Type))
                 {
-                    // デフォルトの型（基底）を登録
+                    // Item 自身、および Project, File, Folder などの設定
                     jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
                     {
-                        TypeDiscriminatorPropertyName = "$type", // JSON上の識別子名
+                        TypeDiscriminatorPropertyName = "$type",
                         UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor
                     };
 
-                    // 登録済みの派生型をすべて流し込む
                     foreach (var type in DerivedTypes)
                     {
                         jsonTypeInfo.PolymorphismOptions.DerivedTypes.Add(type);
                     }
                 }
+
             }
         }
 
@@ -106,15 +114,26 @@ namespace CodeEditor2.Data
                     {
                         Modifiers = { PolymorphicResolver.MyTypeResolver }
                     },
-                    WriteIndented = true
+                    WriteIndented = true,
+                    // デフォルト値のプロパティをすべて除外する
+//                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                    // 読み取り専用プロパティを無視する
+                    IgnoreReadOnlyProperties = true,
+                    // シリアライズ時にオブジェクトに $id（一意のID）を振り、2回目以降の登場時は $ref（参照ID）として記録します
+                    ReferenceHandler = ReferenceHandler.Preserve,
                 };
 
                 return options;
             }
         }
+
         public void Serialize(string path)
         {
             string json = JsonSerializer.Serialize(this, SerializerOptions);
+            using (StreamWriter sw = new StreamWriter(path))
+            {
+                sw.Write(json);
+            }
         }
 
         public static Item? Deserialize(string path)
@@ -164,9 +183,11 @@ namespace CodeEditor2.Data
         /// <summary>
         /// holding child Items
         /// </summary>
+        [JsonInclude]
         public virtual ItemList Items
         {
             get { return items; }
+            private set { items = value; }
         }
 
         public virtual void CheckStatus()

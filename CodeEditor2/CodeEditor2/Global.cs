@@ -29,6 +29,9 @@ namespace CodeEditor2
         public static Solution Solution = new Solution();
         public static Setup Setup = new Setup();
 
+        public static bool CasheEnable = false;
+        public static string CashePath = @"c:\temp";
+
         internal static Views.CodeView codeView;
         internal static Views.MainView mainView;
         internal static Views.NavigateView navigateView;
@@ -51,8 +54,6 @@ namespace CodeEditor2
         public static bool StopParse = false;
         public static bool ActivateCashe = false;
 
-        public static bool CasheEnable = false;
-        public static string CashePath = "";
         public static MenuItem CreateMenuItem (string header,string name)
         {
             MenuItem menuItem = new MenuItem();

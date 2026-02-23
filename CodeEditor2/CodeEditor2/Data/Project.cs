@@ -114,7 +114,17 @@ namespace CodeEditor2.Data
 
         public static Project Create(Setup setup)
         {
-            Project project = new Project(setup.Name, setup.RootPath, "");
+            string cashePath = Global.CashePath + System.IO.Path.DirectorySeparatorChar + setup.Name + ".cashe";
+            Project? project = null;
+            if (System.IO.File.Exists(cashePath))
+            {
+                project = Deserialize(cashePath) as Project;
+            }
+            
+            if(project == null)
+            {
+                project = new Project(setup.Name, setup.RootPath, "");
+            }
 
             project.ignoreList = setup.IgnoreList;
 
