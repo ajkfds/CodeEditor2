@@ -29,11 +29,11 @@ namespace CodeEditor2.LLM
         ///  base prompt for initial message
         /// </summary>
         public string BasePrompt { get; set; } = "";
+
         /// <summary>
         /// parameters to replace strings in BasePrompt
         /// </summary>
         public Dictionary<string, string> PromptParameters = new Dictionary<string, string>();
-        //        public string Role { get; set; } = "a highly skilled software engineer with extensive knowledge in many programming languages, frameworks, design patterns, and best practices";
 
         public async Task<string?> ParseResponceAsync(string responce, CancellationToken cancellationToken)
         {

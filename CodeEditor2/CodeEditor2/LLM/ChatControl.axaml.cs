@@ -55,6 +55,21 @@ public partial class ChatControl : UserControl
         ListBox0.Loaded += ListBox0_Loaded;
     }
 
+    // set model and agent
+    public void SetModel(ILLMChatFrontEnd chatModel, LLMAgent? agent)
+    {
+        this.chat = chatModel;
+        this.agent = agent;
+        if (initialized)
+        {
+            initialized = true;
+            Dispatcher.UIThread.Post(async () =>
+            {
+                await ResetAsync();
+            });
+        }
+    }
+
     // initialize
     private ScrollViewer scrollViewer;
     private bool _isInternalScrolling = false; // システムによるスクロール中かどうかのフラグ
@@ -125,7 +140,7 @@ public partial class ChatControl : UserControl
     public string? LogFilePath { set; get; } = null;
 
     InputItem inputItem = new InputItem();
-    TextItem? lastResultItem = null;
+    CollapsibleTextItem? lastResultItem = null;
 
     private Avalonia.Media.Color commandColor = new Avalonia.Media.Color(255, 255, 200, 200);
     private Avalonia.Media.Color completeColor = new Avalonia.Media.Color(255, 200, 255, 255);
@@ -136,20 +151,6 @@ public partial class ChatControl : UserControl
 
 
     // external control
-    public void SetModel(ILLMChatFrontEnd chatModel, LLMAgent? agent)
-    {
-        this.chat = chatModel;
-        this.agent = agent;
-        if (initialized)
-        {
-            initialized = true;
-            Dispatcher.UIThread.Post(async () =>
-            {
-                await ResetAsync();
-            });
-        }
-    }
-
     public async Task ResetAsync()
     {
         if (chat == null) return;
@@ -189,7 +190,7 @@ public partial class ChatControl : UserControl
         List<Microsoft.Extensions.AI.ChatMessage> chatmessages = chat.GetChatMessages();
         foreach (Microsoft.Extensions.AI.ChatMessage chatmessage in chatmessages)
         {
-            TextItem resultItem = new TextItem(chatmessage.Text);
+            CollapsibleTextItem resultItem = new CollapsibleTextItem(chatmessage.Text);
             if (chatmessage.Role == ChatRole.System)
             {
                 resultItem.TextColor = completeColor;
@@ -253,7 +254,7 @@ public partial class ChatControl : UserControl
             commandItem.TextColor = commandColor;
             Items.Insert(Items.Count - 1, commandItem);
 
-            TextItem resultItem = new TextItem("");
+            CollapsibleTextItem resultItem = new CollapsibleTextItem("");
             Items.Insert(Items.Count - 1, resultItem);
             lastResultItem = resultItem;
 
@@ -261,10 +262,10 @@ public partial class ChatControl : UserControl
             var stopwatch = Stopwatch.StartNew();
 
             bool timerActivate = true; // timer activate flag, timer will be stopped when first result is returned
-            using var cts = new CancellationTokenSource();
+            using var timerCancellationTokenSource = new CancellationTokenSource();
             var displayTimerTask = Task.Run(async () =>
             {
-                while (!cts.Token.IsCancellationRequested)
+                while (!timerCancellationTokenSource.Token.IsCancellationRequested)
                 {
                     try
                     {
@@ -272,14 +273,14 @@ public partial class ChatControl : UserControl
                         {
                             await resultItem.SetText("waiting ... " + (stopwatch.ElapsedMilliseconds / 1000f).ToString("F1") + "s");
                         }
-                        await Task.Delay(100, cts.Token);
+                        await Task.Delay(100, timerCancellationTokenSource.Token);
                     }
                     catch (TaskCanceledException)
                     {
                         break;
                     }
                 }
-            }, cts.Token);
+            }, timerCancellationTokenSource.Token);
 
 
             // execute chat command
@@ -289,7 +290,7 @@ public partial class ChatControl : UserControl
                 {
                     if (timerActivate & ret != "")
                     {
-                        cts.Cancel();
+                        timerCancellationTokenSource.Cancel();
                         timerActivate = false;
                         await resultItem.SetText("");
                     }
@@ -307,7 +308,7 @@ public partial class ChatControl : UserControl
                 }
                 if (timerActivate)
                 {
-                    cts.Cancel();
+                    timerCancellationTokenSource.Cancel();
                     timerActivate = false;
                     await resultItem.SetText("blank");
                 }
