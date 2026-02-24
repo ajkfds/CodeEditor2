@@ -36,7 +36,9 @@ namespace CodeEditor2.Views
             ProjectNode pNode = new NavigatePanel.ProjectNode(project);
             TreeControl.Nodes.Add(pNode);
 
-            await pNode.UpdateAsync();
+            await project.InitializeSubItemsAsync();
+
+//            await pNode.UpdateAsync();
         }
 
         internal NavigatePanelNode? GetSelectedNode()

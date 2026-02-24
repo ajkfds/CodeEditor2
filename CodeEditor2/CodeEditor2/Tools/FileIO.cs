@@ -75,6 +75,69 @@ namespace CodeEditor2.Tools
                 yield return item;
             }
         }
+
+
+        public class FileNode
+        {
+            public void AddItem(List<string> path,FileSystemInfo fileSystemInfo)
+            {
+                if (!fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory))
+                {
+                    if(path.Count == 1)
+                    {
+                        Nodes.Add(path[0], new FileNode() { Name = path[0], IsDirectory = false, FileSystemInfo = fileSystemInfo });
+                    }
+                    else if(Nodes.ContainsKey(path[0]))
+                    {
+                        FileNode nextNode = Nodes[path[0]];
+                        path.RemoveAt(0);
+                        nextNode.AddItem(path, fileSystemInfo);
+                    }
+                }
+                else
+                {
+                    if (Nodes.ContainsKey(path[0]))
+                    {
+                        FileNode nextNode = Nodes[path[0]];
+                        path.RemoveAt(0);
+                        nextNode.AddItem(path, fileSystemInfo);
+                    }
+                    else
+                    {
+                        Nodes.Add(path[0], new FileNode() { Name = path[0], IsDirectory = true, FileSystemInfo = fileSystemInfo });
+                        path.RemoveAt(0);
+                        if (path.Count > 0)
+                        {
+                            Nodes[path[0]].AddItem(path, fileSystemInfo);
+                        }
+                    }
+                }
+            }
+            public bool IsDirectory { get; set; } = false;
+            public string Name { get; set; } = "";
+            public FileSystemInfo? FileSystemInfo { get; set; }
+            public Dictionary<string,FileNode> Nodes = new Dictionary<string, FileNode>();
+        }
+
+
+        public static async Task<FileNode> GetFileTree(string path)
+        {
+            FileNode rootNode = new FileNode() { IsDirectory = true };
+
+            await foreach (var info in FileIO.EnumerateFilesHierarchyAsync(path))
+            {
+                if (!info.FullName.StartsWith(path)) continue;
+
+                string relativePath = info.FullName.Substring(path.Length);
+
+                List<string> paths = relativePath.Split(new char[] { System.IO.Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                if (paths.Count <= 0) continue;
+
+                rootNode.AddItem(paths, info);
+            }
+            return rootNode;
+        }
+
         public static async IAsyncEnumerable<FileSystemInfo> EnumerateFilesHierarchyAsync(string path)
         {
             var di = new DirectoryInfo(path);

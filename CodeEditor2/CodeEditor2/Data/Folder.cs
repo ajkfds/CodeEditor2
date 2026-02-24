@@ -1,5 +1,6 @@
 ﻿using CodeEditor2.NavigatePanel;
 using CodeEditor2.Tools;
+using DynamicData;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -242,11 +243,33 @@ namespace CodeEditor2.Data
 
         }
 
-        public void InitializeHierarchy(Project project, Item parent, List<string> paths, bool isFile)
+        public async Task InitializeHierarchy(Project project, Item parent, FileIO.FileNode node)
         {
             List<string> absoluteFilePaths = new List<string>();
             List<string> absoluteFolderPaths = new List<string>();
+            foreach(FileIO.FileNode subNode in node.Nodes.Values)
+            {
+                if (subNode.IsDirectory)
+                {
+                    absoluteFolderPaths.Add(subNode.Name);
+                }
+                else
+                {
+                    absoluteFilePaths.Add(subNode.Name);
+                }
+            }
+            await updateItems(absoluteFilePaths, absoluteFolderPaths);
 
+            foreach (FileIO.FileNode subNode in node.Nodes.Values)
+            {
+                if (!subNode.IsDirectory) continue;
+                if (items.ContainsKey(subNode.Name))
+                {
+                    Folder? folder = items[subNode.Name] as Folder;
+                    if (folder == null) continue;
+                    await folder.InitializeHierarchy(project, this, subNode);
+                }
+            }
 
         }
 

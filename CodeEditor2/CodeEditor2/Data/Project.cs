@@ -160,7 +160,7 @@ namespace CodeEditor2.Data
         }
 
         public static Action<Project,Setup?>? Created;
-        private static async Task initProject(Project project,Setup? setup)
+        private static void initProject(Project project,Setup? setup)
         {
             if (Created != null) Created(project,setup);
             project.startFileSystemWatcher();
@@ -180,6 +180,12 @@ namespace CodeEditor2.Data
 
             //    }
             //}
+        }
+
+        public async Task InitializeSubItemsAsync()
+        {
+            var node = await FileIO.GetFileTree(GetAbsolutePath(RelativePath));
+
         }
 
         public override void Dispose()
