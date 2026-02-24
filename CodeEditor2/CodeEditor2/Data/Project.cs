@@ -260,6 +260,7 @@ namespace CodeEditor2.Data
         protected FileSystemWatcher? fileSystemWatcher;
         protected void startFileSystemWatcher()
         {
+            return;
             fileSystemWatcher = new FileSystemWatcher();
             fileSystemWatcher.Path = RootPath;
             if (System.OperatingSystem.IsWindows())

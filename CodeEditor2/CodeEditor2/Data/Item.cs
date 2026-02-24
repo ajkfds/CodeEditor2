@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
+using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.Parser;
 using System;
 using System.Collections.Generic;
@@ -86,9 +87,7 @@ namespace CodeEditor2.Data
             public static void MyTypeResolver(JsonTypeInfo jsonTypeInfo)
             {
                 if (jsonTypeInfo.Type == typeof(Item))
-//                if (typeof(Item).IsAssignableFrom(jsonTypeInfo.Type))
                 {
-                    // Item 自身、および Project, File, Folder などの設定
                     jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
                     {
                         TypeDiscriminatorPropertyName = "$type",
@@ -96,6 +95,34 @@ namespace CodeEditor2.Data
                     };
 
                     foreach (var type in DerivedTypes)
+                    {
+                        jsonTypeInfo.PolymorphismOptions.DerivedTypes.Add(type);
+                    }
+                }
+
+                if (jsonTypeInfo.Type == typeof(ParsedDocument))
+                {
+                    jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
+                    {
+                        TypeDiscriminatorPropertyName = "$type",
+                        UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor
+                    };
+
+                    foreach (var type in ParsedDocument.DerivedTypes)
+                    {
+                        jsonTypeInfo.PolymorphismOptions.DerivedTypes.Add(type);
+                    }
+                }
+
+                if (jsonTypeInfo.Type == typeof(ProjectProperty))
+                {
+                    jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
+                    {
+                        TypeDiscriminatorPropertyName = "$type",
+                        UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor
+                    };
+
+                    foreach (var type in ProjectProperty.DerivedTypes)
                     {
                         jsonTypeInfo.PolymorphismOptions.DerivedTypes.Add(type);
                     }

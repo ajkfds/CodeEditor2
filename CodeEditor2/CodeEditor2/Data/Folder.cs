@@ -1,11 +1,12 @@
-﻿using System;
+﻿using CodeEditor2.NavigatePanel;
+using CodeEditor2.Tools;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using CodeEditor2.NavigatePanel;
-using CodeEditor2.Tools;
 
 namespace CodeEditor2.Data
 {
@@ -86,197 +87,224 @@ namespace CodeEditor2.Data
         }
 
         private bool firstAccess = true;
+        //非同期待機
+        private static readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
         public override async Task UpdateAsync()
         {
-            string absolutePath = Project.GetAbsolutePath(RelativePath);
-
-            // get folder contents
-            string[] absoluteFilePaths = new string[] { };
+            // 待ち時間 0 でトライ。入れなければ false が返る
+            if (!await _fileSemaphore.WaitAsync(0))
+            {
+                // すでに実行中のため、何もせずリターン
+                return;
+            }
             try
             {
-                if(firstAccess && Global.CasheEnable)
+                string absolutePath = Project.GetAbsolutePath(RelativePath);
+
+
+                //        // 呼び出し側
+                //        await foreach (var item in EnumerateFilesAsync(@"C:\Target"))
+                //{
+                //    Console.WriteLine(item.FullName);
+                //}
+
+
+
+                // get folder contents
+                string[] absoluteFilePaths = new string[] { };
+                try
                 {
-                    string[] casheFilePaths = System.IO.Directory.GetFiles(Project.GetCahsePath(RelativePath));
+                    if (firstAccess && Global.CasheEnable)
+                    {
+                        string[] casheFilePaths = System.IO.Directory.GetFiles(Project.GetCahsePath(RelativePath));
+                        List<string> absPaths = new List<string>();
+                        foreach (string path in casheFilePaths)
+                        {
+                            absPaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
+                        }
+                        absoluteFilePaths = absPaths.ToArray();
+                    }
+                    else
+                    {
+                        absoluteFilePaths = await FileIO.GetFiles(absolutePath);
+                    }
+                }
+                catch
+                {
+                    // path is not exist
+                    IsDeleted = true;
+                    Items.Clear();
+                    Remove();
+                    return;
+                }
+                string[] absoluteFolderPaths = await FileIO.GetDirectories(absolutePath);
+                if (firstAccess && Global.CasheEnable)
+                {
+                    string[] casheFolderPaths = System.IO.Directory.GetDirectories(Project.GetCahsePath(RelativePath));
                     List<string> absPaths = new List<string>();
-                    foreach (string path in casheFilePaths)
+                    foreach (string path in casheFolderPaths)
                     {
                         absPaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
                     }
-                    absoluteFilePaths = absPaths.ToArray();
+                    absoluteFolderPaths = absPaths.ToArray();
                 }
                 else
                 {
-                    absoluteFilePaths = await FileIO.GetFiles(absolutePath);
+                    absoluteFolderPaths = await FileIO.GetDirectories(absolutePath);
                 }
-            }
-            catch
-            {
-                // path is not exist
-                IsDeleted = true;
-                Items.Clear();
-                Remove();
-                return;
-            }
-            string[] absoluteFolderPaths = await FileIO.GetDirectories(absolutePath);
-            if(firstAccess&& Global.CasheEnable)
-            {
-                string[] casheFolderPaths = System.IO.Directory.GetDirectories(Project.GetCahsePath(RelativePath));
-                List<string> absPaths = new List<string>();
-                foreach(string path in casheFolderPaths)
-                {
-                    absPaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
-                }
-                absoluteFolderPaths = absPaths.ToArray();
-            }
-            else
-            {
-                absoluteFolderPaths = await FileIO.GetDirectories(absolutePath);
-            }
-            firstAccess = false;
+                firstAccess = false;
 
-            List<Item> currentItems = new List<Item>();
+                List<Item> currentItems = new List<Item>();
 
-            // add new files
-            foreach (string absoluteFilePath in absoluteFilePaths)
-            {
-                string relativePath = Project.GetRelativePath(absoluteFilePath);
-                string name;
-                if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
+                // add new files
+                foreach (string absoluteFilePath in absoluteFilePaths)
                 {
-                    name = relativePath.Substring(relativePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
-                }
-                else
-                {
-                    name = relativePath;
-                }
-
-                Project? project = this as Project;
-                if (project != null && project.ignoreList.Contains(name))
-                {
-                    continue;
-                }
-
-                if (items.ContainsKey(name))
-                {
-                    if (items[name] is File)
+                    string relativePath = Project.GetRelativePath(absoluteFilePath);
+                    string name;
+                    if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
                     {
-                        ((File)items[name]).CheckFileType();
+                        name = relativePath.Substring(relativePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
                     }
-                    if (items[name].IsDeleted) continue;
-                    currentItems.Add(items[name]);
-                    continue;
-                }
-
-                if (absoluteFilePath.EndsWith(".lnk")) // windows link file
-                {
-                    if (System.OperatingSystem.IsWindows())
+                    else
                     {
-                        //// https://github.com/securifybv/ShellLink
-                        //Securify.ShellLink.Shortcut shortcut = Securify.ShellLink.Shortcut.ReadFromFile(absoluteFilePath);
-                        //string absoluteLinkPath = shortcut.LinkTargetIDList.Path;
-                        //if ((shortcut.LinkFlags | Securify.ShellLink.Flags.LinkFlags.HasRelativePath) == 0) // don't have relative path
-                        //{ // add relative path
-                        //    string basePath = Project.GetAbsolutePath(RelativePath);
-                        //    if (!basePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) basePath += System.IO.Path.DirectorySeparatorChar;
-                        //    Uri u1 = new Uri(basePath);
-                        //    Uri u2 = new Uri(absoluteLinkPath);
-                        //    Uri relativeUri = u1.MakeRelativeUri(u2);
-                        //    string relativeLinkPath = Uri.UnescapeDataString(relativeUri.ToString());
-                        //    shortcut.LinkFlags |= Securify.ShellLink.Flags.LinkFlags.HasRelativePath;
-                        //    shortcut.StringData.WorkingDir = ".";
-                        //    shortcut.StringData.RelativePath = relativeLinkPath;
-                        //    shortcut.WriteToFile(absoluteFilePath);
-                        //}
+                        name = relativePath;
+                    }
 
-                        //if (shortcut.FileAttributes.HasFlag(Securify.ShellLink.Flags.FileAttributesFlags.FILE_ATTRIBUTE_DIRECTORY))
-                        //{ // directory
-                        //    Folder item = Create(Project.GetRelativePath(absoluteLinkPath), Project, this);
-                        //    item.Link = true;
-                        //    if (Project != null && Project.ignoreList.Contains(item.Name))
-                        //    {
-                        //        continue;
-                        //    }
-                        //    if (items.ContainsKey(item.Name))
-                        //    {
-                        //        currentItems.Add(items[item.Name]);
-                        //        continue;
-                        //    }
-                        //    items.Add(item.Name, item);
-                        //    currentItems.Add(item);
-                        //    item.Update();
-                        //    continue;
-                        //}
+                    Project? project = this as Project;
+                    if (project != null && project.ignoreList.Contains(name))
+                    {
+                        continue;
+                    }
+
+                    if (items.ContainsKey(name))
+                    {
+                        if (items[name] is File)
+                        {
+                            ((File)items[name]).CheckFileType();
+                        }
+                        if (items[name].IsDeleted) continue;
+                        currentItems.Add(items[name]);
+                        continue;
+                    }
+
+                    if (absoluteFilePath.EndsWith(".lnk")) // windows link file
+                    {
+                        if (System.OperatingSystem.IsWindows())
+                        {
+                            //// https://github.com/securifybv/ShellLink
+                            //Securify.ShellLink.Shortcut shortcut = Securify.ShellLink.Shortcut.ReadFromFile(absoluteFilePath);
+                            //string absoluteLinkPath = shortcut.LinkTargetIDList.Path;
+                            //if ((shortcut.LinkFlags | Securify.ShellLink.Flags.LinkFlags.HasRelativePath) == 0) // don't have relative path
+                            //{ // add relative path
+                            //    string basePath = Project.GetAbsolutePath(RelativePath);
+                            //    if (!basePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) basePath += System.IO.Path.DirectorySeparatorChar;
+                            //    Uri u1 = new Uri(basePath);
+                            //    Uri u2 = new Uri(absoluteLinkPath);
+                            //    Uri relativeUri = u1.MakeRelativeUri(u2);
+                            //    string relativeLinkPath = Uri.UnescapeDataString(relativeUri.ToString());
+                            //    shortcut.LinkFlags |= Securify.ShellLink.Flags.LinkFlags.HasRelativePath;
+                            //    shortcut.StringData.WorkingDir = ".";
+                            //    shortcut.StringData.RelativePath = relativeLinkPath;
+                            //    shortcut.WriteToFile(absoluteFilePath);
+                            //}
+
+                            //if (shortcut.FileAttributes.HasFlag(Securify.ShellLink.Flags.FileAttributesFlags.FILE_ATTRIBUTE_DIRECTORY))
+                            //{ // directory
+                            //    Folder item = Create(Project.GetRelativePath(absoluteLinkPath), Project, this);
+                            //    item.Link = true;
+                            //    if (Project != null && Project.ignoreList.Contains(item.Name))
+                            //    {
+                            //        continue;
+                            //    }
+                            //    if (items.ContainsKey(item.Name))
+                            //    {
+                            //        currentItems.Add(items[item.Name]);
+                            //        continue;
+                            //    }
+                            //    items.Add(item.Name, item);
+                            //    currentItems.Add(item);
+                            //    item.Update();
+                            //    continue;
+                            //}
+                        }
+                    }
+
+                    {
+                        File item = await File.CreateAsync(Project.GetRelativePath(absoluteFilePath), Project, this);
+                        items.Add(item.Name, item);
+                        currentItems.Add(item);
                     }
                 }
 
+                // add new folders
+                foreach (string absoluteFolderPath in absoluteFolderPaths)
                 {
-                    File item = await File.CreateAsync(Project.GetRelativePath(absoluteFilePath), Project, this);
-                    items.Add(item.Name, item);
-                    currentItems.Add(item);
+                    // skip invisible folder
+                    string body = absoluteFolderPath;
+                    if (body.Contains(System.IO.Path.DirectorySeparatorChar)) body = body.Substring(body.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
+                    if (body.StartsWith(".")) continue;
+
+                    if (items.ContainsKey(body))
+                    {
+                        currentItems.Add(items[body]);
+                        continue;
+                    }
+
+                    Folder folder = Create(Project.GetRelativePath(absoluteFolderPath), Project, this);
+                    Project? project = this as Project;
+                    if (project != null && project.ignoreList.Contains(folder.Name))
+                    {
+                        continue;
+                    }
+                    items.Add(folder.Name, folder);
+                    currentItems.Add(folder);
+                    await folder.UpdateAsync();
                 }
+
+                // remove unused items
+                List<Item> removeItems = new List<Item>();
+                foreach (Item item in items.Values)
+                {
+                    //if(item is Link)
+                    //{
+                    //    string linkItemPath = Project.GetAbsolutePath((item as Link).LinkRelativePath);
+                    //    if (!absoluteFilePaths.Contains(linkItemPath) && !absoluteFolderPaths.Contains(linkItemPath))
+                    //    {
+                    //        removeItems.Add(item);
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    string absoluteItemPath = Project.GetAbsolutePath(item.RelativePath);
+                    //    if (!absoluteFilePaths.Contains(absoluteItemPath) && !absoluteFolderPaths.Contains(absoluteItemPath))
+                    //    {
+                    //        removeItems.Add(item);
+                    //    }
+                    //}
+                    if (!currentItems.Contains(item))
+                    {
+                        removeItems.Add(item);
+                    }
+                }
+
+                foreach (Item item in removeItems)
+                {
+                    item.IsDeleted = true;
+                    items.Remove(item.Name);
+                }
+
+                items.Sort((a, b) =>
+                {
+                    return string.Compare(a.Name, b.Name);
+                });
+
+            }
+            finally
+            {
+                _fileSemaphore.Release();
             }
 
-            // add new folders
-            foreach (string absoluteFolderPath in absoluteFolderPaths)
-            {
-                // skip invisible folder
-                string body = absoluteFolderPath;
-                if (body.Contains(System.IO.Path.DirectorySeparatorChar)) body = body.Substring(body.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
-                if (body.StartsWith(".")) continue;
 
-                if (items.ContainsKey(body))
-                {
-                    currentItems.Add(items[body]);
-                    continue;
-                }
-
-                Folder folder = Create(Project.GetRelativePath(absoluteFolderPath), Project, this);
-                Project? project = this as Project;
-                if (project != null && project.ignoreList.Contains(folder.Name))
-                {
-                    continue;
-                }
-                items.Add(folder.Name, folder);
-                currentItems.Add(folder);
-                await folder.UpdateAsync();
-            }
-
-            // remove unused items
-            List<Item> removeItems = new List<Item>();
-            foreach (Item item in items.Values)
-            {
-                //if(item is Link)
-                //{
-                //    string linkItemPath = Project.GetAbsolutePath((item as Link).LinkRelativePath);
-                //    if (!absoluteFilePaths.Contains(linkItemPath) && !absoluteFolderPaths.Contains(linkItemPath))
-                //    {
-                //        removeItems.Add(item);
-                //    }
-                //}
-                //else
-                //{
-                //    string absoluteItemPath = Project.GetAbsolutePath(item.RelativePath);
-                //    if (!absoluteFilePaths.Contains(absoluteItemPath) && !absoluteFolderPaths.Contains(absoluteItemPath))
-                //    {
-                //        removeItems.Add(item);
-                //    }
-                //}
-                if (!currentItems.Contains(item))
-                {
-                    removeItems.Add(item);
-                }
-            }
-
-            foreach (Item item in removeItems)
-            {
-                item.IsDeleted = true;
-                items.Remove(item.Name);
-            }
-
-            items.Sort((a, b) =>
-            {
-                return string.Compare(a.Name, b.Name);
-            });
         }
 
         protected override NavigatePanelNode CreateNode()

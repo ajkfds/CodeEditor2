@@ -157,7 +157,6 @@ namespace CodeEditor2.Data
             }
         }
 
-        private readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
         public async virtual Task SaveAsync()
         {
             await _fileSemaphore.WaitAsync();
@@ -232,95 +231,114 @@ namespace CodeEditor2.Data
         {
             Task.Run(async () => { await FileCheck(); });
         }
+
+        //非同期待機
+        private static readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
         protected virtual async Task FileCheck()
         {
-            if(document == null && Global.CasheEnable)
+            // 待ち時間 0 でトライ。入れなければ false が返る
+            if (!await _fileSemaphore.WaitAsync(0))
             {
-                CreateCodeDocument();
-                using (System.IO.StreamReader sr = new StreamReader(Project.GetCahsePath(RelativePath)))
-                {
-                    string text = await sr.ReadToEndAsync();
-                    string newHash = newHash = GetHash(text);
-                    document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
-                    document.Clean();
-                    loadFileHash = newHash;
-                    document.ClearHistory();
-                }
-            }
-
-            if (!await FileIO.FileExists(AbsolutePath))
-            {
-                Remove();
+                // すでに実行中のため、何もせずリターン
                 return;
             }
 
             try
             {
-                bool initialLoad = false;
-                bool dirty = false;
-                if (document == null)
+                if (document == null && Global.CasheEnable)
                 {
-                    initialLoad = true;
                     CreateCodeDocument();
-                    if (document == null) throw new Exception();
-                }
-                else
-                {
-                    dirty = document.IsDirty;
-                }
-
-                string? text = null;
-                text = await FileIO.GetFileText(AbsolutePath);
-
-                if (text == null) // failed to read
-                {
-                    IsDeleted = true;
-                    return;
-                }
-
-                string newHash = newHash = GetHash(text);
-                if (newHash == loadFileHash) {
-                    return;
-                }
-
-                if (dirty & !initialLoad)
-                {
-                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    using (System.IO.StreamReader sr = new StreamReader(Project.GetCahsePath(RelativePath)))
                     {
-                        Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
-                        await checkUpdate.ShowDialog(Controller.GetMainWindow());
-                        if (!checkUpdate.Yes) // keep current file
-                        {
-                            loadFileHash = newHash;
-                            return;
-                        }
-                    });
+                        string text = await sr.ReadToEndAsync();
+                        string newHash = newHash = GetHash(text);
+                        document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
+                        document.Clean();
+                        loadFileHash = newHash;
+                        document.ClearHistory();
+                    }
                 }
 
-                if (Dispatcher.UIThread.CheckAccess() | initialLoad)
+                if (!await FileIO.FileExists(AbsolutePath))
                 {
-                    document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
-                    document.Clean();
-                    loadFileHash = newHash;
-                    if (initialLoad) document.ClearHistory();
-                    if (Controller.NavigatePanel.GetSelectedFile() == this) Controller.CodeEditor.Refresh();
+                    Remove();
+                    return;
                 }
-                else
+
+                try
                 {
-                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    bool initialLoad = false;
+                    bool dirty = false;
+                    if (document == null)
+                    {
+                        initialLoad = true;
+                        CreateCodeDocument();
+                        if (document == null) throw new Exception();
+                    }
+                    else
+                    {
+                        dirty = document.IsDirty;
+                    }
+
+                    string? text = null;
+                    text = await FileIO.GetFileText(AbsolutePath);
+
+                    if (text == null) // failed to read
+                    {
+                        IsDeleted = true;
+                        return;
+                    }
+
+                    string newHash = newHash = GetHash(text);
+                    if (newHash == loadFileHash)
+                    {
+                        return;
+                    }
+
+                    if (dirty & !initialLoad)
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
+                            await checkUpdate.ShowDialog(Controller.GetMainWindow());
+                            if (!checkUpdate.Yes) // keep current file
+                            {
+                                loadFileHash = newHash;
+                                return;
+                            }
+                        });
+                    }
+
+                    if (Dispatcher.UIThread.CheckAccess() | initialLoad)
                     {
                         document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
                         document.Clean();
                         loadFileHash = newHash;
                         if (initialLoad) document.ClearHistory();
-                        if (Controller.NavigatePanel.GetSelectedFile() == this) Controller.CodeEditor.Refresh();
-                    });
+                        if (Controller.NavigatePanel.GetSelectedFile() == this && Dispatcher.UIThread.CheckAccess()) Controller.CodeEditor.Refresh();
+                    }
+                    else
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
+                            document.Clean();
+                            loadFileHash = newHash;
+                            if (initialLoad) document.ClearHistory();
+                            if (Controller.NavigatePanel.GetSelectedFile() == this && Dispatcher.UIThread.CheckAccess()) Controller.CodeEditor.Refresh();
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
                 }
             }
-            catch
+            finally
             {
-                if(System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+                _fileSemaphore.Release();
             }
+
         }
 
         public void PostRefresh()

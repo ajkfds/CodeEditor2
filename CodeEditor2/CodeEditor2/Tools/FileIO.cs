@@ -10,6 +10,7 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Tmds.DBus.Protocol;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.Tools
@@ -17,7 +18,7 @@ namespace CodeEditor2.Tools
     public static class FileIO
     {
 
-        private static bool RestrictToSingleAccess = true;
+        private static bool RestrictToSingleAccess = false;
         private static int TimeoutSeconds = 20;
         private static readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
 
@@ -92,18 +93,19 @@ namespace CodeEditor2.Tools
         }
         public static async Task<string> GetFileText(string path)
         {
-            return await WithTimeout(Task.Run(() =>
+            // 重要なポイント: options に FileOptions.Asynchronous を指定する
+            using (FileStream fs = new FileStream(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 4096,
+                useAsync: true)) // または FileOptions.Asynchronous
             {
-                if (!System.IO.File.Exists(path)) throw new FileNotFoundException();
-
-                using var fs = new FileStream(
-                    path, FileMode.Open, FileAccess.Read,
-                    FileShare.ReadWrite | FileShare.Delete, 4096, FileOptions.SequentialScan);
                 using var sr = new StreamReader(fs, Encoding.UTF8, true);
-
-                string text = sr.ReadToEnd();
-                return text;
-            }), TimeSpan.FromSeconds(TimeoutSeconds));
+                // ReadAsync で非同期読み込み
+                return await sr.ReadToEndAsync();
+            }
         }
 
 

@@ -218,14 +218,21 @@ namespace CodeEditor2
             }
             public static void Refresh()
             {
-                if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
+                if (!Dispatcher.UIThread.CheckAccess()) Dispatcher.UIThread.InvokeAsync(() => {
+                    Refresh();
+                    return;
+                });
+
                 Global.codeView.Redraw();
                 Global.codeView.UpdateMarks();
             }
 
             public static void ScrollToCaret()
             {
-                if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
+                if (!Dispatcher.UIThread.CheckAccess()) Dispatcher.UIThread.InvokeAsync(() => {
+                    ScrollToCaret();
+                    return;
+                });
                 Global.codeView.ScrollToCaret();
             }
 
