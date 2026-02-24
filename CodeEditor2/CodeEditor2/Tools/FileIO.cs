@@ -75,13 +75,21 @@ namespace CodeEditor2.Tools
                 yield return item;
             }
         }
+        public static async IAsyncEnumerable<FileSystemInfo> EnumerateFilesHierarchyAsync(string path)
+        {
+            var di = new DirectoryInfo(path);
+            var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true };
 
-//        // 呼び出し側
-//        await foreach (var item in EnumerateFilesAsync(@"C:\Target"))
-//{
-//    Console.WriteLine(item.FullName);
-//}
+            // 列挙自体は同期処理だが、Task.Run内で回すことで非同期ストリーム化
+            var items = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
 
+            foreach (var item in items)
+            {
+                // 1件ごとに呼び出し元へ戻す。
+                // ここで必要に応じて Task.Yield() などを挟むとより細かく制御可能
+                yield return item;
+            }
+        }
         public static async Task<string[]> GetDirectories(string path)
         {
             return await WithTimeout(Task.Run(() =>
@@ -99,7 +107,7 @@ namespace CodeEditor2.Tools
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.Read,
-                bufferSize: 4096,
+                bufferSize: 4096*32,
                 useAsync: true)) // または FileOptions.Asynchronous
             {
                 using var sr = new StreamReader(fs, Encoding.UTF8, true);

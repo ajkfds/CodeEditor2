@@ -142,102 +142,114 @@ namespace CodeEditor2.Data
                     Remove();
                     return;
                 }
-
-                firstAccess = false;
-
-                List<Item> currentItems = new List<Item>();
-
-                // add new files
-                foreach (string absoluteFilePath in absoluteFilePaths)
-                {
-                    string relativePath = Project.GetRelativePath(absoluteFilePath);
-                    string name;
-                    if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
-                    {
-                        name = relativePath.Substring(relativePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
-                    }
-                    else
-                    {
-                        name = relativePath;
-                    }
-
-                    Project? project = this as Project;
-                    if (project != null && project.ignoreList.Contains(name))
-                    {
-                        continue;
-                    }
-
-                    if (items.ContainsKey(name))
-                    {
-                        if (items[name] is File)
-                        {
-                            ((File)items[name]).CheckFileType();
-                        }
-                        if (items[name].IsDeleted) continue;
-                        currentItems.Add(items[name]);
-                        continue;
-                    }
-
-                    {
-                        File item = await File.CreateAsync(Project.GetRelativePath(absoluteFilePath), Project, this);
-                        items.Add(item.Name, item);
-                        currentItems.Add(item);
-                    }
-                }
-
-                // add new folders
-                foreach (string absoluteFolderPath in absoluteFolderPaths)
-                {
-                    // skip invisible folder
-                    string body = absoluteFolderPath;
-                    if (body.Contains(System.IO.Path.DirectorySeparatorChar)) body = body.Substring(body.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
-                    if (body.StartsWith(".")) continue;
-
-                    if (items.ContainsKey(body))
-                    {
-                        currentItems.Add(items[body]);
-                        continue;
-                    }
-
-                    Folder folder = Create(Project.GetRelativePath(absoluteFolderPath), Project, this);
-                    Project? project = this as Project;
-                    if (project != null && project.ignoreList.Contains(folder.Name))
-                    {
-                        continue;
-                    }
-                    items.Add(folder.Name, folder);
-                    currentItems.Add(folder);
-                    await folder.UpdateAsync();
-                }
-
-                // remove unused items
-                List<Item> removeItems = new List<Item>();
-                foreach (Item item in items.Values)
-                {
-                    if (!currentItems.Contains(item))
-                    {
-                        removeItems.Add(item);
-                    }
-                }
-
-                foreach (Item item in removeItems)
-                {
-                    item.IsDeleted = true;
-                    items.Remove(item.Name);
-                }
-
-                items.Sort((a, b) =>
-                {
-                    return string.Compare(a.Name, b.Name);
-                });
+                await updateItems(absoluteFilePaths, absoluteFolderPaths);
             }
             finally
             {
                _fileSemaphore.Release();
             }
+        }
+
+        private async Task updateItems(List<string> absoluteFilePaths,List<string> absoluteFolderPaths)
+        {
+            firstAccess = false;
+
+            List<Item> currentItems = new List<Item>();
+
+            // add new files
+            foreach (string absoluteFilePath in absoluteFilePaths)
+            {
+                string relativePath = Project.GetRelativePath(absoluteFilePath);
+                string name;
+                if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
+                {
+                    name = relativePath.Substring(relativePath.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
+                }
+                else
+                {
+                    name = relativePath;
+                }
+
+                Project? project = this as Project;
+                if (project != null && project.ignoreList.Contains(name))
+                {
+                    continue;
+                }
+
+                if (items.ContainsKey(name))
+                {
+                    if (items[name] is File)
+                    {
+                        ((File)items[name]).CheckFileType();
+                    }
+                    if (items[name].IsDeleted) continue;
+                    currentItems.Add(items[name]);
+                    continue;
+                }
+
+                {
+                    File item = await File.CreateAsync(Project.GetRelativePath(absoluteFilePath), Project, this);
+                    items.Add(item.Name, item);
+                    currentItems.Add(item);
+                }
+            }
+
+            // add new folders
+            foreach (string absoluteFolderPath in absoluteFolderPaths)
+            {
+                // skip invisible folder
+                string body = absoluteFolderPath;
+                if (body.Contains(System.IO.Path.DirectorySeparatorChar)) body = body.Substring(body.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
+                if (body.StartsWith(".")) continue;
+
+                if (items.ContainsKey(body))
+                {
+                    currentItems.Add(items[body]);
+                    continue;
+                }
+
+                Folder folder = Create(Project.GetRelativePath(absoluteFolderPath), Project, this);
+                Project? project = this as Project;
+                if (project != null && project.ignoreList.Contains(folder.Name))
+                {
+                    continue;
+                }
+                items.Add(folder.Name, folder);
+                currentItems.Add(folder);
+                await folder.UpdateAsync();
+            }
+
+            // remove unused items
+            List<Item> removeItems = new List<Item>();
+            foreach (Item item in items.Values)
+            {
+                if (!currentItems.Contains(item))
+                {
+                    removeItems.Add(item);
+                }
+            }
+
+            foreach (Item item in removeItems)
+            {
+                item.IsDeleted = true;
+                items.Remove(item.Name);
+            }
+
+            items.Sort((a, b) =>
+            {
+                return string.Compare(a.Name, b.Name);
+            });
+
+        }
+
+        public void InitializeHierarchy(Project project, Item parent, List<string> paths, bool isFile)
+        {
+            List<string> absoluteFilePaths = new List<string>();
+            List<string> absoluteFolderPaths = new List<string>();
 
 
         }
+
 
         protected override NavigatePanelNode CreateNode()
         {

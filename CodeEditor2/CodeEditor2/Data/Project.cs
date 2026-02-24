@@ -1,6 +1,8 @@
 ﻿using Avalonia.Threading;
 using CodeEditor2.FileTypes;
 using CodeEditor2.Setups;
+using CodeEditor2.Tools;
+
 //using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Concurrent;
@@ -158,10 +160,26 @@ namespace CodeEditor2.Data
         }
 
         public static Action<Project,Setup?>? Created;
-        private static void initProject(Project project,Setup? setup)
+        private static async Task initProject(Project project,Setup? setup)
         {
             if (Created != null) Created(project,setup);
             project.startFileSystemWatcher();
+
+            //await foreach(var info in FileIO.EnumerateFilesHierarchyAsync(project.GetAbsolutePath(project.RelativePath)))
+            //{
+            //    string relativePath = project.GetRelativePath(info.FullName);
+            //    string[] paths = relativePath.Split(new char[] { System.IO.Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+            //    if (paths.Length <= 0) continue;
+
+            //    if (info.Attributes.HasFlag(FileAttributes.Directory))
+            //    {
+
+            //    }
+            //    else
+            //    {
+
+            //    }
+            //}
         }
 
         public override void Dispose()
