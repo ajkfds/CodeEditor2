@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.Data
@@ -28,6 +29,8 @@ namespace CodeEditor2.Data
 
         }
 
+        // プラグイン等から見つかった派生クラスをここに登録していく
+        public static List<JsonDerivedType> DerivedTypes { get; } = new();
 
         public virtual void InitializePropertyForm(ItemPropertyForm form,CodeEditor2.NavigatePanel.NavigatePanelNode node,Project project)
         {

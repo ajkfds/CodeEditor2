@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor
@@ -21,6 +22,9 @@ namespace CodeEditor2.CodeEditor
             this.Key = key;
             textFileRef = new WeakReference<Data.TextFile>(textFile);
         }
+
+        // プラグイン等から見つかった派生クラスをここに登録していく
+        public static List<JsonDerivedType> DerivedTypes { get; } = new();
 
         public string Key { get; set; }
 
