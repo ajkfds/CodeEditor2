@@ -89,27 +89,19 @@ namespace CodeEditor2.Data
 
         private bool firstAccess = true;
         //非同期待機
-        private static readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
         public override async Task UpdateAsync()
         {
             //await _fileSemaphore.WaitAsync();
             // 待ち時間 0 でトライ。入れなければ false が返る
-            //if (!await _fileSemaphore.WaitAsync(0))
-            //{
-            //    // すでに実行中のため、何もせずリターン
-            //    return;
-            //}
+            if (!await _fileSemaphore.WaitAsync(0))
+            {
+                // すでに実行中のため、何もせずリターン
+                return;
+            }
             try
             {
                 string absolutePath = Project.GetAbsolutePath(RelativePath);
-
-
-                //        // 呼び出し側
-                //{
-                //    Console.WriteLine(item.FullName);
-                //}
-
-
 
                 // get folder contents
                 List<string> absoluteFilePaths = new List<string>();
@@ -135,10 +127,12 @@ namespace CodeEditor2.Data
                     //        absoluteFilePaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
                     //    }
                     //}
-                    //else
-                    //                    {
-                    ////                        absoluteFilePaths = await FileIO.GetFiles(absolutePath);
-                    //                    }
+                    //    string[] casheFolderPaths = System.IO.Directory.GetDirectories(Project.GetCahsePath(RelativePath));
+                    //    List<string> absPaths = new List<string>();
+                    //    foreach (string path in casheFolderPaths)
+                    //    {
+                    //        absPaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
+                    //    }
                 }
                 catch
                 {
@@ -149,20 +143,6 @@ namespace CodeEditor2.Data
                     return;
                 }
 
-                //if (firstAccess && Global.CasheEnable)
-                //{
-                //    string[] casheFolderPaths = System.IO.Directory.GetDirectories(Project.GetCahsePath(RelativePath));
-                //    List<string> absPaths = new List<string>();
-                //    foreach (string path in casheFolderPaths)
-                //    {
-                //        absPaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
-                //    }
-                //    absoluteFolderPaths = absPaths.ToArray();
-                //}
-                //else
-                //{
-                //    absoluteFolderPaths = await FileIO.GetDirectories(absolutePath);
-                //}
                 firstAccess = false;
 
                 List<Item> currentItems = new List<Item>();
@@ -196,48 +176,6 @@ namespace CodeEditor2.Data
                         if (items[name].IsDeleted) continue;
                         currentItems.Add(items[name]);
                         continue;
-                    }
-
-                    if (absoluteFilePath.EndsWith(".lnk")) // windows link file
-                    {
-                        if (System.OperatingSystem.IsWindows())
-                        {
-                            //// https://github.com/securifybv/ShellLink
-                            //Securify.ShellLink.Shortcut shortcut = Securify.ShellLink.Shortcut.ReadFromFile(absoluteFilePath);
-                            //string absoluteLinkPath = shortcut.LinkTargetIDList.Path;
-                            //if ((shortcut.LinkFlags | Securify.ShellLink.Flags.LinkFlags.HasRelativePath) == 0) // don't have relative path
-                            //{ // add relative path
-                            //    string basePath = Project.GetAbsolutePath(RelativePath);
-                            //    if (!basePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) basePath += System.IO.Path.DirectorySeparatorChar;
-                            //    Uri u1 = new Uri(basePath);
-                            //    Uri u2 = new Uri(absoluteLinkPath);
-                            //    Uri relativeUri = u1.MakeRelativeUri(u2);
-                            //    string relativeLinkPath = Uri.UnescapeDataString(relativeUri.ToString());
-                            //    shortcut.LinkFlags |= Securify.ShellLink.Flags.LinkFlags.HasRelativePath;
-                            //    shortcut.StringData.WorkingDir = ".";
-                            //    shortcut.StringData.RelativePath = relativeLinkPath;
-                            //    shortcut.WriteToFile(absoluteFilePath);
-                            //}
-
-                            //if (shortcut.FileAttributes.HasFlag(Securify.ShellLink.Flags.FileAttributesFlags.FILE_ATTRIBUTE_DIRECTORY))
-                            //{ // directory
-                            //    Folder item = Create(Project.GetRelativePath(absoluteLinkPath), Project, this);
-                            //    item.Link = true;
-                            //    if (Project != null && Project.ignoreList.Contains(item.Name))
-                            //    {
-                            //        continue;
-                            //    }
-                            //    if (items.ContainsKey(item.Name))
-                            //    {
-                            //        currentItems.Add(items[item.Name]);
-                            //        continue;
-                            //    }
-                            //    items.Add(item.Name, item);
-                            //    currentItems.Add(item);
-                            //    item.Update();
-                            //    continue;
-                            //}
-                        }
                     }
 
                     {
@@ -276,22 +214,6 @@ namespace CodeEditor2.Data
                 List<Item> removeItems = new List<Item>();
                 foreach (Item item in items.Values)
                 {
-                    //if(item is Link)
-                    //{
-                    //    string linkItemPath = Project.GetAbsolutePath((item as Link).LinkRelativePath);
-                    //    if (!absoluteFilePaths.Contains(linkItemPath) && !absoluteFolderPaths.Contains(linkItemPath))
-                    //    {
-                    //        removeItems.Add(item);
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    string absoluteItemPath = Project.GetAbsolutePath(item.RelativePath);
-                    //    if (!absoluteFilePaths.Contains(absoluteItemPath) && !absoluteFolderPaths.Contains(absoluteItemPath))
-                    //    {
-                    //        removeItems.Add(item);
-                    //    }
-                    //}
                     if (!currentItems.Contains(item))
                     {
                         removeItems.Add(item);
@@ -308,11 +230,10 @@ namespace CodeEditor2.Data
                 {
                     return string.Compare(a.Name, b.Name);
                 });
-
             }
             finally
             {
-               // _fileSemaphore.Release();
+               _fileSemaphore.Release();
             }
 
 

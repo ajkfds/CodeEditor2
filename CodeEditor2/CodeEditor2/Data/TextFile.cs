@@ -233,7 +233,7 @@ namespace CodeEditor2.Data
         }
 
         //非同期待機
-        private static readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
         protected virtual async Task FileCheck()
         {
             // 待ち時間 0 でトライ。入れなければ false が返る
@@ -442,7 +442,7 @@ namespace CodeEditor2.Data
         //}
 
         // parse this text file hierarchy
-        public async Task ParseHierarchyAsync(Action<ITextFile> action)
+        public virtual async Task ParseHierarchyAsync(Action<ITextFile> action)
         {
             List<string> parsedIds = new List<string>();
 
