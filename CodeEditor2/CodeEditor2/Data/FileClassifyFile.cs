@@ -10,7 +10,7 @@ namespace CodeEditor2.Data
 {
     public class FileClassifyFile : CodeEditor2.Data.TextFile
     {
-        public static FileClassifyFile Create(string relativePath, CodeEditor2.Data.Project project)
+        public static async Task<TextFile> CreateAsync(string relativePath, Project project)
         {
             string name;
             if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
@@ -28,6 +28,8 @@ namespace CodeEditor2.Data
                 Name = name
             };
 
+            await fileItem.FileCheck();
+            if (fileItem.document == null) System.Diagnostics.Debugger.Break();
             return fileItem;
         }
 

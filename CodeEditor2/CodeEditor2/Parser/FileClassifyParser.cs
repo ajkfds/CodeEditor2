@@ -42,13 +42,6 @@ namespace CodeEditor2.Parser
 
         public override async Task ParseAsync()
         {
-            WordPointer word = new WordPointer(Document);
-
-            while (!word.Eof)
-            {
-                word.MoveNext();
-
-            }
 
             for (int line = 1; line < Document.Lines; line++)
             {
