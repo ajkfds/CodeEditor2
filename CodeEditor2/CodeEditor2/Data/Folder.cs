@@ -2,6 +2,7 @@
 using CodeEditor2.Tools;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -91,19 +92,19 @@ namespace CodeEditor2.Data
         private static readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
         public override async Task UpdateAsync()
         {
+            //await _fileSemaphore.WaitAsync();
             // 待ち時間 0 でトライ。入れなければ false が返る
-            if (!await _fileSemaphore.WaitAsync(0))
-            {
-                // すでに実行中のため、何もせずリターン
-                return;
-            }
+            //if (!await _fileSemaphore.WaitAsync(0))
+            //{
+            //    // すでに実行中のため、何もせずリターン
+            //    return;
+            //}
             try
             {
                 string absolutePath = Project.GetAbsolutePath(RelativePath);
 
 
                 //        // 呼び出し側
-                //        await foreach (var item in EnumerateFilesAsync(@"C:\Target"))
                 //{
                 //    Console.WriteLine(item.FullName);
                 //}
@@ -111,23 +112,33 @@ namespace CodeEditor2.Data
 
 
                 // get folder contents
-                string[] absoluteFilePaths = new string[] { };
+                List<string> absoluteFilePaths = new List<string>();
+                List<string> absoluteFolderPaths = new List<string>();
                 try
                 {
-                    if (firstAccess && Global.CasheEnable)
+                    await foreach (var info in FileIO.EnumerateFilesAsync(absolutePath))
                     {
-                        string[] casheFilePaths = System.IO.Directory.GetFiles(Project.GetCahsePath(RelativePath));
-                        List<string> absPaths = new List<string>();
-                        foreach (string path in casheFilePaths)
+                        if (info.Attributes.HasFlag(FileAttributes.Directory))
                         {
-                            absPaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
+                            absoluteFolderPaths.Add(info.FullName);
                         }
-                        absoluteFilePaths = absPaths.ToArray();
+                        else
+                        {
+                            absoluteFilePaths.Add(info.FullName);
+                        }
                     }
-                    else
-                    {
-                        absoluteFilePaths = await FileIO.GetFiles(absolutePath);
-                    }
+                    //if (firstAccess && Global.CasheEnable)
+                    //{
+                    //    string[] casheFilePaths = System.IO.Directory.GetFiles(Project.GetCahsePath(RelativePath));
+                    //    foreach (string path in casheFilePaths)
+                    //    {
+                    //        absoluteFilePaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
+                    //    }
+                    //}
+                    //else
+                    //                    {
+                    ////                        absoluteFilePaths = await FileIO.GetFiles(absolutePath);
+                    //                    }
                 }
                 catch
                 {
@@ -137,21 +148,21 @@ namespace CodeEditor2.Data
                     Remove();
                     return;
                 }
-                string[] absoluteFolderPaths = await FileIO.GetDirectories(absolutePath);
-                if (firstAccess && Global.CasheEnable)
-                {
-                    string[] casheFolderPaths = System.IO.Directory.GetDirectories(Project.GetCahsePath(RelativePath));
-                    List<string> absPaths = new List<string>();
-                    foreach (string path in casheFolderPaths)
-                    {
-                        absPaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
-                    }
-                    absoluteFolderPaths = absPaths.ToArray();
-                }
-                else
-                {
-                    absoluteFolderPaths = await FileIO.GetDirectories(absolutePath);
-                }
+
+                //if (firstAccess && Global.CasheEnable)
+                //{
+                //    string[] casheFolderPaths = System.IO.Directory.GetDirectories(Project.GetCahsePath(RelativePath));
+                //    List<string> absPaths = new List<string>();
+                //    foreach (string path in casheFolderPaths)
+                //    {
+                //        absPaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
+                //    }
+                //    absoluteFolderPaths = absPaths.ToArray();
+                //}
+                //else
+                //{
+                //    absoluteFolderPaths = await FileIO.GetDirectories(absolutePath);
+                //}
                 firstAccess = false;
 
                 List<Item> currentItems = new List<Item>();
@@ -301,7 +312,7 @@ namespace CodeEditor2.Data
             }
             finally
             {
-                _fileSemaphore.Release();
+               // _fileSemaphore.Release();
             }
 
 

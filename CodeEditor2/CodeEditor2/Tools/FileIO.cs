@@ -63,7 +63,7 @@ namespace CodeEditor2.Tools
         public static async IAsyncEnumerable<FileSystemInfo> EnumerateFilesAsync(string path)
         {
             var di = new DirectoryInfo(path);
-            var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true };
+            var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = true };
 
             // 列挙自体は同期処理だが、Task.Run内で回すことで非同期ストリーム化
             var items = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
