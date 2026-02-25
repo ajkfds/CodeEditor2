@@ -158,6 +158,7 @@ namespace CodeEditor2.Data
             List<Item> currentItems = new List<Item>();
 
             // add new files
+            List<Task> tasks = new List<Task>();
             foreach (string absoluteFilePath in absoluteFilePaths)
             {
                 string relativePath = Project.GetRelativePath(absoluteFilePath);
@@ -188,12 +189,17 @@ namespace CodeEditor2.Data
                     continue;
                 }
 
+                tasks.Add(Task.Run(async () =>
                 {
                     File item = await File.CreateAsync(Project.GetRelativePath(absoluteFilePath), Project, this);
-                    items.Add(item.Name, item);
-                    currentItems.Add(item);
-                }
+
+                    // 注意：コレクションへの追加（スレッドセーフの確認が必要）
+                    lock (items) { items.Add(item.Name, item); }
+                    lock (currentItems) { currentItems.Add(item); }
+                }));
+                
             }
+            await Task.WhenAll(tasks);
 
             // add new folders
             foreach (string absoluteFolderPath in absoluteFolderPaths)

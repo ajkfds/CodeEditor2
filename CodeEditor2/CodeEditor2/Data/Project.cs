@@ -118,10 +118,10 @@ namespace CodeEditor2.Data
         {
             string cashePath = Global.CashePath + System.IO.Path.DirectorySeparatorChar + setup.Name + ".cashe";
             Project? project = null;
-            if (System.IO.File.Exists(cashePath))
-            {
-                project = Deserialize(cashePath) as Project;
-            }
+            //if (System.IO.File.Exists(cashePath))
+            //{
+            //    project = Deserialize(cashePath) as Project;
+            //}
             
             if(project == null)
             {
