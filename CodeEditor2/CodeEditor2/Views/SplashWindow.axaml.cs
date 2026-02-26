@@ -176,8 +176,12 @@ public partial class SplashWindow : Window
         // register text filetype
         FileTypes.TextFile textFileType = new FileTypes.TextFile();
         Global.FileTypes.Add(textFileType.ID, textFileType);
+
         FileTypes.FileClassifyFile fileClassifyFile = new FileTypes.FileClassifyFile();
         Global.FileTypes.Add(fileClassifyFile.ID, fileClassifyFile);
+
+        FileTypes.YamlFile yamlFile = new FileTypes.YamlFile();
+        Global.FileTypes.Add(yamlFile.ID, yamlFile);
 
         // load pulgins
         List<CodeEditor2Plugin.IPlugin> plugins = new List<CodeEditor2Plugin.IPlugin>();
