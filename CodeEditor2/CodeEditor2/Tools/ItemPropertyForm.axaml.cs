@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using System;
 
 namespace CodeEditor2.Tools;
 
@@ -25,10 +26,38 @@ public partial class ItemPropertyForm : Window
         }
         Loaded += ItemPropertyForm_Loaded;
         node.InitializePropertyForm(this);
-
         Initialized += ItemPropertyForm_Initialized;
         OkButton.Click += OkButton_Click;
         CancelButton.Click += CancelButton_Click;
+    }
+
+
+    // workaround
+    // X11環境では呼び出し側でのWindowStartupLocation = WindowStartupLocation.CenterOwner;
+    // が効かない場合がある
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+
+        if (this.Owner is Window parent)
+        {
+            // 1. 親ウィンドウのスクリーン上の座標とサイズを取得
+            // PositionはPixelPoint(物理ピクセル)、Boundsは論理ピクセルなので注意
+            var parentPos = parent.Position;
+            var parentSize = parent.Bounds.Size;
+
+            // 2. 自分（ダイアログ）の現在のサイズを取得
+            var selfSize = this.Bounds.Size;
+
+            // 3. 中央位置を計算 (物理ピクセル換算が必要な場合があるため、Scalingを考慮)
+            double scaling = this.DesktopScaling;
+
+            int centerX = parentPos.X + (int)((parentSize.Width - selfSize.Width) * scaling / 2);
+            int centerY = parentPos.Y + (int)((parentSize.Height - selfSize.Height) * scaling / 2);
+
+            // 4. 新しい位置を設定
+            this.Position = new PixelPoint(centerX, centerY);
+        }
     }
 
     private void ItemPropertyForm_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

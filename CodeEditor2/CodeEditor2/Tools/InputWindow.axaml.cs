@@ -20,6 +20,20 @@ namespace CodeEditor2.Tools
             initialize(title, caption, "");
         }
 
+        public bool PassWordMode
+        {
+            set {
+                if (value)
+                {
+                    TextBox1.PasswordChar = 'Åú';
+                }
+                else
+                {
+                    TextBox1.PasswordChar = '\0';
+                }
+            }
+        }
+
         public InputWindow(string title, string caption, string defaultText)
         {
             InitializeComponent();

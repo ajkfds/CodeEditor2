@@ -109,31 +109,7 @@ namespace CodeEditor2.Data
                 List<string> absoluteFolderPaths = new List<string>();
                 try
                 {
-                    await foreach (var info in FileIO.EnumerateFilesAsync(absolutePath))
-                    {
-                        if (info.Attributes.HasFlag(FileAttributes.Directory))
-                        {
-                            absoluteFolderPaths.Add(info.FullName);
-                        }
-                        else
-                        {
-                            absoluteFilePaths.Add(info.FullName);
-                        }
-                    }
-                    //if (firstAccess && Global.CasheEnable)
-                    //{
-                    //    string[] casheFilePaths = System.IO.Directory.GetFiles(Project.GetCahsePath(RelativePath));
-                    //    foreach (string path in casheFilePaths)
-                    //    {
-                    //        absoluteFilePaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
-                    //    }
-                    //}
-                    //    string[] casheFolderPaths = System.IO.Directory.GetDirectories(Project.GetCahsePath(RelativePath));
-                    //    List<string> absPaths = new List<string>();
-                    //    foreach (string path in casheFolderPaths)
-                    //    {
-                    //        absPaths.Add(Project.GetAbsolutePath(Project.GetRelativePathFromCashePath(path)));
-                    //    }
+                    (absoluteFilePaths, absoluteFolderPaths) = await DataAccess.GetFolderContents(Project, RelativePath);
                 }
                 catch
                 {

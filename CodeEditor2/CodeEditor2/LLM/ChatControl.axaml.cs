@@ -230,14 +230,13 @@ public partial class ChatControl : UserControl
         IList<AITool>? tools = null;
         if (agent != null)
         {
-            string basePrompt = await agent.GetBasePromptAsync(cancellationTokenSource.Token);
             tools = agent.Tools;
             if (tools.Count == 0) tools = null;
         }
         string? funcret = command;
         while(funcret != null)
         {
-            funcret = await Complete(funcret, tools, cancellationTokenSource.Token);
+            funcret = await Complete(funcret, tools, cancellation);
         }
     }
 
@@ -265,7 +264,7 @@ public partial class ChatControl : UserControl
             using var timerCancellationTokenSource = new CancellationTokenSource();
             var displayTimerTask = Task.Run(async () =>
             {
-                while (!timerCancellationTokenSource.Token.IsCancellationRequested)
+                while (!timerCancellationTokenSource.Token.IsCancellationRequested && !cancellation.IsCancellationRequested)
                 {
                     try
                     {
@@ -305,6 +304,7 @@ public partial class ChatControl : UserControl
                             scrollViewer?.ScrollToEnd();
                         }, DispatcherPriority.Render); // RenderóDêÊìxÇ≈ë¶ç¿Ç…îΩâf
                     }
+                    cancellation.ThrowIfCancellationRequested();
                 }
                 if (timerActivate)
                 {
@@ -312,6 +312,10 @@ public partial class ChatControl : UserControl
                     timerActivate = false;
                     await resultItem.SetText("blank");
                 }
+            }
+            catch (OperationCanceledException ex)
+            {
+
             }
             catch (Exception ex)
             {
@@ -328,7 +332,7 @@ public partial class ChatControl : UserControl
             });
 
             string result = resultItem.Text;
-            if (agent != null)
+            if (agent != null && !cancellation.IsCancellationRequested)
             {
                 string? funcRet = await agent.ParseResponceAsync(result, cancellation);
                 return funcRet;

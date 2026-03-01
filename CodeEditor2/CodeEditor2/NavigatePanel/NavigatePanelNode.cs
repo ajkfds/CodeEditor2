@@ -285,16 +285,29 @@ namespace CodeEditor2.NavigatePanel
 
         public async void menuItem_OpenProperty_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            Tools.ItemPropertyForm form = new Tools.ItemPropertyForm(this);
-            form.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            await form.ShowDialog(Controller.GetMainWindow());
+            try
+            {
+                Tools.ItemPropertyForm form = new Tools.ItemPropertyForm(this);
+                form.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                await form.ShowDialog(Controller.GetMainWindow());
+            }
+            catch (Exception ex)
+            {
+                Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
+            }
         }
 
         public virtual void InitializePropertyForm(ItemPropertyForm form)
         {
             Project project = GetProject();
+            if(this is ProjectNode)
+            {
+                new Tools.EncryptedFileCachePropertyTab(form, project);
+            }
+
             foreach (var property in project.ProjectProperties.Values)
             {
+                // call item property customization
                 property.InitializePropertyForm(form,this,project);
             }
         }

@@ -170,14 +170,6 @@ namespace CodeEditor2.Data
                 string saveText = document.CreateString();
                 ulong savedVersion = document.Version;
 
-                if (Global.CasheEnable)
-                {
-                    using (System.IO.StreamWriter sw = new StreamWriter(Project.GetCahsePath(RelativePath)))
-                    {
-                        await sw.WriteAsync(saveText);
-                    }
-                }
-
                 string? newHash = null;
                 await Task.Run(
                     async () => {
@@ -245,21 +237,8 @@ namespace CodeEditor2.Data
 
             try
             {
-                if (document == null && Global.CasheEnable)
-                {
-                    CreateCodeDocument();
-                    using (System.IO.StreamReader sr = new StreamReader(Project.GetCahsePath(RelativePath)))
-                    {
-                        string text = await sr.ReadToEndAsync();
-                        string newHash = newHash = GetHash(text);
-                        document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
-                        document.Clean();
-                        loadFileHash = newHash;
-                        document.ClearHistory();
-                    }
-                }
-
-                if (!await FileIO.FileExists(AbsolutePath))
+                await DataAccess.UpdateFieSystemInfoAsync(Project, RelativePath);
+                if (IsDeleted)
                 {
                     Remove();
                     return;
@@ -280,15 +259,8 @@ namespace CodeEditor2.Data
                         dirty = document.IsDirty;
                     }
 
-                    string? text = null;
-                    text = await FileIO.GetFileText(AbsolutePath);
 
-                    if (text == null) // failed to read
-                    {
-                        IsDeleted = true;
-                        return;
-                    }
-
+                    string text = await DataAccess.GetFileTextAsync(Project, RelativePath);
                     string newHash = newHash = GetHash(text);
                     if (newHash == loadFileHash)
                     {
@@ -328,6 +300,11 @@ namespace CodeEditor2.Data
                             if (Controller.NavigatePanel.GetSelectedFile() == this && Dispatcher.UIThread.CheckAccess()) Controller.CodeEditor.Refresh();
                         });
                     }
+                }
+                catch (FileNotFoundException)
+                {
+                    IsDeleted = true;
+                    Remove();
                 }
                 catch (Exception ex)
                 {
@@ -539,8 +516,6 @@ namespace CodeEditor2.Data
         }
         public virtual ParsedDocument? GetCashedParsedDocument()
         {
-            if (!Global.ActivateCashe) return null;
-
             string path = Project.RootPath + System.IO.Path.DirectorySeparatorChar + ".cashe";
             if (!System.IO.Path.Exists(path)) System.IO.Directory.CreateDirectory(path);
             System.Diagnostics.Debug.Print("entry json " + path);
@@ -605,8 +580,6 @@ else if (restoredNode is LiteralNode litNode)
 
         public virtual async Task<bool> CreateCashe()
         {
-            if (!CodeEditor2.Global.ActivateCashe) return true;
-
             if (ParsedDocument == null) return false;
 
             ParsedDocument casheObject = ParsedDocument;

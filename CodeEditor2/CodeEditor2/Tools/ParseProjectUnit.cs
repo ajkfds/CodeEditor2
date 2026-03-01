@@ -30,13 +30,13 @@ namespace CodeEditor2.Tools
 
         private async Task parse(Data.TextFile textFile, ProgressWindow progressWindow)
         {
-            ParsedDocument? cashedParsedDocument = textFile.GetCashedParsedDocument();
-            if (cashedParsedDocument != null)
-            { 
-                await textFile.AcceptParsedDocumentAsync(cashedParsedDocument);
-                textFile.ReparseRequested = true;
-            }
-            else
+            //ParsedDocument? cashedParsedDocument = textFile.GetCashedParsedDocument();
+            //if (cashedParsedDocument != null)
+            //{ 
+            //    await textFile.AcceptParsedDocumentAsync(cashedParsedDocument);
+            //    textFile.ReparseRequested = true;
+            //}
+            //else
             {
                 DocumentParser? parser = textFile.CreateDocumentParser(DocumentParser.ParseModeEnum.LoadParse, null);
                 if (parser == null) return;

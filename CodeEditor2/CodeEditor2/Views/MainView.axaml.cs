@@ -211,7 +211,7 @@ public partial class MainView : UserControl
             path = path.Replace('/', System.IO.Path.DirectorySeparatorChar);
         }
 
-        Data.Project newProject = Project.Create(path);
+        Data.Project newProject = await Project.CreateAsync(path);
         await Controller.AddProject(newProject);
     }
 

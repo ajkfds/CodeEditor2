@@ -44,8 +44,6 @@ namespace CodeEditor2.NavigatePanel
             NavigatePanel.NavigatePanelNode? navigatePanelNode = Controller.NavigatePanel.GetSelectedNode();
             if (navigatePanelNode == null) return;
             Project project = navigatePanelNode.GetProject();
-            string cashePath = Global.CashePath + System.IO.Path.DirectorySeparatorChar + project.Name + ".cashe";
-            project.Serialize(cashePath);
         }
 
 

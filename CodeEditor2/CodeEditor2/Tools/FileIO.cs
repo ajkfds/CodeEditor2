@@ -7,11 +7,16 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Tmds.DBus.Protocol;
 using static System.Net.Mime.MediaTypeNames;
+using System.Security.Cryptography;
+using System.Text;
+
+
 
 namespace CodeEditor2.Tools
 {
@@ -53,6 +58,7 @@ namespace CodeEditor2.Tools
         }
         public static async Task<string[]> GetFiles(string path)
         {
+            System.Diagnostics.Debug.Print("read: "+path);
             return await WithTimeout(Task.Run(() =>
             {
                 if (!System.IO.Directory.Exists(path)) throw new FileNotFoundException();
@@ -216,6 +222,8 @@ namespace CodeEditor2.Tools
                 return true;
             }), TimeSpan.FromSeconds(TimeoutSeconds));
         }
+
+
  
         private static async Task<T> WithTimeout<T>(Task<T> task, TimeSpan timeout)
         {

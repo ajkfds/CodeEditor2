@@ -32,9 +32,11 @@ namespace CodeEditor2.Data
         // プラグイン等から見つかった派生クラスをここに登録していく
         public static List<JsonDerivedType> DerivedTypes { get; } = new();
 
+        // Item Property Tab 追加用
         public virtual void InitializePropertyForm(ItemPropertyForm form,CodeEditor2.NavigatePanel.NavigatePanelNode node,Project project)
         {
         }
+
         public virtual Setup CreateSetup()
         {
             return new Setup(this);

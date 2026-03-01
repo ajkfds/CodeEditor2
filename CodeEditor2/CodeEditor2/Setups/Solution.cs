@@ -78,7 +78,7 @@ namespace CodeEditor2.Setups
                     if (projectSetup == null) continue;
                     if (Global.Projects.ContainsKey(projectSetup.Name)) continue;
 
-                    Project project = Project.Create(projectSetup);
+                    Project project = await Project.CreateAsync(projectSetup);
                     await CodeEditor2.Controller.AddProject(project);
                 }
             }

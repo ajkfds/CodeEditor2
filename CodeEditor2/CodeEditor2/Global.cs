@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Media;
+using AvaloniaEdit;
 using CodeEditor2.CodeEditor;
 using CodeEditor2.Data;
 using CodeEditor2.Setups;
@@ -29,9 +30,6 @@ namespace CodeEditor2
         public static Solution Solution = new Solution();
         public static Setup Setup = new Setup();
 
-        public static bool CasheEnable = false;
-        public static string CashePath = @"c:\temp";
-
         internal static Views.CodeView codeView;
         internal static Views.MainView mainView;
         internal static Views.NavigateView navigateView;
@@ -52,8 +50,9 @@ namespace CodeEditor2
         public static int count = 0;
 
         public static bool StopParse = false;
-        public static bool ActivateCashe = false;
 
+
+        public static byte[]? FileEncriptionKey = null;
         public static MenuItem CreateMenuItem (string header,string name)
         {
             MenuItem menuItem = new MenuItem();

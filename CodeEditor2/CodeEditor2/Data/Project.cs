@@ -42,6 +42,10 @@ namespace CodeEditor2.Data
         public Dictionary<string, ProjectProperty> ProjectProperties = new Dictionary<string, ProjectProperty>();
         public required string RootPath { get; init; }
 
+        public bool LocalFileCasheEnable { get; set; } = false;
+        public string LocalFileCashePath { get; set; } = @"c:\temp";
+        public string PasswordHash { get; set; } = "";
+
         public Setup CreateSetup()
         {
             Setup setup = new Setup(this);
@@ -61,8 +65,8 @@ namespace CodeEditor2.Data
             {
                 this.RootPath = project.RootPath;
                 this.Name = project.Name;
-                this.IgnoreList = project.ignoreList;
-
+                this.LocalFileCasheEnable = project.LocalFileCasheEnable;
+                this.LocalFileCashePath = project.LocalFileCashePath;
                 this.ProjectProperties.Clear();
                 foreach(var projectProperty in project.ProjectProperties)
                 {
@@ -75,12 +79,16 @@ namespace CodeEditor2.Data
             [JsonInclude]
             public required string RootPath;
             [JsonInclude]
-            public required List<string> IgnoreList;
+            public bool LocalFileCasheEnable = false;
+            [JsonInclude]
+            public string LocalFileCashePath = "";
+
+
             [JsonInclude]
             public Dictionary<string, ProjectProperty.Setup> ProjectProperties = new Dictionary<string, ProjectProperty.Setup>();
         }
 
-        public static Project Create(string rootPath)
+        public static async Task<Project> CreateAsync(string rootPath)
         {
             string path;
             if (rootPath.EndsWith(System.IO.Path.DirectorySeparatorChar))
@@ -110,13 +118,12 @@ namespace CodeEditor2.Data
 
             Project project = new Project(name, actualPath, "");
 
-            initProject(project,null);
+            await initProjectAsync(project,null);
             return project;
         }
 
-        public static Project Create(Setup setup)
+        public static async Task<Project> CreateAsync(Setup setup)
         {
-            string cashePath = Global.CashePath + System.IO.Path.DirectorySeparatorChar + setup.Name + ".cashe";
             Project? project = null;
             //if (System.IO.File.Exists(cashePath))
             //{
@@ -128,9 +135,9 @@ namespace CodeEditor2.Data
                 project = new Project(setup.Name, setup.RootPath, "");
             }
 
-            project.ignoreList = setup.IgnoreList;
-
-            initProject(project,setup);
+            project.LocalFileCasheEnable = setup.LocalFileCasheEnable;
+            project.LocalFileCashePath = setup.LocalFileCashePath;
+            await initProjectAsync(project,setup);
             return project;
         }
 
@@ -160,26 +167,12 @@ namespace CodeEditor2.Data
         }
 
         public static Action<Project,Setup?>? Created;
-        private static void initProject(Project project,Setup? setup)
+        private static async Task initProjectAsync(Project project,Setup? setup)
         {
             if (Created != null) Created(project,setup);
-            project.startFileSystemWatcher();
-
-            //await foreach(var info in FileIO.EnumerateFilesHierarchyAsync(project.GetAbsolutePath(project.RelativePath)))
-            //{
-            //    string relativePath = project.GetRelativePath(info.FullName);
-            //    string[] paths = relativePath.Split(new char[] { System.IO.Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
-            //    if (paths.Length <= 0) continue;
-
-            //    if (info.Attributes.HasFlag(FileAttributes.Directory))
-            //    {
-
-            //    }
-            //    else
-            //    {
-
-            //    }
-            //}
+            //            project.startFileSystemWatcher();
+            await project.UpdateAsync();
+            await DataAccess.UpdateFieSystemInfoAsync(project);
         }
 
         public async Task InitializeSubItemsAsync()
@@ -227,7 +220,7 @@ namespace CodeEditor2.Data
 
         public string GetCahsePath(string relativePath)
         {
-            string basePath = Global.CashePath;
+            string basePath = LocalFileCashePath;
             if (!basePath.EndsWith(Path.DirectorySeparatorChar)) basePath += Path.DirectorySeparatorChar;
             basePath += Name+ Path.DirectorySeparatorChar;
 
@@ -245,7 +238,7 @@ namespace CodeEditor2.Data
         }
         public string GetRelativePathFromCashePath(string cashePath)
         {
-            string basePath = Global.CashePath;
+            string basePath = LocalFileCashePath;
             if (!basePath.EndsWith(Path.DirectorySeparatorChar)) basePath += Path.DirectorySeparatorChar;
             basePath += Name + Path.DirectorySeparatorChar;
 

@@ -38,6 +38,9 @@ namespace CodeEditor2.Setups
         public static string Path { get; set; } = "History.json";
         public DateTime LastUpdate { get; set; } = DateTime.Now;
 
+        public string PasswordHash { get; set; } = "";
+        public string PasswordSalt { get; set; } = "";
+        public string DerivedSalt { get; set; } = "";
         public List<History> Historys { set; get; } = new List<History>();
 
         public class History

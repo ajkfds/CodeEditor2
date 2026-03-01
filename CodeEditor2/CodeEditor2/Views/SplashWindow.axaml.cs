@@ -124,7 +124,7 @@ public partial class SplashWindow : Window
         string? path = System.IO.Path.GetDirectoryName(Global.Solution.AbsolutePath);
         if(path != null)
         {
-            Data.Project newProject = Project.Create(path);
+            Data.Project newProject = await Project.CreateAsync(path);
             await Controller.AddProject(newProject);
         }
         

@@ -73,6 +73,7 @@ namespace CodeEditor2.Data
             }
         }
 
+
         static Item()
         {
             Data.Item.PolymorphicResolver.DerivedTypes.Add(new JsonDerivedType(typeof(Data.Project)));
@@ -235,6 +236,7 @@ namespace CodeEditor2.Data
             }
         }
 
+        public virtual FileSystemInfo? FileSystemInfo { get; internal set; }
         public virtual void Remove()
         {
             if (!Dispatcher.UIThread.CheckAccess())
