@@ -165,9 +165,10 @@ public partial class ChatControl : UserControl
         {
             string basePrompt = await agent.GetBasePromptAsync(cancellationTokenSource.Token);
             if (basePrompt == "") return;
-            IList<AITool>? tools = agent.Tools;
-            if (tools.Count == 0) tools = null;
-            await Complete(basePrompt, tools, cancellationTokenSource.Token);
+//            IList<AITool>? tools = agent.Tools;
+//            if (tools.Count == 0) tools = null;
+            await UserComplete(basePrompt, cancellationTokenSource.Token);
+//            await Complete(basePrompt, tools, cancellationTokenSource.Token,true);
         }
     }
     public async Task LoadMessagesAsync(string filePath)
@@ -234,13 +235,15 @@ public partial class ChatControl : UserControl
             if (tools.Count == 0) tools = null;
         }
         string? funcret = command;
+        bool functionCallResponce = false;
         while(funcret != null)
         {
-            funcret = await Complete(funcret, tools, cancellation);
+            funcret = await Complete(funcret, tools, cancellation,functionCallResponce);
+            functionCallResponce = true;
         }
     }
 
-    private async Task<string?> Complete(string command, IList<AITool>? tools, CancellationToken cancellation)
+    private async Task<string?> Complete(string command, IList<AITool>? tools, CancellationToken cancellation,bool functionCallResponce)
     {
         if (chat == null) return null;
         // reentrant lock
@@ -248,10 +251,11 @@ public partial class ChatControl : UserControl
 
         try
         {
-            TextItem commandItem = new TextItem(command);
+            CollapsibleTextItem commandItem = new CollapsibleTextItem(command);
             inputItem.TextBox.Text = "";
             commandItem.TextColor = commandColor;
             Items.Insert(Items.Count - 1, commandItem);
+            if (functionCallResponce) commandItem.Collapsed = true;
 
             CollapsibleTextItem resultItem = new CollapsibleTextItem("");
             Items.Insert(Items.Count - 1, resultItem);
@@ -353,7 +357,7 @@ public partial class ChatControl : UserControl
     public async IAsyncEnumerable<string> GetAsyncCollectionChatResult(string command, IList<AITool>? tools, [EnumeratorCancellation] CancellationToken cancellation)
     {
         inputItem.TextBox.Text = command;
-        await Complete(command, tools, cancellation);
+        await Complete(command, tools, cancellation,false);
         if (lastResultItem == null) yield break;
         yield return lastResultItem.Text;
     }
