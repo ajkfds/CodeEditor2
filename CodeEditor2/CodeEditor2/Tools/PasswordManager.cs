@@ -34,7 +34,7 @@ namespace CodeEditor2.Tools
             }
             else
             { // input and check password
-                while(Global.FileEncriptionKey != null)
+                while(Global.FileEncriptionKey == null)
                 {
                     Tools.InputWindow inputWindow = new InputWindow("input password", "input password");
                     inputWindow.PassWordMode = true;
