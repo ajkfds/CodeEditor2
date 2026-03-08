@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -77,7 +78,9 @@ namespace CodeEditor2.LLM.Tools
                 await yesNoWindow.ShowDialog(CodeEditor2.Controller.GetMainWindow());
                 if(!yesNoWindow.Yes) return "command_execute rejected by user";
 
-                string result = await RunCommandAsync(project.RootPath,mainCommand, argument);
+                CommandParser parser = new CommandParser();
+
+                string result = await parser.RunCommandAsync(command, project.RootPath, AllowedCommands);
 
                 return result;
             }
@@ -95,37 +98,6 @@ namespace CodeEditor2.LLM.Tools
             }
         }
 
-        static async Task<string> RunCommandAsync(string projectPath,string command,string argument)
-        {
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = command,
-                Arguments = argument,
-                RedirectStandardOutput = true,   // 標準出力をリダイレクト
-                RedirectStandardError = true,    // 標準エラーもリダイレクト
-                UseShellExecute = false,         // シェルを使用しない   (シェルインジェクション対策)
-                CreateNoWindow = true,           // ウィンドウを表示しない
-                WorkingDirectory = projectPath
-            };
-
-            using (Process process = new Process { StartInfo = startInfo })
-            {
-                process.Start();
-
-                // 非同期で最後まで読み取る
-                string output = await process.StandardOutput.ReadToEndAsync();
-                string error = await process.StandardError.ReadToEndAsync();
-
-                process.WaitForExit();
-
-                //if (process.ExitCode != 0)
-                //{
-                //    return $"failed to execute git (ExitCode: {process.ExitCode})\nError: {error}\nOutput: {output}";
-                //}
-
-                return output + error;
-            }
-        }
 
 
         public static (bool IsSafe, string Reason) ValidateCommand(string command)
@@ -175,6 +147,7 @@ namespace CodeEditor2.LLM.Tools
 
             return (true, "Success");
         }
+
     }
 
 }
