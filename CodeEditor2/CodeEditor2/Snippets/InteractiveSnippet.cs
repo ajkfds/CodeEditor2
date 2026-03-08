@@ -1,4 +1,4 @@
-﻿using Avalonia.Input;
+using Avalonia.Input;
 using CodeEditor2.CodeEditor.PopupMenu;
 using System;
 using System.Collections.Generic;

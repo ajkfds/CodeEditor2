@@ -1,4 +1,4 @@
-﻿using CodeEditor2.CodeEditor;
+using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.CodeComplete;
 using CodeEditor2.CodeEditor.Parser;
 using CodeEditor2.CodeEditor.PopupMenu;

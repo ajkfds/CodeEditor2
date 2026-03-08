@@ -1,4 +1,4 @@
-﻿using AjkAvaloniaLibs.Controls;
+using AjkAvaloniaLibs.Controls;
 using Avalonia.Controls.Shapes;
 using CodeEditor2.Data;
 using System;

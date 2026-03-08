@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls.Documents;
+using Avalonia.Controls.Documents;
 using Microsoft.Extensions.AI;
 using System;
 using System.Collections.Generic;

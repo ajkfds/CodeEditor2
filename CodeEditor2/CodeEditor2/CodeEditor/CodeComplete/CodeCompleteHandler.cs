@@ -1,4 +1,4 @@
-﻿using AjkAvaloniaLibs;
+using AjkAvaloniaLibs;
 using Avalonia;
 using Avalonia.Input;
 using CodeEditor2.Views;

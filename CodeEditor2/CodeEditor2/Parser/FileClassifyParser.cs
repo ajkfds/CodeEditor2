@@ -1,4 +1,4 @@
-﻿using Avalonia.Styling;
+using Avalonia.Styling;
 using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.Parser;
 using System;

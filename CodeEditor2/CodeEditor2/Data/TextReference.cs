@@ -1,4 +1,4 @@
-﻿using CodeEditor2.CodeEditor;
+using CodeEditor2.CodeEditor;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;

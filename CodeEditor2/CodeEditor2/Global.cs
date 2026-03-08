@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Media;
 using AvaloniaEdit;
 using CodeEditor2.CodeEditor;

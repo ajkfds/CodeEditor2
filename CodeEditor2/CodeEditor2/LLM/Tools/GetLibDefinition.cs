@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls.Documents;
+using Avalonia.Controls.Documents;
 using CodeEditor2.Data;
 using CodeEditor2Plugin;
 using Microsoft.Extensions.AI;

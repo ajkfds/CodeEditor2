@@ -1,4 +1,4 @@
-﻿using CodeEditor2.NavigatePanel;
+using CodeEditor2.NavigatePanel;
 using CodeEditor2.Tools;
 using DynamicData;
 using System;

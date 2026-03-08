@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Threading;
 using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.Parser;
@@ -21,10 +21,10 @@ namespace CodeEditor2.Data
     /// All items represent specific folders or files, and project/Directory/File objects are all represented as items that inherit from Item.
     /// This Item holds the associated data, and that data is reflected in the UI.
     /// </summary>
-//    [JsonDerivedType(typeof(Item), typeDiscriminator: "Item")]
-//    [JsonDerivedType(typeof(Folder), typeDiscriminator: "Folder")]
-//    [JsonDerivedType(typeof(Project), typeDiscriminator: "Project")]
-//    [JsonDerivedType(typeof(TextFile), typeDiscriminator: "TextFile")]
+    //    [JsonDerivedType(typeof(Item), typeDiscriminator: "Item")]
+    //    [JsonDerivedType(typeof(Folder), typeDiscriminator: "Folder")]
+    //    [JsonDerivedType(typeof(Project), typeDiscriminator: "Project")]
+    //    [JsonDerivedType(typeof(TextFile), typeDiscriminator: "TextFile")]
     public class Item : IDisposable
     {
         protected Item() { }
@@ -420,6 +420,10 @@ namespace CodeEditor2.Data
         {
         }
 
+        /// <summary>
+        /// Update Data Items
+        /// </summary>
+        /// <returns></returns>
         public virtual System.Threading.Tasks.Task UpdateAsync()
         {
             return Task.CompletedTask;
@@ -446,6 +450,12 @@ namespace CodeEditor2.Data
                 node = value;
             }
         }
+
+        /// <summary>
+        /// create navigate panel node for this item
+        /// overrride this method to extend custom navigate node
+        /// </summary>
+        /// <returns></returns>
         protected virtual NavigatePanel.NavigatePanelNode CreateNode()
         {
             // should set nodeRef
@@ -453,17 +463,26 @@ namespace CodeEditor2.Data
             return NavigatePanelNode;
         }
 
-        public virtual NavigatePanel.NavigatePanelNode? CreateLinkNode()
-        {
-            NavigatePanel.NavigatePanelNode node;
-            node = CreateNode();
-            return node;
-        }
-
-        public virtual DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode,System.Threading.CancellationToken? token)
+        /// <summary>
+        /// Create document parser for this item
+        /// override this method to create custom document parser
+        /// </summary>
+        /// <param name="parseMode"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public virtual DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token)
         {
             return null;
         }
+
+
+        //public virtual NavigatePanel.NavigatePanelNode? CreateLinkNode()
+        //{
+        //    NavigatePanel.NavigatePanelNode node;
+        //    node = CreateNode();
+        //    return node;
+        //}
+
 
 
     }

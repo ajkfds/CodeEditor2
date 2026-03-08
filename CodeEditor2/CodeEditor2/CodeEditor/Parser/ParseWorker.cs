@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using CodeEditor2.Views;
 using System;
 using System.Collections.Generic;

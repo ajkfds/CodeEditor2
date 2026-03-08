@@ -1,4 +1,4 @@
-﻿using CodeEditor2.CodeEditor;
+using CodeEditor2.CodeEditor;
 using System;
 using System.Collections.Generic;
 using System.Linq;

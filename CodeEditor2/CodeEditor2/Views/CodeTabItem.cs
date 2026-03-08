@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;

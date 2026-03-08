@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls.Shapes;
+using Avalonia.Controls.Shapes;
 using Avalonia.Remote.Protocol;
 using CodeEditor2.Tools;
 using System;

@@ -1,4 +1,4 @@
-﻿using HarfBuzzSharp;
+using HarfBuzzSharp;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;

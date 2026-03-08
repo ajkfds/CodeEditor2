@@ -1,4 +1,4 @@
-﻿using CodeEditor2.Data;
+using CodeEditor2.Data;
 using Microsoft.Extensions.AI;
 using System;
 using System.Collections.Generic;

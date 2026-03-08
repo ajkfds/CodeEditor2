@@ -1,4 +1,4 @@
-﻿using Avalonia.Remote.Protocol;
+using Avalonia.Remote.Protocol;
 using Avalonia.Threading;
 using CodeEditor2.Data;
 using System;

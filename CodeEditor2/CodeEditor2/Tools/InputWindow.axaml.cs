@@ -25,7 +25,7 @@ namespace CodeEditor2.Tools
             set {
                 if (value)
                 {
-                    TextBox1.PasswordChar = 'Åú';
+                    TextBox1.PasswordChar = '‚óè';
                 }
                 else
                 {

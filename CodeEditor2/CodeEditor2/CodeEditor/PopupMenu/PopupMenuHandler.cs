@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 using CodeEditor2.Views;

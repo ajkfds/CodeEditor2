@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using CodeEditor2.FileTypes;
 using CodeEditor2.Setups;
 using CodeEditor2.Tools;

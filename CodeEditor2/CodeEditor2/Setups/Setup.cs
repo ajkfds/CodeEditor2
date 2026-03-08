@@ -1,4 +1,4 @@
-﻿using AjkAvaloniaLibs.Libs.Json;
+using AjkAvaloniaLibs.Libs.Json;
 using AjkAvaloniaLibs.Views;
 using Avalonia.Controls;
 using Avalonia.Media;
