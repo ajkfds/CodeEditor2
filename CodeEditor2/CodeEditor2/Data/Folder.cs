@@ -127,6 +127,19 @@ namespace CodeEditor2.Data
             }
         }
 
+        public override Task PostUIUpdateAsync()
+        {
+            Task.Run(async () =>
+            {
+                if (NavigatePanelNode != null) await NavigatePanelNode.UpdateAsync();
+                foreach (Item item in Items.Values)
+                {
+                    await item.PostUIUpdateAsync();
+                }
+            });
+            return Task.CompletedTask;
+        }
+
         private async Task updateItems(List<string> absoluteFilePaths,List<string> absoluteFolderPaths)
         {
             firstAccess = false;
@@ -169,7 +182,6 @@ namespace CodeEditor2.Data
                 {
                     File item = await File.CreateAsync(Project.GetRelativePath(absoluteFilePath), Project, this);
 
-                    // 注意：コレクションへの追加（スレッドセーフの確認が必要）
                     lock (items) { items.Add(item.Name, item); }
                     lock (currentItems) { currentItems.Add(item); }
                 }));

@@ -28,19 +28,31 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.LLM;
 
+/// <summary>
+/// LLM Chat Control
+/// UI control providing interactive interface with AI agent
+/// Features include streaming responses, tool calls, and loop detection
+/// </summary>
 public partial class ChatControl : UserControl
 {
+    /// <summary>
+    /// Constructor
+    /// Initializes components and binds events
+    /// </summary>
     public ChatControl()
     {
         DataContext = this;
         InitializeComponent();
 
+        // Skip initialization in design mode
         if (Design.IsDesignMode)
         {
             return;
         }
+        // Add input item to chat list
         Items.Add(inputItem);
 
+        // Key binding to focus send button on Enter key press
         var keyBinding = new KeyBinding
         {
             Gesture = new KeyGesture(Key.Enter, KeyModifiers.None),
@@ -50,66 +62,89 @@ public partial class ChatControl : UserControl
             }),
         };
         inputItem.TextBox.KeyBindings.Add(keyBinding);
+
+        // Register click event handlers for various buttons
         inputItem.SendButton.Click += SendButton_Click;
         inputItem.SaveButton.Click += SaveButton_Click;
         inputItem.ClearButton.Click += ClearButton_Click;
         inputItem.LoadButton.Click += LoadButton_Click;
         inputItem.AbortButton.Click += AbortButton_Click;
+
+        // Focus textbox on initialization
         inputItem.TextBox.Focus();
+
+        // Register for ListBox Loaded event
         ListBox0.Loaded += ListBox0_Loaded;
     }
 
 
-    // initialize
+    // ScrollViewer and auto-scroll control fields
     private ScrollViewer scrollViewer;
-    private bool _isInternalScrolling = false; // 繧ｷ繧ｹ繝・Β縺ｫ繧医ｋ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ荳ｭ縺九←縺・°縺ｮ繝輔Λ繧ｰ
+    /// <summary>
+    /// Flag indicating whether system is scrolling
+    /// Used for auto-scroll control
+    /// </summary>
+    private bool _isInternalScrolling = false;
+    /// <summary>
+    /// Initialization complete flag
+    /// Prevents duplicate execution of ResetAsync
+    /// </summary>
     private bool initialized = false;
+
+    /// <summary>
+    /// Handles ListBox loaded event
+    /// Initializes scrollviewer settings and auto-scroll functionality
+    /// </summary>
+    /// <param name="sender">Event sender</param>
+    /// <param name="e">Event arguments</param>
     private void ListBox0_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        // Find ScrollViewer
         var scrollViewer = ListBox0.FindDescendantOfType<ScrollViewer>();
         if (scrollViewer == null) throw new Exception();
 
         scrollViewer = ListBox0.FindDescendantOfType<ScrollViewer>();
         if (scrollViewer == null) return;
 
+        // Handle scroll extent change (for auto-scroll)
         scrollViewer.GetObservable(ScrollViewer.ExtentProperty).Subscribe(_ =>
         {
             if (autoScroll)
             {
-                _isInternalScrolling = true; // 縲御ｻ翫°繧峨す繧ｹ繝・Β縺悟虚縺九＠縺ｾ縺吶阪→縺・≧蜷亥峙
+                _isInternalScrolling = true; // Signal that system is about to scroll
+                // Scroll to bottom
                 scrollViewer.Offset = new Vector(scrollViewer.Offset.X, double.MaxValue);
 
-                // 謠冗判繧ｵ繧､繧ｯ繝ｫ縺檎ｵゅｏ繧矩・↓繝輔Λ繧ｰ繧剃ｸ九ｍ縺・
+                // Reset flag when render cycle completes
                 Dispatcher.UIThread.Post(() => _isInternalScrolling = false, DispatcherPriority.Loaded);
             }
         });
 
-        // 2. 繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ菴咲ｽｮ縺悟､峨ｏ縺｣縺滓凾縺ｮ蜃ｦ逅・
+        // Handle scroll position change
         scrollViewer.ScrollChanged += (s, ev) =>
         {
-            // 繧ｷ繧ｹ繝・Β縺ｫ繧医ｋ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ・・xtent螟牙喧縺ｫ繧医ｋ遘ｻ蜍包ｼ峨↑繧峨∵焔蜍募愛螳壹ｒ繧ｹ繝ｫ繝ｼ縺吶ｋ
+            // Skip manual check if scrolling is caused by system (extent change)
             if (_isInternalScrolling) return;
 
-            // 蝙ら峩譁ｹ蜷代・遘ｻ蜍輔′縺ｪ縺・ｴ蜷医・辟｡隕・
-            //            if (Math.Abs(ev.ExtentDelta.Length) < 0.1) return;
-
-            // 縲御ｸ逡ｪ荳九↓霑代＞縺九阪ｒ蛻､螳・
-            const double threshold = 30; // 蟆代＠菴呵｣輔ｒ謖√◆縺帙ｋ
+            // Threshold (in pixels) for determining if near bottom
+            const double threshold = 30; // Add some buffer
             bool isAtBottom = scrollViewer.Offset.Y >= (scrollViewer.Extent.Height - scrollViewer.Viewport.Height - threshold);
 
             if (!isAtBottom)
             {
-                // 繝ｦ繝ｼ繧ｶ繝ｼ縺梧焔蜍輔〒荳翫↓荳翫￡縺・
+                // Disable auto-scroll when user manually scrolls up
                 autoScroll = false;
             }
             else
             {
-                // 繝ｦ繝ｼ繧ｶ繝ｼ縺瑚・蜉帙〒荳逡ｪ荳九∪縺ｧ謌ｻ縺励◆
+                // Enable auto-scroll when user returns to bottom
                 autoScroll = true;
             }
         };
         this.scrollViewer = scrollViewer;
-        if(!initialized)
+
+        // Execute reset only on first load
+        if (!initialized)
         {
             initialized = true;
             Dispatcher.UIThread.Post(async () =>
@@ -117,31 +152,87 @@ public partial class ChatControl : UserControl
                 await ResetAsync();
             });
         }
-        //await ResetAsync();
     }
 
+    /// <summary>
+    /// Collection of chat items
+    /// List of chat messages displayed in UI
+    /// </summary>
     public ObservableCollection<ChatItem> Items { get; set; } = new ObservableCollection<ChatItem>();
 
+    /// <summary>
+    /// Reference to LLM chat frontend
+    /// Interface for communication with AI
+    /// </summary>
     private ILLMChatFrontEnd? chat { get; set; } = null;
+
+    /// <summary>
+    /// Reference to LLM agent
+    /// Manages tool definitions and prompts
+    /// </summary>
     private LLMAgent? agent { get; set; } = null;
+
+    /// <summary>
+    /// Auto-scroll enabled flag
+    /// Whether to auto-scroll when new message is added
+    /// </summary>
     private bool autoScroll { get; set; } = true;
 
+    /// <summary>
+    /// Auto-save flag
+    /// Whether to save when new message is added
+    /// </summary>
     public bool AutoSave { set; get; } = false;
+
+    /// <summary>
+    /// Log file path
+    /// Storage location for chat history
+    /// </summary>
     public string? LogFilePath { set; get; } = null;
 
+    /// <summary>
+    /// Input item (textbox and buttons)
+    /// </summary>
     InputItem inputItem = new InputItem();
+
+    /// <summary>
+    /// Reference to last result item
+    /// Used for tracking streaming response
+    /// </summary>
     CollapsibleTextItem? lastResultItem = null;
 
-    private Avalonia.Media.Color commandColor = new Avalonia.Media.Color(255, 255, 200, 200);
-    private Avalonia.Media.Color completeColor = new Avalonia.Media.Color(255, 200, 255, 255);
+    /// <summary>
+    /// Display color for command (user input)
+    /// Light blue
+    /// </summary>
+    private Avalonia.Media.Color commandColor = Avalonia.Media.Colors.CadetBlue;// new Avalonia.Media.Color(255, 255, 200, 200);
 
+    /// <summary>
+    /// Display color for completion (AI response)
+    /// </summary>
+    private Avalonia.Media.Color completeColor = Avalonia.Media.Colors.YellowGreen;// new Avalonia.Media.Color(255, 200, 255, 255);
+
+    /// <summary>
+    /// Input acceptable flag
+    /// Acts as reentrant lock
+    /// </summary>
     bool inputAcceptable = true;
 
+    /// <summary>
+    /// Cancellation token source
+    /// Used to cancel ongoing async operations
+    /// </summary>
     private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
 
-    // external control
-    // set model and agent
+    // External control methods
+
+    /// <summary>
+    /// Set model and agent
+    /// Must be called before chat control becomes usable
+    /// </summary>
+    /// <param name="chatModel">LLM chat frontend implementation</param>
+    /// <param name="agent">LLM agent (optional)</param>
     public void SetModel(ILLMChatFrontEnd chatModel, LLMAgent? agent)
     {
         this.chat = chatModel;
@@ -155,45 +246,73 @@ public partial class ChatControl : UserControl
             });
         }
     }
+
+    /// <summary>
+    /// Reset chat
+    /// Clears messages and restarts from agent's base prompt
+    /// </summary>
+    /// <returns>Async operation task</returns>
     public async Task ResetAsync()
     {
         if (chat == null) return;
+
+        // Reset chat
         await chat.ResetAsync();
 
-        // remove items
+        // Clear items (except input item)
         int itemCount = Items.Count;
         for (int i = 0; i < itemCount - 2; i++)
         {
             Items.RemoveAt(1);
         }
 
+        // Create new cancellation token
         cancellationTokenSource = new CancellationTokenSource();
-        // restart
+
+        // Start from base prompt if agent is set
         if (agent != null)
         {
             string basePrompt = await agent.GetBasePromptAsync(cancellationTokenSource.Token);
             if (basePrompt == "") return;
-            await UserComplete(basePrompt,true);
+            await UserComplete(basePrompt, CollapsibleTextItem.MessageType.functionCallReturn);
         }
     }
 
-    private async Task UserComplete(string command,bool collapse = false)
+    /// <summary>
+    /// Process user input and send to LLM
+    /// </summary>
+    /// <param name="command">User input text</param>
+    /// <param name="collapse">Whether to collapse input</param>
+    /// <returns>Async operation task</returns>
+    private async Task UserComplete(string command, CollapsibleTextItem.MessageType messageType = CollapsibleTextItem.MessageType.command)
     {
+        // Ignore if input is not acceptable
         if (!inputAcceptable) return;
+
+        // Create new cancellation token
         cancellationTokenSource = new CancellationTokenSource();
         CancellationToken cancellationToken = cancellationTokenSource.Token;
 
+        // Clear hash history
         hashHistory.Clear();
 
-        // get toools
+        // Get tools
         IList<AITool>? tools = null;
         if (agent != null)
         {
             tools = agent.Tools;
             if (tools.Count == 0) tools = null;
         }
-        await completeWithFunctionCall(command, tools, cancellationToken, collapse);
+        // Execute command with tool calls
+        await completeWithFunctionCall(command, tools, cancellationToken, messageType);
     }
+
+    /// <summary>
+    /// Calculate hash value of text
+    /// Used for loop detection
+    /// </summary>
+    /// <param name="text">Text to hash</param>
+    /// <returns>Hex string of hash value</returns>
     private string getHash(string text)
     {
         byte[] data = Encoding.UTF8.GetBytes(text);
@@ -201,59 +320,89 @@ public partial class ChatControl : UserControl
         return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
     }
 
+    /// <summary>
+    /// Hash history of command/response
+    /// Used for loop detection
+    /// </summary>
     private List<string> hashHistory = new List<string>();
 
+    /// <summary>
+    /// Execute interaction with LLM, calling tools as needed
+    /// Attempts retry from different perspective if agent is in a loop
+    /// </summary>
+    /// <param name="command">Command to send</param>
+    /// <param name="tools">List of available AI tools</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="collapseQuestion">Whether to collapse question item</param>
+    /// <returns>Async operation task</returns>
     private async Task completeWithFunctionCall(
         string command, IList<AITool>? tools,
         CancellationToken cancellationToken,
-        bool collapseQuestion
+        CollapsibleTextItem.MessageType messageType
         )
     {
         string? result;
         bool loopAlarted = false;
         string loopedHash = "";
 
+        // Add hash of command
         hashHistory.Add(getHash(command));
-        result = await complete(command, tools, cancellationToken, collapseQuestion);
+        result = await complete(command, tools, cancellationToken, messageType);
         if (result == null) return;
         hashHistory.Add(getHash(result));
 
-        while (agent !=null && !cancellationToken.IsCancellationRequested)
+        // Loop while agent includes function calls in response
+        while (agent != null && !cancellationToken.IsCancellationRequested)
         {
+            // Parse function call from response
             string? functioncallCommand = await agent.ParseResponceAsync(result, cancellationToken);
             if (functioncallCommand == null) return;
 
             hashHistory.Add(getHash(functioncallCommand));
-            result = await complete(functioncallCommand, tools, cancellationToken, true);
+            result = await complete(functioncallCommand, tools, cancellationToken, CollapsibleTextItem.MessageType.functionCallReturn);
             if (result == null) return;
             hashHistory.Add(getHash(result));
+
+            // Loop detection
             if (isLoopDetected())
             {
-                if(loopAlarted && hashHistory.Last() == loopedHash)
+                // Exit if same loop is detected again
+                if (loopAlarted && hashHistory.Last() == loopedHash)
                 {
                     return;
                 }
                 loopAlarted = true;
                 loopedHash = hashHistory.Last();
-                command = "縺ゅ↑縺溘・繝ｫ繝ｼ繝励↓髯･縺｣縺ｦ縺・∪縺吶ょ挨縺ｮ隕也せ縺ｧ閠・∴縺ｦ縺上□縺輔＞";
+                // Prompt to try escaping from loop
+                command = "You are in a loop. Please think from a different perspective.";
                 hashHistory.Add(getHash(command));
-                result = await complete(functioncallCommand, tools, cancellationToken, true);
+                result = await complete(functioncallCommand, tools, cancellationToken, CollapsibleTextItem.MessageType.command);
             }
         }
-
     }
 
-    // 繝ｫ繝ｼ繝励→縺ｿ縺ｪ縺呎怙蟆上・蜻ｨ譛滂ｼ井ｾ具ｼ・縺ｪ繧・A->B->A->B 繧呈､懷・・・
+    // Loop detection constants
+    /// <summary>
+    /// Minimum pattern length to consider as loop (e.g., 2 detects A-&gt;B-&gt;A-&gt;B)
+    /// </summary>
     private const int MinPatternLength = 2;
-    // 繝ｫ繝ｼ繝励→縺ｿ縺ｪ縺咏ｹｰ繧願ｿ斐＠縺ｮ蝗樊焚・井ｾ具ｼ・縺ｪ繧・蜷後§繝代ち繝ｼ繝ｳ縺・蝗樒ｶ壹＞縺溘ｉ繝ｫ繝ｼ繝暦ｼ・
-    private const int MaxRepetitions = 2;
+    /// <summary>
+    /// Number of repetitions to consider as loop (e.g., 3 means loop if same pattern repeats 3 times)
+    /// </summary>
+    private const int MaxRepetitions = 3;
+
+    /// <summary>
+    /// Detect loop from hash history
+    /// Determines if same pattern is repeating
+    /// </summary>
+    /// <returns>True if loop is detected</returns>
     private bool isLoopDetected()
     {
         if (hashHistory.Count < (MinPatternLength * MaxRepetitions))
             return false;
 
-        // 2. 繝代ち繝ｼ繝ｳ髟ｷ繧貞､牙喧縺輔○縺ｦ讀懆ｨｼ (1縺､謌ｻ繧九・縺､謌ｻ繧・..)
-        // 逶ｴ霑代・n莉ｶ縺ｮ繧ｷ繝ｼ繧ｱ繝ｳ繧ｹ縺後√◎縺ｮ蜑阪・n莉ｶ縺ｨ荳閾ｴ縺吶ｋ縺九ｒ繝√ぉ繝・け縺励∪縺・
+        // Verify by varying pattern length (1 back, 2 back...)
+        // Check if the last n items match the previous n items
         for (int patternSize = 1; patternSize <= hashHistory.Count / MaxRepetitions; patternSize++)
         {
             var currentPattern = hashHistory.TakeLast(patternSize).ToList();
@@ -275,7 +424,7 @@ public partial class ChatControl : UserControl
 
             if (isRepeating)
             {
-                // 繝ｫ繝ｼ繝玲､懷・・・
+                // Loop detected!
                 return true;
             }
         }
@@ -283,29 +432,41 @@ public partial class ChatControl : UserControl
         return false;
     }
 
+    /// <summary>
+    /// Execute interaction with LLM and process streaming response
+    /// Includes progress timer, loop detection, and auto-scroll functionality
+    /// </summary>
+    /// <param name="command">Command to send</param>
+    /// <param name="tools">List of available AI tools</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="collapseQuestion">Whether to collapse question item</param>
+    /// <returns>Response text, or null</returns>
     private async Task<string?> complete(
-        string command, IList<AITool>? tools, 
+        string command, IList<AITool>? tools,
         CancellationToken cancellationToken,
-        bool collapseQuestion
+        CollapsibleTextItem.MessageType messageType
         )
     {
         if (chat == null) return null;
-        // reentrant lock
+
+        // Reentrant lock: make input unacceptable
         inputAcceptable = false;
 
         try
         {
-            CollapsibleTextItem commandItem = new CollapsibleTextItem(command);
+            // Create and display command item
+            CollapsibleTextItem commandItem = new CollapsibleTextItem(command,messageType);
             inputItem.TextBox.Text = "";
             commandItem.TextColor = commandColor;
             Items.Insert(Items.Count - 1, commandItem);
-            if (collapseQuestion) commandItem.Collapsed = true;
+            if (messageType == CollapsibleTextItem.MessageType.functionCallReturn) commandItem.Collapsed = true;
 
-            CollapsibleTextItem resultItem = new CollapsibleTextItem("");
+            // Create result item
+            CollapsibleTextItem resultItem = new CollapsibleTextItem("",CollapsibleTextItem.MessageType.responce);
             Items.Insert(Items.Count - 1, resultItem);
             lastResultItem = resultItem;
 
-            // show progress timer
+            // Start progress timer
             var stopwatch = Stopwatch.StartNew();
 
             bool timerActivate = true; // timer activate flag, timer will be stopped when first result is returned
@@ -330,34 +491,43 @@ public partial class ChatControl : UserControl
             }, timerCancellationTokenSource.Token);
 
             cancellationToken.ThrowIfCancellationRequested();
-            // execute chat command
+
+            // Execute chat command
             try
             {
+                // Process streaming response
                 await foreach (string ret in chat.GetAsyncCollectionChatResult(command, tools, cancellationToken))
                 {
+                    // Stop timer on first result received
                     if (timerActivate & ret != "")
                     {
                         timerCancellationTokenSource.Cancel();
                         timerActivate = false;
                         await resultItem.SetText("");
                     }
+                    // Append result text
                     await resultItem.AppendText(ret);
-                    
-                    // 1繝医・繧ｯ繝ｳ縺斐→縺ｫ繝ｫ繝ｼ繝励ｒ繝√ぉ繝・け
+
+                    // Check for loop on each token
                     if (IsStreamingLoopDetected(resultItem.Text))
                     {
                         await resultItem.AppendText("\n[Loop detected: Generation stopped.]");
-                        break; // foreach繧呈栢縺代※逕滓・繧剃ｸｭ譁ｭ
+                        break; // Exit foreach to stop generation
                     }
 
+                    // If auto-scroll is enabled
                     if (autoScroll)
                     {
-                        // 謠冗判繧ｹ繝ｬ繝・ラ縺ｧ蜊ｳ蠎ｧ縺ｫ繝ｬ繧､繧｢繧ｦ繝医ｒ遒ｺ螳壹＆縺帙ｋ
+                        // Set flag that system is scrolling
+                        _isInternalScrolling = true;
+                        // Immediately finalize layout on render thread
                         Dispatcher.UIThread.Post(() =>
                         {
                             ListBox0.UpdateLayout();
                             scrollViewer?.ScrollToEnd();
-                        }, DispatcherPriority.Render); // Render蜆ｪ蜈亥ｺｦ縺ｧ蜊ｳ蠎ｧ縺ｫ蜿肴丐
+                            // Reset flag after scroll completes
+                            _isInternalScrolling = false;
+                        }, DispatcherPriority.Render); // Immediate reflection at Render priority
                     }
                 }
                 if (timerActivate)
@@ -367,18 +537,20 @@ public partial class ChatControl : UserControl
                     await resultItem.SetText("blank");
                 }
             }
+            // Do nothing if cancelled
             catch (OperationCanceledException ex)
             {
-                
+
             }
             catch (Exception ex)
             {
                 CodeEditor2.Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
             }
+            // Wait for timer task to complete
             await displayTimerTask;
             stopwatch.Stop();
 
-            // change color to complete color
+            // Change color to completion color and save messages
             await Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 resultItem.TextColor = completeColor;
@@ -394,27 +566,34 @@ public partial class ChatControl : UserControl
         }
         finally
         {
+            // Resume input acceptance
             inputAcceptable = true;
         }
         return null;
     }
 
+    /// <summary>
+    /// Detect loop during streaming response
+    /// Patterns with only symbols or whitespace are excluded from loop detection
+    /// </summary>
+    /// <param name="fullText">Full text received so far</param>
+    /// <returns>True if loop is detected</returns>
     private bool IsStreamingLoopDetected(string fullText)
     {
-        const int minPatternLength = 5; // 遏ｭ縺吶℃繧倶ｸ閾ｴ・・ABC"縺ｪ縺ｩ・峨・辟｡隕・
-        const int repeatCount = 20;      // 3蝗樣｣邯壹〒繝ｫ繝ｼ繝励→蛻､螳・
+        const int minPatternLength = 5; // Ignore too short matches like "ABC"
+        const int repeatCount = 20;      // Detect as loop if repeating 3 times consecutively
 
         if (string.IsNullOrEmpty(fullText) || fullText.Length < minPatternLength * repeatCount)
             return false;
 
-        // 蠕後ｍ縺九ｉ繝代ち繝ｼ繝ｳ繧ｵ繧､繧ｺ繧貞ｺ・￡縺ｪ縺後ｉ繝√ぉ繝・け
+        // Check from back while expanding pattern size
         for (int patternSize = minPatternLength; patternSize <= fullText.Length / repeatCount; patternSize++)
         {
             string pattern = fullText.Substring(fullText.Length - patternSize);
 
-            // --- 謾ｹ濶ｯ繝昴う繝ｳ繝・ 險伜捷繧・ｩｺ逋ｽ縺ｮ縺ｿ縺ｮ繝代ち繝ｼ繝ｳ縺ｯ繝ｫ繝ｼ繝怜愛螳壹°繧蛾勁螟・---
-            // 譁・ｭ怜・縺後瑚ｨ伜捷縲∵焚蟄励∫ｩｺ逋ｽ縲阪□縺代〒讒区・縺輔ｌ縺ｦ縺・ｋ蝣ｴ蜷医・繧ｹ繧ｭ繝・・
-            // (萓・ "    ", "----", "////", "1212")
+            // Exclude patterns with only symbols or whitespace from loop detection
+            // Skip if string consists only of "symbols, digits, whitespace"
+            // (e.g., "    ", "----", "////", "1212")
             if (!Regex.IsMatch(pattern, @"[\p{L}\p{IsCJKUnifiedIdeographs}]"))
             {
                 continue;
@@ -435,13 +614,31 @@ public partial class ChatControl : UserControl
         }
         return false;
     }
+
+    /// <summary>
+    /// Get chat results as async collection
+    /// Uses IAsyncEnumerable to support streaming responses
+    /// </summary>
+    /// <param name="command">Command to send</param>
+    /// <param name="tools">List of available AI tools</param>
+    /// <param name="cancellation">Cancellation token</param>
+    /// <returns>Async enumerable of response text</returns>
     public async IAsyncEnumerable<string> GetAsyncCollectionChatResult(string command, IList<AITool>? tools, [EnumeratorCancellation] CancellationToken cancellation)
     {
         inputItem.TextBox.Text = command;
-        await complete(command, tools, cancellation,false);
+        await complete(command, tools, cancellation,CollapsibleTextItem.MessageType.command);
         if (lastResultItem == null) yield break;
         yield return lastResultItem.Text;
     }
+
+    /// <summary>
+    /// Get chat result asynchronously
+    /// Aggregates streaming results into a single string
+    /// </summary>
+    /// <param name="command">Command to send</param>
+    /// <param name="tools">List of available AI tools</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Response text</returns>
     public async Task<string> GetAsyncChatResult(string command, IList<AITool>? tools, CancellationToken cancellationToken)
     {
         StringBuilder sb = new StringBuilder();
@@ -452,29 +649,43 @@ public partial class ChatControl : UserControl
         return sb.ToString();
     }
 
-    // save & load ////////////////////
+    // Save and Load ////////////////////
 
+    /// <summary>
+    /// Load messages from specified path
+    /// </summary>
+    /// <param name="filePath">Message file path</param>
+    /// <returns>Async operation task</returns>
     public async Task LoadMessagesAsync(string filePath)
     {
         LogFilePath = filePath;
         await LoadMessagesAsync();
     }
+
+    /// <summary>
+    /// Load messages from current LogFilePath
+    /// </summary>
+    /// <returns>Async operation task</returns>
     public async Task LoadMessagesAsync()
     {
         if (chat == null) return;
         if (LogFilePath == null) return;
+
+        // Load messages from chat backend
         await chat.LoadMessagesAsync(LogFilePath);
 
+        // Remove existing messages from UI
         int items = Items.Count;
         for (int i = 0; i < items - 2; i++)
         {
             Items.RemoveAt(1);
         }
 
+        // Get and display chat messages
         List<Microsoft.Extensions.AI.ChatMessage> chatmessages = chat.GetChatMessages();
         foreach (Microsoft.Extensions.AI.ChatMessage chatmessage in chatmessages)
         {
-            CollapsibleTextItem resultItem = new CollapsibleTextItem(chatmessage.Text);
+            CollapsibleTextItem resultItem = new CollapsibleTextItem(chatmessage.Text,CollapsibleTextItem.MessageType.responce);
             if (chatmessage.Role == ChatRole.System)
             {
                 resultItem.TextColor = completeColor;
@@ -495,11 +706,22 @@ public partial class ChatControl : UserControl
             lastResultItem = resultItem;
         }
     }
+
+    /// <summary>
+    /// Save messages to specified path
+    /// </summary>
+    /// <param name="filePath">Destination file path</param>
+    /// <returns>Async operation task</returns>
     public async Task SaveMessagesAsync(string filePath)
     {
         LogFilePath = filePath;
         await SaveMessagesAsync();
     }
+
+    /// <summary>
+    /// Save messages to current LogFilePath
+    /// </summary>
+    /// <returns>Async operation task</returns>
     private async Task SaveMessagesAsync()
     {
         if (chat == null) return;
@@ -508,11 +730,25 @@ public partial class ChatControl : UserControl
     }
 
 
-    // ui control
+    // UI Control Event Handlers
+
+    /// <summary>
+    /// Handles abort button click
+    /// Cancels ongoing async operation
+    /// </summary>
+    /// <param name="sender">Event sender</param>
+    /// <param name="e">Event arguments</param>
     private void AbortButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         cancellationTokenSource.Cancel();
     }
+
+    /// <summary>
+    /// Handles load button click
+    /// Load chat history from file
+    /// </summary>
+    /// <param name="sender">Event sender</param>
+    /// <param name="e">Event arguments</param>
     private async void LoadButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         try
@@ -524,6 +760,13 @@ public partial class ChatControl : UserControl
             CodeEditor2.Controller.AppendLog(exception.Message, Avalonia.Media.Colors.Red);
         }
     }
+
+    /// <summary>
+    /// Handles clear button click
+    /// Reset chat
+    /// </summary>
+    /// <param name="sender">Event sender</param>
+    /// <param name="e">Event arguments</param>
     private void ClearButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         try
@@ -539,6 +782,12 @@ public partial class ChatControl : UserControl
         }
     }
 
+    /// <summary>
+    /// Handles save button click
+    /// Save chat history to file
+    /// </summary>
+    /// <param name="sender">Event sender</param>
+    /// <param name="e">Event arguments</param>
     private async void SaveButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         try
@@ -551,6 +800,12 @@ public partial class ChatControl : UserControl
         }
     }
 
+    /// <summary>
+    /// Handles send button click
+    /// Send user input to LLM
+    /// </summary>
+    /// <param name="sender">Event sender</param>
+    /// <param name="e">Event arguments</param>
     private async void SendButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         try
@@ -558,8 +813,10 @@ public partial class ChatControl : UserControl
             string? command = inputItem.TextBox.Text;
             if (command == null) return;
 
+            // Process user input
             await UserComplete(command);
 
+            // Focus textbox to maintain BM
             inputItem.TextBox.Focus();
         }
         catch (Exception exception)
@@ -569,4 +826,3 @@ public partial class ChatControl : UserControl
     }
 
 }
-

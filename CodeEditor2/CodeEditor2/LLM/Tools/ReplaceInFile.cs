@@ -110,6 +110,7 @@ namespace CodeEditor2.LLM.Tools
                * To delete code: Use empty REPLACE section
             """)]
             
+
         string diff,
         CancellationToken cancellationToken
         )

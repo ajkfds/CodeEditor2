@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using DynamicData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,19 +12,58 @@ namespace CodeEditor2.LLM
 {
     public class CollapsibleTextItem : ChatItem
     {
-
-        public CollapsibleTextItem(string text, Avalonia.Media.Color textColor) : this(text)
+        public enum MessageType
         {
-            TextColor = textColor;
+            command,
+            responce,
+            functionCallReturn
         }
-        public CollapsibleTextItem(string text)
-        {
-            textBox.Text = text;
-            textBox.Margin = new Thickness(10, 5, 10, 5);
-            textBox.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
 
-            textBox.InnerRightContent = CollapseExpandButton;
-            Content = textBox;
+        public CollapsibleTextItem(string text, MessageType messageType)
+        {
+            Content = grid;
+            int column = 0;
+
+            {
+                switch (messageType)
+                {
+                    case MessageType.responce:
+                        image.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/ai.svg", Avalonia.Media.Colors.YellowGreen);
+                        break;
+                    case MessageType.command:
+                        image.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/head.svg", Avalonia.Media.Colors.SlateBlue);
+                        break;
+                    case MessageType.functionCallReturn:
+                        image.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/hummer.svg", Avalonia.Media.Colors.Gray);
+                        break;
+                }
+                int? leftSize = 50;
+                {
+                    if (leftSize == null)
+                    {
+                        grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+                    }else{
+                        grid.ColumnDefinitions.Add(new ColumnDefinition((int)leftSize, GridUnitType.Auto));
+                    }
+                    Grid.SetColumn(image, column);
+                    grid.Children.Add(image);
+                    column++;
+
+                }
+            }
+
+            {
+                textBox.Text = text;
+                textBox.Margin = new Thickness(10, 5, 10, 5);
+                textBox.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
+                textBox.InnerRightContent = CollapseExpandButton;
+
+                grid.ColumnDefinitions.Add(new ColumnDefinition( GridLength.Star));
+                Grid.SetColumn(textBox, column);
+                grid.Children.Add(textBox);
+                column++;
+            }
+
 
             textBox.PointerEntered += (sender, e) =>
             {
@@ -101,6 +141,16 @@ namespace CodeEditor2.LLM
             }
         }
 
+        Image image = new Image()
+        {
+            Width = 25,
+            Height = 25
+        };
+
+        private Grid grid = new Grid()
+        {
+            Margin = new Thickness(0, 0, 0, 0)
+        };
 
         private TextBox textBox = new TextBox()
         {

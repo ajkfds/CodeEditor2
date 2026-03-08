@@ -313,35 +313,50 @@ namespace CodeEditor2.Data
             }
             public bool ContainsKey(string key)
             {
-                return itemDict.ContainsKey(key);
+                lock (itemList)
+                {
+                    return itemDict.ContainsKey(key);
+                }
             }
 
             public bool ContainsValue(Item item)
             {
-                return itemDict.ContainsValue(item);
+                lock (itemList)
+                {
+                    return itemDict.ContainsValue(item);
+                }
             }
 
             public bool TryGetValue(string key, out Item? value)
             {
-                return itemDict.TryGetValue(key, out value);
+                lock (itemList)
+                {
+                    return itemDict.TryGetValue(key, out value);
+                }
             }
 
             public void Clear()
             {
-                itemList.Clear();
-                itemDict.Clear();
+                lock (itemList)
+                {
+                    itemList.Clear();
+                    itemDict.Clear();
+                }
             }
 
-            public Dictionary<string, Item>.KeyCollection Keys
-            {
-                get { return itemDict.Keys; }
-            }
+            //public Dictionary<string, Item>.KeyCollection Keys
+            //{
+            //    get { return itemDict.Keys; }
+            //}
 
             public List<Item> Values
             {
                 get
                 {
-                    return itemList;
+                    lock (itemList)
+                    {
+                        return itemList;
+                    }
                 }
             }
 
@@ -427,6 +442,15 @@ namespace CodeEditor2.Data
         /// </summary>
         /// <returns></returns>
         public virtual System.Threading.Tasks.Task UpdateAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// post UI update, such as updating navigate panel node visual, or open document in editor
+        /// </summary>
+        /// <returns></returns>
+        public virtual System.Threading.Tasks.Task PostUIUpdateAsync()
         {
             return Task.CompletedTask;
         }
