@@ -84,7 +84,14 @@ namespace CodeEditor2.LLM.Tools
 
                 // 4. ファイルの読み込み
                 // UTF-8で読み込み。BOMの有無も自動判別します。
-                return System.IO.File.ReadAllText(fullPath, Encoding.UTF8);
+
+                // 第2引数: デフォルトのエンコード（BOMがない場合に適用される）
+                // 第3引数: detectEncodingFromByteOrderMarks を true に設定
+                using (var reader = new System.IO.StreamReader(fullPath, System.Text.Encoding.UTF8, true))
+                {
+                    return reader.ReadToEnd();
+                }
+//                return System.IO.File.ReadAllText(fullPath, Encoding.UTF8);
             }
             catch (UnauthorizedAccessException)
             {
