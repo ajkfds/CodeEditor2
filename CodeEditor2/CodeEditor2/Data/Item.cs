@@ -4,6 +4,7 @@ using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.Parser;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -257,6 +258,7 @@ namespace CodeEditor2.Data
         /// </summary>
         public class ItemList
         {
+
             private List<Item> itemList = new List<Item>();
             private Dictionary<string, Item> itemDict = new Dictionary<string, Item>();
 
