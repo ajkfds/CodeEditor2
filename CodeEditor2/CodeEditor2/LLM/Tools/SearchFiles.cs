@@ -119,10 +119,10 @@ namespace CodeEditor2.LLM.Tools
                     }
 
                     // 結果が長すぎる場合は制限
-                    if (results.Length > 15000)
+                    if (results.Length > 1500)
                     {
                         results.AppendLine("... Search truncated: too many results. Please refine your regex or path.");
-                        break;
+                        return results.ToString();
                     }
                 }
 

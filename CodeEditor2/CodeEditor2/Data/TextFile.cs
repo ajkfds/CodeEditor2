@@ -152,7 +152,7 @@ namespace CodeEditor2.Data
 
             if (Parent != null)
             {
-                if (Parent.Items.ContainsKey(Name)) Parent.Items.Remove(Name);
+                Parent.Items.TryRemove(Name);
                 Parent.NavigatePanelNode.UpdateVisual();
             }
         }
@@ -362,6 +362,7 @@ namespace CodeEditor2.Data
             PostFileCheck();
         }
 
+
         public override void CheckStatus()
         {
             PostFileCheck();
@@ -468,7 +469,7 @@ namespace CodeEditor2.Data
             List<Data.Item> items = new List<Data.Item>();
             lock (textFile.Items)
             {
-                foreach (Data.Item subItem in textFile.Items.Values)
+                foreach (Data.Item subItem in textFile.Items)
                 {
                     items.Add(subItem);
                 }

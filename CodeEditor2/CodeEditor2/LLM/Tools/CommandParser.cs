@@ -40,6 +40,9 @@ namespace CodeEditor2.LLM.Tools
                 if (chain.NextSeparator == SeparatorType.None) break;
             }
 
+            finalOutput.AppendLine();
+            finalOutput.AppendLine("command complete, ExitCode:"+lastExitCode.ToString());
+
             return finalOutput.ToString();
         }
 
@@ -107,6 +110,8 @@ namespace CodeEditor2.LLM.Tools
                         RedirectStandardInput = true,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
+                        StandardOutputEncoding = Encoding.UTF8,
+                        StandardErrorEncoding = Encoding.UTF8,
                         CreateNoWindow = true
                     };
 

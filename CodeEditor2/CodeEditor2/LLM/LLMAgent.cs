@@ -97,7 +97,7 @@ namespace CodeEditor2.LLM
                 }
                 catch
                 {
-                    return "illagal function call. use xml code markdown tag for tool call";
+                    return "illagal function call. use xml code markdown tag for tool call. or tool call size is too large. divide into multiple tool call.";
                 }
             }
             return null;

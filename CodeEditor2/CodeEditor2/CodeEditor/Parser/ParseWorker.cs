@@ -57,7 +57,7 @@ namespace CodeEditor2.CodeEditor.Parser
             token.ThrowIfCancellationRequested();
 
             if (textFile == null) return;
-            List<Data.Item> items = textFile.Items.Values.ToList();
+            List<Data.Item> items = textFile.Items.ToList();
             foreach (Data.Item item in items)
             {
                 token.ThrowIfCancellationRequested();

@@ -104,7 +104,7 @@ namespace CodeEditor2.NavigatePanel
             await folder.UpdateAsync();
 
             List<Item> addItems = new List<Item>();
-            foreach (Item item in folder.Items.Values)
+            foreach (Item item in folder.Items)
             {
                 addItems.Add(item);
             }
@@ -115,7 +115,7 @@ namespace CodeEditor2.NavigatePanel
                 removeNodes.Add(node);
             }
 
-            foreach (Item item in folder.Items.Values)
+            foreach (Item item in folder.Items)
             {
                 if (removeNodes.Contains(item.NavigatePanelNode))
                 {

@@ -48,7 +48,7 @@ namespace CodeEditor2.Data
             string[] pathList = relativePath.Split(new char[] { System.IO.Path.DirectorySeparatorChar });
             if (pathList.Length == 0) return null;
 
-            foreach (Item item in items.Values)
+            foreach (Item item in items)
             {
                 File? file = item as File;
                 if (file != null)
@@ -68,7 +68,7 @@ namespace CodeEditor2.Data
         }
         public File? SearchFile(Func<File, bool> match)
         {
-            foreach (Item item in items.Values)
+            foreach (Item item in items)
             {
                 File? file = item as File;
                 if (file != null)
@@ -132,7 +132,7 @@ namespace CodeEditor2.Data
             Task.Run(async () =>
             {
                 if (NavigatePanelNode != null) await NavigatePanelNode.UpdateAsync();
-                foreach (Item item in Items.Values)
+                foreach (Item item in Items)
                 {
                     await item.PostUIUpdateAsync();
                 }
@@ -167,23 +167,24 @@ namespace CodeEditor2.Data
                     continue;
                 }
 
-                if (items.ContainsKey(name))
+                if(items.TryGetValue(name,out Item? oldItem))
                 {
-                    if (items[name] is File)
+                    if (oldItem == null) continue;
+                    if (oldItem is File)
                     {
-                        ((File)items[name]).CheckFileType();
+                        ((File)oldItem).CheckFileType();
                     }
-                    if (items[name].IsDeleted) continue;
-                    currentItems.Add(items[name]);
+                    if (oldItem.IsDeleted) continue;
+                    currentItems.Add(oldItem);
                     continue;
+
                 }
 
                 tasks.Add(Task.Run(async () =>
                 {
                     File item = await File.CreateAsync(Project.GetRelativePath(absoluteFilePath), Project, this);
-
-                    lock (items) { items.Add(item.Name, item); }
-                    lock (currentItems) { currentItems.Add(item); }
+                    items.AddOrUpdate(item.Name, item);
+                    currentItems.Add(item);
                 }));
                 
             }
@@ -197,9 +198,10 @@ namespace CodeEditor2.Data
                 if (body.Contains(System.IO.Path.DirectorySeparatorChar)) body = body.Substring(body.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
                 if (body.StartsWith(".")) continue;
 
-                if (items.ContainsKey(body))
+                if (items.TryGetValue(body,out Item? oldItem))
                 {
-                    currentItems.Add(items[body]);
+                    if(oldItem == null) throw new Exception("Item dictionary contains null value.");
+                    currentItems.Add(oldItem);
                     continue;
                 }
 
@@ -209,14 +211,14 @@ namespace CodeEditor2.Data
                 {
                     continue;
                 }
-                items.Add(folder.Name, folder);
+                items.AddOrUpdate(folder.Name, folder);
                 currentItems.Add(folder);
                 await folder.UpdateAsync();
             }
 
             // remove unused items
             List<Item> removeItems = new List<Item>();
-            foreach (Item item in items.Values)
+            foreach (Item item in items)
             {
                 if (!currentItems.Contains(item))
                 {
@@ -227,7 +229,7 @@ namespace CodeEditor2.Data
             foreach (Item item in removeItems)
             {
                 item.IsDeleted = true;
-                items.Remove(item.Name);
+                items.TryRemove(item.Name);
             }
 
             items.Sort((a, b) =>
@@ -257,9 +259,10 @@ namespace CodeEditor2.Data
             foreach (FileIO.FileNode subNode in node.Nodes.Values)
             {
                 if (!subNode.IsDirectory) continue;
-                if (items.ContainsKey(subNode.Name))
+                if(items.TryGetValue(subNode.Name,out Item? oldItem))
                 {
-                    Folder? folder = items[subNode.Name] as Folder;
+                    if(oldItem == null) throw new Exception("Item dictionary contains null value.");
+                    Folder? folder = oldItem as Folder;
                     if (folder == null) continue;
                     await folder.InitializeHierarchy(project, this, subNode);
                 }

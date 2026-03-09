@@ -3,9 +3,11 @@ using Avalonia.Threading;
 using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.Parser;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
@@ -247,7 +249,7 @@ namespace CodeEditor2.Data
             }
             if (Parent != null)
             {
-                if(Parent.Items.ContainsKey(Name)) Parent.Items.Remove(Name);
+                Parent.Items.TryRemove(Name);
                 Parent.NavigatePanelNode.UpdateVisual();
             }
         }
@@ -256,80 +258,90 @@ namespace CodeEditor2.Data
         /// <summary>
         /// This is a collection class for holding child Items. It has the functionality of both a dictionary and a list.
         /// </summary>
-        public class ItemList
+        public class ItemList : IEnumerable<Item>
         {
-
-            private List<Item> itemList = new List<Item>();
-            private Dictionary<string, Item> itemDict = new Dictionary<string, Item>();
-
-            public void Add(string key, Item item)
+            private readonly List<Item> itemList = new List<Item>();
+            private readonly Dictionary<string, Item> itemDict = new Dictionary<string, Item>();
+            private readonly object _lock = new object();
+            public void AddOrUpdate(string key, Item item)
             {
-                lock (itemList)
+                lock (_lock)
                 {
-                    if (itemDict.ContainsKey(key)) return;
+                    if (itemDict.ContainsKey(key))
+                    {
+                        itemList[itemList.IndexOf(itemDict[key])] = item;
+                        itemDict[key] = item;
+                        return;
+                    }
                     itemList.Add(item);
                     itemDict.Add(key, item);
                 }
             }
 
-            public void Insert(int index, string key, Item item)
-            {
-                lock (itemList)
-                {
-                    if (itemDict.ContainsKey(key)) return;
-                    itemList.Insert(index, item);
-                    itemDict.Add(key, item);
-                }
-            }
+            //public bool TryInsert(int index, string key, Item item)
+            //{
+            //    lock (_lock)
+            //    {
+            //        if (itemDict.ContainsKey(key)) return false;
+            //        itemList.Insert(index, item);
+            //        itemDict.Add(key, item);
+            //        return true;
+            //    }
+            //}
 
             public int IndexOf(Item item)
             {
-                return itemList.IndexOf(item);
-            }
-
-            public Item this[string key]
-            {
-                get
+                lock (_lock)
                 {
-                    return itemDict[key];
+                    return itemList.IndexOf(item);
                 }
             }
 
-            public Item this[int index]
-            {
-                get
-                {
-                    return itemList[index];
-                }
-            }
+            //public Item this[string key]
+            //{
+            //    get
+            //    {
+            //        return itemDict[key];
+            //    }
+            //}
 
-            public void Remove(string key)
+            //public Item this[int index]
+            //{
+            //    get
+            //    {
+            //        return itemList[index];
+            //    }
+            //}
+
+            public bool TryRemove(string key)
             {
-                lock (itemList)
+                lock (_lock)
                 {
+                    if(!itemDict.ContainsKey(key)) return false;
                     itemList.Remove(itemDict[key]);
                     itemDict.Remove(key);
+                    return true;
                 }
             }
-            public bool ContainsKey(string key)
-            {
-                lock (itemList)
-                {
-                    return itemDict.ContainsKey(key);
-                }
-            }
+            //public bool ContainsKey(string key)
+            //{
+            //    lock (_lock)
+            //    {
+            //        return itemDict.ContainsKey(key);
+            //    }
+            //}
 
-            public bool ContainsValue(Item item)
-            {
-                lock (itemList)
-                {
-                    return itemDict.ContainsValue(item);
-                }
-            }
+            //public bool ContainsValue(Item item)
+            //{
+            //    lock (_lock)
+            //    {
+            //        return itemDict.ContainsValue(item);
+            //    }
+            //}
 
             public bool TryGetValue(string key, out Item? value)
             {
-                lock (itemList)
+                lock (_lock)
                 {
                     return itemDict.TryGetValue(key, out value);
                 }
@@ -337,37 +349,56 @@ namespace CodeEditor2.Data
 
             public void Clear()
             {
-                lock (itemList)
+                lock (_lock)
                 {
                     itemList.Clear();
                     itemDict.Clear();
                 }
             }
 
-            //public Dictionary<string, Item>.KeyCollection Keys
+            //public List<Item> Values
             //{
-            //    get { return itemDict.Keys; }
+            //    get
+            //    {
+            //        List<Item> snapshot;
+            //        lock (_lock)
+            //        {
+            //            // 現在のリストの状態を新しいリストにコピー（スナップショット）
+            //            snapshot = new List<Item>(itemList);
+            //            return snapshot;
+            //        }
+            //    }
             //}
-
-            public List<Item> Values
-            {
-                get
-                {
-                    lock (itemList)
-                    {
-                        return itemList;
-                    }
-                }
-            }
 
             public void Sort(Comparison<Item> comparison)
             {
-                lock (itemList)
+                lock (_lock)
                 {
                     itemList.Sort(comparison);
                 }
             }
 
+            // Enumeratorの実装（スナップショットを返す）
+            public IEnumerator<Item> GetEnumerator()
+            {
+                List<Item> snapshot;
+                lock (_lock)
+                {
+                    // 現在のリストの状態を新しいリストにコピー（スナップショット）
+                    snapshot = new List<Item>(itemList);
+                }
+
+                // コピーしたリストのEnumeratorを返す
+                foreach (var item in snapshot)
+                {
+                    yield return item;
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
         }
 
 
@@ -379,9 +410,10 @@ namespace CodeEditor2.Data
             if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
             {
                 string folderName = relativePath.Substring(0, relativePath.IndexOf(System.IO.Path.DirectorySeparatorChar));
-                if (items.ContainsKey(folderName))
+                if(items.TryGetValue(folderName, out Item? item))
                 {
-                    return items[folderName].GetItem(relativePath.Substring(folderName.Length + 1));
+                    if(item == null) throw new Exception("item is null");
+                    return item.GetItem(relativePath.Substring(folderName.Length + 1));
                 }
                 else
                 {
@@ -390,9 +422,9 @@ namespace CodeEditor2.Data
             }
             else
             {
-                if (items.ContainsKey(relativePath))
+                if(items.TryGetValue(relativePath, out Item? item))
                 {
-                    return items[relativePath];
+                    return item;
                 }
                 else
                 {
@@ -414,17 +446,14 @@ namespace CodeEditor2.Data
 
         protected void findItems(List<Item> result, Func<Item, bool> match, Func<Item, bool> stop, Action<Item>? action)
         {
-            lock (Items)
+            foreach (Item item in items)
             {
-                foreach (Item item in items.Values)
+                if (match(item))
                 {
-                    if (match(item))
-                    {
-                        result.Add(item);
-                        if(action != null) action(item);
-                    }
-                    if (!stop(item)) item.findItems(result, match, stop,action);
+                    result.Add(item);
+                    if(action != null) action(item);
                 }
+                if (!stop(item)) item.findItems(result, match, stop,action);
             }
         }
 

@@ -50,6 +50,7 @@ namespace CodeEditor2.Data
             }
             else
             {
+
                 return await getFileTextAsync(project, relativePath, true);
             }
         }
@@ -178,7 +179,7 @@ namespace CodeEditor2.Data
                     if (System.IO.Directory.Exists(cashePath)) System.IO.Directory.Delete(cashePath);
                 }
                 // フォルダの場合は、子アイテムも削除されたとみなす
-                foreach (var child in folder.Items.Values)
+                foreach (var child in folder.Items)
                 {
                     removeItemAsync(project,child);
                 }
@@ -192,7 +193,7 @@ namespace CodeEditor2.Data
                 // ファイルの場合は、親フォルダの子アイテムからも削除する
                 if (item.Parent != null)
                 {
-                    item.Parent.Items.Remove(item.Name);
+                    item.Parent.Items.TryRemove(item.Name);
                 }
             }
         }
