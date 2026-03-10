@@ -14,9 +14,9 @@ namespace CodeEditor2.Snippets
 
         }
 
-        public override void Apply()
+        public override async Task ApplyAsync()
         {
-            Data.TextFile? file = CodeEditor2.Controller.CodeEditor.GetTextFile();
+            Data.TextFile? file = await CodeEditor2.Controller.CodeEditor.GetTextFileAsync();
             if (file == null) return;
             CodeEditor.CodeDocument? codeDocument = file.CodeDocument;
             if (codeDocument == null) return;

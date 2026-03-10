@@ -39,7 +39,7 @@ public partial class MainWindow : Window
         if (file != null) await file.UpdateAsync();
 
         // update text file if the file is not same as the navigatepanel selected file
-        Data.TextFile? textFile = Controller.CodeEditor.GetTextFile();
+        Data.TextFile? textFile = await Controller.CodeEditor.GetTextFileAsync();
         if(textFile != null && textFile != file)
         {
             await textFile.UpdateAsync();

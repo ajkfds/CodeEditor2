@@ -66,7 +66,6 @@ namespace CodeEditor2.CodeEditor
             TextColors = new ColorHandler(this);
             HighLights = new HIghLightHandler(this);
             Foldings = new FoldingHandler(this);
-            ownerThread = System.Threading.Thread.CurrentThread;
             textDocument.SetOwnerThread(System.Threading.Thread.CurrentThread);
             textDocument.TextChanged += TextDocument_TextChanged;
             textDocument.Changed += TextDocument_Changed;
@@ -92,39 +91,6 @@ namespace CodeEditor2.CodeEditor
 
         public Action<object?, DocumentChangeEventArgs>? Changing = null;
 
-        #region ThreadControl
-
-        System.Threading.Thread? ownerThread = null;
-
-        private void CheckThread()
-        {
-            //if(!HasThread)
-            //{
-            //    System.Diagnostics.Debugger.Break();
-            //}
-        }
-
-        private bool HasThread
-        {
-            get
-            {
-                if (System.Threading.Thread.CurrentThread == ownerThread)
-                {
-                    return true;
-                }
-                return false;
-            }
-        }
-
-        public void LockThreadToUI()
-        {
-            CheckThread();
-            textDocument.SetOwnerThread(Global.UIThread);
-            ownerThread = Global.UIThread;
-        }
-
-        #endregion
-
         #region handle AvaloniaEdit.TextDocument
 
         protected TextDocument textDocument;
@@ -132,7 +98,6 @@ namespace CodeEditor2.CodeEditor
         {
             get
             {
-                CheckThread();
                 return textDocument;
             }
         }
@@ -233,18 +198,6 @@ namespace CodeEditor2.CodeEditor
         public ulong CleanVersion { get; private set; } = 0;
 
 
-        public class History
-        {
-            public History(int index, int length, string changedFrom)
-            {
-                Index = index;
-                Length = length;
-                ChangedFrom = changedFrom;
-            }
-            public readonly int Index;
-            public readonly int Length;
-            public readonly string ChangedFrom;
-        }
 
         public string _tag = "";
 
@@ -252,7 +205,6 @@ namespace CodeEditor2.CodeEditor
         {
             get
             {
-                CheckThread();
                 return textDocument.TextLength;
             }
         }
@@ -367,9 +319,6 @@ namespace CodeEditor2.CodeEditor
         //
 
 
-        public void Undo()
-        {
-        }
 
 
         public void Replace(int index, int replaceLength, byte colorIndex, string text)

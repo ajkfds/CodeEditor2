@@ -209,11 +209,11 @@ namespace CodeEditor2.Views
             clicked = true;
         }
 
-        private void addPositionHistory()
+        private async Task addPositionHistory()
         {
             int? index = _textEditor.TextArea.Caret.Offset;
             if (index == null) return;
-            ITextFile? textFile = Controller.CodeEditor.GetTextFile();
+            ITextFile? textFile = await Controller.CodeEditor.GetTextFileAsync();
             if (textFile == null) return;
             Controller.AddSelectHistory(new TextReference(textFile, (int)index, 0));
         }
@@ -223,7 +223,19 @@ namespace CodeEditor2.Views
         /// </summary>
         int prevCaretLine = 0;
         ulong prevVersion = 0;
-        private void Caret_PositionChanged(object? sender, EventArgs e)
+        private async void Caret_PositionChanged(object? sender, EventArgs e)
+        {
+            try
+            {
+                await Caret_PositionChangedAsync(sender, e);
+            }
+            catch(Exception ex)
+            {
+                CodeEditor2.Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
+            }
+        }
+
+        private async Task Caret_PositionChangedAsync(object? sender, EventArgs e)
         {
             if (skipEvents || CodeDocument == null)
             {
@@ -233,7 +245,7 @@ namespace CodeEditor2.Views
 
             if(clicked && CodeDocument.caretIndex != _textEditor.TextArea.Caret.Offset)
             {
-                addPositionHistory();
+                await addPositionHistory();
             }
             clicked = false;
 
@@ -388,7 +400,7 @@ namespace CodeEditor2.Views
                 await textFile.AcceptParsedDocumentAsync(textFile.ParsedDocument);
             }
             skipEvents = false;
-            Controller.CodeEditor.Refresh();
+            Controller.CodeEditor.PostRefresh();
         }
         private void TextEditor_ContextRequested(object? sender, ContextRequestedEventArgs e)
         {

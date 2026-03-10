@@ -104,7 +104,7 @@ namespace CodeEditor2.Data
             if (oldParsedDocument != null) oldParsedDocument.Dispose();
 
             ParsedDocument = newParsedDocument;
-            PostRefresh();
+            PostUIUpdate();
             return Task.CompletedTask;
         }
         public virtual void Close()
@@ -122,12 +122,11 @@ namespace CodeEditor2.Data
                 return document.IsDirty;
             }
         }
-        public virtual async Task<CodeEditor.CodeDocument> GetCodeDocumentAsync()
+        public virtual Task<CodeEditor.CodeDocument> GetCodeDocumentAsync()
         {
             PostFileCheck();
-//            await FileCheck();
             if (document == null) throw new Exception();
-            return document;
+            return Task.FromResult(document);
         }
         public virtual CodeDocument CodeDocument
         {
@@ -195,16 +194,8 @@ namespace CodeEditor2.Data
         {
             try
             {
-                using (FileStream fs = new FileStream(
-                                AbsolutePath,
-                                FileMode.Create, FileAccess.Write, FileShare.Read,
-                                bufferSize: 4096*32, useAsync: true))
-                {
-                    byte[] encodedText = Encoding.UTF8.GetBytes(text);
-                    await fs.WriteAsync(encodedText, 0, encodedText.Length);
-                    await fs.FlushAsync();
-                    return GetHash(text);
-                }
+                await DataAccess.SaveFileAsync(Project, RelativePath, text);
+                return GetHash(text);
             }
             catch (IOException)
             {
@@ -287,7 +278,7 @@ namespace CodeEditor2.Data
                         document.Clean();
                         loadFileHash = newHash;
                         if (initialLoad) document.ClearHistory();
-                        if (Controller.NavigatePanel.GetSelectedFile() == this && Dispatcher.UIThread.CheckAccess()) Controller.CodeEditor.Refresh();
+                        if (Controller.NavigatePanel.GetSelectedFile() == this && Dispatcher.UIThread.CheckAccess()) Controller.CodeEditor.PostRefresh();
                     }
                     else
                     {
@@ -297,7 +288,7 @@ namespace CodeEditor2.Data
                             document.Clean();
                             loadFileHash = newHash;
                             if (initialLoad) document.ClearHistory();
-                            if (Controller.NavigatePanel.GetSelectedFile() == this && Dispatcher.UIThread.CheckAccess()) Controller.CodeEditor.Refresh();
+                            if (Controller.NavigatePanel.GetSelectedFile() == this && Dispatcher.UIThread.CheckAccess()) Controller.CodeEditor.PostRefresh();
                         });
                     }
                 }
@@ -318,14 +309,14 @@ namespace CodeEditor2.Data
 
         }
 
-        public void PostRefresh()
+        public override void PostUIUpdate()
         {
             Dispatcher.UIThread.Post(
-                () =>
+                async() =>
                 {
-                    if (Controller.CodeEditor.GetTextFile() == this)
+                    if (await Controller.CodeEditor.GetTextFileAsync() == this)
                     {
-                        Controller.CodeEditor.Refresh();
+                        Controller.CodeEditor.PostRefresh();
                         if (ParsedDocument != null) Controller.MessageView.Update(ParsedDocument);
                     }
                     if (NavigatePanelNode != null) NavigatePanelNode.UpdateVisual();
@@ -410,15 +401,6 @@ namespace CodeEditor2.Data
 
         }
 
-        //public virtual void BeforeKeyPressed(KeyPressEventArgs e)
-        //{
-
-        //}
-
-        //public virtual void AfterKeyPressed(System.Windows.Forms.KeyPressEventArgs e)
-        //{
-        //}
-
         // parse this text file hierarchy
         public virtual async Task ParseHierarchyAsync(Action<ITextFile> action)
         {
@@ -447,8 +429,6 @@ namespace CodeEditor2.Data
             if (!textFile.ReparseRequested)
             {
                 await textFile.UpdateAsync();
-                document.LockThreadToUI();
-//                textFile.CodeDocument.LockThreadToUI();
             }
             else
             {

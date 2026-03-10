@@ -127,19 +127,6 @@ namespace CodeEditor2.Data
             }
         }
 
-        public override Task PostUIUpdateAsync()
-        {
-            Task.Run(async () =>
-            {
-                if (NavigatePanelNode != null) await NavigatePanelNode.UpdateAsync();
-                foreach (Item item in Items)
-                {
-                    await item.PostUIUpdateAsync();
-                }
-            });
-            return Task.CompletedTask;
-        }
-
         private async Task updateItems(List<string> absoluteFilePaths,List<string> absoluteFolderPaths)
         {
             firstAccess = false;

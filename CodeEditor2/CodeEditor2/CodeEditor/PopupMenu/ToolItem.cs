@@ -14,9 +14,19 @@ namespace CodeEditor2.CodeEditor.PopupMenu
         }
         string text;
 
-        public virtual void Apply()
+        public async void Apply()
         {
-
+            try
+            {
+                await ApplyAsync();
+            }catch(Exception ex)
+            {
+                CodeEditor2.Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
+            }
+        }
+        public virtual Task ApplyAsync()
+        {
+            return Task.CompletedTask;
         }
 
         public string Text

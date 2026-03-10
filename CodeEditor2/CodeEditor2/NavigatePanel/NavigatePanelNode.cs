@@ -79,9 +79,14 @@ namespace CodeEditor2.NavigatePanel
         /// <summary>
         /// update this node and children
         /// </summary>
-        public virtual Task UpdateAsync()
+        public virtual async Task UpdateAsync()
         {
-            return Task.CompletedTask;
+            if(!Dispatcher.UIThread.CheckAccess())
+            {
+                await Dispatcher.UIThread.InvokeAsync(UpdateAsync);
+                return;
+            }
+            return;
         }
 
         public virtual void UpdateVisual()

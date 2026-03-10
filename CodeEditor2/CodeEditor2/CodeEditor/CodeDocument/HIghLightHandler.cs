@@ -162,7 +162,7 @@ namespace CodeEditor2.CodeEditor
             highlightStarts.Clear();
             highlightLasts.Clear();
 
-            Controller.CodeEditor.Refresh();
+            Controller.CodeEditor.PostRefresh();
         }
 
         public void AppendHighlight(int highlightStart, int highlightLast)
@@ -174,12 +174,12 @@ namespace CodeEditor2.CodeEditor
             highlightStarts.Add(highlightStart);
             highlightLasts.Add(highlightLast);
 
-            Controller.CodeEditor.Refresh();
+            Controller.CodeEditor.PostRefresh();
         }
 
         public void ReDrawHighlight()
         {
-            Controller.CodeEditor.Refresh();
+            Controller.CodeEditor.PostRefresh();
         }
     }
 }

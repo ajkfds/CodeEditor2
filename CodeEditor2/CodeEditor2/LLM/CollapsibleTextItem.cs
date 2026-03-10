@@ -48,7 +48,6 @@ namespace CodeEditor2.LLM
                     Grid.SetColumn(image, column);
                     grid.Children.Add(image);
                     column++;
-
                 }
             }
 

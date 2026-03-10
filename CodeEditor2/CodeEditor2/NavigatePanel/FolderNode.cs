@@ -35,7 +35,8 @@ namespace CodeEditor2.NavigatePanel
         {
             if (!Dispatcher.UIThread.CheckAccess())
             {
-                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+                Dispatcher.UIThread.Invoke(() => { UpdateVisual(); });
+                return;
             }
 
             List<AjkAvaloniaLibs.Libs.Icons.OverrideIcon> overrideIcons = new List<AjkAvaloniaLibs.Libs.Icons.OverrideIcon>();
@@ -77,7 +78,25 @@ namespace CodeEditor2.NavigatePanel
 
         public override async Task UpdateAsync()
         {
-            await Dispatcher.UIThread.InvokeAsync(updateFolder);
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.Post(
+                        new Action(async() =>
+                        {
+                            try
+                            {
+                                await updateFolder();
+                            }
+                            catch (Exception ex)
+                            {
+                                CodeEditor2.Controller.AppendLog("#Exception " + ex.Message, Avalonia.Media.Colors.Red);
+                            }
+                        })
+                    );
+                return;
+            }
+            await updateFolder();
+            return;
         }
 
 

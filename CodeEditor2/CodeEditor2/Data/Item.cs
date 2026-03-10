@@ -297,22 +297,6 @@ namespace CodeEditor2.Data
                 }
             }
 
-            //public Item this[string key]
-            //{
-            //    get
-            //    {
-            //        return itemDict[key];
-            //    }
-            //}
-
-            //public Item this[int index]
-            //{
-            //    get
-            //    {
-            //        return itemList[index];
-            //    }
-            //}
-
             public bool TryRemove(string key)
             {
                 lock (_lock)
@@ -323,22 +307,6 @@ namespace CodeEditor2.Data
                     return true;
                 }
             }
-            //public bool ContainsKey(string key)
-            //{
-            //    lock (_lock)
-            //    {
-            //        return itemDict.ContainsKey(key);
-            //    }
-            //}
-
-            //public bool ContainsValue(Item item)
-            //{
-            //    lock (_lock)
-            //    {
-            //        return itemDict.ContainsValue(item);
-            //    }
-            //}
-
             public bool TryGetValue(string key, out Item? value)
             {
                 lock (_lock)
@@ -356,20 +324,6 @@ namespace CodeEditor2.Data
                 }
             }
 
-            //public List<Item> Values
-            //{
-            //    get
-            //    {
-            //        List<Item> snapshot;
-            //        lock (_lock)
-            //        {
-            //            // 現在のリストの状態を新しいリストにコピー（スナップショット）
-            //            snapshot = new List<Item>(itemList);
-            //            return snapshot;
-            //        }
-            //    }
-            //}
-
             public void Sort(Comparison<Item> comparison)
             {
                 lock (_lock)
@@ -385,7 +339,7 @@ namespace CodeEditor2.Data
                 lock (_lock)
                 {
                     // 現在のリストの状態を新しいリストにコピー（スナップショット）
-                    snapshot = new List<Item>(itemList);
+                    snapshot = itemList.ToList();
                 }
 
                 // コピーしたリストのEnumeratorを返す
@@ -475,13 +429,9 @@ namespace CodeEditor2.Data
             return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// post UI update, such as updating navigate panel node visual, or open document in editor
-        /// </summary>
-        /// <returns></returns>
-        public virtual System.Threading.Tasks.Task PostUIUpdateAsync()
+        public virtual void PostUIUpdate()
         {
-            return Task.CompletedTask;
+
         }
 
         public static Action<ContextMenu>? CustomizeItemEditorContextMenu;

@@ -72,9 +72,9 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         private byte colorIndex;
         private Color Color;
 
-        public override void Apply()
+        public override Task ApplyAsync()
         {
-            if (codeDocument == null) return;
+            if (codeDocument == null) return Task.CompletedTask;
             int prevIndex = codeDocument.CaretIndex;
             if (codeDocument.GetLineStartIndex(codeDocument.GetLineAt(prevIndex)) != prevIndex && prevIndex != 0)
             {
@@ -100,6 +100,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 Controller.CodeEditor.SetCaretPosition(headIndex + Text.Length);
             }
             Global.codeView.codeViewPopupMenu.AfterAutoCompleteHandled();
+            return Task.CompletedTask;
         }
 
         public override PopupMenuItem CreatePopupMenuItem()

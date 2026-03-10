@@ -37,13 +37,6 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        public void UnlockDocument()
-        {
-            foreach(var doc in LockedDocument)
-            {
-                doc.LockThreadToUI();
-            }
-        }
 
         [JsonIgnore]
         public List<CodeDocument> LockedDocument = new List<CodeDocument>();

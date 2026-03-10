@@ -20,15 +20,20 @@ namespace CodeEditor2
             }
             public static async Task SetTextFileAsync(Data.TextFile? textFile, bool parseEntry)
             {
+                if (!Dispatcher.UIThread.CheckAccess())
+                {
+                    await Dispatcher.UIThread.InvokeAsync(async() => {
+                        await SetTextFileAsync(textFile, parseEntry);
+                        return;
+                    });
+                }
                 if (textFile == null)
                 {
                     await Global.codeView.SetTextFileAsync(null,false);
-                    //Global.mainForm.mainTab.TabPages[0].Text = "-";
                 }
                 else
                 {
                     await Global.codeView.SetTextFileAsync(textFile, parseEntry);
-                    //Global.mainForm.mainTab.TabPages[0].Text = textFile.Name;
                 }
             }
 
@@ -43,7 +48,13 @@ namespace CodeEditor2
 
             public static void SetCaretPosition(int index)
             {
-                if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
+                if (!Dispatcher.UIThread.CheckAccess())
+                {
+                    Dispatcher.UIThread.Invoke(() => {
+                        SetCaretPosition(index);
+                        return;
+                    });
+                }
                 Global.codeView.SetCaretPosition(index);
             }
 
@@ -116,20 +127,29 @@ namespace CodeEditor2
                 if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
                 Global.codeView.codeViewPopupMenu.UpdateAutoComplete(candidates);
             }
-            //public static void ForceOpenAutoComplete(List<AutocompleteItem> autocompleteItems)
-            //{
-            //    Global.codeView.ForceOpenAutoComplete(autocompleteItems);
-            //}
 
             public static void RequestReparse()
             {
+                if (!Dispatcher.UIThread.CheckAccess())
+                {
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        return Global.codeView.TextFile;
+                    });
+                }
                 if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
                 Global.codeView.RequestReparse();
             }
 
-            public static Data.TextFile? GetTextFile()
+            public static async Task<Data.TextFile?> GetTextFileAsync()
             {
-                if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
+                if (!Dispatcher.UIThread.CheckAccess())
+                {
+                    await Dispatcher.UIThread.InvokeAsync(()=>
+                    {
+                        return Global.codeView.TextFile; 
+                    });
+                }
                 return Global.codeView.TextFile;
             }
 
@@ -198,9 +218,12 @@ namespace CodeEditor2
                 });
             }
 
-            public static void ClearHighlight()
+            public static void PostClearHighlight()
             {
-                if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
+                if (!Dispatcher.UIThread.CheckAccess()) Dispatcher.UIThread.Post(() => {
+                    PostClearHighlight();
+                    return;
+                });
                 if (Global.codeView.CodeDocument == null) return;
                 Global.codeView.CodeDocument.HighLights.ClearHighlight();
             }
@@ -208,7 +231,7 @@ namespace CodeEditor2
             {
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    ClearHighlight();
+                    PostClearHighlight();
                 });
             }
 
@@ -216,10 +239,10 @@ namespace CodeEditor2
             {
                 Dispatcher.UIThread.Invoke(Global.codeView.codeViewParser.EntryParse);
             }
-            public static void Refresh()
+            public static void PostRefresh()
             {
-                if (!Dispatcher.UIThread.CheckAccess()) Dispatcher.UIThread.InvokeAsync(() => {
-                    Refresh();
+                if (!Dispatcher.UIThread.CheckAccess()) Dispatcher.UIThread.Post(() => {
+                    PostRefresh();
                     return;
                 });
 
@@ -227,10 +250,10 @@ namespace CodeEditor2
                 Global.codeView.UpdateMarks();
             }
 
-            public static void ScrollToCaret()
+            public static void PostScrollToCaret()
             {
-                if (!Dispatcher.UIThread.CheckAccess()) Dispatcher.UIThread.InvokeAsync(() => {
-                    ScrollToCaret();
+                if (!Dispatcher.UIThread.CheckAccess()) Dispatcher.UIThread.Post(() => {
+                    PostScrollToCaret();
                     return;
                 });
                 Global.codeView.ScrollToCaret();

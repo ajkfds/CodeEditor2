@@ -26,12 +26,35 @@ namespace CodeEditor2.NavigatePanel
         {
             get { return Item as Data.TextFile; }
         }
+        public override Task UpdateAsync()
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.Post(
+                        new Action(() =>
+                        {
+                            try
+                            {
+                                UpdateVisual();
+                            }
+                            catch (Exception ex)
+                            {
+                                CodeEditor2.Controller.AppendLog("#Exception " + ex.Message, Avalonia.Media.Colors.Red);
+                            }
+                        })
+                    );
+                return Task.CompletedTask;
+            }
+            UpdateVisual();
+            return Task.CompletedTask;
+        }
 
         public override void UpdateVisual()
         {
             if (!Dispatcher.UIThread.CheckAccess())
             {
-                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+                Dispatcher.UIThread.Invoke(() => { UpdateVisual(); });
+                return;
             }
 
             string text = "null";
