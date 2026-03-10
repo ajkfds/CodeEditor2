@@ -59,23 +59,23 @@ namespace CodeEditor2.Tools
             return false;
         }
 
-        // 繧ｻ繧ｭ繝･繝ｪ繝・ぅ險ｭ螳夲ｼ・026蟷ｴ迴ｾ蝨ｨ縺ｮ謗ｨ螂ｨ蛟､・・
-        private const int Iterations = 600000; // 險育ｮ苓ｲ闕ｷ繧剃ｸ翫￡縺ｦ邱丞ｽ薙◆繧頑判謦・ｒ髦ｲ縺・
-        private const int KeySizeByte = 32;    // 256繝薙ャ繝・(AES-256逕ｨ)
-        private const int SaltSizeByte = 16;   // 128繝薙ャ繝井ｻ･荳翫・繧ｽ繝ｫ繝・
+        // セキュリティ設定（2026年現在の推奨値）
+        private const int Iterations = 600000; // 計算負荷を上げて総当たり攻撃を防ぐ
+        private const int KeySizeByte = 32;    // 256ビット (AES-256用)
+        private const int SaltSizeByte = 16;   // 128ビット以上のソルト
 
         private static readonly HashAlgorithmName HashAlgorithm = HashAlgorithmName.SHA256;
 
         /// <summary>
-        /// 繝代せ繝ｯ繝ｼ繝峨ｒ繝上ャ繧ｷ繝･蛹悶☆繧具ｼ井ｿ晏ｭ倡畑・・
+        /// パスワードをハッシュ化する（保存用）
         /// </summary>
-        /// <returns>繧ｽ繝ｫ繝医→繝上ャ繧ｷ繝･繧堤ｵ仙粋縺励◆譁・ｭ怜・</returns>
+        /// <returns>ソルトとハッシュを結合した文字列</returns>
         public static void HashPassword(string password,out string passwordHash,out string passwordSalt,out string derivedSalt)
         {
-            // 1. 繝ｩ繝ｳ繝繝縺ｪ繧ｽ繝ｫ繝医ｒ逕滓・
+            // 1. ランダムなソルトを生成
             byte[] salt = RandomNumberGenerator.GetBytes(SaltSizeByte);
 
-            // 2. 繝代せ繝ｯ繝ｼ繝峨ｒ繝上ャ繧ｷ繝･蛹・
+            // 2. パスワードをハッシュ化
             byte[] hash = Rfc2898DeriveBytes.Pbkdf2(
                 Encoding.UTF8.GetBytes(password),
                 salt,
@@ -98,17 +98,17 @@ namespace CodeEditor2.Tools
         {
             derivedKey = null;
 
-            // 繝代せ繝ｯ繝ｼ繝峨ｒ荳譎ら噪縺ｪ繝舌う繝磯・蛻励↓螟画鋤
+            // パスワードを一時的なバイト配列に変換
             byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
 
             try
             {
-                // 1. 菫晏ｭ倥＆繧後◆繝・・繧ｿ縺ｮ繝・さ繝ｼ繝・
+                // 1. 保存されたデータのデコード
                 byte[] expectedHash = Convert.FromBase64String(passwordHash);
                 byte[] salt = Convert.FromBase64String(passwordSalt);
                 byte[] dSalt = Convert.FromBase64String(derivedSalt);
 
-                // 2. 辣ｧ蜷育畑繝上ャ繧ｷ繝･縺ｮ險育ｮ・(PBKDF2)
+                // 2. 照合用ハッシュの計算 (PBKDF2)
                 byte[] actualHash = Rfc2898DeriveBytes.Pbkdf2(
                     passwordBytes,
                     salt,
@@ -116,14 +116,14 @@ namespace CodeEditor2.Tools
                     HashAlgorithm,
                     KeySizeByte);
 
-                // 3. 螳牙・縺ｪ豈碑ｼ・
+                // 3. 安全な比較
                 if (!CryptographicOperations.FixedTimeEquals(actualHash, expectedHash))
                 {
                     return false;
                 }
 
-                // 4. 證怜捷蛹也畑縺ｮ骰ｵ繧呈ｴｾ逕・
-                // 譁ｰ縺励＞ .NET 縺ｧ縺ｯ Rfc2898DeriveBytes.Pbkdf2 (static) 繧剃ｽｿ縺・婿縺檎ｰ｡貎斐〒縺・
+                // 4. 暗号化用の鍵を派生
+                // 新しい .NET では Rfc2898DeriveBytes.Pbkdf2 (static) を使う方が簡潔です
                 derivedKey = Rfc2898DeriveBytes.Pbkdf2(
                     passwordBytes,
                     dSalt,
@@ -135,7 +135,7 @@ namespace CodeEditor2.Tools
             }
             finally
             {
-                // 繝｡繝｢繝ｪ荳翫・逕溘ヱ繧ｹ繝ｯ繝ｼ繝会ｼ医ヰ繧､繝磯・蛻暦ｼ峨ｒ遒ｺ螳溘↓豸亥悉
+                // メモリ上の生パスワード（バイト配列）を確実に消去
                 CryptographicOperations.ZeroMemory(passwordBytes);
             }
         }

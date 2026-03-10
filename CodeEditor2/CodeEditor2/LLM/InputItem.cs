@@ -57,8 +57,8 @@ namespace CodeEditor2.LLM
             {
                 if (e.Key == Avalonia.Input.Key.Left || e.Key == Avalonia.Input.Key.Right)
                 {
-                    // 繝・く繧ｹ繝医・繝・け繧ｹ蜀・〒縺ｮ繧ｫ繝ｼ繧ｽ繝ｫ遘ｻ蜍輔・縺ｿ繧定ｨｱ螳ｹ縺励・
-                    // 隕ｪ縺ｮListBox縺ｸ縺ｮ繧､繝吶Φ繝井ｼ晄眺・医ヵ繧ｩ繝ｼ繧ｫ繧ｹ遘ｻ蜍包ｼ峨ｒ豁｢繧√ｋ
+                    // テキストボックス内でのカーソル移動のみを許容し、
+                    // 親のListBoxへのイベント伝播（フォーカス移動）を止める
                     e.Handled = true;
                 }
             };

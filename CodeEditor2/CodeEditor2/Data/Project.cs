@@ -307,12 +307,12 @@ namespace CodeEditor2.Data
 
             string filePath = e.FullPath;
 
-            // 繝代せ繧偵く繝ｼ縺ｫ縺励※繧ｿ繧､繝槭・繧貞叙蠕励∪縺溘・譁ｰ隕丈ｽ懈・
+            // パスをキーにしてタイマーを取得または新規作成
             _timers.AddOrUpdate(
                 filePath,
-                // 譁ｰ隕丈ｽ懈・譎ゑｼ壹ち繧､繝槭・繧偵そ繝・ヨ
+                // 新規作成時：タイマーをセット
                 path => new System.Threading.Timer(FileChanged, path, _debounceMilliseconds, Timeout.Infinite),
-                // 譌｢蟄俶凾・壽凾髢薙ｒ繝ｪ繧ｻ繝・ヨ・医ョ繝舌え繝ｳ繧ｹ・・
+                // 既存時：時間をリセット（デバウンス）
                 (path, existingTimer) =>
                 {
                     existingTimer.Change(_debounceMilliseconds, Timeout.Infinite);

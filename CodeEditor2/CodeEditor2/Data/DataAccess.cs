@@ -63,10 +63,10 @@ namespace CodeEditor2.Data
                 FileAccess.Read,
                 FileShare.Read,
                 bufferSize: 4096 * 32,
-                useAsync: true)) // 縺ｾ縺溘・ FileOptions.Asynchronous
+                useAsync: true)) // または FileOptions.Asynchronous
             {
                 using var sr = new StreamReader(fs, Encoding.UTF8, true);
-                // ReadAsync 縺ｧ髱槫酔譛溯ｪｭ縺ｿ霎ｼ縺ｿ
+                // ReadAsync で非同期読み込み
                 text = await sr.ReadToEndAsync();
             }
 
@@ -178,7 +178,8 @@ namespace CodeEditor2.Data
                     string cashePath = project.GetCahsePath(item.RelativePath);
                     if (System.IO.Directory.Exists(cashePath)) System.IO.Directory.Delete(cashePath);
                 }
-                // 繝輔か繝ｫ繝縺ｮ蝣ｴ蜷医・縲∝ｭ舌い繧､繝・Β繧ょ炎髯､縺輔ｌ縺溘→縺ｿ縺ｪ縺・                foreach (var child in folder.Items)
+                // フォルダの場合は、子アイテムも削除されたとみなす
+                foreach (var child in folder.Items)
                 {
                     removeItemAsync(project,child);
                 }
@@ -189,7 +190,7 @@ namespace CodeEditor2.Data
                     string cashePath = project.GetCahsePath(item.RelativePath);
                     if (System.IO.File.Exists(cashePath)) System.IO.File.Delete(cashePath);
                 }
-                // 繝輔ぃ繧､繝ｫ縺ｮ蝣ｴ蜷医・縲∬ｦｪ繝輔か繝ｫ繝縺ｮ蟄舌い繧､繝・Β縺九ｉ繧ょ炎髯､縺吶ｋ
+                // ファイルの場合は、親フォルダの子アイテムからも削除する
                 if (item.Parent != null)
                 {
                     item.Parent.Items.TryRemove(item.Name);
@@ -275,7 +276,8 @@ namespace CodeEditor2.Data
             var di = new DirectoryInfo(project.GetAbsolutePath(relativePath));
             var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = true };
 
-            // 蛻玲嫌閾ｪ菴薙・蜷梧悄蜃ｦ逅・□縺後ゝask.Run蜀・〒蝗槭☆縺薙→縺ｧ髱槫酔譛溘せ繝医Μ繝ｼ繝蛹・            var infoList = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
+            // 列挙自体は同期処理だが、Task.Run内で回すことで非同期ストリーム化
+            var infoList = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
 
             foreach (var info in infoList)
             {
@@ -293,27 +295,30 @@ namespace CodeEditor2.Data
 
         // --------------------------------------------------------------------------------------------------
 
-        // 證怜捷蛹悶↓菴ｿ逕ｨ縺吶ｋ蜿榊ｾｩ蝗樊焚・亥､壹＞縺ｻ縺ｩ螳牙・縺ｧ縺吶′蜃ｦ逅・・驥阪￥縺ｪ繧翫∪縺呻ｼ・        private const int Iterations = 100000;
-        // 繧ｭ繝ｼ縺ｮ繧ｵ繧､繧ｺ (AES-256)
+        // 暗号化に使用する反復回数（多いほど安全ですが処理は重くなります）
+        private const int Iterations = 100000;
+        // キーのサイズ (AES-256)
         private const int KeySize = 256;
 
         /// <summary>
-        /// 譁・ｭ怜・繧呈囓蜿ｷ蛹悶＠縺ｦ繝輔ぃ繧､繝ｫ縺ｫ菫晏ｭ倥☆繧・        /// </summary>
+        /// 文字列を暗号化してファイルに保存する
+        /// </summary>
         private static async Task EncryptToFile(string content, string filePath, byte[] fileEncriptkey)
         {
-            // 1. 繧ｽ繝ｫ繝茨ｼ医Λ繝ｳ繝繝縺ｪ蛟､・峨ｒ逕滓・
+            // 1. ソルト（ランダムな値）を生成
             byte[] salt = RandomNumberGenerator.GetBytes(16);
 
-            // 2. 繝代せ繝ｯ繝ｼ繝峨→繧ｽ繝ｫ繝医°繧蛾嵯繧呈ｴｾ逕溘＆縺帙ｋ
+            // 2. パスワードとソルトから鍵を派生させる
             using var deriveBytes = new Rfc2898DeriveBytes(fileEncriptkey, salt, Iterations, HashAlgorithmName.SHA256);
             byte[] key = deriveBytes.GetBytes(KeySize / 8);
 
             using var aes = Aes.Create();
             aes.Key = key;
-            // IV・亥・譛溷喧繝吶け繝医Ν・峨ｒ閾ｪ蜍慕函謌・            aes.GenerateIV();
+            // IV（初期化ベクトル）を自動生成
+            aes.GenerateIV();
 
             using FileStream fs = new FileStream(filePath, FileMode.Create);
-            // 蠕後〒蠕ｩ蜿ｷ縺吶ｋ縺溘ａ縺ｫ縲√た繝ｫ繝医→IV繧偵ヵ繧｡繧､繝ｫ縺ｮ蜈磯ｭ縺ｫ譖ｸ縺崎ｾｼ繧
+            // 後で復号するために、ソルトとIVをファイルの先頭に書き込む
             fs.Write(salt, 0, salt.Length);
             fs.Write(aes.IV, 0, aes.IV.Length);
 
@@ -328,23 +333,27 @@ namespace CodeEditor2.Data
 
 
         /// <summary>
-        /// 證怜捷蛹悶＆繧後◆繝輔ぃ繧､繝ｫ繧定ｪｭ縺ｿ霎ｼ繧薙〒蠕ｩ蜿ｷ縺吶ｋ
+        /// 暗号化されたファイルを読み込んで復号する
         /// </summary>
         private static async Task<string> DecryptFromFile(string filePath, byte[] fileEncriptkey)
         {
-            // FileShare.ReadWrite 繧呈欠螳壹☆繧九％縺ｨ縺ｧ縲∽ｻ悶・繝ｭ繧ｻ繧ｹ縺梧嶌縺崎ｾｼ縺ｿ荳ｭ縺ｧ繧りｪｭ縺ｿ蜿悶ｊ蜿ｯ閭ｽ縺ｫ縺ｪ繧翫∪縺・            using FileStream fs = new FileStream(
+            // FileShare.ReadWrite を指定することで、他プロセスが書き込み中でも読み取り可能になります
+            using FileStream fs = new FileStream(
                 filePath,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite);
 
-            // 1. 繝輔ぃ繧､繝ｫ縺九ｉ繧ｽ繝ｫ繝医ｒ隱ｭ縺ｿ蜃ｺ縺・            byte[] salt = new byte[16];
-            await fs.ReadAsync(salt, 0, salt.Length); // 縺､縺・〒縺ｫ髱槫酔譛溘Γ繧ｽ繝・ラ縺ｫ菫ｮ豁｣
+            // 1. ファイルからソルトを読み出す
+            byte[] salt = new byte[16];
+            await fs.ReadAsync(salt, 0, salt.Length); // ついでに非同期メソッドに修正
 
-            // 2. 繝輔ぃ繧､繝ｫ縺九ｉIV繧定ｪｭ縺ｿ蜃ｺ縺・            byte[] iv = new byte[16];
+            // 2. ファイルからIVを読み出す
+            byte[] iv = new byte[16];
             await fs.ReadAsync(iv, 0, iv.Length);
 
-            // 3. 繝代せ繝ｯ繝ｼ繝峨→繧ｽ繝ｫ繝医°繧牙酔縺倬嵯繧堤函謌舌☆繧・            using var deriveBytes = new Rfc2898DeriveBytes(fileEncriptkey, salt, Iterations, HashAlgorithmName.SHA256);
+            // 3. パスワードとソルトから同じ鍵を生成する
+            using var deriveBytes = new Rfc2898DeriveBytes(fileEncriptkey, salt, Iterations, HashAlgorithmName.SHA256);
             byte[] key = deriveBytes.GetBytes(KeySize / 8);
 
             using var aes = Aes.Create();

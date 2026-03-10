@@ -43,7 +43,7 @@ namespace CodeEditor2.LLM.Tools
             """;
 
 
-        // 繧ｨ繝ｼ繧ｸ繧ｧ繝ｳ繝医′豺ｷ荵ｱ縺励↑縺・ｈ縺・・壼ｸｸ辟｡隕悶☆縺ｹ縺阪ョ繧｣繝ｬ繧ｯ繝医Μ
+        // エージェントが混乱しないよう、通常無視すべきディレクトリ
         private static readonly string[] ExcludedDirectories = { ".git", "node_modules", "bin", "obj", ".vs" };
 
         [Description("""
@@ -60,7 +60,7 @@ namespace CodeEditor2.LLM.Tools
             {
                 if (project == null) return "Failed to execute tool. Cannot get current project.";
 
-                // 1. 繝代せ縺ｮ螳牙・諤ｧ繧堤｢ｺ隱・
+                // 1. パスの安全性を確認
                 string targetPath = project.GetAbsolutePath(path);
 
                 if (!targetPath.StartsWith(project.RootPath, StringComparison.OrdinalIgnoreCase))
@@ -77,7 +77,7 @@ namespace CodeEditor2.LLM.Tools
                 var sb = new StringBuilder();
                 sb.AppendLine($"Listing files in '{path}':");
 
-                // 2. 繝輔ぃ繧､繝ｫ縺ｨ繝・ぅ繝ｬ繧ｯ繝医Μ縺ｮ蜿門ｾ・
+                // 2. ファイルとディレクトリの取得
                 var options = new EnumerationOptions
                 {
                     RecurseSubdirectories = isRecursive,
@@ -85,13 +85,13 @@ namespace CodeEditor2.LLM.Tools
                     IgnoreInaccessible = true
                 };
 
-                // 繝輔ぅ繝ｫ繧ｿ繝ｪ繝ｳ繧ｰ縺励↑縺後ｉ繝ｪ繧ｹ繝医ｒ菴懈・
+                // フィルタリングしながらリストを作成
                 var entries = Directory.EnumerateFileSystemEntries(targetPath, "*", options)
                     .Where(entry => !ExcludedDirectories.Any(ex => entry.Contains(Path.DirectorySeparatorChar + ex + Path.DirectorySeparatorChar) || entry.EndsWith(Path.DirectorySeparatorChar + ex)));
 
                 foreach (var entry in entries)
                 {
-                    // 繝ｫ繝ｼ繝医ョ繧｣繝ｬ繧ｯ繝医Μ縺九ｉ縺ｮ逶ｸ蟇ｾ繝代せ縺ｫ螟画鋤縺励※陦ｨ遉ｺ
+                    // ルートディレクトリからの相対パスに変換して表示
                     string relativePath = Path.GetRelativePath(project.RootPath, entry);
                     bool isDir = Directory.Exists(entry);
                     sb.AppendLine($"{(isDir ? "[DIR] " : "[FILE]")} {relativePath}");

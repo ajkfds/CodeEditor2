@@ -78,7 +78,8 @@ namespace CodeEditor2.LLM.Tools
         [Description("""
             Request to replace sections of content in an existing file using SEARCH/REPLACE blocks that define exact changes to specific parts of the file. 
             This tool should be used when you need to make targeted changes to specific parts of a file.
-            譖ｴ譁ｰ縺ｯ縺ｪ繧九∋縺冗ｴｰ蛻・喧縺励∬､・焚蝗槭↓蛻・￠縺ｦ譖ｴ譁ｰ縺吶ｋ縺薙→縲・            """)]
+            更新はなるべく細分化し、複数回に分けて更新すること。
+            """)]
         public async Task<string> Run(
         [Description("The path of the file to modify (relative to the project root directory")]
         string path,
@@ -118,7 +119,7 @@ namespace CodeEditor2.LLM.Tools
             {
                 if (project == null) return "Failed to execute tool.No project selected.";
 
-                // 1. 螳牙・縺ｪ繝代せ縺ｮ隗｣豎ｺ
+                // 1. 安全なパスの解決
                 string fullPath = project.GetAbsolutePath(path);
                 if (!fullPath.StartsWith(project.RootPath, StringComparison.OrdinalIgnoreCase))
                     return "Error: Permission denied.";
@@ -126,12 +127,14 @@ namespace CodeEditor2.LLM.Tools
                 if (!System.IO.File.Exists(fullPath))
                     return $"Error: File not found at '{path}'.";
 
-                // 2. 繝輔ぃ繧､繝ｫ蜀・ｮｹ縺ｮ隱ｭ縺ｿ霎ｼ縺ｿ・域隼陦後さ繝ｼ繝峨ｒ豁｣隕丞喧縺励※謇ｱ縺・・縺後さ繝・ｼ・                string fileContent = System.IO.File.ReadAllText(fullPath).Replace("\r\n", "\n");
+                // 2. ファイル内容の読み込み（改行コードを正規化して扱うのがコツ）
+                string fileContent = System.IO.File.ReadAllText(fullPath).Replace("\r\n", "\n");
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // 3. SEARCH/REPLACE 繝悶Ο繝・け縺ｮ繝代・繧ｹ
-                // 豁｣隕剰｡ｨ迴ｾ縺ｧ繝悶Ο繝・け繧呈歓蜃ｺ縺励∪縺・                var blockRegex = new Regex(@"------- SEARCH\r?\n(.*?)\r?\n=======\r?\n(.*?)\r?\n\+\+\+\+\+\+\+ REPLACE", RegexOptions.Singleline);
+                // 3. SEARCH/REPLACE ブロックのパース
+                // 正規表現でブロックを抽出します
+                var blockRegex = new Regex(@"------- SEARCH\r?\n(.*?)\r?\n=======\r?\n(.*?)\r?\n\+\+\+\+\+\+\+ REPLACE", RegexOptions.Singleline);
                 var matches = blockRegex.Matches(diff.Replace("\r\n", "\n"));
 
                 if (matches.Count == 0)
@@ -144,17 +147,20 @@ namespace CodeEditor2.LLM.Tools
                     string searchContent = match.Groups[1].Value;
                     string replaceContent = match.Groups[2].Value;
 
-                    // 4. 蜴ｳ蟇・ｸ閾ｴ縺ｮ繝√ぉ繝・け
-                    // 豕ｨ諢・ LLM縺ｯ譎ゅ・隼陦後さ繝ｼ繝峨ｒ豺ｷ蜷後☆繧九◆繧√《tring.Replace繧定ｩｦ縺ｿ繧句燕縺ｫ蟄伜惠繧堤｢ｺ隱・                    if (!updatedContent.Contains(searchContent))
+                    // 4. 厳密一致のチェック
+                    // 注意: LLMは時々改行コードを混同するため、string.Replaceを試みる前に存在を確認
+                    if (!updatedContent.Contains(searchContent))
                     {
                         return $"Error: Could not find the EXACT original content in '{path}'. Make sure whitespace and indentation match perfectly.";
                     }
 
-                    // 譛蛻昴・1邂・園縺ｮ縺ｿ鄂ｮ謠幢ｼ域欠遉ｺ縺ｮ繝ｫ繝ｼ繝ｫ騾壹ｊ・・                    int index = updatedContent.IndexOf(searchContent);
+                    // 最初の1箇所のみ置換（指示のルール通り）
+                    int index = updatedContent.IndexOf(searchContent);
                     updatedContent = updatedContent.Remove(index, searchContent.Length).Insert(index, replaceContent);
                 }
 
-                // 5. 菫晏ｭ・                System.IO.File.WriteAllText(fullPath, updatedContent);
+                // 5. 保存
+                System.IO.File.WriteAllText(fullPath, updatedContent);
 
                 await Task.Delay(0);
                 return $"Success: Applied {matches.Count} change(s) to '{path}'.";
@@ -164,7 +170,10 @@ namespace CodeEditor2.LLM.Tools
                 return $"Error: {ex.Message}";
             }
             /*
-            謾ｹ陦後さ繝ｼ繝峨・鄂: LLM縺檎函謌舌☆繧・\n 縺ｨ縲仝indows荳翫・繝輔ぃ繧､繝ｫ縺ｮ \r\n 縺御ｸ閾ｴ縺帙★繝槭ャ繝√Φ繧ｰ縺ｫ螟ｱ謨励☆繧九％縺ｨ縺後ｈ縺上≠繧翫∪縺吶・            繧医ｊ蝣・欧縺ｫ縺吶ｋ縺ｪ繧峨《earchContent 縺ｨ fileContent 縺ｮ荳｡譁ｹ縺九ｉ \r 繧帝勁蜴ｻ縺励※豈碑ｼ・☆繧九°縲´LM縺ｫ縲悟ｸｸ縺ｫLF・・n・峨〒蜃ｺ蜉帙○繧医阪→繧ｷ繧ｹ繝・Β繝励Ο繝ｳ繝励ヨ縺ｧ蠕ｹ蠎輔＆縺帙ｋ縺ｮ縺悟ｮ夂浹縺ｧ縺吶・            繧､繝ｳ繝・Φ繝医・諢溷ｺｦ: LLM縺ｯ譎ゅ・ち繝悶→繧ｹ繝壹・繧ｹ繧帝俣驕輔∴縺ｾ縺吶ゅｂ縺励・繝・メ繝ｳ繧ｰ螟ｱ謨励′螟夂匱縺吶ｋ蝣ｴ蜷医・縲《tring.Contains 縺ｮ莉｣繧上ｊ縺ｫ縲檎ｩｺ逋ｽ縺ｮ蟾ｮ逡ｰ繧堤┌隕悶☆繧区ｭ｣隕剰｡ｨ迴ｾ縲阪ｒ蜍慕噪縺ｫ逕滓・縺励※繝槭ャ繝√Φ繧ｰ縺輔○繧区焔豕輔ｂ縺ゅｊ縺ｾ縺吶・            繝悶Ο繝・け縺ｮ鬆・ｺ・ 蠑墓焚縺ｮ隱ｬ譏弱↓縺ゅｋ騾壹ｊ縲∬､・焚縺ｮ鄂ｮ謠帙′縺ゅｋ蝣ｴ蜷医・縲後ヵ繧｡繧､繝ｫ縺ｮ蜈磯ｭ縺九ｉ鬆・↓縲榊・逅・＠縺ｪ縺・→縲∫ｽｮ謠帛ｾ後・繧､繝ｳ繝・ャ繧ｯ繧ｹ縺後ぜ繝ｬ縺ｦ莠域悄縺帙〓蝣ｴ謇繧呈嶌縺肴鋤縺医ｋ繝ｪ繧ｹ繧ｯ縺後≠繧翫∪縺吶・            
+            改行コードの罠: LLMが生成する \n と、Windows上のファイルの \r\n が一致せずマッチングに失敗することがよくあります。
+            より堅牢にするなら、searchContent と fileContent の両方から \r を除去して比較するか、LLMに「常にLF（\n）で出力せよ」とシステムプロンプトで徹底させるのが定石です。
+            インデントの感度: LLMは時々タブとスペースを間違えます。もしマッチング失敗が多発する場合は、string.Contains の代わりに「空白の差異を無視する正規表現」を動的に生成してマッチングさせる手法もあります。
+            ブロックの順序: 引数の説明にある通り、複数の置換がある場合は「ファイルの先頭から順に」処理しないと、置換後のインデックスがズレて予期せぬ場所を書き換えるリスクがあります。             
              */
         }
     }

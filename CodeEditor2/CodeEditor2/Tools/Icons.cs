@@ -8,7 +8,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using System.IO;
 
-// SKPicture縺ｫ蟇ｾ縺吶ｋ諡｡蠑ｵ繝｡繧ｽ繝・ラ縺ｨ縺励※SKPicture.ToImage縺悟ｮ夂ｾｩ縺輔ｌ縺ｦ縺・ｋ縲ゅ％繧後ｒ菴ｿ縺・・縺ｫ蠢・ｦ√・
+// SKPictureに対する拡張メソッドとしてSKPicture.ToImageが定義されている。これを使うのに必要。
 using SkiaSharp;
 using Svg.Skia;
 using Avalonia.Skia;
@@ -23,8 +23,8 @@ namespace CodeEditor2.Tools
 
 
         /// <summary>
-        /// Assets/Icons/莉･荳九・(iconName).svg繧棚Image蠖｢蠑上↓縺励※蜿悶ｊ蜃ｺ縺吶・
-        /// 荳蠎ｦ菴ｿ縺｣縺櫑Image縺ｯ繧ｭ繝｣繝・す繝･縺吶ｋ縲・
+        /// Assets/Icons/以下の(iconName).svgをIImage形式にして取り出す。
+        /// 一度使ったIImageはキャッシュする。
         /// </summary>
         public static Bitmap GetSvgBitmap(string SvgPath)
         {

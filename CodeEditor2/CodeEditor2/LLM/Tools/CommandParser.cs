@@ -21,18 +21,18 @@ namespace CodeEditor2.LLM.Tools
         }
         public async Task<string> RunCommandAsync(string fullCommand,string rootPath,HashSet<string> allowedCommands)
         {
-            // 1. 繧ｳ繝槭Φ繝峨ｒ繝代・繧ｹ縺励※讒矩蛹悶☆繧・
+            // 1. コマンドをパースして構造化する
             var chains = ParseFullCommandLine(fullCommand);
             var finalOutput = new StringBuilder();
             int lastExitCode = 0;
 
             foreach (var chain in chains)
             {
-                // 蜑阪・繧ｳ繝槭Φ繝峨・邨先棡縺ｫ蝓ｺ縺･縺丞ｮ溯｡悟愛螳・
+                // 前のコマンドの結果に基づく実行判定
                 if (chain.NextSeparator == SeparatorType.And && lastExitCode != 0) break;
-                // (蠢・ｦ√↓蠢懊§縺ｦ SeparatorType.Or 縺ｮ螳溯｣・ｂ蜿ｯ閭ｽ)
+                // (必要に応じて SeparatorType.Or の実装も可能)
 
-                // 繝代う繝励Λ繧､繝ｳ繧貞ｮ溯｡・
+                // パイプラインを実行
                 var (output, exitCode) = await ExecutePipeChainAsync(chain.PipeCommands,rootPath,allowedCommands);
                 finalOutput.Append(output);
                 lastExitCode = exitCode;
@@ -49,8 +49,8 @@ namespace CodeEditor2.LLM.Tools
         private List<CommandChain> ParseFullCommandLine(string input)
         {
             var chains = new List<CommandChain>();
-            // && 繧・; 縺ｧ蛻・牡縺吶ｋ豁｣隕剰｡ｨ迴ｾ (繧ｯ繧ｩ繝ｼ繝亥・縺ｯ辟｡隕・
-            // 邁｡譏鍋沿縺ｨ縺励※縲√∪縺壹・蜊倡ｴ斐↑蛻・牡縺ｧ螳溯｣・ｾ九ｒ遉ｺ縺励∪縺・
+            // && や ; で分割する正規表現 (クォート内は無視)
+            // 簡易版として、まずは単純な分割で実装例を示します
             var patterns = Regex.Split(input, @"(&&|;)");
 
             var currentChain = new CommandChain();
@@ -71,7 +71,7 @@ namespace CodeEditor2.LLM.Tools
                 }
                 else
                 {
-                    // 繝代う繝励〒蛻・牡縺励※譬ｼ邏・
+                    // パイプで分割して格納
                     currentChain.PipeCommands = trimmed.Split('|').Select(p => p.Trim()).ToList();
                 }
             }
@@ -97,7 +97,7 @@ namespace CodeEditor2.LLM.Tools
                     var cmd = tokens[0];
                     var args = string.Join(" ", tokens.Skip(1));
 
-                    // 繧ｻ繧ｭ繝･繝ｪ繝・ぅ・夊ｨｱ蜿ｯ繝ｪ繧ｹ繝育・蜷・
+                    // セキュリティ：許可リスト照合
                     if (!allowedCommands.Contains(cmd.ToLower()))
                         return ($"Error: '{cmd}' is not allowed.", -1);
 
@@ -118,7 +118,7 @@ namespace CodeEditor2.LLM.Tools
                     var proc = Process.Start(startInfo);
                     processes.Add(proc);
 
-                    // 繝代う繝励・謗･邯・(蜑阪・繝励Ο繧ｻ繧ｹ縺ｮ蜃ｺ蜉帙ｒ莉翫・繝励Ο繧ｻ繧ｹ縺ｮ蜈･蜉帙∈)
+                    // パイプの接続 (前のプロセスの出力を今のプロセスの入力へ)
                     if (lastOutputStream != null)
                     {
                         _ = CopyStreamAsync(lastOutputStream, proc.StandardInput.BaseStream);
@@ -127,7 +127,7 @@ namespace CodeEditor2.LLM.Tools
                     lastOutputStream = proc.StandardOutput.BaseStream;
                 }
 
-                // 譛蠕後・繝励Ο繧ｻ繧ｹ縺ｮ螳御ｺ・ｒ蠕・■縲∝・蜉帙ｒ繧ｭ繝｣繝励メ繝｣
+                // 最後のプロセスの完了を待ち、出力をキャプチャ
                 var lastProc = processes.Last();
                 var outTask = lastProc.StandardOutput.ReadToEndAsync();
                 var errTask = lastProc.StandardError.ReadToEndAsync();
@@ -148,8 +148,8 @@ namespace CodeEditor2.LLM.Tools
             }
         }
         /// <summary>
-        /// 繧ｳ繝槭Φ繝峨Λ繧､繝ｳ譁・ｭ怜・繧偵ヨ繝ｼ繧ｯ繝ｳ・医・繝ｭ繧ｰ繝ｩ繝蜷阪→蠑墓焚・峨↓蛻・ｧ｣縺励∪縺吶・
-        /// 繝繝悶Ν繧ｯ繧ｩ繝ｼ繝・・繧ｷ繝ｧ繝ｳ蜀・・繧ｹ繝壹・繧ｹ繧剃ｿ晄戟縺励√お繧ｹ繧ｱ繝ｼ繝玲枚蟄励↓繧ょｯｾ蠢懊＠縺ｾ縺吶・
+        /// コマンドライン文字列をトークン（プログラム名と引数）に分解します。
+        /// ダブルクォーテーション内のスペースを保持し、エスケープ文字にも対応します。
         /// </summary>
         private List<string> ParseArguments(string commandLine)
         {
@@ -164,7 +164,7 @@ namespace CodeEditor2.LLM.Tools
             {
                 char c = commandLine[i];
 
-                // 繧ｨ繧ｹ繧ｱ繝ｼ繝玲枚蟄・(\) 縺ｮ蜃ｦ逅・
+                // エスケープ文字 (\) の処理
                 if (c == '\\' && !isEscaped)
                 {
                     isEscaped = true;
@@ -178,17 +178,17 @@ namespace CodeEditor2.LLM.Tools
                     continue;
                 }
 
-                // 繧ｯ繧ｩ繝ｼ繝・・繧ｷ繝ｧ繝ｳ (") 縺ｮ蜃ｦ逅・
+                // クォーテーション (") の処理
                 if (c == '\"')
                 {
                     inQuotes = !inQuotes;
-                    // 繧ｯ繧ｩ繝ｼ繝・・繧ｷ繝ｧ繝ｳ閾ｪ菴薙・繝医・繧ｯ繝ｳ縺ｫ蜷ｫ繧√↑縺・ｴ蜷医・ continue
-                    // 繧ゅ＠蠑墓焚縺ｨ縺励※蜷ｫ繧√ｋ蠢・ｦ√′縺ゅｋ蝣ｴ蜷医・ current.Append(c)
+                    // クォーテーション自体はトークンに含めない場合は continue
+                    // もし引数として含める必要がある場合は current.Append(c)
                     current.Append(c);
                     continue;
                 }
 
-                // 繧ｹ繝壹・繧ｹ縺ｮ蜃ｦ逅・ｼ医け繧ｩ繝ｼ繝・・繧ｷ繝ｧ繝ｳ螟悶・縺ｿ蛹ｺ蛻・ｊ縺ｨ縺励※謇ｱ縺・ｼ・
+                // スペースの処理（クォーテーション外のみ区切りとして扱う）
                 if (char.IsWhiteSpace(c) && !inQuotes)
                 {
                     if (current.Length > 0)
@@ -203,7 +203,7 @@ namespace CodeEditor2.LLM.Tools
                 }
             }
 
-            // 谿九▲縺滓枚蟄怜・繧定ｿｽ蜉
+            // 残った文字列を追加
             if (current.Length > 0)
             {
                 results.Add(current.ToString());
@@ -217,7 +217,7 @@ namespace CodeEditor2.LLM.Tools
             {
                 using (output) await input.CopyToAsync(output);
             }
-            catch { /* 繝代う繝励′髢峨§縺溷ｴ蜷医・蜃ｦ逅・*/ }
+            catch { /* パイプが閉じた場合の処理 */ }
         }
     }
 }

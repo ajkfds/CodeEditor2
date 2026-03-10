@@ -19,7 +19,7 @@ namespace CodeEditor2.Views
     public class PopupMenuFlyout : PopupFlyoutBase
     {
         //public PopupMenuFlyout():base() {
-        //    // FlyoutPresenterTheme繧定ｨｭ螳・
+        //    // FlyoutPresenterThemeを設定
         //    this.FlyoutPresenterTheme = new ControlTheme(typeof(FlyoutPresenter)) {
         //        Setters = { 
         ////            new Setter(FlyoutPresenter.BackgroundProperty, Avalonia.Media.Brushes.LightBlue),

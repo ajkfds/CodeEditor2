@@ -33,29 +33,29 @@ public partial class ItemPropertyForm : Window
 
 
     // workaround
-    // X11迺ｰ蠅・〒縺ｯ蜻ｼ縺ｳ蜃ｺ縺怜・縺ｧ縺ｮWindowStartupLocation = WindowStartupLocation.CenterOwner;
-    // 縺悟柑縺九↑縺・ｴ蜷医′縺ゅｋ
+    // X11環境では呼び出し側でのWindowStartupLocation = WindowStartupLocation.CenterOwner;
+    // が効かない場合がある
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
 
         if (this.Owner is Window parent)
         {
-            // 1. 隕ｪ繧ｦ繧｣繝ｳ繝峨え縺ｮ繧ｹ繧ｯ繝ｪ繝ｼ繝ｳ荳翫・蠎ｧ讓吶→繧ｵ繧､繧ｺ繧貞叙蠕・
-            // Position縺ｯPixelPoint(迚ｩ逅・ヴ繧ｯ繧ｻ繝ｫ)縲。ounds縺ｯ隲也炊繝斐け繧ｻ繝ｫ縺ｪ縺ｮ縺ｧ豕ｨ諢・
+            // 1. 親ウィンドウのスクリーン上の座標とサイズを取得
+            // PositionはPixelPoint(物理ピクセル)、Boundsは論理ピクセルなので注意
             var parentPos = parent.Position;
             var parentSize = parent.Bounds.Size;
 
-            // 2. 閾ｪ蛻・ｼ医ム繧､繧｢繝ｭ繧ｰ・峨・迴ｾ蝨ｨ縺ｮ繧ｵ繧､繧ｺ繧貞叙蠕・
+            // 2. 自分（ダイアログ）の現在のサイズを取得
             var selfSize = this.Bounds.Size;
 
-            // 3. 荳ｭ螟ｮ菴咲ｽｮ繧定ｨ育ｮ・(迚ｩ逅・ヴ繧ｯ繧ｻ繝ｫ謠帷ｮ励′蠢・ｦ√↑蝣ｴ蜷医′縺ゅｋ縺溘ａ縲ヾcaling繧定・・)
+            // 3. 中央位置を計算 (物理ピクセル換算が必要な場合があるため、Scalingを考慮)
             double scaling = this.DesktopScaling;
 
             int centerX = parentPos.X + (int)((parentSize.Width - selfSize.Width) * scaling / 2);
             int centerY = parentPos.Y + (int)((parentSize.Height - selfSize.Height) * scaling / 2);
 
-            // 4. 譁ｰ縺励＞菴咲ｽｮ繧定ｨｭ螳・
+            // 4. 新しい位置を設定
             this.Position = new PixelPoint(centerX, centerY);
         }
     }

@@ -114,7 +114,7 @@ public partial class MainView : UserControl
 
     private Popup backDropdownMenu;
 
-    private List<TextReference>縲selectHistories = new List<TextReference>();
+    private List<TextReference>　selectHistories = new List<TextReference>();
     private const int selectHistoryMaxCount = 20;
     private int currentHistoryIndex = -1;
     public void AddSelectHistory(TextReference textReference)

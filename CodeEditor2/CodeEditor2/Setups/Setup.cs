@@ -23,7 +23,7 @@ namespace CodeEditor2.Setups
 {
     public class Setup
     {
-        public縲static string ApplicationName { get; set; } = "CodeEditor2";
+        public　static string ApplicationName { get; set; } = "CodeEditor2";
 
         public static Action<Window> InitializeWindow =
             (Window) =>

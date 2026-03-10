@@ -42,7 +42,7 @@ namespace CodeEditor2.CodeEditor.TextDecollation
                 {
                     foreach (var color in lineInfo.Colors)
                     {
-                        if ( color.Offset縲<縲0 || line.Length < color.Offset + color.Length  ) continue;
+                        if ( color.Offset　<　0 || line.Length < color.Offset + color.Length  ) continue;
                         ChangeLinePart(
                             color.Offset + line.Offset,
                             color.Offset + line.Offset + color.Length,

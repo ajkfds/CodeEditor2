@@ -29,10 +29,10 @@ namespace CodeEditor2.LLM.Tools
 
         public static string? GetDocument(Type type)
         {
-            // 蝙九′螳夂ｾｩ縺輔ｌ縺ｦ縺・ｋ繧｢繧ｻ繝ｳ繝悶Μ繧貞叙蠕・
+            // 型が定義されているアセンブリを取得
             Assembly assembly = type.Assembly;
 
-            // DLL縺ｮ繝輔Ν繝代せ繧貞叙蠕・
+            // DLLのフルパスを取得
             string dllPath = assembly.Location;
 
             return getDocument(dllPath, type.Name);
@@ -45,7 +45,7 @@ namespace CodeEditor2.LLM.Tools
 
             //if (!File.Exists(dllPath))
             //{
-            //    return null;// Console.WriteLine("DLL繝輔ぃ繧､繝ｫ縺瑚ｦ九▽縺九ｊ縺ｾ縺帙ｓ縲・);
+            //    return null;// Console.WriteLine("DLLファイルが見つかりません。");
             //}
 
             XDocument? xmlDoc = File.Exists(xmlPath) ? XDocument.Load(xmlPath) : null;
@@ -78,17 +78,17 @@ namespace CodeEditor2.LLM.Tools
 
                 // Methods
                 var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
-                                  .Where(m => !m.IsSpecialName); // getter/setter遲峨ｒ髯､螟・
+                                  .Where(m => !m.IsSpecialName); // getter/setter等を除外
                 if (methods.Any())
                 {
                     sb.AppendLine("### Methods");
                     foreach (var method in methods)
                     {
-                        // 蠑墓焚繧貞性繧√◆繧ｷ繧ｰ繝阪メ繝｣菴懈・ (XML讀懃ｴ｢逕ｨ)
+                        // 引数を含めたシグネチャ作成 (XML検索用)
                         string paramTypes = string.Join(",", method.GetParameters().Select(p => p.ParameterType.FullName));
                         string memberName = string.IsNullOrEmpty(paramTypes) ? $"M:{type.FullName}.{method.Name}" : $"M:{type.FullName}.{method.Name}({paramTypes})";
 
-                        // 笘・縺薙％繧剃ｿｮ豁｣: method繧貞ｼ墓焚縺ｫ霑ｽ蜉縺励※繝代Λ繝｡繝ｼ繧ｿ諠・ｱ繧貞叙蠕・
+                        // ★ ここを修正: methodを引数に追加してパラメータ情報を取得
                         sb.AppendLine(GetFormattedXmlDocs(xmlDoc, memberName, method));
 
                         var paramsDisplay = string.Join(", ", method.GetParameters().Select(p => $"{GetFriendlyName(p.ParameterType)} {p.Name}"));
@@ -100,7 +100,7 @@ namespace CodeEditor2.LLM.Tools
 
             //        string outputPath = Path.Combine(Path.GetDirectoryName(dllPath), $"{Path.GetFileNameWithoutExtension(dllPath)}_AgentRef.md");
             //        File.WriteAllText(outputPath, sb.ToString());
-            //        Console.WriteLine($"螳御ｺ・ｼ√Μ繝輔ぃ繝ｬ繝ｳ繧ｹ繧剃ｿ晏ｭ倥＠縺ｾ縺励◆: {outputPath}");
+            //        Console.WriteLine($"完了！リファレンスを保存しました: {outputPath}");
             return sb.ToString();
         }
         static string GetFriendlyName(Type type)
@@ -136,13 +136,13 @@ namespace CodeEditor2.LLM.Tools
             if (!string.IsNullOrEmpty(summary))
                 sb.AppendLine($"> **Summary:** {Regex.Replace(summary, @"\s+", " ")}  ");
 
-            // Parameters (繝｡繧ｽ繝・ラ縺ｮ蝣ｴ蜷医・縺ｿ螳溯｡・
+            // Parameters (メソッドの場合のみ実行)
             if (method != null)
             {
                 var parameters = method.GetParameters();
                 foreach (var p in parameters)
                 {
-                    // XML縺九ｉ蟇ｾ雎｡縺ｮ蠑墓焚蜷・name螻樊ｧ)縺ｫ荳閾ｴ縺吶ｋparam繧ｿ繧ｰ繧呈爾縺・
+                    // XMLから対象の引数名(name属性)に一致するparamタグを探す
                     var paramDoc = member.Elements("param")
                         .FirstOrDefault(e => e.Attribute("name")?.Value == p.Name)?.Value.Trim();
 

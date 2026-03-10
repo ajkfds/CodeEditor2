@@ -61,7 +61,7 @@ namespace CodeEditor2.LLM.Tools
             {
                 if (project == null) return "Failed to execute tool. Cannot get current project.";
 
-                // 1. 繝代せ縺ｮ豁｣隕丞喧縺ｨ螳牙・諤ｧ縺ｮ繝√ぉ繝・け
+                // 1. パスの正規化と安全性のチェック
                 string fullPath = project.GetAbsolutePath(path);
                 
                 if (!fullPath.StartsWith(project.RootPath, StringComparison.OrdinalIgnoreCase))
@@ -69,21 +69,25 @@ namespace CodeEditor2.LLM.Tools
                     return "Error: Permission denied. Cannot read files outside of the project root.";
                 }
 
-                // 2. 繝輔ぃ繧､繝ｫ縺ｮ蟄伜惠遒ｺ隱・                if (!System.IO.File.Exists(fullPath))
+                // 2. ファイルの存在確認
+                if (!System.IO.File.Exists(fullPath))
                 {
                     return $"Error: File not found at path '{path}'.";
                 }
 
-                // 3. 繝輔ぃ繧､繝ｫ繧ｵ繧､繧ｺ縺ｮ繝√ぉ繝・け (萓・ 1MB繧定ｶ・∴繧句ｴ蜷医・蛻ｶ髯・
+                // 3. ファイルサイズのチェック (例: 1MBを超える場合は制限)
                 var fileInfo = new FileInfo(fullPath);
                 if (fileInfo.Length > 1024 * 1024)
                 {
                     return "Error: File is too large to read (limit: 1MB). Please request a specific range if supported.";
                 }
 
-                // 4. 繝輔ぃ繧､繝ｫ縺ｮ隱ｭ縺ｿ霎ｼ縺ｿ
-                // UTF-8縺ｧ隱ｭ縺ｿ霎ｼ縺ｿ縲・OM縺ｮ譛臥┌繧り・蜍募愛蛻･縺励∪縺吶・
-                // 隨ｬ2蠑墓焚: 繝・ヵ繧ｩ繝ｫ繝医・繧ｨ繝ｳ繧ｳ繝ｼ繝会ｼ・OM縺後↑縺・ｴ蜷医↓驕ｩ逕ｨ縺輔ｌ繧具ｼ・                // 隨ｬ3蠑墓焚: detectEncodingFromByteOrderMarks 繧・true 縺ｫ險ｭ螳・                using (var reader = new System.IO.StreamReader(fullPath, System.Text.Encoding.UTF8, true))
+                // 4. ファイルの読み込み
+                // UTF-8で読み込み。BOMの有無も自動判別します。
+
+                // 第2引数: デフォルトのエンコード（BOMがない場合に適用される）
+                // 第3引数: detectEncodingFromByteOrderMarks を true に設定
+                using (var reader = new System.IO.StreamReader(fullPath, System.Text.Encoding.UTF8, true))
                 {
                     return reader.ReadToEnd();
                 }
