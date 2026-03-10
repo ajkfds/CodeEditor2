@@ -55,10 +55,10 @@ namespace CodeEditor2.LLM.Tools
             {
                 FileName = "dotnet",
                 Arguments = "build \""+projectPath+"\"",
-                RedirectStandardOutput = true,   // 標準出力をリダイレクト
-                RedirectStandardError = true,    // 標準エラーもリダイレクト
-                UseShellExecute = false,         // シェルを使用しない
-                CreateNoWindow = true,           // ウィンドウを表示しない
+                RedirectStandardOutput = true,   // 讓呎ｺ門・蜉帙ｒ繝ｪ繝繧､繝ｬ繧ｯ繝・
+                RedirectStandardError = true,    // 讓呎ｺ悶お繝ｩ繝ｼ繧ゅΜ繝繧､繝ｬ繧ｯ繝・
+                UseShellExecute = false,         // 繧ｷ繧ｧ繝ｫ繧剃ｽｿ逕ｨ縺励↑縺・
+                CreateNoWindow = true,           // 繧ｦ繧｣繝ｳ繝峨え繧定｡ｨ遉ｺ縺励↑縺・
                 WorkingDirectory = Environment.CurrentDirectory
             };
 
@@ -66,7 +66,7 @@ namespace CodeEditor2.LLM.Tools
             {
                 process.Start();
 
-                // 非同期で最後まで読み取る
+                // 髱槫酔譛溘〒譛蠕後∪縺ｧ隱ｭ縺ｿ蜿悶ｋ
                 string output = await process.StandardOutput.ReadToEndAsync();
                 string error = await process.StandardError.ReadToEndAsync();
 
@@ -74,7 +74,7 @@ namespace CodeEditor2.LLM.Tools
 
                 if (process.ExitCode != 0)
                 {
-                    return $"ビルド失敗 (ExitCode: {process.ExitCode})\nError: {error}\nOutput: {output}";
+                    return $"繝薙Ν繝牙､ｱ謨・(ExitCode: {process.ExitCode})\nError: {error}\nOutput: {output}";
                 }
 
                 return output;

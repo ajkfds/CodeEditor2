@@ -33,13 +33,13 @@ namespace CodeEditor2.Tools
             {
                 if (!System.IO.File.Exists(path)) throw new FileNotFoundException();
 
-                // フィルタリングしながらリストを作成
+                // 繝輔ぅ繝ｫ繧ｿ繝ｪ繝ｳ繧ｰ縺励↑縺後ｉ繝ｪ繧ｹ繝医ｒ菴懈・
                 var entries = Directory.EnumerateFileSystemEntries(path, "*", options)
                     .Where(entry => !ExcludedDirectories.Any(ex => entry.Contains(System.IO.Path.DirectorySeparatorChar + ex + System.IO.Path.DirectorySeparatorChar) || entry.EndsWith(System.IO.Path.DirectorySeparatorChar + ex)));
 
                 foreach (var entry in entries)
                 {
-                    // ルートディレクトリからの相対パスに変換して表示
+                    // 繝ｫ繝ｼ繝医ョ繧｣繝ｬ繧ｯ繝医Μ縺九ｉ縺ｮ逶ｸ蟇ｾ繝代せ縺ｫ螟画鋤縺励※陦ｨ遉ｺ
                     string relativePath = System.IO.Path.GetRelativePath(project.RootPath, entry);
                     bool isDir = Directory.Exists(entry);
                     sb.AppendLine($"{(isDir ? "[DIR] " : "[FILE]")} {relativePath}");
@@ -71,13 +71,13 @@ namespace CodeEditor2.Tools
             var di = new DirectoryInfo(path);
             var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = true };
 
-            // 列挙自体は同期処理だが、Task.Run内で回すことで非同期ストリーム化
+            // 蛻玲嫌閾ｪ菴薙・蜷梧悄蜃ｦ逅・□縺後ゝask.Run蜀・〒蝗槭☆縺薙→縺ｧ髱槫酔譛溘せ繝医Μ繝ｼ繝蛹・
             var items = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
 
             foreach (var item in items)
             {
-                // 1件ごとに呼び出し元へ戻す。
-                // ここで必要に応じて Task.Yield() などを挟むとより細かく制御可能
+                // 1莉ｶ縺斐→縺ｫ蜻ｼ縺ｳ蜃ｺ縺怜・縺ｸ謌ｻ縺吶・
+                // 縺薙％縺ｧ蠢・ｦ√↓蠢懊§縺ｦ Task.Yield() 縺ｪ縺ｩ繧呈検繧縺ｨ繧医ｊ邏ｰ縺九￥蛻ｶ蠕｡蜿ｯ閭ｽ
                 yield return item;
             }
         }
@@ -149,13 +149,13 @@ namespace CodeEditor2.Tools
             var di = new DirectoryInfo(path);
             var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true };
 
-            // 列挙自体は同期処理だが、Task.Run内で回すことで非同期ストリーム化
+            // 蛻玲嫌閾ｪ菴薙・蜷梧悄蜃ｦ逅・□縺後ゝask.Run蜀・〒蝗槭☆縺薙→縺ｧ髱槫酔譛溘せ繝医Μ繝ｼ繝蛹・
             var items = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
 
             foreach (var item in items)
             {
-                // 1件ごとに呼び出し元へ戻す。
-                // ここで必要に応じて Task.Yield() などを挟むとより細かく制御可能
+                // 1莉ｶ縺斐→縺ｫ蜻ｼ縺ｳ蜃ｺ縺怜・縺ｸ謌ｻ縺吶・
+                // 縺薙％縺ｧ蠢・ｦ√↓蠢懊§縺ｦ Task.Yield() 縺ｪ縺ｩ繧呈検繧縺ｨ繧医ｊ邏ｰ縺九￥蛻ｶ蠕｡蜿ｯ閭ｽ
                 yield return item;
             }
         }
@@ -170,17 +170,17 @@ namespace CodeEditor2.Tools
         }
         public static async Task<string> GetFileText(string path)
         {
-            // 重要なポイント: options に FileOptions.Asynchronous を指定する
+            // 驥崎ｦ√↑繝昴う繝ｳ繝・ options 縺ｫ FileOptions.Asynchronous 繧呈欠螳壹☆繧・
             using (FileStream fs = new FileStream(
                 path,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.Read,
                 bufferSize: 4096*32,
-                useAsync: true)) // または FileOptions.Asynchronous
+                useAsync: true)) // 縺ｾ縺溘・ FileOptions.Asynchronous
             {
                 using var sr = new StreamReader(fs, Encoding.UTF8, true);
-                // ReadAsync で非同期読み込み
+                // ReadAsync 縺ｧ髱槫酔譛溯ｪｭ縺ｿ霎ｼ縺ｿ
                 return await sr.ReadToEndAsync();
             }
         }
@@ -201,7 +201,7 @@ namespace CodeEditor2.Tools
             }
             catch (Exception)
             {
-                // その他のエラー（権限不足など）
+                // 縺昴・莉悶・繧ｨ繝ｩ繝ｼ・域ｨｩ髯蝉ｸ崎ｶｳ縺ｪ縺ｩ・・
                 return false;
             }
         }
@@ -237,7 +237,7 @@ namespace CodeEditor2.Tools
                         var completedTask = await Task.WhenAny(task, Task.Delay(timeout, cts.Token));
                         if (completedTask == task)
                         {
-                            cts.Cancel(); // Delayタスクをキャンセル
+                            cts.Cancel(); // Delay繧ｿ繧ｹ繧ｯ繧偵く繝｣繝ｳ繧ｻ繝ｫ
                             return await task;
                         }
                         else
@@ -258,7 +258,7 @@ namespace CodeEditor2.Tools
                     var completedTask = await Task.WhenAny(task, Task.Delay(timeout, cts.Token));
                     if (completedTask == task)
                     {
-                        cts.Cancel(); // Delayタスクをキャンセル
+                        cts.Cancel(); // Delay繧ｿ繧ｹ繧ｯ繧偵く繝｣繝ｳ繧ｻ繝ｫ
                         return await task;
                     }
                     else

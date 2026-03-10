@@ -215,14 +215,13 @@ namespace CodeEditor2.Data
             Task.Run(async () => { await FileCheck(); });
         }
 
-        //非同期待機
-        private readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
+        //髱槫酔譛溷ｾ・ｩ・        private readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
         protected virtual async Task FileCheck()
         {
-            // 待ち時間 0 でトライ。入れなければ false が返る
+            // 蠕・■譎る俣 0 縺ｧ繝医Λ繧､縲ょ・繧後↑縺代ｌ縺ｰ false 縺瑚ｿ斐ｋ
             if (!await _fileSemaphore.WaitAsync(0))
             {
-                // すでに実行中のため、何もせずリターン
+                // 縺吶〒縺ｫ螳溯｡御ｸｭ縺ｮ縺溘ａ縲∽ｽ輔ｂ縺帙★繝ｪ繧ｿ繝ｼ繝ｳ
                 return;
             }
 

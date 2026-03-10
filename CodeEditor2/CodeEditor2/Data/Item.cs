@@ -85,7 +85,7 @@ namespace CodeEditor2.Data
         }
         public static class PolymorphicResolver
         {
-            // プラグイン等から見つかった派生クラスをここに登録していく
+            // 繝励Λ繧ｰ繧､繝ｳ遲峨°繧芽ｦ九▽縺九▲縺滓ｴｾ逕溘け繝ｩ繧ｹ繧偵％縺薙↓逋ｻ骭ｲ縺励※縺・￥
             public static List<JsonDerivedType> DerivedTypes { get; } = new();
 
             public static void MyTypeResolver(JsonTypeInfo jsonTypeInfo)
@@ -146,12 +146,9 @@ namespace CodeEditor2.Data
                         Modifiers = { PolymorphicResolver.MyTypeResolver }
                     },
                     WriteIndented = true,
-                    // デフォルト値のプロパティをすべて除外する
-//                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
-                    // 読み取り専用プロパティを無視する
-                    IgnoreReadOnlyProperties = true,
-                    // シリアライズ時にオブジェクトに $id（一意のID）を振り、2回目以降の登場時は $ref（参照ID）として記録します
-                    ReferenceHandler = ReferenceHandler.Preserve,
+                    // 繝・ヵ繧ｩ繝ｫ繝亥､縺ｮ繝励Ο繝代ユ繧｣繧偵☆縺ｹ縺ｦ髯､螟悶☆繧・//                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                    // 隱ｭ縺ｿ蜿悶ｊ蟆ら畑繝励Ο繝代ユ繧｣繧堤┌隕悶☆繧・                    IgnoreReadOnlyProperties = true,
+                    // 繧ｷ繝ｪ繧｢繝ｩ繧､繧ｺ譎ゅ↓繧ｪ繝悶ず繧ｧ繧ｯ繝医↓ $id・井ｸ諢上・ID・峨ｒ謖ｯ繧翫・蝗樒岼莉･髯阪・逋ｻ蝣ｴ譎ゅ・ $ref・亥盾辣ｧID・峨→縺励※險倬鹸縺励∪縺・                    ReferenceHandler = ReferenceHandler.Preserve,
                 };
 
                 return options;
@@ -332,17 +329,15 @@ namespace CodeEditor2.Data
                 }
             }
 
-            // Enumeratorの実装（スナップショットを返す）
-            public IEnumerator<Item> GetEnumerator()
+            // Enumerator縺ｮ螳溯｣・ｼ医せ繝翫ャ繝励す繝ｧ繝・ヨ繧定ｿ斐☆・・            public IEnumerator<Item> GetEnumerator()
             {
                 List<Item> snapshot;
                 lock (_lock)
                 {
-                    // 現在のリストの状態を新しいリストにコピー（スナップショット）
-                    snapshot = itemList.ToList();
+                    // 迴ｾ蝨ｨ縺ｮ繝ｪ繧ｹ繝医・迥ｶ諷九ｒ譁ｰ縺励＞繝ｪ繧ｹ繝医↓繧ｳ繝斐・・医せ繝翫ャ繝励す繝ｧ繝・ヨ・・                    snapshot = itemList.ToList();
                 }
 
-                // コピーしたリストのEnumeratorを返す
+                // 繧ｳ繝斐・縺励◆繝ｪ繧ｹ繝医・Enumerator繧定ｿ斐☆
                 foreach (var item in snapshot)
                 {
                     yield return item;

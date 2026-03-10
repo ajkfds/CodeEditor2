@@ -50,7 +50,7 @@ namespace CodeEditor2.LLM.Tools
         [Description("""
             Request to write content to a file at the specified path. If the file exists, it will be overwritten with the provided content. 
             If the file doesn't exist, it will be created. This tool will automatically create any directories needed to write the file.
-            出力コンテキストサイズが小さいため、building blockの定義だけを出力し、その後、replace_in_fileで更新すること。
+            蜃ｺ蜉帙さ繝ｳ繝・く繧ｹ繝医し繧､繧ｺ縺悟ｰ上＆縺・◆繧√｜uilding block縺ｮ螳夂ｾｩ縺縺代ｒ蜃ｺ蜉帙＠縲√◎縺ｮ蠕後〉eplace_in_file縺ｧ譖ｴ譁ｰ縺吶ｋ縺薙→縲・
             """)]
             
         public string Run(
@@ -67,8 +67,8 @@ namespace CodeEditor2.LLM.Tools
             {
                 if (project == null) return "Failed to execute tool. Cannot get current project.";
 
-                // 1. パスの安全性を確認
-                // 1. パスの正規化と安全性のチェック
+                // 1. 繝代せ縺ｮ螳牙・諤ｧ繧堤｢ｺ隱・
+                // 1. 繝代せ縺ｮ豁｣隕丞喧縺ｨ螳牙・諤ｧ縺ｮ繝√ぉ繝・け
                 string fullPath = project.GetAbsolutePath(path);
 
                 if (!fullPath.StartsWith(project.RootPath, StringComparison.OrdinalIgnoreCase))
@@ -76,7 +76,7 @@ namespace CodeEditor2.LLM.Tools
                     return "Error: Permission denied. Cannot read files outside of the project root.";
                 }
 
-                // 2. ディレクトリの存在確認と自動生成
+                // 2. 繝・ぅ繝ｬ繧ｯ繝医Μ縺ｮ蟄伜惠遒ｺ隱阪→閾ｪ蜍慕函謌・
                 string? directoryPath = Path.GetDirectoryName(fullPath);
                 if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
                 {
@@ -84,8 +84,8 @@ namespace CodeEditor2.LLM.Tools
                 }
 
 
-                // 3. ファイルの書き込み (UTF-8)
-                // LLMからの出力は意図せず不完全な場合があるため、上書きは慎重に行われます
+                // 3. 繝輔ぃ繧､繝ｫ縺ｮ譖ｸ縺崎ｾｼ縺ｿ (UTF-8)
+                // LLM縺九ｉ縺ｮ蜃ｺ蜉帙・諢丞峙縺帙★荳榊ｮ悟・縺ｪ蝣ｴ蜷医′縺ゅｋ縺溘ａ縲∽ｸ頑嶌縺阪・諷朱㍾縺ｫ陦後ｏ繧後∪縺・
                 content = content.Replace("\r\n", "\n");
                 if (!content.EndsWith("\n")) content = content + "\n";
 

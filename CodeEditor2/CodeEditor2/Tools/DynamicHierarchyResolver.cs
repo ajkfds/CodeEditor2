@@ -19,17 +19,17 @@ public class DynamicHierarchyResolver : DefaultJsonTypeInfoResolver
     {
         JsonTypeInfo typeInfo = base.GetTypeInfo(type, options);
 
-        // 対象の基底クラスの型情報をカスタマイズする
+        // 蟇ｾ雎｡縺ｮ蝓ｺ蠎輔け繝ｩ繧ｹ縺ｮ蝙区ュ蝣ｱ繧偵き繧ｹ繧ｿ繝槭う繧ｺ縺吶ｋ
         if (typeInfo.Type == _baseType)
         {
             typeInfo.PolymorphismOptions = new JsonPolymorphismOptions
             {
-                TypeDiscriminatorPropertyName = "$type", // ディスクリミネータのプロパティ名
+                TypeDiscriminatorPropertyName = "$type", // 繝・ぅ繧ｹ繧ｯ繝ｪ繝溘ロ繝ｼ繧ｿ縺ｮ繝励Ο繝代ユ繧｣蜷・
                 IgnoreUnrecognizedTypeDiscriminators = true,
                 UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToBaseType
             };
 
-            // 動的に派生クラスを登録
+            // 蜍慕噪縺ｫ豢ｾ逕溘け繝ｩ繧ｹ繧堤匳骭ｲ
             foreach (var pair in _derivedTypes)
             {
                 typeInfo.PolymorphismOptions.DerivedTypes.Add(new JsonDerivedType(pair.Value, pair.Key));

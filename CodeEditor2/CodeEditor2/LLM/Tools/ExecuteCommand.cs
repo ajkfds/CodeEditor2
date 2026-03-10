@@ -44,7 +44,7 @@ namespace CodeEditor2.LLM.Tools
             The CLI command to execute.
             This should be valid for the current operating system.
             Ensure the command is properly formatted and does not contain any harmful instructions.
-            一度に単一のコマンドの実行しか許可されません。&&やパイプ等を使って複数のコマンドを同時に実行しないでください。
+            荳蠎ｦ縺ｫ蜊倅ｸ縺ｮ繧ｳ繝槭Φ繝峨・螳溯｡後＠縺玖ｨｱ蜿ｯ縺輔ｌ縺ｾ縺帙ｓ縲・&繧・ヱ繧､繝礼ｭ峨ｒ菴ｿ縺｣縺ｦ隍・焚縺ｮ繧ｳ繝槭Φ繝峨ｒ蜷梧凾縺ｫ螳溯｡後＠縺ｪ縺・〒縺上□縺輔＞縲・
             
             """)]
             string command
@@ -105,7 +105,7 @@ namespace CodeEditor2.LLM.Tools
             if (string.IsNullOrWhiteSpace(command))
                 return (false, "Command is empty.");
 
-            // 1. 絶対に禁止するキーワード (システム破壊系)
+            // 1. 邨ｶ蟇ｾ縺ｫ遖∵ｭ｢縺吶ｋ繧ｭ繝ｼ繝ｯ繝ｼ繝・(繧ｷ繧ｹ繝・Β遐ｴ螢顔ｳｻ)
             var blackList = new[]
             {
                 "rm -rf", "rd /s", "format", "mkfs",
@@ -119,17 +119,17 @@ namespace CodeEditor2.LLM.Tools
                     return (false, $"Forbidden keyword detected: {forbidden}");
             }
 
-            // 2. 特権昇格の禁止
+            // 2. 迚ｹ讓ｩ譏・ｼ縺ｮ遖∵ｭ｢
             var sudoList = new[] { "sudo", "runas", "su " };
             if (sudoList.Any(s => command.StartsWith(s, StringComparison.OrdinalIgnoreCase)))
                 return (false, "Elevation of privilege (sudo/runas) is not allowed.");
 
-            // 3. 環境変数の読み取り/書き込み (OSによって記法が異なるため注意)
+            // 3. 迺ｰ蠅・､画焚縺ｮ隱ｭ縺ｿ蜿悶ｊ/譖ｸ縺崎ｾｼ縺ｿ (OS縺ｫ繧医▲縺ｦ險俶ｳ輔′逡ｰ縺ｪ繧九◆繧∵ｳｨ諢・
             if (command.Contains("printenv") || command.Contains("set ") || command.Contains("export "))
                 return (false, "Direct environment variable manipulation is restricted.");
 
-            // 4. パイプやリダイレクトによる外部ファイルへの書き込み/読み込みの制限
-            // プロジェクト外の重要ファイル (passwd, shadows, win.ini等) へのアクセスを簡易チェック
+            // 4. 繝代う繝励ｄ繝ｪ繝繧､繝ｬ繧ｯ繝医↓繧医ｋ螟夜Κ繝輔ぃ繧､繝ｫ縺ｸ縺ｮ譖ｸ縺崎ｾｼ縺ｿ/隱ｭ縺ｿ霎ｼ縺ｿ縺ｮ蛻ｶ髯・
+            // 繝励Ο繧ｸ繧ｧ繧ｯ繝亥､悶・驥崎ｦ√ヵ繧｡繧､繝ｫ (passwd, shadows, win.ini遲・ 縺ｸ縺ｮ繧｢繧ｯ繧ｻ繧ｹ繧堤ｰ｡譏薙メ繧ｧ繝・け
             var sensitivePaths = new[] { "/etc/", "/dev/", "C:\\Windows\\", "%WINDIR%" };
             foreach (var path in sensitivePaths)
             {
@@ -137,11 +137,11 @@ namespace CodeEditor2.LLM.Tools
                     return (false, $"Access to system sensitive path detected: {path}");
             }
 
-            // 5. ネットワーク経由のダウンロード/実行 (外部スクリプトの実行防止)
+            // 5. 繝阪ャ繝医Ρ繝ｼ繧ｯ邨檎罰縺ｮ繝繧ｦ繝ｳ繝ｭ繝ｼ繝・螳溯｡・(螟夜Κ繧ｹ繧ｯ繝ｪ繝励ヨ縺ｮ螳溯｡碁亟豁｢)
             var downloadTools = new[] { "curl", "wget", "powershell iwr", "bitsadmin" };
             if (downloadTools.Any(tool => command.Contains(tool, StringComparison.OrdinalIgnoreCase)))
             {
-                // 許可するドメインがある場合はここでホワイトリスト判定を行う
+                // 險ｱ蜿ｯ縺吶ｋ繝峨Γ繧､繝ｳ縺後≠繧句ｴ蜷医・縺薙％縺ｧ繝帙Ρ繧､繝医Μ繧ｹ繝亥愛螳壹ｒ陦後≧
                 return (false, "Network download commands are restricted.");
             }
 

@@ -29,10 +29,10 @@ namespace CodeEditor2.Data
 
         }
 
-        // プラグイン等から見つかった派生クラスをここに登録していく
+        // 繝励Λ繧ｰ繧､繝ｳ遲峨°繧芽ｦ九▽縺九▲縺滓ｴｾ逕溘け繝ｩ繧ｹ繧偵％縺薙↓逋ｻ骭ｲ縺励※縺・￥
         public static List<JsonDerivedType> DerivedTypes { get; } = new();
 
-        // Item Property Tab 追加用
+        // Item Property Tab 霑ｽ蜉逕ｨ
         public virtual void InitializePropertyForm(ItemPropertyForm form,CodeEditor2.NavigatePanel.NavigatePanelNode node,Project project)
         {
         }

@@ -67,7 +67,7 @@ namespace CodeEditor2.LLM.Tools
             {
                 if (project == null) return "Failed to execute tool. Cannot get current project.";
 
-                // 1. パスの正規化と安全性のチェック
+                // 1. 繝代せ縺ｮ豁｣隕丞喧縺ｨ螳牙・諤ｧ縺ｮ繝√ぉ繝・け
                 string searchPath = project.GetAbsolutePath(path);
 
                 if (!searchPath.StartsWith(project.RootPath, StringComparison.OrdinalIgnoreCase))
@@ -78,11 +78,11 @@ namespace CodeEditor2.LLM.Tools
                 if (!Directory.Exists(searchPath))
                     return $"Error: Directory '{path}' not found.";
 
-                // 2. ファイルのフィルタリング (Globbing)
+                // 2. 繝輔ぃ繧､繝ｫ縺ｮ繝輔ぅ繝ｫ繧ｿ繝ｪ繝ｳ繧ｰ (Globbing)
                 var matcher = new Matcher();
                 matcher.AddInclude(string.IsNullOrWhiteSpace(file_pattern) ? "**/*" : $"**/{file_pattern}");
 
-                // 無視するディレクトリ
+                // 辟｡隕悶☆繧九ョ繧｣繝ｬ繧ｯ繝医Μ
                 matcher.AddExclude("**/bin/**");
                 matcher.AddExclude("**/obj/**");
                 matcher.AddExclude("**/.git/**");
@@ -91,10 +91,10 @@ namespace CodeEditor2.LLM.Tools
                 var results = new StringBuilder();
                 var searchRegex = new Regex(regex, RegexOptions.Multiline | RegexOptions.Compiled);
 
-                // 3. 検索の実行
+                // 3. 讀懃ｴ｢縺ｮ螳溯｡・
                 foreach (var file in files)
                 {
-                    // バイナリファイル等を避けるための簡易チェック（必要に応じて拡張）
+                    // 繝舌う繝翫Μ繝輔ぃ繧､繝ｫ遲峨ｒ驕ｿ縺代ｋ縺溘ａ縺ｮ邁｡譏薙メ繧ｧ繝・け・亥ｿ・ｦ√↓蠢懊§縺ｦ諡｡蠑ｵ・・
                     if (IsBinaryFile(file)) continue;
 
                     var lines = await System.IO.File.ReadAllLinesAsync(file);
@@ -105,7 +105,7 @@ namespace CodeEditor2.LLM.Tools
                             string relPath = Path.GetRelativePath(project.RootPath, file);
                             results.AppendLine($"--- {relPath} (Line {i + 1}) ---");
 
-                            // 前後2行のコンテキストを表示
+                            // 蜑榊ｾ・陦後・繧ｳ繝ｳ繝・く繧ｹ繝医ｒ陦ｨ遉ｺ
                             int start = Math.Max(0, i - 2);
                             int end = Math.Min(lines.Length - 1, i + 2);
 
@@ -118,7 +118,7 @@ namespace CodeEditor2.LLM.Tools
                         }
                     }
 
-                    // 結果が長すぎる場合は制限
+                    // 邨先棡縺碁聞縺吶℃繧句ｴ蜷医・蛻ｶ髯・
                     if (results.Length > 1500)
                     {
                         results.AppendLine("... Search truncated: too many results. Please refine your regex or path.");
