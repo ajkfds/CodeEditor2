@@ -306,7 +306,8 @@ namespace CodeEditor2.Views
             if (skipEvents) return;
             if (CodeDocument != CodeDocument) return;
 
-            _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, selectionStart, selectionLast + 1);
+            _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, selectionStart, selectionLast);
+//            _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, selectionStart, selectionLast + 1);
         }
 
         private void TextArea_DocumentChanged(object? sender, DocumentChangedEventArgs e)

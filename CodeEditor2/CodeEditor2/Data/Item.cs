@@ -221,7 +221,7 @@ namespace CodeEditor2.Data
             private set { items = value; }
         }
 
-        public virtual void CheckStatus()
+        public virtual void PostStatusCheck()
         {
 
         }
@@ -447,8 +447,15 @@ namespace CodeEditor2.Data
         {
             get
             {
-                if (node == null) node = CreateNode();
-                return node;
+                if (node == null)
+                {
+                    Dispatcher.UIThread.Invoke(() =>
+                    {
+                        // すでに他で生成されていないか再チェック（ダブルチェック）
+                        node ??= CreateNode();
+                    });
+                }
+                return node!; // ここで!を付ける
             }
             protected set
             {

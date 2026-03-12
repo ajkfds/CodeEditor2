@@ -13,6 +13,30 @@ namespace CodeEditor2.Data
 {
     public static class DataAccess
     {
+        public static async Task<string?> TryGetChasheAsync(Project project, string relativePath)
+        {
+            if (!project.LocalFileCasheEnable)
+            {
+                return null;
+            }
+            else if (!await PasswordManager.CheckPassWord())
+            { // failed to get password
+                return null;
+            }
+            string cashePath = project.GetCahsePath(relativePath);
+            if (!System.IO.File.Exists(cashePath)) return null;
+
+            try
+            {
+                if (Global.FileEncriptionKey == null) throw new Exception("FileEncriptionKey is null");
+                return await DecryptFromFile(cashePath, Global.FileEncriptionKey);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
 
         public static async Task<string> GetFileTextAsync(Project project, string relativePath)
         {

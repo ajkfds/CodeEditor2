@@ -339,7 +339,7 @@ namespace CodeEditor2.Data
                 if (file == null) return;
                 Data.ITextFile? textFile = file as Data.ITextFile;
                 if (textFile == null) return;
-                Dispatcher.UIThread.Post(() => textFile.CheckStatus());
+                Dispatcher.UIThread.Post(() => textFile.PostStatusCheck());
             }
             catch
             {

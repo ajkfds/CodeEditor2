@@ -76,6 +76,15 @@ namespace CodeEditor2.NavigatePanel
 
         public static Action<NavigatePanelNode>? NavigatePanelNodeCreated;
 
+
+
+        public virtual void PostUpdate()
+        {
+            Dispatcher.UIThread.Post(async() =>
+            {
+                await UpdateAsync();
+            });
+        }
         /// <summary>
         /// update this node and children
         /// </summary>

@@ -135,6 +135,11 @@ namespace CodeEditor2.Data
             //}
         }
 
+        public virtual Task FileChangedAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public virtual Task OnDeletedExternallyAsync()
         {
             Remove();

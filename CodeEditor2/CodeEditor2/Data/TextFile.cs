@@ -124,7 +124,7 @@ namespace CodeEditor2.Data
         }
         public virtual Task<CodeEditor.CodeDocument> GetCodeDocumentAsync()
         {
-            PostFileCheck();
+            postFileCheck();
             if (document == null) throw new Exception();
             return Task.FromResult(document);
         }
@@ -210,10 +210,6 @@ namespace CodeEditor2.Data
             document = new CodeEditor.CodeDocument(this);
         }
 
-        protected void PostFileCheck()
-        {
-            Task.Run(async () => { await FileCheck(); });
-        }
 
         //非同期待機
         private readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
@@ -244,6 +240,11 @@ namespace CodeEditor2.Data
                         initialLoad = true;
                         CreateCodeDocument();
                         if (document == null) throw new Exception();
+                        string? cashedText = await DataAccess.TryGetChasheAsync(Project, RelativePath);
+                        if(cashedText != null)
+                        {
+                            PostStatusCheck();
+                        }
                     }
                     else
                     {
@@ -278,17 +279,17 @@ namespace CodeEditor2.Data
                         document.Clean();
                         loadFileHash = newHash;
                         if (initialLoad) document.ClearHistory();
-                        if (Controller.NavigatePanel.GetSelectedFile() == this && Dispatcher.UIThread.CheckAccess()) Controller.CodeEditor.PostRefresh();
+                        await FileChangedAsync();
                     }
                     else
                     {
-                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        await Dispatcher.UIThread.InvokeAsync(async () =>
                         {
                             document.TextDocument.Replace(0, document.TextDocument.TextLength, text);
                             document.Clean();
                             loadFileHash = newHash;
                             if (initialLoad) document.ClearHistory();
-                            if (Controller.NavigatePanel.GetSelectedFile() == this && Dispatcher.UIThread.CheckAccess()) Controller.CodeEditor.PostRefresh();
+                            await FileChangedAsync();
                         });
                     }
                 }
@@ -307,6 +308,13 @@ namespace CodeEditor2.Data
                 _fileSemaphore.Release();
             }
 
+        }
+
+        public override Task FileChangedAsync()
+        {
+            if (Controller.NavigatePanel.GetSelectedFile() == this && Dispatcher.UIThread.CheckAccess()) Controller.CodeEditor.PostRefresh();
+            if (NavigatePanelNode != null) NavigatePanelNode.PostUpdate();
+            return Task.CompletedTask;
         }
 
         public override void PostUIUpdate()
@@ -350,13 +358,17 @@ namespace CodeEditor2.Data
         public override async Task UpdateAsync()
         {
             await base.UpdateAsync();
-            PostFileCheck();
+            postFileCheck();
         }
 
 
-        public override void CheckStatus()
+        public override void PostStatusCheck()
         {
-            PostFileCheck();
+            postFileCheck();
+        }
+        protected void postFileCheck()
+        {
+            _ = Task.Run(async () => { await FileCheck(); });
         }
 
         public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token)
@@ -442,6 +454,7 @@ namespace CodeEditor2.Data
                     }
                     await textFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
                     await textFile.UpdateAsync();
+                    textFile.PostUIUpdate();
                 }
             }
 

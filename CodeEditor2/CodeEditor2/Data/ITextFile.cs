@@ -32,7 +32,7 @@ namespace CodeEditor2.Data
 
         //FileStatus? CashedStatus { get; set; }
 
-        void CheckStatus();
+        void PostStatusCheck();
         void Dispose();
 
         Task UpdateAsync();
