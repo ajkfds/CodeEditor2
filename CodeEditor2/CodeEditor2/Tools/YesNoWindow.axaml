@@ -7,8 +7,8 @@
 		Height="200"
 		Width="800"
         Title="YesNoWindow">
-	<Grid RowDefinitions="50, 20,*,30">
-		<TextBlock Name="TextBlock0" FontSize="12" Grid.Row="0" Margin="4 4 4 4">AAAA</TextBlock>
+	<Grid RowDefinitions="*,20,30">
+		<TextBlock Name="TextBlock0" FontSize="12" Grid.Row="0" Margin="4 4 4 4" TextWrapping="Wrap">AAAA</TextBlock>
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3">
 			<Button Name="YesButton">Yes</Button>
 			<Button Name="NoButton">No</Button>

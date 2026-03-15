@@ -2,8 +2,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
+using CodeEditor2.Tools;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +21,15 @@ namespace CodeEditor2.LLM
             TextBox.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
 
             StackPanel.Children.Add(TextBox);
-            StackPanel.Children.Add(ButtonBar);
+
+            HorizontalGridConstructor hgrid = new HorizontalGridConstructor();
+            hgrid.AppendContol(ModelSelector,null);
+            hgrid.AppendContolFill(ButtonBar);
+
+            StackPanel.Children.Add(hgrid.Grid);
+
+            // Add model selector and button bar to the bottom panel
+
             {
                 //                ButtonBar.Children.Add(TestButton);
                 ButtonBar.Children.Add(ClearButton);
@@ -29,6 +39,8 @@ namespace CodeEditor2.LLM
                 ButtonBar.Children.Add(SendButton);
             }
 
+            // Set ItemsSource after ModelItems is initialized
+            ModelSelector.ItemsSource = ModelItems;
 
             SendButton.PropertyChanged += (sender, args) =>
             {
@@ -87,11 +99,37 @@ namespace CodeEditor2.LLM
             AcceptsReturn = true
         };
 
+        public StackPanel BottomPanel = new StackPanel()
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            Margin = new Thickness(10, 5, 10, 5),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+        };
+
+        /// <summary>
+        /// Collection of available models for the model selector
+        /// </summary>
+        public ObservableCollection<ModelItem> ModelItems { get; } = new ObservableCollection<ModelItem>();
+
+        public ComboBox ModelSelector = new ComboBox()
+        {
+            MinWidth = 200,
+            Margin = new Thickness(0, 0, 10, 0),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+            PlaceholderText = "Select Model"
+        };
+
+        /// <summary>
+        /// Event raised when the selected model changes
+        /// </summary>
+        public event EventHandler<ModelItem?>? ModelChanged;
+
         public StackPanel ButtonBar = new StackPanel()
         {
             Background = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 20, 20, 20)),
             Orientation = Avalonia.Layout.Orientation.Horizontal,
-            Margin = new Thickness(10, 5, 10, 5),
+            Margin = new Thickness(0, 0, 0, 0),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
         };
@@ -100,43 +138,61 @@ namespace CodeEditor2.LLM
         {
             Content = "Send",
             Margin = new Thickness(0, 0, 0, 0),
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
         };
 
         public Button SaveButton = new Button()
         {
             Content = "Save",
             Margin = new Thickness(0, 0, 0, 0),
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
         };
 
         public Button AbortButton = new Button()
         {
             Content = "Abort",
             Margin = new Thickness(0, 0, 0, 0),
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
         };
 
         public Button LoadButton = new Button()
         {
             Content = "Load",
             Margin = new Thickness(0, 0, 0, 0),
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
         };
 
         public Button ClearButton = new Button()
         {
             Content = "Clear",
             Margin = new Thickness(0, 0, 0, 0),
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
         };
 
         public Button TestButton = new Button()
         {
             Content = "Test",
             Margin = new Thickness(0, 0, 0, 0),
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
         };
 
+    }
+
+    /// <summary>
+    /// Represents an LLM model item for the model selector
+    /// </summary>
+    public class ModelItem
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public object? Tag { get; set; }
+
+        public override string ToString() => Name;
     }
 }

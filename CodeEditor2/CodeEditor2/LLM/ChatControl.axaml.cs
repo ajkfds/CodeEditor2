@@ -237,6 +237,21 @@ public partial class ChatControl : UserControl
     {
         this.chat = chatModel;
         this.agent = agent;
+
+        // Populate model selector with available models
+        if (chat != null)
+        {
+            var models = chat.GetAvailableModels();
+            inputItem.ModelItems.Clear();
+            foreach (var model in models)
+            {
+                inputItem.ModelItems.Add(model);
+            }
+
+            // Register model selection changed handler
+            inputItem.ModelSelector.SelectionChanged += ModelSelector_SelectionChanged;
+        }
+
         if (initialized)
         {
             initialized = true;
@@ -244,6 +259,26 @@ public partial class ChatControl : UserControl
             {
                 await ResetAsync();
             });
+        }
+    }
+
+    /// <summary>
+    /// Handles model selector selection changed
+    /// </summary>
+    private async void ModelSelector_SelectionChanged(object? sender, Avalonia.Controls.SelectionChangedEventArgs e)
+    {
+        if (chat == null) return;
+        if (inputItem.ModelSelector.SelectedItem is ModelItem selectedModel)
+        {
+            try
+            {
+                await chat.SetModelAsync(selectedModel);
+                CodeEditor2.Controller.AppendLog($"Model changed to: {selectedModel.Name}", Avalonia.Media.Colors.Green);
+            }
+            catch (Exception ex)
+            {
+                CodeEditor2.Controller.AppendLog($"Failed to change model: {ex.Message}", Avalonia.Media.Colors.Red);
+            }
         }
     }
 
@@ -355,6 +390,7 @@ public partial class ChatControl : UserControl
         while (agent != null && !cancellationToken.IsCancellationRequested)
         {
             // Parse function call from response
+            if (result == null) return;
             string? functioncallCommand = await agent.ParseResponceAsync(result, cancellationToken);
             if (functioncallCommand == null) return;
 
@@ -682,8 +718,8 @@ public partial class ChatControl : UserControl
         }
 
         // Get and display chat messages
-        List<Microsoft.Extensions.AI.ChatMessage> chatmessages = chat.GetChatMessages();
-        foreach (Microsoft.Extensions.AI.ChatMessage chatmessage in chatmessages)
+        List<ChatMessageWrapper> chatmessages = chat.ChatMessageWrappers;
+        foreach (ChatMessageWrapper chatmessage in chatmessages)
         {
             CollapsibleTextItem resultItem = new CollapsibleTextItem(chatmessage.Text,CollapsibleTextItem.MessageType.responce);
             if (chatmessage.Role == ChatRole.System)

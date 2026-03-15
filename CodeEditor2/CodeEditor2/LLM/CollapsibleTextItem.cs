@@ -130,12 +130,12 @@ namespace CodeEditor2.LLM
         {
             if (collapsed)
             {
-                CollapseExpandButton.Content = "^";
+                CollapseExpandButton.Content = "▲";
                 textBox.Height = FontSize * 3;
             }
             else
             {
-                CollapseExpandButton.Content = "v";
+                CollapseExpandButton.Content = "▼";
                 textBox.Height = double.NaN;
             }
         }
