@@ -98,12 +98,5 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        // keep object to avoid gc 
-        public List<object> KeepObject = new List<object>();
-
-        //public virtual List<ajkControls.SelectionForm.SelectionItem> GetInputCandidates()
-        //{
-        //    return null;
-        //}
     }
 }
