@@ -51,11 +51,36 @@ namespace CodeEditor2.LLM
                 }
             }
 
+            // Initialize hamburger menu
+            hamburgerMenu.Items.Add(new MenuItem
+            {
+                Header = "Branch chat from here"
+            });
+            hamburgerMenu.Items.Add(new MenuItem
+            {
+                Header = "Delete this message"
+            });
+            hamburgerMenu.Items.Add(new MenuItem
+            {
+                Header = "Restart from here"
+            });
+            hamburgerMenu.Items.Add(new MenuItem
+            {
+                Header = "Copy all text"
+            });
+
+            // Set up hamburger button with "≡" mark
+            hamburgerButton.Content = "≡";
+            hamburgerButton.Flyout = new MenuFlyout { ItemsSource = hamburgerMenu.Items };
+
+            collapseAndMenuPanel.Children.Add(CollapseExpandButton);
+            collapseAndMenuPanel.Children.Add(hamburgerButton);
+
             {
                 textBox.Text = text;
                 textBox.Margin = new Thickness(10, 5, 10, 5);
                 textBox.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
-                textBox.InnerRightContent = CollapseExpandButton;
+                textBox.InnerRightContent = collapseAndMenuPanel;
 
                 grid.ColumnDefinitions.Add(new ColumnDefinition( GridLength.Star));
                 Grid.SetColumn(textBox, column);
@@ -162,12 +187,31 @@ namespace CodeEditor2.LLM
         };
 
 
-        public Button CollapseExpandButton = new Button()
+        private StackPanel collapseAndMenuPanel = new StackPanel()
         {
-            Content = "v",
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            Margin = new Thickness(0, 0, 0, 0),
+            Spacing = 5
+        };
+
+        public　Avalonia.Controls.Primitives.ToggleButton CollapseExpandButton = new Avalonia.Controls.Primitives.ToggleButton()
+        {
+            Content = "▼",
             Margin = new Thickness(0, 0, 0, 0),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
         };
+
+        private Menu hamburgerMenu = new Menu();
+
+        private Button hamburgerButton = new Button()
+        {
+            Content = "≡",
+            Margin = new Thickness(5, 0, 0, 0),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+            MinWidth = 30,
+            Padding = new Thickness(5, 2, 5, 2)
+        };
+
         public Avalonia.Media.Color TextColor
         {
             set
