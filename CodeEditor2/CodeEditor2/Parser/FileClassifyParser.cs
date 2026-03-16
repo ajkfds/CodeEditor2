@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
-using CodeEditor2.CodeEditor.Parser;
 
 namespace CodeEditor2.Parser
 {

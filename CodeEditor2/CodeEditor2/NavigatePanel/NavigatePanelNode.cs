@@ -48,7 +48,6 @@ namespace CodeEditor2.NavigatePanel
         }
 
 
-        private bool link = false;
 
         //public bool Link
         //{

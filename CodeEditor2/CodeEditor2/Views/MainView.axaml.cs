@@ -112,7 +112,7 @@ public partial class MainView : UserControl
         currentHistoryIndex++;
     }
 
-    private Popup backDropdownMenu;
+//    private Popup? backDropdownMenu;
 
     private List<TextReference>　selectHistories = new List<TextReference>();
     private const int selectHistoryMaxCount = 20;
@@ -143,7 +143,7 @@ public partial class MainView : UserControl
             }
             await Global.Solution.LoadSetup(Global.Solution.AbsolutePath);
         }
-        catch(Exception ex)
+        catch(Exception)
         {
             throw;
         }

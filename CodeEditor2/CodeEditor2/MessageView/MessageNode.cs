@@ -21,7 +21,6 @@ namespace CodeEditor2.MessageView
             Text = text;
         }
 
-        ListBoxItem listboxItem;
         public TextBlock textBlock = new TextBlock();
         public ListBoxItem ListBoxItem()
         {

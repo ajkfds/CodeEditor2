@@ -30,16 +30,16 @@ namespace CodeEditor2
         public static Solution Solution = new Solution();
         public static Setup Setup = new Setup();
 
-        internal static Views.CodeView codeView;
-        internal static Views.MainView mainView;
-        internal static Views.NavigateView navigateView;
-        internal static Views.MainWindow mainWindow;
-        internal static Views.LogView logView;
-        internal static Views.InfoView infoView;
+        internal static Views.CodeView codeView = null!;
+        internal static Views.MainView mainView = null!;
+        internal static Views.NavigateView navigateView = null!;
+        internal static Views.MainWindow mainWindow = null!;
+        internal static Views.LogView logView = null!;
+        internal static Views.InfoView infoView = null!;
 
         public static ObjectIDGenerator ObjectIDGenerator = new ObjectIDGenerator();
 
-        internal static Window currentWindow;
+        internal static Window currentWindow = null!;
 
         public static CodeDrawStyle DefaultDrawStyle = new CodeDrawStyle();
 

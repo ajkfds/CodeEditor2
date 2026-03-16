@@ -32,6 +32,9 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.Data
 {
+    /// <summary>
+    /// Represents a text file in the project with code editing and parsing capabilities.
+    /// </summary>
     public class TextFile : File, ITextFile
     {
         /// <summary>
@@ -40,6 +43,13 @@ namespace CodeEditor2.Data
         protected readonly ReaderWriterLockSlim textFileLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
         protected TextFile() : base() { }
+
+        /// <summary>
+        /// Creates a new TextFile instance asynchronously.
+        /// </summary>
+        /// <param name="relativePath">The relative path of the file within the project.</param>
+        /// <param name="project">The project that contains this file.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the created TextFile.</returns>
         public static async Task<TextFile> CreateAsync(string relativePath, Project project)
         {
             string name;
@@ -63,17 +73,27 @@ namespace CodeEditor2.Data
         }
 
         protected CodeEditor.CodeDocument? document = null;
+        /// <summary>
+        /// Modifies the context menu of the code editor for this text file.
+        /// </summary>
+        /// <param name="contextMenu">The context menu to modify.</param>
         public virtual void ModifyEditorContextMenu(ContextMenu contextMenu)
         {
 
         }
 
+        /// <summary>
+        /// Checks if the text file is currently unlocked (no read or write locks held).
+        /// </summary>
         public void CheckUnlocked()
         {
             if (textFileLock.IsReadLockHeld) System.Diagnostics.Debugger.Break();
             if (textFileLock.IsWriteLockHeld) System.Diagnostics.Debugger.Break();
         }
 
+        /// <summary>
+        /// Gets the unique key for this text file.
+        /// </summary>
         public virtual string Key
         {
             get
@@ -81,6 +101,11 @@ namespace CodeEditor2.Data
                 return RelativePath;
             }
         }
+
+        /// <summary>
+        /// Converts this instance to a TextFile.
+        /// </summary>
+        /// <returns>This TextFile instance.</returns>
         public TextFile ToTextFile()
         {
             return this;
@@ -90,7 +115,7 @@ namespace CodeEditor2.Data
             textFileLock.EnterWriteLock();
             try
             {
-                if (document != null) document.Dispose();
+                document?.Dispose();
                 document = null;
             }
             finally
@@ -100,7 +125,14 @@ namespace CodeEditor2.Data
             base.Dispose();
         }
 
+        /// <summary>
+        /// Gets or sets the stored vertical scroll position for this text file.
+        /// </summary>
         private double storedVerticalScrollPosition = 0;
+
+        /// <summary>
+        /// Gets or sets the stored vertical scroll position for this text file.
+        /// </summary>
         public double StoredVerticalScrollPosition
         {
             get
@@ -130,7 +162,14 @@ namespace CodeEditor2.Data
             }
         }
 
+        /// <summary>
+        /// Indicates whether a reparse has been requested for this text file.
+        /// </summary>
         protected bool reparseRequested = false;
+
+        /// <summary>
+        /// Gets or sets whether a reparse has been requested for this text file.
+        /// </summary>
         public virtual bool ReparseRequested
         {
             get
@@ -159,6 +198,9 @@ namespace CodeEditor2.Data
             }
         }
 
+        /// <summary>
+        /// Gets whether the code document is cached (loaded).
+        /// </summary>
         public bool IsCodeDocumentCashed
         {
             get
@@ -175,7 +217,14 @@ namespace CodeEditor2.Data
             }
         }
 
+        /// <summary>
+        /// The parsed document containing parsed code information.
+        /// </summary>
         protected CodeEditor.ParsedDocument? parsedDocument = null;
+
+        /// <summary>
+        /// Gets or sets the parsed document containing parsed code information.
+        /// </summary>
         public virtual CodeEditor.ParsedDocument? ParsedDocument
         {
             get
@@ -204,11 +253,20 @@ namespace CodeEditor2.Data
             }
         }
 
+        /// <summary>
+        /// Posts a parse operation for this text file.
+        /// </summary>
         public void PostParse()
         {
-            ParseWorker parseWorker = new ParseWorker();
+            ParseWorker parseWorker = new();
             Task.Run(async () => { await parseWorker.Parse(this); });
         }
+
+        /// <summary>
+        /// Accepts a new parsed document and replaces the existing one.
+        /// </summary>
+        /// <param name="newParsedDocument">The new parsed document to accept.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public virtual Task AcceptParsedDocumentAsync(CodeEditor2.CodeEditor.ParsedDocument newParsedDocument)
         {
             textFileLock.EnterWriteLock();
@@ -223,7 +281,7 @@ namespace CodeEditor2.Data
                 textFileLock.ExitWriteLock();
             }
 
-            if (oldParsedDocument != null) oldParsedDocument.Dispose();
+            oldParsedDocument?.Dispose();
 
             textFileLock.EnterWriteLock();
             try
@@ -238,6 +296,9 @@ namespace CodeEditor2.Data
             PostUIUpdate();
             return Task.CompletedTask;
         }
+        /// <summary>
+        /// Closes the text file and releases the code document if not dirty.
+        /// </summary>
         public virtual void Close()
         {
             textFileLock.EnterReadLock();
@@ -258,6 +319,9 @@ namespace CodeEditor2.Data
             doc.Dispose();
         }
 
+        /// <summary>
+        /// Gets whether the text file has unsaved changes.
+        /// </summary>
         public virtual bool Dirty
         {
             get
@@ -274,6 +338,10 @@ namespace CodeEditor2.Data
                 }
             }
         }
+        /// <summary>
+        /// Gets the code document asynchronously.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the code document.</returns>
         public virtual Task<CodeEditor.CodeDocument> GetCodeDocumentAsync()
         {
             postFileCheck();
@@ -289,7 +357,10 @@ namespace CodeEditor2.Data
             }
         }
 
-        public virtual CodeDocument CodeDocument
+        /// <summary>
+        /// Gets the code document associated with this text file.
+        /// </summary>
+        public virtual CodeDocument? CodeDocument
         {
             get
             {
@@ -326,6 +397,10 @@ namespace CodeEditor2.Data
             }
         }
 
+        /// <summary>
+        /// Saves the text file to disk asynchronously.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous save operation.</returns>
         public async virtual Task SaveAsync()
         {
             await _fileSemaphore.WaitAsync();
@@ -371,6 +446,11 @@ namespace CodeEditor2.Data
             }
         }
 
+        /// <summary>
+        /// Saves the text and returns the hash of the saved content.
+        /// </summary>
+        /// <param name="text">The text to save.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the hash string, or null if save failed.</returns>
         public async Task<string?> SaveTextAndGetHash(string text)
         {
             try
@@ -394,7 +474,7 @@ namespace CodeEditor2.Data
 
 
         //非同期待機
-        private readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _fileSemaphore = new(1, 1);
         protected virtual async Task FileCheck()
         {
             // 待ち時間 0 でトライ。入れなければ false が返る
@@ -481,7 +561,7 @@ namespace CodeEditor2.Data
                             textFileLock.EnterReadLock();
                             var doc2 = document;
                             textFileLock.ExitReadLock();
-                            if (doc2 != null) doc2.ClearHistory();
+                            doc2?.ClearHistory();
                         }
                         await FileChangedAsync();
                     }
@@ -504,7 +584,7 @@ namespace CodeEditor2.Data
                                 textFileLock.EnterReadLock();
                                 var doc2 = document;
                                 textFileLock.ExitReadLock();
-                                if (doc2 != null) doc2.ClearHistory();
+                                doc2?.ClearHistory();
                             }
                             await FileChangedAsync();
                         });
@@ -517,6 +597,7 @@ namespace CodeEditor2.Data
                 }
                 catch (Exception ex)
                 {
+                    CodeEditor2.Controller.AppendLog("Failed to load file: " + AbsolutePath + " Error: " + ex.Message, Avalonia.Media.Colors.Red);
                     if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
                 }
             }
@@ -537,7 +618,7 @@ namespace CodeEditor2.Data
             // NavigatePanelNodeへのアクセスはUIスレッド 安全ではないため、Dispatcherを使用
             Dispatcher.UIThread.Post(() =>
             {
-                if (NavigatePanelNode != null) NavigatePanelNode.PostUpdate();
+                NavigatePanelNode?.PostUpdate();
             });
             
             return Task.CompletedTask;
@@ -568,20 +649,32 @@ namespace CodeEditor2.Data
                             editorDoc.TextColors.LineInformation = new Dictionary<int, LineInformation>(textFileDoc.TextColors.LineInformation);
                         }
                     }
-                    if (NavigatePanelNode != null) NavigatePanelNode.UpdateVisual();
+                    NavigatePanelNode?.UpdateVisual();
                 });
         }
 
 
 
-        public string GetHash(string text)
+        /// <summary>
+        /// Computes the hash of the given text using XxHash64.
+        /// </summary>
+        /// <param name="text">The text to hash.</param>
+        /// <returns>The hash as a lowercase hex string.</returns>
+        public static string GetHash(string text)
         {
             byte[] data = Encoding.UTF8.GetBytes(text);
             byte[] hashBytes = XxHash64.Hash(data);
             return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         }
 
+        /// <summary>
+        /// The draw style for rendering code in this text file.
+        /// </summary>
         private CodeDrawStyle? drawStyle = null;
+
+        /// <summary>
+        /// Gets or sets the draw style for rendering code in this text file.
+        /// </summary>
         public virtual CodeDrawStyle DrawStyle
         {
             get
@@ -617,6 +710,10 @@ namespace CodeEditor2.Data
             return new TextFileNode(this);
         }
 
+        /// <summary>
+        /// Updates the text file asynchronously.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous update operation.</returns>
         public override async Task UpdateAsync()
         {
             await base.UpdateAsync();
@@ -624,30 +721,61 @@ namespace CodeEditor2.Data
         }
 
 
+        /// <summary>
+        /// Posts a status check for the text file.
+        /// </summary>
         public override void PostStatusCheck()
         {
             postFileCheck();
         }
+
+        /// <summary>
+        /// Posts a file check operation asynchronously.
+        /// </summary>
         protected void postFileCheck()
         {
             _ = Task.Run(async () => { await FileCheck(); });
         }
 
+        /// <summary>
+        /// Creates a document parser for the specified parse mode.
+        /// </summary>
+        /// <param name="parseMode">The parse mode.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>A DocumentParser instance, or null if not supported.</returns>
         public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token)
         {
             return null;
         }
 
+        /// <summary>
+        /// Gets a popup item at the specified index.
+        /// </summary>
+        /// <param name="Version">The document version.</param>
+        /// <param name="index">The index in the document.</param>
+        /// <returns>A PopupItem if available, or null.</returns>
         public virtual PopupItem? GetPopupItem(ulong Version, int index)
         {
             return null;
         }
 
+        /// <summary>
+        /// Gets auto-complete items at the specified index.
+        /// </summary>
+        /// <param name="index">The index in the document.</param>
+        /// <param name="candidateWord">The candidate word for auto-completion.</param>
+        /// <returns>A list of AutocompleteItem if available, or null.</returns>
         public virtual List<AutocompleteItem>? GetAutoCompleteItems(int index, out string? candidateWord)
         {
             candidateWord = "";
             return null;
         }
+
+        /// <summary>
+        /// Gets tool items at the specified index.
+        /// </summary>
+        /// <param name="index">The index in the document.</param>
+        /// <returns>A list of ToolItem if available, or null.</returns>
         public virtual List<ToolItem>? GetToolItems(int index)
         {
 
@@ -663,19 +791,34 @@ namespace CodeEditor2.Data
             }
         }
 
+        /// <summary>
+        /// Gets or sets the custom tool item provider.
+        /// </summary>
         public static Action<List<ToolItem>>? CustomizeTooltem;
 
+        /// <summary>
+        /// Called when text is entered in the editor.
+        /// </summary>
+        /// <param name="e">The text input event args.</param>
         public virtual void TextEntered(TextInputEventArgs e)
         {
 
         }
 
+        /// <summary>
+        /// Called when text is entering the editor.
+        /// </summary>
+        /// <param name="e">The text input event args.</param>
         public virtual void TextEntering(TextInputEventArgs e)
         {
 
         }
 
-        // parse this text file hierarchy
+        /// <summary>
+        /// Parses the text file hierarchy asynchronously.
+        /// </summary>
+        /// <param name="action">The action to perform on each text file in the hierarchy.</param>
+        /// <returns>A task that represents the asynchronous parse operation.</returns>
         public virtual async Task ParseHierarchyAsync(Action<ITextFile> action)
         {
             List<string> parsedIds = new List<string>();

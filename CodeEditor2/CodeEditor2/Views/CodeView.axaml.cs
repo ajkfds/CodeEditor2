@@ -46,14 +46,14 @@ namespace CodeEditor2.Views
 {
     public partial class CodeView : UserControl
     {
-        internal readonly TextEditor _textEditor;
+        internal readonly TextEditor _textEditor = null!;
 
-//        private readonly TextMate.Installation? _textMateInstallation;
-//        internal AutoCompleteWindow? _completionWindow;
-//        private OverloadInsightWindow? _insightWindow;
-//        private TextMateSharp.Grammars.RegistryOptions? _registryOptions;
+        //        private readonly TextMate.Installation? _textMateInstallation;
+        //        internal AutoCompleteWindow? _completionWindow;
+        //        private OverloadInsightWindow? _insightWindow;
+        //        private TextMateSharp.Grammars.RegistryOptions? _registryOptions;
 
-        private int _currentTheme = (int)ThemeName.DarkPlus;
+//        private int _currentTheme = (int)ThemeName.DarkPlus;
 
         public CodeView()
         {
@@ -185,13 +185,13 @@ namespace CodeEditor2.Views
 
 
 //        internal DispatcherTimer timer = new DispatcherTimer();
-        internal HighlightRenderer _highlightRenderer;
-        internal MarkerRenderer _markerRenderer;
-        internal FoldingManager _foldingManager;
-        internal PopupHandler codeViewPopup;
-        internal CodeViewParser codeViewParser;
-        internal PopupMenuHandler codeViewPopupMenu;
-        internal CodeCompleteHandler codeViewAutoComplete;
+        internal HighlightRenderer _highlightRenderer = null!;
+        internal MarkerRenderer _markerRenderer = null!;
+        internal FoldingManager _foldingManager = null!;
+        internal PopupHandler codeViewPopup = null!;
+        internal CodeViewParser codeViewParser = null!;
+        internal PopupMenuHandler codeViewPopupMenu = null!;
+        internal CodeCompleteHandler codeViewAutoComplete = null!;
 
         private void TextArea_KeyUp(object? sender, KeyEventArgs e)
         {

@@ -155,7 +155,6 @@ namespace CodeEditor2.CodeEditor
 
  
 
-        private readonly bool textOnly = false;
         private bool disposed = false;
         public void Dispose()
         {
@@ -307,6 +306,7 @@ namespace CodeEditor2.CodeEditor
 
         public CodeDocument Clone()
         {
+            if (this.TextFile == null) throw new Exception("TextFile is null");
             var clone = new CodeDocument(this.TextFile, this.CreateString());
             clone.CopyColorMarkFrom(this);
             clone.caretIndex = this.caretIndex;

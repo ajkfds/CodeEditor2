@@ -8,7 +8,7 @@ using CodeEditor2.Data;
 
 namespace CodeEditor2.FileTypes
 {
-    public class FileType
+    public abstract class FileType
     {
         public virtual string ID { get; protected set; }
         public virtual bool IsThisFileType(string relativeFilePath, Project project)
@@ -17,11 +17,7 @@ namespace CodeEditor2.FileTypes
         }
 
         public bool Visible { get; set; } = true;
-        public virtual Task<File> CreateFile(string relativeFilePath, Project project)
-        {
-            System.Diagnostics.Debugger.Break();
-            return Task.FromResult<File>(null);
-        }
+        public abstract Task<File> CreateFile(string relativeFilePath, Project project);
 
         public virtual void CreateNewFile(string relativeFilePath,Project project)
         {

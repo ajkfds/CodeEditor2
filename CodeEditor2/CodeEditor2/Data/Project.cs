@@ -273,7 +273,7 @@ namespace CodeEditor2.Data
         private readonly int _debounceMilliseconds = 500;
         private readonly ConcurrentDictionary<string, System.Threading.Timer> _timers = new();
 
-        private System.Threading.Timer changeDebounceTimer;
+        private System.Threading.Timer? changeDebounceTimer;
         protected FileSystemWatcher? fileSystemWatcher;
         protected void startFileSystemWatcher()
         {

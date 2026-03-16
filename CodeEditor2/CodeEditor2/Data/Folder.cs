@@ -88,7 +88,6 @@ namespace CodeEditor2.Data
             return null;
         }
 
-        private bool firstAccess = true;
         //非同期待機
         private readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
         public override async Task UpdateAsync()
@@ -129,7 +128,6 @@ namespace CodeEditor2.Data
 
         private async Task updateItems(List<string> absoluteFilePaths,List<string> absoluteFolderPaths)
         {
-            firstAccess = false;
 
             List<Item> currentItems = new List<Item>();
 

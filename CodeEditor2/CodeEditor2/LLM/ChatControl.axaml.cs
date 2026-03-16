@@ -79,7 +79,7 @@ public partial class ChatControl : UserControl
 
 
     // ScrollViewer and auto-scroll control fields
-    private ScrollViewer scrollViewer;
+    private ScrollViewer? scrollViewer;
     /// <summary>
     /// Flag indicating whether system is scrolling
     /// Used for auto-scroll control
@@ -574,7 +574,7 @@ public partial class ChatControl : UserControl
                 }
             }
             // Do nothing if cancelled
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
 
             }

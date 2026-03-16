@@ -61,18 +61,20 @@ namespace CodeEditor2.Views
             FontSize = 12.0;
         }
 
-        internal static Bitmap ActiveCloseButtonBmp;
-        internal static Bitmap InactivecloseButtonBmp;
+        internal static Bitmap? ActiveCloseButtonBmp;
+        internal static Bitmap? InactivecloseButtonBmp;
 
 
 
         private void CloseButton_PointerExited(object? sender, PointerEventArgs e)
         {
+            if (CloseButton == null) return;
             CloseButton.Source = InactivecloseButtonBmp;
         }
 
         private void CloseButton_PointerEntered(object? sender, PointerEventArgs e)
         {
+            if(CloseButton == null) return;
             CloseButton.Source = ActiveCloseButtonBmp;
         }
 

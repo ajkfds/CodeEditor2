@@ -553,6 +553,7 @@ namespace CodeEditor2.Data
                         }
                     });
                 }
+                if (node == null) throw new Exception();
                 return node;
             }
             protected set
