@@ -333,14 +333,14 @@ namespace CodeEditor2.Views
             // copy mark fro CodeDocument to Renderer
             _markerRenderer.ClearMark();
 
-            if (TextFile == null || TextFile.CodeDocument == null) return;
-            _markerRenderer.SetMarks(TextFile.CodeDocument.Marks.marks);
+            if (CodeDocument == null) return;
+            _markerRenderer.SetMarks(CodeDocument.Marks.marks);
         }
 
         public void UpdateFoldings()
         {
-            if (TextFile == null || TextFile.CodeDocument == null) return;
-            _foldingManager.UpdateFoldings(TextFile.CodeDocument.Foldings.Foldings,-1);
+            if (CodeDocument == null) return;
+            _foldingManager.UpdateFoldings(CodeDocument.Foldings.Foldings,-1);
         }
 
         private bool skipEvents = false;
@@ -359,7 +359,15 @@ namespace CodeEditor2.Views
             skipEvents = true;
             { // remove current CodeDocument event and folding
                 // store current scroll position
-                if (TextFile != null) TextFile.StoredVerticalScrollPosition = _textEditor.VerticalOffset;
+                if (TextFile != null)
+                {
+                    // Save current editor CodeDocument content to TextFile.CodeDocument before switching
+                    if (editorCodeDocument != null && TextFile.CodeDocument != null)
+                    {
+                        TextFile.CodeDocument.CopyTextOnlyFrom(editorCodeDocument);
+                    }
+                    TextFile.StoredVerticalScrollPosition = _textEditor.VerticalOffset;
+                }
 
                 if (codeViewPopupMenu.Snippet != null) codeViewPopupMenu.AbortInteractiveSnippet();
                 if (codeViewPopupMenu.IsOpened) codeViewPopupMenu.HidePopupMenu();
@@ -371,6 +379,7 @@ namespace CodeEditor2.Views
             if (textFile == null || textFile.CodeDocument == null)
             {
                 TextFile = null;
+                editorCodeDocument = null;
                 skipEvents = false;
                 return;
             }
@@ -378,8 +387,12 @@ namespace CodeEditor2.Views
             { // set new CodeDocument and event
                 TextFile = textFile;
 
+                // Clone the TextFile's CodeDocument for editor use
+                editorCodeDocument = textFile.CodeDocument.Clone();
+                _textEditor.Document = editorCodeDocument.TextDocument;
+
                 // restore caret position
-                _textEditor.CaretOffset = textFile.CodeDocument.CaretIndex;
+                _textEditor.CaretOffset = editorCodeDocument.CaretIndex;
                 _textEditor.ScrollToVerticalOffset(TextFile.StoredVerticalScrollPosition);
 
                 if (parseEntry && !Global.StopParse) codeViewParser.EntryParse();
@@ -444,9 +457,8 @@ namespace CodeEditor2.Views
         {
             _markerRenderer.ClearMark();
 
-            if (TextFile == null) return;
-            if (TextFile.CodeDocument == null) return;
-            _markerRenderer.SetMarks(TextFile.CodeDocument.Marks.marks);
+            if (CodeDocument == null) return;
+            _markerRenderer.SetMarks(CodeDocument.Marks.marks);
 
             if (CodeDocument != null) CodeDocument.Changing += CodeDocument_Changing;
             _foldingManager = FoldingManager.Install(_textEditor.TextArea);
@@ -456,15 +468,6 @@ namespace CodeEditor2.Views
         {
             if (CodeDocument == null) return;
             _textEditor.ScrollToLine(CodeDocument.GetLineAt(_textEditor.CaretOffset));
-        }
-
-        public CodeEditor.CodeDocument? CodeDocument
-        {
-            get
-            {
-                if (TextFile == null) return null;
-                return TextFile.CodeDocument;
-            }
         }
 
         private Data.TextFile? textFile;
@@ -488,6 +491,14 @@ namespace CodeEditor2.Views
             }
         }
 
+        private CodeEditor.CodeDocument? editorCodeDocument;
+        public CodeEditor.CodeDocument? CodeDocument
+        {
+            get
+            {
+                return editorCodeDocument;
+            }
+        }
 
 
         // -----------------------------------------------------------

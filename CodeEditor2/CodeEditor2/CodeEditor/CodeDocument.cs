@@ -282,10 +282,10 @@ namespace CodeEditor2.CodeEditor
             TextColors.LineInformation = document.TextColors.LineInformation;
             lock (Marks.marks)
             {
-                Marks.marks = document.Marks.marks;
+                Marks.marks = new List<CodeDrawStyle.MarkDetail>(document.Marks.marks);
             }
             document.Foldings.Foldings.Sort((x, y) => { return x.StartOffset - y.StartOffset; });
-            Foldings.Foldings = document.Foldings.Foldings;
+            Foldings.Foldings = new List<NewFolding>(document.Foldings.Foldings);
             if(Global.codeView.TextFile != null && Global.codeView.TextFile.CodeDocument == this && System.Threading.Thread.CurrentThread.Name == "UI" )
             {
                 Global.codeView.UpdateFoldings();
@@ -302,6 +302,18 @@ namespace CodeEditor2.CodeEditor
             var snap = document.textDocument.CreateSnapshot();
             textDocument.Text = snap.Text;
             Version = document.Version;
+        }
+
+        public CodeDocument Clone()
+        {
+            var clone = new CodeDocument(this.TextFile, this.CreateString());
+            clone.CopyColorMarkFrom(this);
+            clone.caretIndex = this.caretIndex;
+            clone.selectionStart = this.selectionStart;
+            clone.selectionLast = this.selectionLast;
+            clone.CleanVersion = this.CleanVersion;
+            clone.Version = this.Version;
+            return clone;
         }
 
         public void ClearColorMark()
