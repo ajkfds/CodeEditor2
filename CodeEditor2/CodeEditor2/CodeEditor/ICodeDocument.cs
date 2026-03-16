@@ -64,8 +64,6 @@ namespace CodeEditor2.CodeEditor
         public void CopyTextOnlyFrom(CodeDocument document);
 
         public void ClearColorMark();
-
-        public void Undo();
         public void Replace(int index, int replaceLength, byte colorIndex, string text);
         public int GetLineAt(int index);
 

@@ -23,7 +23,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.CodeEditor
 {
-    public class CodeDocument : IDisposable
+    public class CodeDocument : IDisposable, ICodeDocument
     {
         public CodeDocument()
         {

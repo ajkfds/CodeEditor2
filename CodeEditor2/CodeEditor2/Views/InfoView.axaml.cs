@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using Avalonia.Styling;
 using Avalonia.Layout;
 using System.Linq;
+using Avalonia.Threading;
 
 namespace CodeEditor2.Views
 {
@@ -37,6 +38,12 @@ namespace CodeEditor2.Views
 
         public void UpdateMessages(CodeEditor.ParsedDocument parsedDocument)
         {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.Post(() => { UpdateMessages(parsedDocument); });
+                return;
+            }
+
 
             lock (Items)
             {

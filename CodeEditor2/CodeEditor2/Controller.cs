@@ -55,7 +55,7 @@ namespace CodeEditor2
                 await Dispatcher.UIThread.InvokeAsync(async() => { 
                     return await AppendLogAndGetItem(message, color); }
                 );
-                return null;
+                throw new Exception();
             }
 
             return Global.logView.AppendLogAndGetLastItem(message, color);
@@ -80,6 +80,15 @@ namespace CodeEditor2
 
         public static bool SelectText(Data.TextReference textReference)
         {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    SelectText(textReference);
+                });
+                return true;
+            }
+
             Data.ITextFile? file = textReference.TextFile;
             if (file == null) return false;
 
@@ -184,44 +193,6 @@ namespace CodeEditor2
 
         }
 
-        //public static System.Windows.Forms.DialogResult ShowMessageBox(string text, string caption, System.Windows.Forms.MessageBoxButtons buttons, System.Windows.Forms.MessageBoxIcon icon)
-        //{
-        //    return System.Windows.Forms.MessageBox.Show(text, caption, buttons, icon);
-        //}
-        //public static System.Windows.Forms.DialogResult ShowMessageBox(string text, string caption, System.Windows.Forms.MessageBoxButtons buttons)
-        //{
-        //    return System.Windows.Forms.MessageBox.Show(text, caption, buttons);
-        //}
-
-        //public static async void ShowForm(Avalonia.Controls.Window form)
-        //{
-        //    form.Show(Global.mainWindow);
-        //}
-
-        //public static async Task ShowDialogForm(Avalonia.Controls.Window form)
-        //{
-        //    await form.ShowDialog(Global.mainWindow);
-        //}
-
-
-        //public static System.Windows.Forms.DialogResult ShowDialogForm(System.Windows.Forms.CommonDialog dialog)
-        //{
-        //    return dialog.ShowDialog(Global.mainForm);
-        //}
-        //public static void ShowForm(System.Windows.Forms.Form form, System.Drawing.Point position)
-        //{
-        //    form.Show(Global.mainForm);
-        //    form.Location = position;
-        //}
-
-        //public static void DisposeOwndesForms()
-        //{
-        //    System.Windows.Forms.Form[] forms = Global.mainForm.OwnedForms;
-        //    for (int i = forms.Count(); i >= 0; i--)
-        //    {
-        //        forms[i].Close();
-        //    }
-        //}
 
 
 

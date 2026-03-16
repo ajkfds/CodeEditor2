@@ -220,10 +220,12 @@ namespace CodeEditor2
 
             public static void PostClearHighlight()
             {
-                if (!Dispatcher.UIThread.CheckAccess()) Dispatcher.UIThread.Post(() => {
-                    PostClearHighlight();
+                if (!Dispatcher.UIThread.CheckAccess()) {
+                    Dispatcher.UIThread.Post(() => {
+                        PostClearHighlight();
+                    });
                     return;
-                });
+                }
                 if (Global.codeView.CodeDocument == null) return;
                 Global.codeView.CodeDocument.HighLights.ClearHighlight();
             }
@@ -241,10 +243,11 @@ namespace CodeEditor2
             }
             public static void PostRefresh()
             {
-                if (!Dispatcher.UIThread.CheckAccess()) Dispatcher.UIThread.Post(() => {
-                    PostRefresh();
+                if (!Dispatcher.UIThread.CheckAccess())
+                {
+                    Dispatcher.UIThread.Post(() => { PostRefresh(); });
                     return;
-                });
+                }
 
                 Global.codeView.Redraw();
                 Global.codeView.UpdateMarks();
@@ -252,10 +255,10 @@ namespace CodeEditor2
 
             public static void PostScrollToCaret()
             {
-                if (!Dispatcher.UIThread.CheckAccess()) Dispatcher.UIThread.Post(() => {
-                    PostScrollToCaret();
+                if (!Dispatcher.UIThread.CheckAccess()){
+                    Dispatcher.UIThread.Post(() => { PostScrollToCaret(); });
                     return;
-                });
+                }
                 Global.codeView.ScrollToCaret();
             }
 

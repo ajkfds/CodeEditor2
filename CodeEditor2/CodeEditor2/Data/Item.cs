@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.Data
@@ -30,14 +31,19 @@ namespace CodeEditor2.Data
     //    [JsonDerivedType(typeof(TextFile), typeDiscriminator: "TextFile")]
     public class Item : IDisposable
     {
+        /// <summary>
+        /// Lock for thread-safe access to Item properties
+        /// </summary>
+        protected readonly ReaderWriterLockSlim itemLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+
         protected Item() { }
 
         /*
-        
+
         Item        <-- File    <-- TextFile
                     <-- Folder  <-- Project
-         
-        
+
+
         (ITextFile) <-- TextFile
         */
 
@@ -64,15 +70,31 @@ namespace CodeEditor2.Data
         {
             get
             {
-                Item? ret;
-                if (parent == null) return null;
-                if (!parent.TryGetTarget(out ret)) return null;
-                return ret;
+                itemLock.EnterReadLock();
+                try
+                {
+                    Item? ret;
+                    if (parent == null) return null;
+                    if (!parent.TryGetTarget(out ret)) return null;
+                    return ret;
+                }
+                finally
+                {
+                    itemLock.ExitReadLock();
+                }
             }
             set
             {
                 if (value == null) return;
-                parent = new WeakReference<Item>(value);
+                itemLock.EnterWriteLock();
+                try
+                {
+                    parent = new WeakReference<Item>(value);
+                }
+                finally
+                {
+                    itemLock.ExitWriteLock();
+                }
             }
         }
 
@@ -191,11 +213,39 @@ namespace CodeEditor2.Data
             {
                 return RelativePath;
             }
+            set
+            {
+
+            }
         }
 
+        private bool ignore = false;
         public virtual bool Ignore
         {
-            get; set;
+            get
+            {
+                itemLock.EnterReadLock();
+                try
+                {
+                    return ignore;
+                }
+                finally
+                {
+                    itemLock.ExitReadLock();
+                }
+            }
+            set
+            {
+                itemLock.EnterWriteLock();
+                try
+                {
+                    ignore = value;
+                }
+                finally
+                {
+                    itemLock.ExitWriteLock();
+                }
+            }
         }
 
         /// <summary>
@@ -231,20 +281,64 @@ namespace CodeEditor2.Data
         {
             get
             {
-                return isDeleted;
+                itemLock.EnterReadLock();
+                try
+                {
+                    return isDeleted;
+                }
+                finally
+                {
+                    itemLock.ExitReadLock();
+                }
             }
-            set 
+            set
             {
-                isDeleted = value;
+                itemLock.EnterWriteLock();
+                try
+                {
+                    isDeleted = value;
+                }
+                finally
+                {
+                    itemLock.ExitWriteLock();
+                }
             }
         }
 
-        public virtual FileSystemInfo? FileSystemInfo { get; internal set; }
+        private FileSystemInfo? fileSystemInfo = null;
+        public virtual FileSystemInfo? FileSystemInfo
+        {
+            get
+            {
+                itemLock.EnterReadLock();
+                try
+                {
+                    return fileSystemInfo;
+                }
+                finally
+                {
+                    itemLock.ExitReadLock();
+                }
+            }
+            internal set
+            {
+                itemLock.EnterWriteLock();
+                try
+                {
+                    fileSystemInfo = value;
+                }
+                finally
+                {
+                    itemLock.ExitWriteLock();
+                }
+            }
+        }
+
         public virtual void Remove()
         {
             if (!Dispatcher.UIThread.CheckAccess())
             {
-                Remove();
+                Dispatcher.UIThread.Post(() => { Remove(); });
                 return;
             }
             if (Parent != null)
@@ -418,6 +512,7 @@ namespace CodeEditor2.Data
 
         public virtual void Dispose()
         {
+            itemLock?.Dispose();
         }
 
         /// <summary>
@@ -442,7 +537,7 @@ namespace CodeEditor2.Data
         }
 
 
-        protected NavigatePanel.NavigatePanelNode? node;
+        private NavigatePanel.NavigatePanelNode? node = null;
         public virtual NavigatePanel.NavigatePanelNode NavigatePanelNode
         {
             get
@@ -452,14 +547,25 @@ namespace CodeEditor2.Data
                     Dispatcher.UIThread.Invoke(() =>
                     {
                         // すでに他で生成されていないか再チェック（ダブルチェック）
-                        node ??= CreateNode();
+                        if (node == null)
+                        {
+                            node = CreateNode();
+                        }
                     });
                 }
-                return node!; // ここで!を付ける
+                return node;
             }
             protected set
             {
-                node = value;
+                itemLock.EnterWriteLock();
+                try
+                {
+                    node = value;
+                }
+                finally
+                {
+                    itemLock.ExitWriteLock();
+                }
             }
         }
 
