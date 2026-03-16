@@ -10,6 +10,7 @@ using CodeEditor2.CodeEditor.CodeComplete;
 using CodeEditor2.CodeEditor.Parser;
 using CodeEditor2.CodeEditor.PopupHint;
 using CodeEditor2.CodeEditor.PopupMenu;
+using CodeEditor2.CodeEditor.TextDecollation;
 using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
 using CodeEditor2.Tools;
@@ -555,6 +556,17 @@ namespace CodeEditor2.Data
                         textFileLock.ExitReadLock();
 
                         if (parsed != null) Controller.MessageView.Update(parsed);
+
+                        // Copy color information from TextFile's CodeDocument to the editor's CodeDocument
+                        textFileLock.EnterReadLock();
+                        var textFileDoc = document;
+                        textFileLock.ExitReadLock();
+
+                        var editorDoc = Global.codeView.CodeDocument;
+                        if (textFileDoc != null && editorDoc != null && textFileDoc != editorDoc)
+                        {
+                            editorDoc.TextColors.LineInformation = new Dictionary<int, LineInformation>(textFileDoc.TextColors.LineInformation);
+                        }
                     }
                     if (NavigatePanelNode != null) NavigatePanelNode.UpdateVisual();
                 });
