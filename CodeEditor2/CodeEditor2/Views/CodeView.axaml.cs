@@ -177,13 +177,7 @@ namespace CodeEditor2.Views
             Editor.ContextMenu = contextMenu;
         }
 
-
-
-
         internal ContextMenu contextMenu = new ContextMenu();
-
-
-
 //        internal DispatcherTimer timer = new DispatcherTimer();
         internal HighlightRenderer _highlightRenderer = null!;
         internal MarkerRenderer _markerRenderer = null!;
@@ -193,6 +187,40 @@ namespace CodeEditor2.Views
         internal PopupMenuHandler codeViewPopupMenu = null!;
         internal CodeCompleteHandler codeViewAutoComplete = null!;
 
+        // properties
+
+        private Data.TextFile? textFile;
+        public Data.TextFile? TextFile
+        {
+            get
+            {
+                return textFile;
+            }
+            set
+            {
+                textFile = value;
+                if (CodeDocument == null)
+                {
+
+                }
+                else
+                {
+                    _textEditor.Document = CodeDocument.TextDocument;
+                }
+            }
+        }
+
+        public CodeEditor.CodeDocument? CodeDocument
+        {
+            get
+            {
+                if (TextFile == null) return null;
+                return TextFile.CodeDocument;
+            }
+        }
+
+
+        // Event Handler
         private void TextArea_KeyUp(object? sender, KeyEventArgs e)
         {
         }
@@ -362,10 +390,10 @@ namespace CodeEditor2.Views
                 if (TextFile != null)
                 {
                     // Save current editor CodeDocument content to TextFile.CodeDocument before switching
-                    if (editorCodeDocument != null && TextFile.CodeDocument != null)
-                    {
-                        TextFile.CodeDocument.CopyTextOnlyFrom(editorCodeDocument);
-                    }
+                    //if (editorCodeDocument != null && TextFile.CodeDocument != null)
+                    //{
+                    //    TextFile.CodeDocument.CopyTextOnlyFrom(editorCodeDocument);
+                    //}
                     TextFile.StoredVerticalScrollPosition = _textEditor.VerticalOffset;
                 }
 
@@ -379,7 +407,7 @@ namespace CodeEditor2.Views
             if (textFile == null || textFile.CodeDocument == null)
             {
                 TextFile = null;
-                editorCodeDocument = null;
+//                editorCodeDocument = null;
                 skipEvents = false;
                 return;
             }
@@ -388,11 +416,11 @@ namespace CodeEditor2.Views
                 TextFile = textFile;
 
                 // Clone the TextFile's CodeDocument for editor use
-                editorCodeDocument = textFile.CodeDocument.Clone();
-                _textEditor.Document = editorCodeDocument.TextDocument;
+//                editorCodeDocument = textFile.CodeDocument.Clone();
+//                _textEditor.Document = editorCodeDocument.TextDocument;
 
                 // restore caret position
-                _textEditor.CaretOffset = editorCodeDocument.CaretIndex;
+//                _textEditor.CaretOffset = editorCodeDocument.CaretIndex;
                 _textEditor.ScrollToVerticalOffset(TextFile.StoredVerticalScrollPosition);
 
                 if (parseEntry && !Global.StopParse) codeViewParser.EntryParse();
@@ -470,35 +498,6 @@ namespace CodeEditor2.Views
             _textEditor.ScrollToLine(CodeDocument.GetLineAt(_textEditor.CaretOffset));
         }
 
-        private Data.TextFile? textFile;
-        public Data.TextFile? TextFile
-        {
-            get
-            {
-                return textFile;
-            }
-            set
-            {
-                textFile = value;
-                if(CodeDocument == null)
-                {
-
-                }
-                else
-                {
-                    _textEditor.Document = CodeDocument.TextDocument;
-                }
-            }
-        }
-
-        private CodeEditor.CodeDocument? editorCodeDocument;
-        public CodeEditor.CodeDocument? CodeDocument
-        {
-            get
-            {
-                return editorCodeDocument;
-            }
-        }
 
 
         // -----------------------------------------------------------

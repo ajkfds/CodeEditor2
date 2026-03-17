@@ -24,9 +24,10 @@ namespace CodeEditor2
                 {
                     await Dispatcher.UIThread.InvokeAsync(async() => {
                         await SetTextFileAsync(textFile, parseEntry);
-                        return;
                     });
+                    return;
                 }
+
                 if (textFile == null)
                 {
                     await Global.codeView.SetTextFileAsync(null,false);

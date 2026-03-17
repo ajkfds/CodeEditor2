@@ -631,7 +631,6 @@ namespace CodeEditor2.Data
                 {
                     if (await Controller.CodeEditor.GetTextFileAsync() == this)
                     {
-                        Controller.CodeEditor.PostRefresh();
                         textFileLock.EnterReadLock();
                         var parsed = parsedDocument;
                         textFileLock.ExitReadLock();
@@ -644,10 +643,12 @@ namespace CodeEditor2.Data
                         textFileLock.ExitReadLock();
 
                         var editorDoc = Global.codeView.CodeDocument;
-                        if (textFileDoc != null && editorDoc != null && textFileDoc != editorDoc)
+                        if (textFileDoc != null && editorDoc != null && textFileDoc.Version >= editorDoc.Version)
                         {
-                            editorDoc.TextColors.LineInformation = new Dictionary<int, LineInformation>(textFileDoc.TextColors.LineInformation);
+                            editorDoc = textFileDoc.Clone();
+//                            editorDoc.TextColors.LineInformation = new Dictionary<int, LineInformation>(textFileDoc.TextColors.LineInformation);
                         }
+                        Controller.CodeEditor.PostRefresh();
                     }
                     NavigatePanelNode?.UpdateVisual();
                 });
