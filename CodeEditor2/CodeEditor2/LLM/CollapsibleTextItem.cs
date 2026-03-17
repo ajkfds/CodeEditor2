@@ -52,26 +52,31 @@ namespace CodeEditor2.LLM
             }
 
             // Initialize hamburger menu
-            hamburgerMenu.Items.Add(new MenuItem
+            MenuFlyout hamburgerFlyout = new MenuFlyout();
+            hamburgerFlyout.Items.Add(new MenuItem
             {
-                Header = "Branch chat from here"
+                Header = "Branch chat from here",
+                MinWidth = 200
             });
-            hamburgerMenu.Items.Add(new MenuItem
+            hamburgerFlyout.Items.Add(new MenuItem
             {
-                Header = "Delete this message"
+                Header = "Delete this message",
+                MinWidth = 200
             });
-            hamburgerMenu.Items.Add(new MenuItem
+            hamburgerFlyout.Items.Add(new MenuItem
             {
-                Header = "Restart from here"
+                Header = "Restart from here",
+                MinWidth = 200
             });
-            hamburgerMenu.Items.Add(new MenuItem
+            hamburgerFlyout.Items.Add(new MenuItem
             {
-                Header = "Copy all text"
+                Header = "Copy all text",
+                MinWidth = 200
             });
 
             // Set up hamburger button with "≡" mark
             hamburgerButton.Content = "≡";
-            hamburgerButton.Flyout = new MenuFlyout { ItemsSource = hamburgerMenu.Items };
+            hamburgerButton.Flyout = hamburgerFlyout;
 
             collapseAndMenuPanel.Children.Add(CollapseExpandButton);
             collapseAndMenuPanel.Children.Add(hamburgerButton);
