@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using CodeEditor2.CodeEditor.PopupMenu;
+using CodeEditor2.Snippets;
 using CodeEditor2.Views;
 using System;
 using System.Collections.Generic;
@@ -20,21 +21,17 @@ namespace CodeEditor2
             }
             public static async Task SetTextFileAsync(Data.TextFile? textFile, bool parseEntry)
             {
-                if (!Dispatcher.UIThread.CheckAccess())
-                {
-                    await Dispatcher.UIThread.InvokeAsync(async() => {
-                        await SetTextFileAsync(textFile, parseEntry);
-                    });
-                    return;
-                }
-
                 if (textFile == null)
                 {
-                    await Global.codeView.SetTextFileAsync(null,false);
+                    await Dispatcher.UIThread.InvokeAsync(async () => {
+                        await Global.codeView.SetTextFileAsync(null, false);
+                    });
                 }
                 else
                 {
-                    await Global.codeView.SetTextFileAsync(textFile, parseEntry);
+                    await Dispatcher.UIThread.InvokeAsync(async () => {
+                        await Global.codeView.SetTextFileAsync(textFile, parseEntry);
+                    });
                 }
             }
 
@@ -49,13 +46,7 @@ namespace CodeEditor2
 
             public static void SetCaretPosition(int index)
             {
-                if (!Dispatcher.UIThread.CheckAccess())
-                {
-                    Dispatcher.UIThread.Invoke(() => {
-                        SetCaretPosition(index);
-                        return;
-                    });
-                }
+                if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
                 Global.codeView.SetCaretPosition(index);
             }
 
@@ -129,14 +120,15 @@ namespace CodeEditor2
                 Global.codeView.codeViewPopupMenu.UpdateAutoComplete(candidates);
             }
 
-            public static void RequestReparse()
+            public static void RequestReparsePost()
             {
                 if (!Dispatcher.UIThread.CheckAccess())
                 {
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        return Global.codeView.TextFile;
+                        Global.codeView.RequestReparse();
                     });
+                    return;
                 }
                 if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
                 Global.codeView.RequestReparse();
