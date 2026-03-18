@@ -195,7 +195,7 @@ namespace CodeEditor2.NavigatePanel
         {
             if(Item == null || Item.IsDeleted)
             {
-                Controller.NavigatePanel.RemoveNode(this);
+                Controller.NavigatePanel.RemoveNodePost(this);
                 return;
             }
 
@@ -417,7 +417,7 @@ namespace CodeEditor2.NavigatePanel
                 }
             }
 
-            await CodeEditor2.Controller.NavigatePanel.UpdateFolder(node);
+            await CodeEditor2.Controller.NavigatePanel.UpdateFolderAsync(node);
         }
 
         private async void menuItem_Delete_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

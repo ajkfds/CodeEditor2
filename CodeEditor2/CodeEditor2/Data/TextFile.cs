@@ -387,7 +387,7 @@ namespace CodeEditor2.Data
 
             if(Controller.NavigatePanel.GetSelectedFile() == this)
             {
-                Controller.NavigatePanel.SelectNode(Project.NavigatePanelNode);
+                Controller.NavigatePanel.SelectNodePost(Project.NavigatePanelNode);
             }
 
             if (Parent != null)
@@ -610,16 +610,12 @@ namespace CodeEditor2.Data
 
         public override Task FileChangedAsync()
         {
-            if (Controller.NavigatePanel.GetSelectedFile() == this && Dispatcher.UIThread.CheckAccess()) 
+            if (Dispatcher.UIThread.CheckAccess() && Controller.NavigatePanel.GetSelectedFile() == this) 
             {
                 Controller.CodeEditor.PostRefresh();
             }
             
-            // NavigatePanelNodeへのアクセスはUIスレッド 安全ではないため、Dispatcherを使用
-            Dispatcher.UIThread.Post(() =>
-            {
-                NavigatePanelNode?.PostUpdate();
-            });
+            NavigatePanelNode?.PostUpdate();
             
             return Task.CompletedTask;
         }

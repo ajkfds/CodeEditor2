@@ -53,6 +53,7 @@ namespace CodeEditor2.LLM
 
             // Initialize hamburger menu
             MenuFlyout hamburgerFlyout = new MenuFlyout();
+
             hamburgerFlyout.Items.Add(new MenuItem
             {
                 Header = "Branch chat from here",
@@ -68,11 +69,14 @@ namespace CodeEditor2.LLM
                 Header = "Restart from here",
                 MinWidth = 200
             });
-            hamburgerFlyout.Items.Add(new MenuItem
+
+            MenuItem copyAllTextMenuItem = new MenuItem
             {
                 Header = "Copy all text",
                 MinWidth = 200
-            });
+            };
+            copyAllTextMenuItem.Click += CopyAllTextMenuItem_Click;
+            hamburgerFlyout.Items.Add(copyAllTextMenuItem);
 
             // Set up hamburger button with "≡" mark
             hamburgerButton.Content = "≡";
@@ -137,6 +141,22 @@ namespace CodeEditor2.LLM
             CollapseExpandButton.Click += CollapseExpandButton_Click;
         }
 
+        private void CopyAllTextMenuItem_Click1(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void CopyAllTextMenuItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            try
+            {
+                var top = TopLevel.GetTopLevel(this);
+                top?.Clipboard?.SetTextAsync(textBox.Text);
+            }catch (Exception ex)
+            {
+                CodeEditor2.Controller.AppendLog("#Exception " + ex.Message, Avalonia.Media.Colors.Red);
+            }
+        }
 
         private bool collapsed = false;
         public bool Collapsed

@@ -46,6 +46,16 @@ namespace CodeEditor2.Views
             NavigatePanelNode? node = TreeControl.GetSelectedNode() as NavigatePanelNode;
             return node;
         }
+        internal IReadOnlyList<NavigatePanelNode> GetSelectedNodes()
+        {
+            List<NavigatePanelNode> nodes = new List<NavigatePanelNode>();
+            foreach(var node in TreeControl.GetSelectedNodes())
+            {
+                NavigatePanelNode? nnode = node as NavigatePanelNode;
+                if(nnode!=null) nodes.Add(nnode);
+            }
+            return nodes;
+        }
 
         internal void SelectNode(NavigatePanelNode node)
         {

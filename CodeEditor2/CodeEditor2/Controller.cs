@@ -96,7 +96,7 @@ namespace CodeEditor2
             if (file != currentFile)
             {
                 NavigatePanelNode node = file.NavigatePanelNode;
-                NavigatePanel.SelectNode(node);
+                NavigatePanel.SelectNodePost(node);
             }
             CodeEditor.SetSelection(textReference.StartIndex, textReference.StartIndex + textReference.Length);
             return true;

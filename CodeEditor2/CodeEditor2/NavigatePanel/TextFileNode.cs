@@ -89,7 +89,7 @@ namespace CodeEditor2.NavigatePanel
                     Avalonia.Media.Color.FromArgb(100, 200, 200, 200)
                     );
             }
-            Controller.NavigatePanel.UpdateVisual();
+            Controller.NavigatePanel.UpdateVisualPost();
         }
 
         public override async void OnSelected()
