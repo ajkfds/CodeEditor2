@@ -49,17 +49,6 @@ namespace CodeEditor2.Data
 
 
 
-        /// <summary>
-        /// Debug feature: Retrieve the Object ID to distinguish individual objects.
-        /// </summary>
-        public long ObjectID
-        {
-            get
-            {
-                bool firstTime;
-                return Global.ObjectIDGenerator.GetId(this, out firstTime);
-            }
-        }
 
         // Maintain references to parent Items in the tree structure.
         // Items hold references from parent to child, while references to parents are held as weak references.

@@ -83,6 +83,7 @@ namespace CodeEditor2.Setups
                 Setup? setup = System.Text.Json.JsonSerializer.Deserialize<Setup>(file, options);
                 if( setup != null) Global.Setup = setup;
             }
+            Global.IsBooting = false;
         }
 
     }

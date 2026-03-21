@@ -37,7 +37,6 @@ namespace CodeEditor2
         internal static Views.LogView logView = null!;
         internal static Views.InfoView infoView = null!;
 
-        public static ObjectIDGenerator ObjectIDGenerator = new ObjectIDGenerator();
 
         internal static Window currentWindow = null!;
 
@@ -50,6 +49,7 @@ namespace CodeEditor2
         public static int count = 0;
 
         public static bool StopParse = false;
+        public static bool IsBooting = true;
 
 
         public static byte[]? FileEncriptionKey = null;

@@ -41,6 +41,7 @@ namespace CodeEditor2.Data
         /// Lock for thread-safe access to TextFile properties
         /// </summary>
         protected readonly ReaderWriterLockSlim textFileLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+        // do not call await in locked status
 
         protected TextFile() : base() { }
 
@@ -506,11 +507,6 @@ namespace CodeEditor2.Data
                             initialLoad = true;
                             CreateCodeDocument();
                             if (document == null) throw new Exception();
-                            string? cashedText = await DataAccess.TryGetChasheAsync(Project, RelativePath);
-                            if(cashedText != null)
-                            {
-                                PostStatusCheck();
-                            }
                         }
                         else
                         {
@@ -520,6 +516,15 @@ namespace CodeEditor2.Data
                     finally
                     {
                         textFileLock.ExitWriteLock();
+                    }
+
+                    if (initialLoad)
+                    {
+                        string? cashedText = await DataAccess.TryGetChasheAsync(Project, RelativePath);
+                        if (cashedText != null)
+                        {
+                            PostStatusCheck();
+                        }
                     }
 
 

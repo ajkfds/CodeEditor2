@@ -54,6 +54,14 @@ namespace CodeEditor2.Data
             FileSystemInfo? fileSystemInfo = item?.FileSystemInfo;
 
             string cashePath = project.GetCahsePath(relativePath);
+
+            if (Global.IsBooting)
+            {
+                // 起動中はchasheから読む
+                if (Global.FileEncriptionKey == null) throw new Exception("FileEncriptionKey is null");
+                return await DecryptFromFile(cashePath, Global.FileEncriptionKey);
+            }
+
             if(System.IO.File.Exists(cashePath))
             {
                 try

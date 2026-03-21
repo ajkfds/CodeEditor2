@@ -28,14 +28,6 @@ namespace CodeEditor2.CodeEditor
 
         public string Key { get; set; }
 
-        public long ObjectID
-        {
-            get
-            {
-                bool firstTime;
-                return Global.ObjectIDGenerator.GetId(this, out firstTime);
-            }
-        }
 
 
         [JsonIgnore]
