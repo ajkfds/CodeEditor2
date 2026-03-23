@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-
+using Avalonia.Styling;
 using CodeEditor2.ViewModels;
 using CodeEditor2.Views;
 using System;
@@ -27,6 +27,12 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             Views.SplashWindow splashWindow = new SplashWindow();
+
+            {
+                var noTransitionStyle = new Style(s => s.OfType<Avalonia.Controls.Control>());
+                noTransitionStyle.Setters.Add(new Setter(Avalonia.Controls.Control.TransitionsProperty, null));
+                Styles.Add(noTransitionStyle);
+            }
 
             desktop.MainWindow = splashWindow;
             splashWindow.Show();
