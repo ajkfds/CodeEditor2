@@ -29,7 +29,7 @@ namespace CodeEditor2
                 Dispatcher.UIThread.Post(() =>
                 {
                     AppendLog(message);
-                });
+                },DispatcherPriority.Background);
                 return;
             }
             Global.logView.AppendLog(message);
@@ -41,7 +41,7 @@ namespace CodeEditor2
                 Dispatcher.UIThread.Post(() =>
                 {
                     AppendLog(message, color);
-                });
+                }, DispatcherPriority.Background);
                 return;
             }
 
