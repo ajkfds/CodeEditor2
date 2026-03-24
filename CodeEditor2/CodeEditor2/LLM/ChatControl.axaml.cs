@@ -296,9 +296,9 @@ public partial class ChatControl : UserControl
 
         // Clear items (except input item)
         int itemCount = Items.Count;
-        for (int i = 0; i < itemCount - 2; i++)
+        for (int i = 0; i < itemCount - 1; i++)
         {
-            Items.RemoveAt(1);
+            Items.RemoveAt(0);
         }
 
         // Create new cancellation token
