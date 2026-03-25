@@ -21,17 +21,21 @@ namespace CodeEditor2
             }
             public static async Task SetTextFileAsync(Data.TextFile? textFile, bool parseEntry)
             {
-                if (textFile == null)
+                if (!Dispatcher.UIThread.CheckAccess())
                 {
                     await Dispatcher.UIThread.InvokeAsync(async () => {
-                        await Global.codeView.SetTextFileAsync(null, false);
+                        await SetTextFileAsync(textFile, parseEntry);
                     });
+                    return;
+                }
+
+                if (textFile == null)
+                {
+                    await Global.codeView.SetTextFileAsync(null, false);
                 }
                 else
                 {
-                    await Dispatcher.UIThread.InvokeAsync(async () => {
-                        await Global.codeView.SetTextFileAsync(textFile, parseEntry);
-                    });
+                    await Global.codeView.SetTextFileAsync(textFile, parseEntry);
                 }
             }
 

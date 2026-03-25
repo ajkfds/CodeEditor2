@@ -31,7 +31,7 @@ namespace CodeEditor2.NavigatePanel
 
             Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/questionDocument.svg",
-                    Avalonia.Media.Color.FromArgb(100, 100, 100, 100)
+                    CodeEditor2.Global.Color_Gray
                     );
 
             string text = "null";

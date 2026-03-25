@@ -46,14 +46,14 @@ namespace CodeEditor2.NavigatePanel
                 overrideIcons.Add(new AjkAvaloniaLibs.Libs.Icons.OverrideIcon()
                 {
                     SvgPath = "CodeEditor2/Assets/Icons/share.svg",
-                    Color = Avalonia.Media.Color.FromArgb(255, 255, 255, 200),
+                    Color =Global.Color_Gray,
                     OverridePosition = AjkAvaloniaLibs.Libs.Icons.OverridePosition.Fill
                 });
             }
 
             Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/folder.svg",
-                    Color.FromArgb(100, 100, 150, 255),
+                    Global.Color_Folder,
                     overrideIcons
                     );
             string text = "null";
@@ -112,9 +112,9 @@ namespace CodeEditor2.NavigatePanel
             {
                 Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/questionDocument.svg",
-                    Avalonia.Media.Color.FromArgb(100, 200, 200, 200),
+                    Avalonia.Media.Color.FromArgb(255, 120, 120, 120),
                     "CodeEditor2/Assets/Icons/questionDocument.svg",
-                    Avalonia.Media.Color.FromArgb(255, 255, 255, 200)
+                    Avalonia.Media.Color.FromArgb(255, 120, 120, 120)
                     );
                 Nodes.Clear();
                 return;

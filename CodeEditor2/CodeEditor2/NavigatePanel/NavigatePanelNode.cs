@@ -27,7 +27,7 @@ namespace CodeEditor2.NavigatePanel
         {
             Image =  AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                 "CodeEditor2/Assets/Icons/document.svg",
-                Avalonia.Media.Color.FromArgb(100, 100, 100, 100)
+                Avalonia.Media.Color.FromArgb(255, 120, 120, 120)
                 );
         }
 

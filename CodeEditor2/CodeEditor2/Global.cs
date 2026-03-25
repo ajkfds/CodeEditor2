@@ -51,6 +51,14 @@ namespace CodeEditor2
         public static bool StopParse = false;
         public static bool IsBooting = true;
 
+        public static Avalonia.Media.Color Color_Gray = Avalonia.Media.Color.FromRgb(120,120,120);
+        public static Avalonia.Media.Color Color_Folder = Avalonia.Media.Color.FromRgb(85,105,146);
+        public static Avalonia.Media.Color Color_Project = Avalonia.Media.Color.FromRgb(146, 85, 85);
+
+        public static Avalonia.Media.Color Color_Shine = Avalonia.Media.Color.FromRgb(255, 255, 200);
+        public static Avalonia.Media.Color Color_Error = Avalonia.Media.Color.FromRgb(255, 20, 20);
+        public static Avalonia.Media.Color Color_Warning = Avalonia.Media.Color.FromRgb(255, 255, 20);
+
 
         public static byte[]? FileEncriptionKey = null;
         public static MenuItem CreateMenuItem (string header,string name)

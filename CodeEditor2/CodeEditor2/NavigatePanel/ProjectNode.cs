@@ -83,7 +83,7 @@ namespace CodeEditor2.NavigatePanel
 
             Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/home.svg",
-                    Avalonia.Media.Color.FromArgb(100, 255, 100, 100)
+                    Global.Color_Project
                     );
         }
 
