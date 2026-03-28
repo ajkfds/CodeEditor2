@@ -44,9 +44,9 @@ namespace CodeEditor2.LLM.Tools
             The CLI command to execute.
             This should be valid for the current operating system.
             Ensure the command is properly formatted and does not contain any harmful instructions.
-            一度に単一のコマンドの実行しか許可されません。&&やパイプ等を使って複数のコマンドを同時に実行しないでください。
             
             """)]
+            //            一度に単一のコマンドの実行しか許可されません。&&やパイプ等を使って複数のコマンドを同時に実行しないでください。
             string command
             )
         {
