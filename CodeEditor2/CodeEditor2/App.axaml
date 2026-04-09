@@ -13,11 +13,11 @@
 			<Setter Property="Padding" Value="8 2 8 2"/>
 		</Style>
 		
-		<!--kill popup fade in/out-->
-		<Style Selector="Popup">
+		<!--kill all animations-->
+		<Style Selector="Control">
 			<Setter Property="Transitions">
 				<Setter.Value>
-					<Transitions/>
+					<Transitions />
 				</Setter.Value>
 			</Setter>
 		</Style>
