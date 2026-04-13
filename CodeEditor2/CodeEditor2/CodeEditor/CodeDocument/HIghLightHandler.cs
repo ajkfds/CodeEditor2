@@ -67,23 +67,22 @@ namespace CodeEditor2.CodeEditor
                     }
                     else if (e.Offset + e.RemovalLength <= last)
                     { // a1
-                        highlightStarts[i] = e.Offset;
-                        highlightLasts[i] = e.Offset + change;
+                        highlightLasts[i] += change;
                     }
                     else
                     { // a2
                         highlightLasts[i] += change;
                     }
                 }
-                else if (e.Offset <= highlightLasts[i] + 1) // b0 | b1
+                else if (e.Offset <= highlightLasts[i]) // b0 | b1
                 {
-                    if (e.Offset + e.RemovalLength <= last + 1)
+                    if (e.Offset + e.RemovalLength <= last)
                     { // b0
                         highlightLasts[i] += change;
                     }
                     else
                     { // b1
-                        // none
+                        highlightLasts[i] = e.Offset;
                     }
                 }
                 else
@@ -98,7 +97,7 @@ namespace CodeEditor2.CodeEditor
                 if (highlightStarts[i] > highlightLasts[i]) continue;
                 AvaloniaEdit.Document.TextSegment segment = new AvaloniaEdit.Document.TextSegment();
                 segment.StartOffset = highlightStarts[i];
-                segment.Length = highlightLasts[i] - highlightStarts[i] + 1;
+                segment.Length = highlightLasts[i] - highlightStarts[i];
                 Global.codeView._highlightRenderer.CurrentResults.Add(segment);
             }
 
@@ -169,7 +168,7 @@ namespace CodeEditor2.CodeEditor
         {
             AvaloniaEdit.Document.TextSegment segment = new AvaloniaEdit.Document.TextSegment();
             segment.StartOffset = highlightStart;
-            segment.Length = highlightLast - highlightStart + 1;
+            segment.Length = highlightLast - highlightStart;
             Global.codeView._highlightRenderer.CurrentResults.Add(segment);
             highlightStarts.Add(highlightStart);
             highlightLasts.Add(highlightLast);

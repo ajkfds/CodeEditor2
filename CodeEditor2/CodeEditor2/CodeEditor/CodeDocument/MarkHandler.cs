@@ -144,23 +144,22 @@ namespace CodeEditor2.CodeEditor
                     }
                     else if (e.Offset + e.RemovalLength <= last)
                     { // a1
-                        marks[i].Offset = e.Offset;
-                        marks[i].LastOffset = e.Offset + change;
+                        marks[i].LastOffset += change;
                     }
                     else
                     { // a2
                         marks[i].LastOffset += change;
                     }
                 }
-                else if (e.Offset <= marks[i].LastOffset + 1) // b0 | b1
+                else if (e.Offset <= marks[i].LastOffset) // b0 | b1
                 {
-                    if (e.Offset + e.RemovalLength <= last + 1)
+                    if (e.Offset + e.RemovalLength <= last)
                     { // b0
                         marks[i].LastOffset += change;
                     }
                     else
                     { // b1
-                        // none
+                        marks[i].LastOffset += e.Offset;
                     }
                 }
                 else

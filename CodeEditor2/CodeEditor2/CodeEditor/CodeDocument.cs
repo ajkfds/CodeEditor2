@@ -438,6 +438,7 @@ namespace CodeEditor2.CodeEditor
 
         public string CreateString(int index, int length)
         {
+            if (System.Diagnostics.Debugger.IsAttached && length < 0) System.Diagnostics.Debugger.Break();
             return textDocument.GetText(index, length);
         }
 
