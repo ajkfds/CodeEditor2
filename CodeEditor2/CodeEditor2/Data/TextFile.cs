@@ -647,7 +647,6 @@ namespace CodeEditor2.Data
                         if (textFileDoc != null && editorDoc != null && textFileDoc.Version >= editorDoc.Version)
                         {
                             editorDoc = textFileDoc.Clone();
-//                            editorDoc.TextColors.LineInformation = new Dictionary<int, LineInformation>(textFileDoc.TextColors.LineInformation);
                         }
                         Controller.CodeEditor.PostRefresh();
                     }
