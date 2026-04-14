@@ -59,7 +59,14 @@ namespace CodeEditor2.Data
             {
                 // 起動中はchasheから読む
                 if (Global.FileEncriptionKey == null) throw new Exception("FileEncriptionKey is null");
-                return await DecryptFromFile(cashePath, Global.FileEncriptionKey);
+                if (System.IO.File.Exists(cashePath))
+                {
+                    return await DecryptFromFile(cashePath, Global.FileEncriptionKey);
+                }
+                else
+                {
+                    return await getFileTextAsync(project, relativePath, true); // if decryption fails, read directly from file without using cache, and make a new cahche
+                }
             }
 
             if(System.IO.File.Exists(cashePath))
