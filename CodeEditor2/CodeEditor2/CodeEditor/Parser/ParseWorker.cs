@@ -1,9 +1,6 @@
-using Avalonia.Threading;
-using CodeEditor2.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -88,7 +85,7 @@ namespace CodeEditor2.CodeEditor.Parser
 
             token.ThrowIfCancellationRequested();
 
-            Controller.AppendLog("complete edit parse ID :" + parser.TextFile.ID,Avalonia.Media.Colors.Yellow);
+            Controller.AppendLog("complete edit parse ID :" + parser.TextFile.ID, Avalonia.Media.Colors.Yellow);
 
             // If the version of the parsed document is already outdated, discard the parse result.
             if (targetCodeDocument.Version != parser.ParsedDocument.Version)
@@ -101,7 +98,7 @@ namespace CodeEditor2.CodeEditor.Parser
             await parser.TextFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
             targetCodeDocument.CopyColorMarkFrom(parser.Document);
             // update current view
-            if(await Controller.CodeEditor.GetTextFileAsync() == textFile)
+            if (await Controller.CodeEditor.GetTextFileAsync() == textFile)
             {
                 targetTextFile.PostUIUpdate();
             }

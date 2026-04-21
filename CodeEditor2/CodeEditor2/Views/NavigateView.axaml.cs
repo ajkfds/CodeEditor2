@@ -1,15 +1,9 @@
 using AjkAvaloniaLibs.Controls;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Platform.Storage;
 using CodeEditor2.Data;
 using CodeEditor2.NavigatePanel;
-using Microsoft.CodeAnalysis;
-using Microsoft.VisualBasic;
-using Splat;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CodeEditor2.Views
 {
@@ -20,13 +14,13 @@ namespace CodeEditor2.Views
             InitializeComponent();
 
             Global.navigateView = this;
-            TreeControl.Background = new SolidColorBrush(Color.FromRgb(10,10,10));
+            TreeControl.Background = new SolidColorBrush(Color.FromRgb(10, 10, 10));
             TreeControl.SelectedForegroundColor = Color.FromRgb(255, 255, 255);
             TreeControl.ToggleButtonColor = Color.FromRgb(200, 200, 200);
             TreeControl.OnFontSizeChanged += OnFontSizeChaned;
         }
 
-        internal void OnFontSizeChaned (double fontSize)
+        internal void OnFontSizeChaned(double fontSize)
         {
             ContextMenu.FontSize = fontSize;
         }
@@ -38,7 +32,7 @@ namespace CodeEditor2.Views
 
             //await project.InitializeSubItemsAsync();
 
-//            await pNode.UpdateAsync();
+            //            await pNode.UpdateAsync();
         }
 
         internal NavigatePanelNode? GetSelectedNode()
@@ -49,10 +43,10 @@ namespace CodeEditor2.Views
         internal IReadOnlyList<NavigatePanelNode> GetSelectedNodes()
         {
             List<NavigatePanelNode> nodes = new List<NavigatePanelNode>();
-            foreach(var node in TreeControl.GetSelectedNodes())
+            foreach (var node in TreeControl.GetSelectedNodes())
             {
                 NavigatePanelNode? nnode = node as NavigatePanelNode;
-                if(nnode!=null) nodes.Add(nnode);
+                if (nnode != null) nodes.Add(nnode);
             }
             return nodes;
         }
@@ -150,15 +144,15 @@ namespace CodeEditor2.Views
         private string getRelativeFolderPath(NavigatePanelNode node)
         {
             FileNode? fileNode = node as FileNode;
-            if(fileNode != null)
+            if (fileNode != null)
             {
                 NavigatePanelNode? parentNode = fileNode.Parent as NavigatePanelNode;
-                if (parentNode == null) throw new System.Exception(); 
+                if (parentNode == null) throw new System.Exception();
                 return getRelativeFolderPath(parentNode);
             }
 
             FolderNode? folderNode = node as FolderNode;
-            if(folderNode!= null)
+            if (folderNode != null)
             {
                 return folderNode.Folder.RelativePath;
             }

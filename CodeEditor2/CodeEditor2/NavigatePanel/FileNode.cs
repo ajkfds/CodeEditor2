@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Drawing;
-using CodeEditor2.Data;
-using Avalonia.Media;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using CodeEditor2.Data;
+using System;
 
 namespace CodeEditor2.NavigatePanel
 {

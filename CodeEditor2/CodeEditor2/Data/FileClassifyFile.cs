@@ -1,9 +1,5 @@
 using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.Parser;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.Data
@@ -46,9 +42,9 @@ namespace CodeEditor2.Data
             return new CodeEditor2.NavigatePanel.TextFileNode(this);
         }
 
-        public override DocumentParser CreateDocumentParser(DocumentParser.ParseModeEnum parseMode,System.Threading.CancellationToken? token)
+        public override DocumentParser CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token)
         {
-            return new Parser.FileClassifyParser(this, parseMode,token);
+            return new Parser.FileClassifyParser(this, parseMode, token);
         }
 
 

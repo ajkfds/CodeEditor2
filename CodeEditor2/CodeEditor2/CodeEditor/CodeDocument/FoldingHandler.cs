@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AvaloniaEdit.Folding;
 using AvaloniaEdit.Document;
+using AvaloniaEdit.Folding;
+using System.Collections.Generic;
 
 namespace CodeEditor2.CodeEditor
 {
@@ -22,19 +18,19 @@ namespace CodeEditor2.CodeEditor
         {
             Foldings.Add(new NewFolding(startIndex, endIndex));
         }
-        public void AppendBlock(int startIndex, int endIndex,bool defaultClosed)
+        public void AppendBlock(int startIndex, int endIndex, bool defaultClosed)
         {
             NewFolding folding = new NewFolding(startIndex, endIndex) { DefaultClosed = default };
             Foldings.Add(folding);
         }
-        public void AppendBlock(int startIndex, int endIndex,string blockName)
+        public void AppendBlock(int startIndex, int endIndex, string blockName)
         {
             Foldings.Add(new NewFolding(startIndex, endIndex) { Name = blockName });
         }
 
         public void AppendBlock(int startIndex, int endIndex, string blockName, bool defaultClosed)
         {
-            NewFolding folding = new NewFolding(startIndex, endIndex) { Name = blockName,DefaultClosed = defaultClosed };
+            NewFolding folding = new NewFolding(startIndex, endIndex) { Name = blockName, DefaultClosed = defaultClosed };
             Foldings.Add(folding);
         }
 
@@ -59,7 +55,7 @@ namespace CodeEditor2.CodeEditor
                 //                  |--| c0
 
                 int start = Foldings[i].StartOffset;
-                int last = Foldings[i].EndOffset-1;
+                int last = Foldings[i].EndOffset - 1;
 
                 if (e.Offset <= start) // a0 | a1 | a2
                 {

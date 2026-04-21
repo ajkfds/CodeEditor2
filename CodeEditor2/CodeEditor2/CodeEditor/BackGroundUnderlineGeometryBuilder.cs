@@ -1,18 +1,16 @@
+using Avalonia;
+using Avalonia.Controls.Primitives;
+using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
+using AvaloniaEdit;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Editing;
+using AvaloniaEdit.Rendering;
+using AvaloniaEdit.Utils;
+using CodeEditor2.CodeEditor.TextDecollation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia;
-using Avalonia.Controls.Primitives;
-using AvaloniaEdit.Document;
-using AvaloniaEdit.Editing;
-using AvaloniaEdit.Utils;
-using Avalonia.Media;
-using Avalonia.Media.TextFormatting;
-using AvaloniaEdit.Rendering;
-using AvaloniaEdit;
-using ShimSkiaSharp;
-using System.Net.Http.Headers;
-using CodeEditor2.CodeEditor.TextDecollation;
 
 namespace CodeEditor2.CodeEditor
 {
@@ -52,7 +50,7 @@ namespace CodeEditor2.CodeEditor
             Size pixelSize = PixelSnapHelpers.GetPixelSize(textView);
             foreach (Rect r in GetRectsForSegment(textView, mark, ExtendToFullWidthAtLineEnd))
             {
-                AddRectangle(pixelSize, r,mark);
+                AddRectangle(pixelSize, r, mark);
             }
         }
 
@@ -71,7 +69,7 @@ namespace CodeEditor2.CodeEditor
         /// </remarks>
         public void AddRectangle(TextView textView, Rect rectangle, MarkerRenderer.Mark mark)
         {
-            AddRectangle(PixelSnapHelpers.GetPixelSize(textView), rectangle ,mark);
+            AddRectangle(PixelSnapHelpers.GetPixelSize(textView), rectangle, mark);
         }
 
         private void AddRectangle(Size pixelSize, Rect r, MarkerRenderer.Mark mark)
@@ -268,7 +266,7 @@ namespace CodeEditor2.CodeEditor
 
         private List<Point> points = new List<Point>();
 
-        public void AddWaveLine(MarkerRenderer.Mark mark,double left, double top, double right, double bottom)
+        public void AddWaveLine(MarkerRenderer.Mark mark, double left, double top, double right, double bottom)
         {
             double waveWidth = mark.DecorationWidth;
             double waveHeight = mark.DecorationHeight;
@@ -277,10 +275,10 @@ namespace CodeEditor2.CodeEditor
                 int waveCount = (int)((right - left) / waveWidth);
                 double step = (right - left) / (double)waveCount;
 
-                for (int i=0; i < waveCount; i++)
+                for (int i = 0; i < waveCount; i++)
                 {
-                    points.Add(new Point(left + step*i , bottom - waveHeight));
-                    points.Add(new Point(left + step * i+step/2.0, bottom + waveHeight));
+                    points.Add(new Point(left + step * i, bottom - waveHeight));
+                    points.Add(new Point(left + step * i + step / 2.0, bottom + waveHeight));
                 }
                 points.Add(new Point(right, bottom - waveHeight));
             }

@@ -1,22 +1,9 @@
 using AjkAvaloniaLibs.Controls;
 using Avalonia.Controls;
-using Avalonia.LogicalTree;
 using Avalonia.Threading;
-using CodeEditor2.CodeEditor.CodeComplete;
-using CodeEditor2.CodeEditor.PopupMenu;
-using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
-using CodeEditor2.Views;
-using ExCSS;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using static CodeEditor2.CodeEditor.ParsedDocument;
-using static CodeEditor2.Controller;
 
 namespace CodeEditor2
 {
@@ -29,7 +16,7 @@ namespace CodeEditor2
                 Dispatcher.UIThread.Post(() =>
                 {
                     AppendLog(message);
-                },DispatcherPriority.Background);
+                }, DispatcherPriority.Background);
                 return;
             }
             Global.logView.AppendLog(message);
@@ -52,8 +39,10 @@ namespace CodeEditor2
         {
             if (!Dispatcher.UIThread.CheckAccess())
             {
-                await Dispatcher.UIThread.InvokeAsync(async() => { 
-                    return await AppendLogAndGetItem(message, color); }
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    return await AppendLogAndGetItem(message, color);
+                }
                 );
                 throw new Exception();
             }
@@ -71,8 +60,8 @@ namespace CodeEditor2
         //    return Global.mainForm.BackColor;
         //}
 
-        
-        public static bool SelectText(Data.ITextFile textFile,int index,int length)
+
+        public static bool SelectText(Data.ITextFile textFile, int index, int length)
         {
             Data.TextReference textReference = new Data.TextReference(textFile, index, length);
             return true;
@@ -130,7 +119,7 @@ namespace CodeEditor2
             CodeEditor2.Tools.ParseProject parser = new Tools.ParseProject();
             ProjectNode? projectNode = Global.navigateView.GetProjectNode(project.Name);
             if (projectNode == null) return;
-            
+
             await Dispatcher.UIThread.InvokeAsync(
                 async () =>
                 {

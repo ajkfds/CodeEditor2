@@ -5,13 +5,8 @@ using CodeEditor2.CodeEditor.Parser;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -158,7 +153,7 @@ namespace CodeEditor2.Data
                     },
                     WriteIndented = true,
                     // デフォルト値のプロパティをすべて除外する
-//                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                    //                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
                     // 読み取り専用プロパティを無視する
                     IgnoreReadOnlyProperties = true,
                     // シリアライズ時にオブジェクトに $id（一意のID）を振り、2回目以降の登場時は $ref（参照ID）として記録します
@@ -183,7 +178,7 @@ namespace CodeEditor2.Data
             try
             {
                 string json;
-                using(StreamReader sr = new StreamReader(path))
+                using (StreamReader sr = new StreamReader(path))
                 {
                     json = sr.ReadToEnd();
                 }
@@ -384,7 +379,7 @@ namespace CodeEditor2.Data
             {
                 lock (_lock)
                 {
-                    if(!itemDict.ContainsKey(key)) return false;
+                    if (!itemDict.ContainsKey(key)) return false;
                     itemList.Remove(itemDict[key]);
                     itemDict.Remove(key);
                     return true;
@@ -447,9 +442,9 @@ namespace CodeEditor2.Data
             if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
             {
                 string folderName = relativePath.Substring(0, relativePath.IndexOf(System.IO.Path.DirectorySeparatorChar));
-                if(items.TryGetValue(folderName, out Item? item))
+                if (items.TryGetValue(folderName, out Item? item))
                 {
-                    if(item == null) throw new Exception("item is null");
+                    if (item == null) throw new Exception("item is null");
                     return item.GetItem(relativePath.Substring(folderName.Length + 1));
                 }
                 else
@@ -459,7 +454,7 @@ namespace CodeEditor2.Data
             }
             else
             {
-                if(items.TryGetValue(relativePath, out Item? item))
+                if (items.TryGetValue(relativePath, out Item? item))
                 {
                     return item;
                 }
@@ -477,7 +472,7 @@ namespace CodeEditor2.Data
         public virtual List<Item> FindItems(Func<Item, bool> match, Func<Item, bool> stop, Action<Item>? action)
         {
             List<Item> result = new List<Item>();
-            findItems(result, match, stop,action);
+            findItems(result, match, stop, action);
             return result;
         }
 
@@ -488,9 +483,9 @@ namespace CodeEditor2.Data
                 if (match(item))
                 {
                     result.Add(item);
-                    if(action != null) action(item);
+                    if (action != null) action(item);
                 }
-                if (!stop(item)) item.findItems(result, match, stop,action);
+                if (!stop(item)) item.findItems(result, match, stop, action);
             }
         }
 

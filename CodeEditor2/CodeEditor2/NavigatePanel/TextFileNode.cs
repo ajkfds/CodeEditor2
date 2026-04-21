@@ -1,14 +1,7 @@
 using Avalonia.Controls;
-using Avalonia.Media;
 using Avalonia.Threading;
 using CodeEditor2.CodeEditor;
-using ExCSS;
-using HarfBuzzSharp;
-using SkiaSharp;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.NavigatePanel
@@ -62,7 +55,7 @@ namespace CodeEditor2.NavigatePanel
             if (textFile != null) text = textFile.Name;
             Text = text;
 
-            if (textFile==null)
+            if (textFile == null)
             {
                 Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     "CodeEditor2/Assets/Icons/questionDocument.svg",

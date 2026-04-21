@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Avalonia.Media;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 namespace CodeEditor2.CodeEditor.TextDecollation
 {
     // mark renderer for AvaloniaEdit
@@ -61,7 +58,7 @@ namespace CodeEditor2.CodeEditor.TextDecollation
 
                 foreach (var mark in markList)
                 {
-                    updateMark(e.Offset , e.InsertionLength, e.RemovalLength, mark, removeTarget);
+                    updateMark(e.Offset, e.InsertionLength, e.RemovalLength, mark, removeTarget);
                 }
 
                 foreach (var removeMark in removeTarget)

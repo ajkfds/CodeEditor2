@@ -1,12 +1,5 @@
-using HarfBuzzSharp;
-using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Media;
 using AjkAvaloniaLibs.Controls;
+using Avalonia.Media;
 
 namespace CodeEditor2.CodeEditor.PopupHint
 {

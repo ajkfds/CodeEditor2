@@ -1,11 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using DynamicData;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.LLM
@@ -42,7 +38,9 @@ namespace CodeEditor2.LLM
                     if (leftSize == null)
                     {
                         grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
-                    }else{
+                    }
+                    else
+                    {
                         grid.ColumnDefinitions.Add(new ColumnDefinition((int)leftSize, GridUnitType.Auto));
                     }
                     Grid.SetColumn(image, column);
@@ -91,7 +89,7 @@ namespace CodeEditor2.LLM
                 textBox.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
                 textBox.InnerRightContent = collapseAndMenuPanel;
 
-                grid.ColumnDefinitions.Add(new ColumnDefinition( GridLength.Star));
+                grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
                 Grid.SetColumn(textBox, column);
                 grid.Children.Add(textBox);
                 column++;
@@ -152,7 +150,8 @@ namespace CodeEditor2.LLM
             {
                 var top = TopLevel.GetTopLevel(this);
                 top?.Clipboard?.SetTextAsync(textBox.Text);
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 CodeEditor2.Controller.AppendLog("#Exception " + ex.Message, Avalonia.Media.Colors.Red);
             }
@@ -219,7 +218,7 @@ namespace CodeEditor2.LLM
             Spacing = 5
         };
 
-        public　Avalonia.Controls.Primitives.ToggleButton CollapseExpandButton = new Avalonia.Controls.Primitives.ToggleButton()
+        public Avalonia.Controls.Primitives.ToggleButton CollapseExpandButton = new Avalonia.Controls.Primitives.ToggleButton()
         {
             Content = "▼",
             Margin = new Thickness(0, 0, 0, 0),

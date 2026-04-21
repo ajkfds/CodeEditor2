@@ -1,11 +1,8 @@
 using Microsoft.Extensions.AI;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.LLM.Tools
@@ -54,7 +51,7 @@ namespace CodeEditor2.LLM.Tools
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = "build \""+projectPath+"\"",
+                Arguments = "build \"" + projectPath + "\"",
                 RedirectStandardOutput = true,   // 標準出力をリダイレクト
                 RedirectStandardError = true,    // 標準エラーもリダイレクト
                 UseShellExecute = false,         // シェルを使用しない

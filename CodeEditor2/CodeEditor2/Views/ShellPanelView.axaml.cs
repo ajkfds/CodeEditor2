@@ -1,12 +1,9 @@
-using AjkAvaloniaLibs.Controls;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
-using CodeEditor2.NavigatePanel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -50,7 +47,7 @@ namespace CodeEditor2.Views
 
                 shell.Start();
             }
-            else if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 shell = new Shells.LinuxBash();
                 shell.LineReceived += Shell_LineReceived;
@@ -63,7 +60,7 @@ namespace CodeEditor2.Views
 
         private void InputBox_KeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
         {
-            if(e.Key == Avalonia.Input.Key.Return)
+            if (e.Key == Avalonia.Input.Key.Return)
             {
                 appendLog(inputBox.Text, Colors.Green);
                 shell.Execute(inputBox.Text);
@@ -80,10 +77,10 @@ namespace CodeEditor2.Views
         Shells.Shell shell;
         public void Shell_LineReceived(string lineString)
         {
-            appendLog(lineString,null);
+            appendLog(lineString, null);
         }
 
-        private void appendLog(string lineString,Color? color)
+        private void appendLog(string lineString, Color? color)
         {
             Dispatcher.UIThread.Post(
                 new Action(() =>
@@ -98,7 +95,7 @@ namespace CodeEditor2.Views
                         MinHeight = 8
                     };
 
-                    if(color != null)
+                    if (color != null)
                     {
                         textBlock.Foreground = new SolidColorBrush((Color)color);
                     }
@@ -116,18 +113,18 @@ namespace CodeEditor2.Views
                         int i = listItems.Count - 1;
                         if (i < 0) i = 0;
                         listItems.Insert(i, item);
-                        
+
                         if (listItems.Count > 1000)
                         {
                             ListBoxItem? removeItem = listItems[0] as ListBoxItem;
                             if (removeItem == null) return;
                             listItems.Remove(removeItem);
                         }
-                        
+
                         listItems.Last().IsSelected = true;
                         ListBox0.ScrollIntoView(listItems.Last());
                     }
-//                    ListBox0.InvalidateVisual();
+                    //                    ListBox0.InvalidateVisual();
                 })
             );
         }

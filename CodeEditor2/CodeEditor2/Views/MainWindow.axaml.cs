@@ -1,6 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.Views;
@@ -40,7 +38,7 @@ public partial class MainWindow : Window
 
         // update text file if the file is not same as the navigatepanel selected file
         Data.TextFile? textFile = await Controller.CodeEditor.GetTextFileAsync();
-        if(textFile != null && textFile != file)
+        if (textFile != null && textFile != file)
         {
             await textFile.UpdateAsync();
         }

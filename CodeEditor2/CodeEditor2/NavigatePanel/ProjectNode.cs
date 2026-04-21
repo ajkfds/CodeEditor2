@@ -1,19 +1,7 @@
 using Avalonia.Controls;
-using Avalonia.Media;
 using Avalonia.Threading;
 using CodeEditor2.Data;
-using CodeEditor2.Tools;
-using HarfBuzzSharp;
-using SkiaSharp;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Data = CodeEditor2.Data;
 
 
 namespace CodeEditor2.NavigatePanel
@@ -22,7 +10,8 @@ namespace CodeEditor2.NavigatePanel
     {
         static ProjectNode()
         {
-            CustomizeSpecificNodeContextMenu += ((m) => {
+            CustomizeSpecificNodeContextMenu += ((m) =>
+            {
                 ContextMenu menu = m;
                 MenuItem menuItem_Agent = CodeEditor2.Global.CreateMenuItem(
                     "Save Cashe", "menuItem_SaveCashe",

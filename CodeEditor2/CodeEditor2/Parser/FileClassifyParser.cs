@@ -1,12 +1,6 @@
-using Avalonia.Styling;
 using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.Parser;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.Parser
@@ -14,7 +8,7 @@ namespace CodeEditor2.Parser
     public class FileClassifyParser : DocumentParser
     {
         [SetsRequiredMembers]
-        public FileClassifyParser(Data.FileClassifyFile file, DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token) : base(file, parseMode,token)
+        public FileClassifyParser(Data.FileClassifyFile file, DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token) : base(file, parseMode, token)
         {
             this.Document = new CodeEditor2.CodeEditor.CodeDocument(file); // use verilog codeDocument
             CodeDocument? document = file.CodeDocument;
@@ -22,7 +16,7 @@ namespace CodeEditor2.Parser
             this.ParseMode = parseMode;
             this.TextFile = file as CodeEditor2.Data.TextFile;
 
-            ParsedDocument = new CodeEditor2.CodeEditor.ParsedDocument(file,file.RelativePath, file.CodeDocument.Version, parseMode);
+            ParsedDocument = new CodeEditor2.CodeEditor.ParsedDocument(file, file.RelativePath, file.CodeDocument.Version, parseMode);
         }
         public static class Style
         {

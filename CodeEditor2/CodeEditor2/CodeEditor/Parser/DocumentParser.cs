@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,7 +18,7 @@ namespace CodeEditor2.CodeEditor.Parser
 
         public void Dispose()
         {
-//            Document = null;
+            //            Document = null;
         }
 
         public required Data.TextFile TextFile { get; init; }

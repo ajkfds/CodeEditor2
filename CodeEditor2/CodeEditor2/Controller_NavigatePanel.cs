@@ -3,8 +3,6 @@ using Avalonia.Threading;
 using CodeEditor2.NavigatePanel;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2
@@ -42,7 +40,8 @@ namespace CodeEditor2
             }
             public static async Task SelectNodeAsync(NavigatePanelNode node)
             {
-                await Dispatcher.UIThread.InvokeAsync(() => {
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
                     Global.navigateView.SelectNode(node);
                 });
             }
@@ -57,7 +56,8 @@ namespace CodeEditor2
             }
             public static async Task RemoveNodeAsync(NavigatePanelNode node)
             {
-                await Dispatcher.UIThread.InvokeAsync(() => {
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
                     Global.navigateView.RemoveNode(node);
                 });
             }

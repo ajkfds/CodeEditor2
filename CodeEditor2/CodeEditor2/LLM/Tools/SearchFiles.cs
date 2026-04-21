@@ -1,16 +1,12 @@
-using CodeEditor2.Data;
-using DynamicData.Experimental;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.FileSystemGlobbing;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace CodeEditor2.LLM.Tools
 {
@@ -62,7 +58,7 @@ namespace CodeEditor2.LLM.Tools
             """)]
         string file_pattern
         )
-        { 
+        {
             try
             {
                 if (project == null) return "Failed to execute tool. Cannot get current project.";

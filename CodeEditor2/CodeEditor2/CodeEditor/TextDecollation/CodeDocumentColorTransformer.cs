@@ -1,20 +1,6 @@
-using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Media;
-using AvaloniaEdit;
-using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
-using AvaloniaEdit.Editing;
-using AvaloniaEdit.Folding;
 using AvaloniaEdit.Rendering;
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Resources;
-using System.Security.Cryptography.X509Certificates;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace CodeEditor2.CodeEditor.TextDecollation
 {
@@ -42,7 +28,7 @@ namespace CodeEditor2.CodeEditor.TextDecollation
                 {
                     foreach (var color in lineInfo.Colors)
                     {
-                        if ( color.Offset　<　0 || line.Length < color.Offset + color.Length  ) continue;
+                        if (color.Offset < 0 || line.Length < color.Offset + color.Length) continue;
                         ChangeLinePart(
                             color.Offset + line.Offset,
                             color.Offset + line.Offset + color.Length,

@@ -1,4 +1,3 @@
-using CodeEditor2.Data;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,7 +18,7 @@ namespace CodeEditor2.LLM.Tools
             public List<string> PipeCommands { get; set; } = new(); // ["ls -la", "grep .txt"]
             public SeparatorType NextSeparator { get; set; } = SeparatorType.None;
         }
-        public async Task<string> RunCommandAsync(string fullCommand,string rootPath,HashSet<string> allowedCommands)
+        public async Task<string> RunCommandAsync(string fullCommand, string rootPath, HashSet<string> allowedCommands)
         {
             // 1. コマンドをパースして構造化する
             var chains = ParseFullCommandLine(fullCommand);
@@ -33,7 +32,7 @@ namespace CodeEditor2.LLM.Tools
                 // (必要に応じて SeparatorType.Or の実装も可能)
 
                 // パイプラインを実行
-                var (output, exitCode) = await ExecutePipeChainAsync(chain.PipeCommands,rootPath,allowedCommands);
+                var (output, exitCode) = await ExecutePipeChainAsync(chain.PipeCommands, rootPath, allowedCommands);
                 finalOutput.Append(output);
                 lastExitCode = exitCode;
 
@@ -41,7 +40,7 @@ namespace CodeEditor2.LLM.Tools
             }
 
             finalOutput.AppendLine();
-            finalOutput.AppendLine("command complete, ExitCode:"+lastExitCode.ToString());
+            finalOutput.AppendLine("command complete, ExitCode:" + lastExitCode.ToString());
 
             return finalOutput.ToString();
         }
@@ -79,7 +78,7 @@ namespace CodeEditor2.LLM.Tools
             return chains;
         }
 
-        private async Task<(string Output, int ExitCode)> ExecutePipeChainAsync(List<string> pipeParts,string rootPath, HashSet<string> allowedCommands)
+        private async Task<(string Output, int ExitCode)> ExecutePipeChainAsync(List<string> pipeParts, string rootPath, HashSet<string> allowedCommands)
         {
             var processes = new List<Process>();
             var outputBuilder = new StringBuilder();

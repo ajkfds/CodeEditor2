@@ -1,10 +1,4 @@
-using Avalonia.Media;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor.TextDecollation
 {
@@ -29,7 +23,7 @@ namespace CodeEditor2.CodeEditor.TextDecollation
         public LineInformation Clone()
         {
             LineInformation lineInformation = new LineInformation();
-            foreach (Color color in Colors) 
+            foreach (Color color in Colors)
             {
                 lineInformation.Colors.Add(new Color(color.Offset, color.Length, color.DrawColor));
             }

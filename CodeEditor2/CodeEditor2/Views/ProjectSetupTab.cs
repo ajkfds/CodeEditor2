@@ -1,12 +1,6 @@
 using Avalonia.Controls;
-using Avalonia.Media;
 using CodeEditor2.Data;
 using CodeEditor2.Tools;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.Views
 {
@@ -31,13 +25,13 @@ namespace CodeEditor2.Views
             tab.Content = gridConstructor.Grid;
 
             gridConstructor.AppendText("Project Options", true);
-            gridConstructor.AppendContol(casheCheck,null);
+            gridConstructor.AppendContol(casheCheck, null);
 
             gridConstructor.AppendText("Cashe Path");
             gridConstructor.AppendContolFill(cashePathText);
 
             form.OkButtonControl.Click += OkButtonControl_Click;
-//            compileOptionText.Text = projectProperty.CompileOption;
+            //            compileOptionText.Text = projectProperty.CompileOption;
         }
         private void OkButtonControl_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {

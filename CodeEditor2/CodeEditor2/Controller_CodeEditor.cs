@@ -1,12 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using CodeEditor2.CodeEditor.PopupMenu;
-using CodeEditor2.Snippets;
 using CodeEditor2.Views;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2
@@ -23,7 +19,8 @@ namespace CodeEditor2
             {
                 if (!Dispatcher.UIThread.CheckAccess())
                 {
-                    await Dispatcher.UIThread.InvokeAsync(async () => {
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
                         await SetTextFileAsync(textFile, parseEntry);
                     });
                     return;
@@ -142,9 +139,9 @@ namespace CodeEditor2
             {
                 if (!Dispatcher.UIThread.CheckAccess())
                 {
-                    await Dispatcher.UIThread.InvokeAsync(()=>
+                    await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        return Global.codeView.TextFile; 
+                        return Global.codeView.TextFile;
                     });
                 }
                 return Global.codeView.TextFile;
@@ -163,7 +160,8 @@ namespace CodeEditor2
             }
             public static async Task AbortInteractiveSnippetAsync()
             {
-                await Dispatcher.UIThread.InvokeAsync(() => {
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
                     AbortInteractiveSnippet();
                 });
             }
@@ -196,7 +194,8 @@ namespace CodeEditor2
             }
             public static async Task SelectHighlightAsync(int highLightIndex)
             {
-                await Dispatcher.UIThread.InvokeAsync(() => {
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
                     SelectHighlight(highLightIndex);
                 });
             }
@@ -217,8 +216,10 @@ namespace CodeEditor2
 
             public static void PostClearHighlight()
             {
-                if (!Dispatcher.UIThread.CheckAccess()) {
-                    Dispatcher.UIThread.Post(() => {
+                if (!Dispatcher.UIThread.CheckAccess())
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
                         PostClearHighlight();
                     });
                     return;
@@ -252,7 +253,8 @@ namespace CodeEditor2
 
             public static void PostScrollToCaret()
             {
-                if (!Dispatcher.UIThread.CheckAccess()){
+                if (!Dispatcher.UIThread.CheckAccess())
+                {
                     Dispatcher.UIThread.Post(() => { PostScrollToCaret(); });
                     return;
                 }

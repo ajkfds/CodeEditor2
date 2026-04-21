@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using System;
 
 namespace CodeEditor2.Tools
 {
@@ -22,7 +21,8 @@ namespace CodeEditor2.Tools
 
         public bool PassWordMode
         {
-            set {
+            set
+            {
                 if (value)
                 {
                     TextBox1.PasswordChar = '●';
@@ -41,7 +41,7 @@ namespace CodeEditor2.Tools
             initialize(title, caption, defaultText);
         }
 
-        private void initialize(string title, string caption,string defaultText)
+        private void initialize(string title, string caption, string defaultText)
         {
             this.Title = title;
 

@@ -1,14 +1,7 @@
-using AjkAvaloniaLibs.Libs.Json;
-using Avalonia.Controls;
 using CodeEditor2.Tools;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.Data
 {
@@ -24,7 +17,7 @@ namespace CodeEditor2.Data
         {
 
         }
-        public ProjectProperty(Project project,Setup setup)
+        public ProjectProperty(Project project, Setup setup)
         {
 
         }
@@ -33,7 +26,7 @@ namespace CodeEditor2.Data
         public static List<JsonDerivedType> DerivedTypes { get; } = new();
 
         // Item Property Tab 追加用
-        public virtual void InitializePropertyForm(ItemPropertyForm form,CodeEditor2.NavigatePanel.NavigatePanelNode node,Project project)
+        public virtual void InitializePropertyForm(ItemPropertyForm form, CodeEditor2.NavigatePanel.NavigatePanelNode node, Project project)
         {
         }
 

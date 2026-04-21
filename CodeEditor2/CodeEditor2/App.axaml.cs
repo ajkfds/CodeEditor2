@@ -2,11 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
-using CodeEditor2.ViewModels;
 using CodeEditor2.Views;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace CodeEditor2;
 

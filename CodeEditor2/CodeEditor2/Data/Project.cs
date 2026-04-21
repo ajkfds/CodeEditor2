@@ -1,6 +1,4 @@
 using Avalonia.Threading;
-using CodeEditor2.FileTypes;
-using CodeEditor2.Setups;
 using CodeEditor2.Tools;
 
 //using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,16 +7,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.PortableExecutable;
-using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
-using System.Xml.Linq;
 
 namespace CodeEditor2.Data
 {
@@ -30,7 +21,7 @@ namespace CodeEditor2.Data
     public class Project : Folder
     {
         [SetsRequiredMembers]
-        protected Project(string name,string rootPath,string relativePath) :base()
+        protected Project(string name, string rootPath, string relativePath) : base()
         {
             Name = name;
             RootPath = rootPath;
@@ -68,9 +59,9 @@ namespace CodeEditor2.Data
                 this.LocalFileCasheEnable = project.LocalFileCasheEnable;
                 this.LocalFileCashePath = project.LocalFileCashePath;
                 this.ProjectProperties.Clear();
-                foreach(var projectProperty in project.ProjectProperties)
+                foreach (var projectProperty in project.ProjectProperties)
                 {
-                    this.ProjectProperties.Add(projectProperty.Key,projectProperty.Value.CreateSetup());
+                    this.ProjectProperties.Add(projectProperty.Key, projectProperty.Value.CreateSetup());
                 }
             }
 
@@ -118,7 +109,7 @@ namespace CodeEditor2.Data
 
             Project project = new Project(name, actualPath, "");
 
-            await initProjectAsync(project,null);
+            await initProjectAsync(project, null);
             return project;
         }
 
@@ -129,15 +120,15 @@ namespace CodeEditor2.Data
             //{
             //    project = Deserialize(cashePath) as Project;
             //}
-            
-            if(project == null)
+
+            if (project == null)
             {
                 project = new Project(setup.Name, setup.RootPath, "");
             }
 
             project.LocalFileCasheEnable = setup.LocalFileCasheEnable;
             project.LocalFileCashePath = setup.LocalFileCashePath;
-            await initProjectAsync(project,setup);
+            await initProjectAsync(project, setup);
             return project;
         }
 
@@ -166,10 +157,10 @@ namespace CodeEditor2.Data
             return null;
         }
 
-        public static Action<Project,Setup?>? Created;
-        private static async Task initProjectAsync(Project project,Setup? setup)
+        public static Action<Project, Setup?>? Created;
+        private static async Task initProjectAsync(Project project, Setup? setup)
         {
-            if (Created != null) Created(project,setup);
+            if (Created != null) Created(project, setup);
             //            project.startFileSystemWatcher();
             await project.UpdateAsync();
             await DataAccess.UpdateFieSystemInfoAsync(project);
@@ -222,7 +213,7 @@ namespace CodeEditor2.Data
         {
             string basePath = LocalFileCashePath;
             if (!basePath.EndsWith(Path.DirectorySeparatorChar)) basePath += Path.DirectorySeparatorChar;
-            basePath += Name+ Path.DirectorySeparatorChar;
+            basePath += Name + Path.DirectorySeparatorChar;
 
             string filePath = relativePath;
 
@@ -290,7 +281,7 @@ namespace CodeEditor2.Data
             fileSystemWatcher.Filter = "";
             fileSystemWatcher.IncludeSubdirectories = true;
 
-//            fileSystemWatcher.Created += FileSystemWatcher_Created;
+            //            fileSystemWatcher.Created += FileSystemWatcher_Created;
             fileSystemWatcher.Changed += FileSystemWatcher_Changed;
             fileSystemWatcher.Renamed += FileSystemWatcher_Renamed;
             fileSystemWatcher.Deleted += FileSystemWatcher_Changed;
@@ -330,7 +321,7 @@ namespace CodeEditor2.Data
         {
             string? filePath = state as string;
             if (string.IsNullOrEmpty(filePath)) return;
-            
+
             try
             {
                 Controller.AppendLog(filePath + " changed");

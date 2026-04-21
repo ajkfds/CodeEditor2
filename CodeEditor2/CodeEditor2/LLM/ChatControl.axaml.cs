@@ -1,12 +1,6 @@
 using Avalonia;
-using Avalonia.Animation;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Media;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Microsoft.Extensions.AI;
@@ -22,9 +16,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using static CodeEditor2.LLM.ChatControl;
-using static SkiaSharp.HarfBuzz.SKShaper;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.LLM;
 
@@ -491,14 +482,14 @@ public partial class ChatControl : UserControl
         try
         {
             // Create and display command item
-            CollapsibleTextItem commandItem = new CollapsibleTextItem(command,messageType);
+            CollapsibleTextItem commandItem = new CollapsibleTextItem(command, messageType);
             inputItem.TextBox.Text = "";
             commandItem.TextColor = commandColor;
             Items.Insert(Items.Count - 1, commandItem);
             if (messageType == CollapsibleTextItem.MessageType.functionCallReturn) commandItem.Collapsed = true;
 
             // Create result item
-            CollapsibleTextItem resultItem = new CollapsibleTextItem("",CollapsibleTextItem.MessageType.responce);
+            CollapsibleTextItem resultItem = new CollapsibleTextItem("", CollapsibleTextItem.MessageType.responce);
             Items.Insert(Items.Count - 1, resultItem);
             lastResultItem = resultItem;
 
@@ -662,7 +653,7 @@ public partial class ChatControl : UserControl
     public async IAsyncEnumerable<string> GetAsyncCollectionChatResult(string command, IList<AITool>? tools, [EnumeratorCancellation] CancellationToken cancellation)
     {
         inputItem.TextBox.Text = command;
-        await complete(command, tools, cancellation,CollapsibleTextItem.MessageType.command);
+        await complete(command, tools, cancellation, CollapsibleTextItem.MessageType.command);
         if (lastResultItem == null) yield break;
         yield return lastResultItem.Text;
     }
@@ -721,7 +712,7 @@ public partial class ChatControl : UserControl
         List<ChatMessageWrapper> chatmessages = chat.ChatMessageWrappers;
         foreach (ChatMessageWrapper chatmessage in chatmessages)
         {
-            CollapsibleTextItem resultItem = new CollapsibleTextItem(chatmessage.Text,CollapsibleTextItem.MessageType.responce);
+            CollapsibleTextItem resultItem = new CollapsibleTextItem(chatmessage.Text, CollapsibleTextItem.MessageType.responce);
             if (chatmessage.Role == ChatRole.System)
             {
                 resultItem.TextColor = completeColor;

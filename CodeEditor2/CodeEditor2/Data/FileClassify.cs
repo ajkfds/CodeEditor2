@@ -1,12 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reactive.Joins;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.Data
 {
@@ -20,7 +13,7 @@ namespace CodeEditor2.Data
             if (System.IO.File.Exists(AbsolutePath)) loadFile();
         }
         private Project project;
-        public string AbsolutePath 
+        public string AbsolutePath
         {
             get; private set;
         }
@@ -50,7 +43,8 @@ namespace CodeEditor2.Data
                     {
                         command = line.Substring(1).Trim();
                         append = false;
-                    }else if (line.StartsWith("+"))
+                    }
+                    else if (line.StartsWith("+"))
                     {
                         command = line.Substring(1).Trim();
                         append = true;
@@ -60,7 +54,7 @@ namespace CodeEditor2.Data
                         if (command == "") continue;
                         string filter = line.Trim();
                         filter = filter.Replace('/', System.IO.Path.DirectorySeparatorChar);
-                        Item item = new Item() { append = append, type = command , filter = filter };
+                        Item item = new Item() { append = append, type = command, filter = filter };
                         commands.Add(item);
                     }
                 }
@@ -76,7 +70,7 @@ namespace CodeEditor2.Data
             if (commands.Count == 0) return false;
             return true;
         }
-        public string? GetFileType(string relativePath,string? defaultType)
+        public string? GetFileType(string relativePath, string? defaultType)
         {
             string? type = defaultType;
 
@@ -92,7 +86,7 @@ namespace CodeEditor2.Data
                     }
                     else
                     {
-                        if(type == item.type)
+                        if (type == item.type)
                         {
                             type = null;
                         }
@@ -101,7 +95,7 @@ namespace CodeEditor2.Data
             }
             return type;
         }
-        
+
         private class Item
         {
             public required bool append;

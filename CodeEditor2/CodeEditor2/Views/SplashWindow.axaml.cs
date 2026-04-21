@@ -1,15 +1,9 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
-using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using CodeEditor2.Data;
 using CodeEditor2.Setups;
-using Splat;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection.Metadata.Ecma335;
 
 namespace CodeEditor2.Views;
 
@@ -20,7 +14,7 @@ public partial class SplashWindow : Window
         InitializeComponent();
         Title = Setups.Setup.ApplicationName;
         TitleText.Text = Setups.Setup.ApplicationName;
-        if(Setups.Setup.GetIconImage!=null) SymbolImage.Source = Setups.Setup.GetIconImage();
+        if (Setups.Setup.GetIconImage != null) SymbolImage.Source = Setups.Setup.GetIconImage();
 
         Setups.Setup.InitializeWindow(this);
 
@@ -28,18 +22,18 @@ public partial class SplashWindow : Window
         OpenSolutionButton.Click += OpenSolutionButton_Click;
 
         Global.Setup.LoadSetup();
-        Global.Setup.Historys.Sort((a,b)=> b.LastAccessed.CompareTo(a.LastAccessed));
+        Global.Setup.Historys.Sort((a, b) => b.LastAccessed.CompareTo(a.LastAccessed));
 
-        foreach(Setups.Setup.History history in Global.Setup.Historys)
+        foreach (Setups.Setup.History history in Global.Setup.Historys)
         {
-            Avalonia.Controls.Button button = new Button() {HorizontalAlignment=Avalonia.Layout.HorizontalAlignment.Stretch};
+            Avalonia.Controls.Button button = new Button() { HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch };
             {
                 Tools.VerticalStackPanelConstructor verticalStackPanelConstructor = new Tools.VerticalStackPanelConstructor();
                 button.Content = verticalStackPanelConstructor.StackPanel;
 
                 verticalStackPanelConstructor.AppendText(history.Name, 18, Tools.VerticalStackPanelConstructor.Style.Bold);
                 verticalStackPanelConstructor.AppendText(history.AbsolutePath);
-                verticalStackPanelConstructor.AppendText("Last Accessed : "+history.LastAccessed.ToString(),7);
+                verticalStackPanelConstructor.AppendText("Last Accessed : " + history.LastAccessed.ToString(), 7);
             }
             button.Click += Button_Click;
             historyTarget.Add(button, history);
@@ -122,12 +116,12 @@ public partial class SplashWindow : Window
         openMainWindow();
 
         string? path = System.IO.Path.GetDirectoryName(Global.Solution.AbsolutePath);
-        if(path != null)
+        if (path != null)
         {
             Data.Project newProject = await Project.CreateAsync(path);
             await Controller.AddProject(newProject);
         }
-        
+
         this.Close();
     }
 
@@ -144,7 +138,7 @@ public partial class SplashWindow : Window
                 }
                 return false;
             });
-        if(history == null)
+        if (history == null)
         {
             Global.Setup.Historys.Add(
                 new Setups.Setup.History()

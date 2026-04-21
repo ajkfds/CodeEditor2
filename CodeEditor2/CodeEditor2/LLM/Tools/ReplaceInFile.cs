@@ -1,17 +1,13 @@
-using CodeEditor2.Data;
 using Microsoft.Extensions.AI;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.LLM.Tools
 {
-    public class ReplaceInFile: LLMTool
+    public class ReplaceInFile : LLMTool
     {
         public ReplaceInFile(Data.Project project) : base(project) { }
         /* 
@@ -109,7 +105,7 @@ namespace CodeEditor2.LLM.Tools
                * To move code: Use two SEARCH/REPLACE blocks (one to delete from original + one to insert at new location)
                * To delete code: Use empty REPLACE section
             """)]
-            
+
 
         string diff,
         CancellationToken cancellationToken

@@ -1,15 +1,7 @@
-using Avalonia.Controls.Documents;
-using CodeEditor2.Data;
-using CodeEditor2Plugin;
 using Microsoft.Extensions.AI;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
 
 
 namespace CodeEditor2.LLM.Tools

@@ -1,12 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Templates;
-using Avalonia.Layout;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using ExCSS;
-using System.Collections.Generic;
 
 namespace CodeEditor2.Views;
 
@@ -28,19 +22,19 @@ public partial class FileTypeView : UserControl
     public void UpdateVisual()
     {
         ListBox0.Items.Clear();
-        foreach(var fileType in Global.FileTypes.Values)
+        foreach (var fileType in Global.FileTypes.Values)
         {
-            ListBox0.Items.Add(new FileTypeItem(fileType,FontSize));
+            ListBox0.Items.Add(new FileTypeItem(fileType, FontSize));
         }
     }
 
     public class FileTypeItem : ListBoxItem
     {
-        public FileTypeItem(FileTypes.FileType fileType,double fontSize)
+        public FileTypeItem(FileTypes.FileType fileType, double fontSize)
         {
-            stackPanel.Margin = new Thickness(0, fontSize*0.1);
+            stackPanel.Margin = new Thickness(0, fontSize * 0.1);
             stackPanel.Height = fontSize;
-//            stackPanel.MinHeight = minSize;
+            //            stackPanel.MinHeight = minSize;
 
             textBlock.FontSize = fontSize;
 
@@ -56,8 +50,8 @@ public partial class FileTypeView : UserControl
             checkBox.Margin = new Thickness(0);
             // use viewbox to change checkbox size
             viewbox.Child = checkBox;
-            viewbox.Height = fontSize*1.2;
-            viewbox.Width = fontSize*1.2;
+            viewbox.Height = fontSize * 1.2;
+            viewbox.Width = fontSize * 1.2;
             viewbox.Margin = new Thickness(0);
             stackPanel.Children.Add(viewbox);
 
@@ -70,17 +64,19 @@ public partial class FileTypeView : UserControl
 
             textBlock.Text = fileType.ID;
             stackPanel.Children.Add(textBlock);
-            
+
             Content = stackPanel;
         }
         Viewbox viewbox = new Viewbox();
         CheckBox checkBox = new CheckBox();
-        StackPanel stackPanel = new StackPanel() {
+        StackPanel stackPanel = new StackPanel()
+        {
             Orientation = Avalonia.Layout.Orientation.Horizontal,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };
-        TextBlock textBlock = new TextBlock() { 
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center 
+        TextBlock textBlock = new TextBlock()
+        {
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };
         protected Avalonia.Controls.Image iconImage = new Avalonia.Controls.Image()
         {

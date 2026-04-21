@@ -1,34 +1,20 @@
 using AjkAvaloniaLibs.Controls;
 using Avalonia.Controls;
-using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
-using AvaloniaEdit.Document;
 using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.CodeComplete;
 using CodeEditor2.CodeEditor.Parser;
 using CodeEditor2.CodeEditor.PopupHint;
 using CodeEditor2.CodeEditor.PopupMenu;
-using CodeEditor2.CodeEditor.TextDecollation;
-using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
-using CodeEditor2.Tools;
-using Microsoft.Playwright;
-using Svg;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.IO.Hashing;
-using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.Data
 {
@@ -386,7 +372,7 @@ namespace CodeEditor2.Data
                 return;
             }
 
-            if(Controller.NavigatePanel.GetSelectedFile() == this)
+            if (Controller.NavigatePanel.GetSelectedFile() == this)
             {
                 Controller.NavigatePanel.SelectNodePost(Project.NavigatePanelNode);
             }
@@ -428,7 +414,8 @@ namespace CodeEditor2.Data
 
                 string? newHash = null;
                 await Task.Run(
-                    async () => {
+                    async () =>
+                    {
                         newHash = await SaveTextAndGetHash(saveText);
                     }
                 );
@@ -615,20 +602,20 @@ namespace CodeEditor2.Data
 
         public override Task FileChangedAsync()
         {
-            if (Dispatcher.UIThread.CheckAccess() && Controller.NavigatePanel.GetSelectedFile() == this) 
+            if (Dispatcher.UIThread.CheckAccess() && Controller.NavigatePanel.GetSelectedFile() == this)
             {
                 Controller.CodeEditor.PostRefresh();
             }
-            
+
             NavigatePanelNode?.PostUpdate();
-            
+
             return Task.CompletedTask;
         }
 
         public override void PostUIUpdate()
         {
             Dispatcher.UIThread.Post(
-                async() =>
+                async () =>
                 {
                     if (await Controller.CodeEditor.GetTextFileAsync() == this)
                     {

@@ -1,15 +1,7 @@
-using Avalonia.Controls.Documents;
-using CodeEditor2.Data;
-using CodeEditor2Plugin;
 using Microsoft.Extensions.AI;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.LLM.Tools
 {
@@ -63,7 +55,7 @@ namespace CodeEditor2.LLM.Tools
 
                 // 1. パスの正規化と安全性のチェック
                 string fullPath = project.GetAbsolutePath(path);
-                
+
                 if (!fullPath.StartsWith(project.RootPath, StringComparison.OrdinalIgnoreCase))
                 {
                     return "Error: Permission denied. Cannot read files outside of the project root.";
@@ -91,7 +83,7 @@ namespace CodeEditor2.LLM.Tools
                 {
                     return reader.ReadToEnd();
                 }
-//                return System.IO.File.ReadAllText(fullPath, Encoding.UTF8);
+                //                return System.IO.File.ReadAllText(fullPath, Encoding.UTF8);
             }
             catch (UnauthorizedAccessException)
             {

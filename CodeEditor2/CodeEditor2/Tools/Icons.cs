@@ -1,19 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Media.Imaging;
-using Avalonia.Media;
 using Avalonia.Platform;
-using System.IO;
-
+using Avalonia.Skia;
 // SKPictureに対する拡張メソッドとしてSKPicture.ToImageが定義されている。これを使うのに必要。
 using SkiaSharp;
 using Svg.Skia;
-using Avalonia.Skia;
-using Avalonia;
-using System.Runtime.Intrinsics.Arm;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 namespace CodeEditor2.Tools
 {
@@ -81,7 +76,7 @@ namespace CodeEditor2.Tools
 
             string iconName = iconName1 + iconName2;
             if (iconImages.ContainsKey(iconName)) return iconImages[iconName];
-            
+
 
             SKBitmap skBitmap1 = getSkBitmapFromSvg(SvgPath1, 1f, 1f, color1);
             SKBitmap skBitmap2 = getSkBitmapFromSvg(SvgPath2, 0.5f, 0.5f, color2);

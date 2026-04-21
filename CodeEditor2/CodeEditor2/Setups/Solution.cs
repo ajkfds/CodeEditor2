@@ -1,17 +1,12 @@
+using CodeEditor2.Data;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CodeEditor2.Data;
-using AjkAvaloniaLibs.Libs.Json;
-using System.Text.Json;
-using System.Data;
-using System.Text.Encodings.Web;
-using System.Text.Unicode;
 using System.IO;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Json.Nodes;
+using System.Text.Unicode;
+using System.Threading.Tasks;
 
 namespace CodeEditor2.Setups
 {
@@ -65,13 +60,13 @@ namespace CodeEditor2.Setups
                 ProjectSetups.Add(project.CreateSetup());
             }
 
-            if(!System.IO.File.Exists(path)) return;
+            if (!System.IO.File.Exists(path)) return;
             using (FileStream file = System.IO.File.Open(path, FileMode.Open))
             {
                 Solution? setup = System.Text.Json.JsonSerializer.Deserialize<Solution>(file, options);
                 if (setup == null) return;
 
-//                if (Se.ApplicationName != ApplicationName) return;
+                //                if (Se.ApplicationName != ApplicationName) return;
                 LastUpdate = setup.LastUpdate;
                 foreach (var projectSetup in setup.ProjectSetups)
                 {

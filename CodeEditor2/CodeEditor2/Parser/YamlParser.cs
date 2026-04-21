@@ -1,11 +1,7 @@
 using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.Parser;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.Parser
@@ -50,7 +46,7 @@ namespace CodeEditor2.Parser
                     colorLine(Style.Color.Header, line);
                 }
             }
-            if(ParseCustomYaml != null) ParseCustomYaml.Invoke(this);
+            if (ParseCustomYaml != null) ParseCustomYaml.Invoke(this);
         }
 
         private void colorLine(Style.Color color, int line)

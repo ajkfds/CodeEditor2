@@ -1,9 +1,4 @@
-using CodeEditor2.CodeEditor;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.Parser
 {
@@ -375,7 +370,7 @@ namespace CodeEditor2.Parser
 
             char ch;
             int docLength = document.Length;
-            
+
             {
 
                 // skip blanks before word

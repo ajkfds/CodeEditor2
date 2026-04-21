@@ -1,12 +1,7 @@
 using CodeEditor2.NavigatePanel;
 using CodeEditor2.Tools;
-using DynamicData;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -58,7 +53,7 @@ namespace CodeEditor2.Data
                 }
 
                 Folder? folder = item as Folder;
-                if (folder != null &&  folder.Name == pathList[0])
+                if (folder != null && folder.Name == pathList[0])
                 {
                     if (pathList.Length == 1) return null;
                     return folder.SearchFile(relativePath.Substring(pathList[0].Length + 1));
@@ -78,7 +73,7 @@ namespace CodeEditor2.Data
                 }
 
                 Folder? folder = item as Folder;
-                if(folder != null)
+                if (folder != null)
                 {
                     File? folderFile = folder.SearchFile(match);
                     if (folderFile != null) return folderFile;
@@ -122,11 +117,11 @@ namespace CodeEditor2.Data
             }
             finally
             {
-               _fileSemaphore.Release();
+                _fileSemaphore.Release();
             }
         }
 
-        private async Task updateItems(List<string> absoluteFilePaths,List<string> absoluteFolderPaths)
+        private async Task updateItems(List<string> absoluteFilePaths, List<string> absoluteFolderPaths)
         {
 
             List<Item> currentItems = new List<Item>();
@@ -152,7 +147,7 @@ namespace CodeEditor2.Data
                     continue;
                 }
 
-                if(items.TryGetValue(name,out Item? oldItem))
+                if (items.TryGetValue(name, out Item? oldItem))
                 {
                     if (oldItem == null) continue;
                     if (oldItem is File)
@@ -171,7 +166,7 @@ namespace CodeEditor2.Data
                     items.AddOrUpdate(item.Name, item);
                     currentItems.Add(item);
                 }));
-                
+
             }
             await Task.WhenAll(tasks);
 
@@ -183,9 +178,9 @@ namespace CodeEditor2.Data
                 if (body.Contains(System.IO.Path.DirectorySeparatorChar)) body = body.Substring(body.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
                 if (body.StartsWith(".")) continue;
 
-                if (items.TryGetValue(body,out Item? oldItem))
+                if (items.TryGetValue(body, out Item? oldItem))
                 {
-                    if(oldItem == null) throw new Exception("Item dictionary contains null value.");
+                    if (oldItem == null) throw new Exception("Item dictionary contains null value.");
                     currentItems.Add(oldItem);
                     continue;
                 }
@@ -228,7 +223,7 @@ namespace CodeEditor2.Data
         {
             List<string> absoluteFilePaths = new List<string>();
             List<string> absoluteFolderPaths = new List<string>();
-            foreach(FileIO.FileNode subNode in node.Nodes.Values)
+            foreach (FileIO.FileNode subNode in node.Nodes.Values)
             {
                 if (subNode.IsDirectory)
                 {
@@ -244,9 +239,9 @@ namespace CodeEditor2.Data
             foreach (FileIO.FileNode subNode in node.Nodes.Values)
             {
                 if (!subNode.IsDirectory) continue;
-                if(items.TryGetValue(subNode.Name,out Item? oldItem))
+                if (items.TryGetValue(subNode.Name, out Item? oldItem))
                 {
-                    if(oldItem == null) throw new Exception("Item dictionary contains null value.");
+                    if (oldItem == null) throw new Exception("Item dictionary contains null value.");
                     Folder? folder = oldItem as Folder;
                     if (folder == null) continue;
                     await folder.InitializeHierarchy(project, this, subNode);

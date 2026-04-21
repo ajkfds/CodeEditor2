@@ -1,18 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Input;
-using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Styling;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.Views
 {
@@ -107,8 +99,8 @@ namespace CodeEditor2.Views
             }
 
             base.OnOpening(args);
-//            VerticalOffset = 100;
-//            HorizontalOffset = 100;
+            //            VerticalOffset = 100;
+            //            HorizontalOffset = 100;
 
             View.OnOpen(args);
         }

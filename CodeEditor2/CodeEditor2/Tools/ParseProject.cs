@@ -1,18 +1,9 @@
-using Avalonia.Controls;
 using Avalonia.Threading;
-using CodeEditor2.CodeEditor;
 using CodeEditor2.Data;
-using CodeEditor2.NavigatePanel;
-using Securify.ShellLink.Structures;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Quic;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using static CodeEditor2.CodeEditor.ParsedDocument;
 
 namespace CodeEditor2.Tools
 {
@@ -21,7 +12,7 @@ namespace CodeEditor2.Tools
 
         // to pase thread
         //private Tools.ProgressWindow progressWindow;
-//        private volatile bool abort = false;
+        //        private volatile bool abort = false;
 
         public async Task Run(NavigatePanel.ProjectNode projectNode)
         {
@@ -37,8 +28,9 @@ namespace CodeEditor2.Tools
             ProgressWindow progress = new ProgressWindow();
             progress.Title = "Loading " + projectNode.Text;
 
-            progress.LoadedAction = async (progressWindow) => {
-                await runParse(progressWindow,projectNode.Project);
+            progress.LoadedAction = async (progressWindow) =>
+            {
+                await runParse(progressWindow, projectNode.Project);
                 progressWindow.Close();
             };
             await progress.ShowDialog(Global.mainWindow);
@@ -68,7 +60,8 @@ namespace CodeEditor2.Tools
             List<Item> items = project.FindItems(
                 (x) => (x is Data.TextFile),
                 (x) => (false),
-                (x) => {
+                (x) =>
+                {
                     Data.TextFile textFile = (Data.TextFile)x;
                     if (textFile != null)
                     {

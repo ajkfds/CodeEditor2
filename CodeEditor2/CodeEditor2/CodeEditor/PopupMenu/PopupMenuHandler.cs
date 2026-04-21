@@ -1,16 +1,11 @@
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.VisualTree;
+using CodeEditor2.Snippets;
 using CodeEditor2.Views;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Input;
-using System.Net.Http.Headers;
-using CodeEditor2.Snippets;
-using DynamicData;
 
 namespace CodeEditor2.CodeEditor.PopupMenu
 {
@@ -41,7 +36,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             if (tBound == null) return null;
             //            TransformedBounds transformedBound = (TransformedBounds)tBound;
             var caretRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
-            
+
 
             //            Avalonia.Point position = transformedBound.Clip.Position;
 
@@ -123,7 +118,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
                 Controller.CodeEditor.AbortInteractiveSnippet();
             }
 
-//            System.Diagnostics.Debug.Print("## ShowToolSelectionPopupMenu");
+            //            System.Diagnostics.Debug.Print("## ShowToolSelectionPopupMenu");
             PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
             if (flyout == null) return;
             if (flyout.IsOpen) return;
@@ -187,7 +182,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
 
         public void HidePopupMenu()
         {
-//            System.Diagnostics.Debug.Print("## HidePopupMenu");
+            //            System.Diagnostics.Debug.Print("## HidePopupMenu");
             PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(codeView._textEditor) as PopupMenuFlyout;
             if (flyout == null) return;
             if (!flyout.IsOpen) return;
@@ -196,7 +191,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
 
         public void PopupMenu_Selected(PopupMenuItem popUpMenuItem)
         {
-//            System.Diagnostics.Debug.Print("## PopupMenu_Selected");
+            //            System.Diagnostics.Debug.Print("## PopupMenu_Selected");
 
             //            ToolItem? toolItem = popUpMenuItem as ToolItem;
             //if (popUpMenuItem is ToolItem)
@@ -223,13 +218,13 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             }
             set
             {
-                if(value == null)
+                if (value == null)
                 {
-//                    System.Diagnostics.Debug.Print("### Snippet = null");
+                    //                    System.Diagnostics.Debug.Print("### Snippet = null");
                 }
                 else
                 {
-//                    System.Diagnostics.Debug.Print("### Snippet = " + value.ToString());
+                    //                    System.Diagnostics.Debug.Print("### Snippet = " + value.ToString());
                 }
                 snippet = value;
             }
@@ -267,13 +262,13 @@ namespace CodeEditor2.CodeEditor.PopupMenu
         public void TextEntered(object? sender, TextInputEventArgs e)
         {
             if (Snippet == null) return;
-//            System.Diagnostics.Debug.Print("## TextEntered for snippet");
+            //            System.Diagnostics.Debug.Print("## TextEntered for snippet");
             Snippet.AfterKeyDown(sender, e, codeView.PopupMenu);
         }
         public virtual void AfterAutoCompleteHandled()
         {
             if (Snippet == null) return;
-//            System.Diagnostics.Debug.Print("## AfterAutoCompleteHandled for snippet");
+            //            System.Diagnostics.Debug.Print("## AfterAutoCompleteHandled for snippet");
             Snippet.AfterAutoCompleteHandled(codeView.PopupMenu);
         }
 

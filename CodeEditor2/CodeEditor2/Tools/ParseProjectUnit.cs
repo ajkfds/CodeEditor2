@@ -1,12 +1,5 @@
-using Avalonia.Controls;
 using Avalonia.Threading;
-using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.Parser;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
@@ -50,8 +43,9 @@ namespace CodeEditor2.Tools
             }
 
             Dispatcher.UIThread.Invoke(
-                () => {
-                    if(progressWindow.ProgressMaxValue> progressWindow.ProgressValue+1) progressWindow.ProgressValue++;
+                () =>
+                {
+                    if (progressWindow.ProgressMaxValue > progressWindow.ProgressValue + 1) progressWindow.ProgressValue++;
                     progressWindow.Message = name + " : " + textFile.Name;
                 }
             );

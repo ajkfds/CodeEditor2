@@ -1,7 +1,6 @@
 using AjkAvaloniaLibs.Controls;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using CodeEditor2.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,11 +32,11 @@ namespace CodeEditor2.Views
             }, DispatcherPriority.Background);
         }
 
-        public void AppendLog(string message,Avalonia.Media.Color color)
+        public void AppendLog(string message, Avalonia.Media.Color color)
         {
-            List<string> messages = message.Replace("\r", "").Split('\n',System.StringSplitOptions.RemoveEmptyEntries).ToList();
+            List<string> messages = message.Replace("\r", "").Split('\n', System.StringSplitOptions.RemoveEmptyEntries).ToList();
 
-            foreach(string m in messages)
+            foreach (string m in messages)
             {
                 AjkAvaloniaLibs.Controls.ListViewItem item = new AjkAvaloniaLibs.Controls.ListViewItem(m, color);
                 Dispatcher.UIThread.Post(() => appendLog(item));

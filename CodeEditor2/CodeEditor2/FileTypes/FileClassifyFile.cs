@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.FileTypes
@@ -13,7 +9,7 @@ namespace CodeEditor2.FileTypes
         public override bool IsThisFileType(string relativeFilePath, CodeEditor2.Data.Project project)
         {
             if (
-                relativeFilePath==".fileClassify"
+                relativeFilePath == ".fileClassify"
             )
             {
                 return true;

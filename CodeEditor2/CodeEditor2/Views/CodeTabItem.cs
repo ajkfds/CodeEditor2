@@ -1,14 +1,8 @@
-using System;
-using Avalonia.Automation;
-using Avalonia.Automation.Peers;
-using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Mixins;
-using Avalonia.Controls.Primitives;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Controls;
-using Avalonia.Styling;
+using Avalonia.Input;
 using Avalonia.Media.Imaging;
+using Avalonia.Styling;
+using System;
 
 namespace CodeEditor2.Views
 {
@@ -74,13 +68,13 @@ namespace CodeEditor2.Views
 
         private void CloseButton_PointerEntered(object? sender, PointerEventArgs e)
         {
-            if(CloseButton == null) return;
+            if (CloseButton == null) return;
             CloseButton.Source = ActiveCloseButtonBmp;
         }
 
-        public  void CloseButton_Tapped(object? sender, TappedEventArgs e)
+        public void CloseButton_Tapped(object? sender, TappedEventArgs e)
         {
-            if(CloseButton_Clicked != null) CloseButton_Clicked();
+            if (CloseButton_Clicked != null) CloseButton_Clicked();
         }
 
         public Action? CloseButton_Clicked;

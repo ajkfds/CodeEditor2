@@ -1,10 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.Tools
 {
@@ -41,7 +36,7 @@ namespace CodeEditor2.Tools
 
         public void AppendContolFill(Avalonia.Controls.Control control)
         {
-            grid.ColumnDefinitions.Add( new ColumnDefinition(GridLength.Star));
+            grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
             Grid.SetColumn(control, column);
             grid.Children.Add(control);
             column++;

@@ -1,13 +1,7 @@
-using AjkAvaloniaLibs;
-using Avalonia;
 using Avalonia.Input;
 using CodeEditor2.Views;
 //using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor.CodeComplete
 {
@@ -42,18 +36,19 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             {
                 popupMenuView.SelectUp();
                 e.Handled = true;
-            }else if(e.Key == Key.Down)
+            }
+            else if (e.Key == Key.Down)
             {
                 popupMenuView.SelectDown();
                 e.Handled = true;
             }
-            else if(e.Key == Key.OemComma)
+            else if (e.Key == Key.OemComma)
             {
                 Apply();
                 Close();
                 return;
             }
-            else if(e.Key == Key.Enter)
+            else if (e.Key == Key.Enter)
             {
                 Apply();
                 Close();
@@ -73,7 +68,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 Close();
                 return;
             }
-            else if( e.Key == Key.Escape)
+            else if (e.Key == Key.Escape)
             {
                 Close();
                 return;
@@ -94,7 +89,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
 
         public void TextEntered(object? sender, TextInputEventArgs e)
         {
-            System.Diagnostics.Debug.Print("### TextEnteted "+working.ToString());
+            System.Diagnostics.Debug.Print("### TextEnteted " + working.ToString());
             if (codeView.TextFile == null) return;
             if (codeView.CodeDocument == null) return;
 
@@ -105,7 +100,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 prevIndex--;
                 prevChar = codeView.CodeDocument.GetCharAt(prevIndex);
             }
-//            System.Diagnostics.Debug.Print("### TextEnteted 1");
+            //            System.Diagnostics.Debug.Print("### TextEnteted 1");
 
             string? candidateWord;
             List<AutocompleteItem>? items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out candidateWord);
@@ -119,29 +114,29 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 Close();
                 return;
             }
-//            System.Diagnostics.Debug.Print("### TextEnteted 2");
+            //            System.Diagnostics.Debug.Print("### TextEnteted 2");
 
             List<PopupMenu.ToolItem> toolItems = new List<PopupMenu.ToolItem>();
-            foreach(AutocompleteItem aItem in items)
+            foreach (AutocompleteItem aItem in items)
             {
-                if(candidateWord.Length<1 || aItem.Text.StartsWith(candidateWord))
+                if (candidateWord.Length < 1 || aItem.Text.StartsWith(candidateWord))
                 {
                     aItem.Assign(codeView.CodeDocument);
                     toolItems.Add(aItem);
                 }
             }
-//            System.Diagnostics.Debug.Print("### TextEnteted 3");
+            //            System.Diagnostics.Debug.Print("### TextEnteted 3");
 
             if (toolItems.Count == 0)
             {
                 Close();
                 return;
             }
-//            System.Diagnostics.Debug.Print("### TextEnteted 4");
+            //            System.Diagnostics.Debug.Print("### TextEnteted 4");
 
             if (!working)
             {
-//                System.Diagnostics.Debug.Print("### TextEnteted 5");
+                //                System.Diagnostics.Debug.Print("### TextEnteted 5");
                 popupMenuView = Controller.CodeEditor.OpenAutoComplete(toolItems);
                 if (popupMenuView == null)
                 {
@@ -154,13 +149,13 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
             else
             {
-//                System.Diagnostics.Debug.Print("### TextEnteted 6");
+                //                System.Diagnostics.Debug.Print("### TextEnteted 6");
                 if (popupMenuView == null)
                 {
                     Close();
                     return;
                 }
-//                System.Diagnostics.Debug.Print("### TextEnteted 7 "+toolItems.Count);
+                //                System.Diagnostics.Debug.Print("### TextEnteted 7 "+toolItems.Count);
                 Controller.CodeEditor.UpdateAutoComplete(toolItems);
                 popupMenuView.SelectDown();
                 working = true;

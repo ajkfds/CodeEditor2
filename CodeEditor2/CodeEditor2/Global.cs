@@ -1,19 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Media;
-using AvaloniaEdit;
 using CodeEditor2.CodeEditor;
 using CodeEditor2.Data;
 using CodeEditor2.Setups;
-using ExCSS;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CodeEditor2
 {
@@ -51,8 +43,8 @@ namespace CodeEditor2
         public static bool StopParse = false;
         public static bool IsBooting = true;
 
-        public static Avalonia.Media.Color Color_Gray = Avalonia.Media.Color.FromRgb(120,120,120);
-        public static Avalonia.Media.Color Color_Folder = Avalonia.Media.Color.FromRgb(85,105,146);
+        public static Avalonia.Media.Color Color_Gray = Avalonia.Media.Color.FromRgb(120, 120, 120);
+        public static Avalonia.Media.Color Color_Folder = Avalonia.Media.Color.FromRgb(85, 105, 146);
         public static Avalonia.Media.Color Color_Project = Avalonia.Media.Color.FromRgb(146, 85, 85);
 
         public static Avalonia.Media.Color Color_Shine = Avalonia.Media.Color.FromRgb(255, 255, 200);
@@ -61,31 +53,31 @@ namespace CodeEditor2
 
 
         public static byte[]? FileEncriptionKey = null;
-        public static MenuItem CreateMenuItem (string header,string name)
+        public static MenuItem CreateMenuItem(string header, string name)
         {
             MenuItem menuItem = new MenuItem();
             menuItem.Header = header;
             menuItem.Name = name;
             menuItem.FontFamily = "Cascadia Mono,Consolas,Menlo,Monospace";
-//            menuItem.FontSize = 11;
+            //            menuItem.FontSize = 11;
             menuItem.FontStyle = Avalonia.Media.FontStyle.Normal;
             menuItem.FontWeight = Avalonia.Media.FontWeight.Normal;
             menuItem.MinHeight = 12;
-//            menuItem.Height = 16;
+            //            menuItem.Height = 16;
             menuItem.Padding = new Avalonia.Thickness(0, 0, 0, 0);
             menuItem.Margin = new Avalonia.Thickness(0, 0, 0, 0);
             return menuItem;
         }
 
-        public static MenuItem CreateMenuItem(string header, string name,string imagePath,Avalonia.Media.Color iconColor)
+        public static MenuItem CreateMenuItem(string header, string name, string imagePath, Avalonia.Media.Color iconColor)
         {
             return CreateMenuItem(
-                header, 
+                header,
                 name,
                 AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                         imagePath,
                         iconColor
-                        ), 
+                        ),
                 iconColor
                 );
         }
@@ -102,6 +94,6 @@ namespace CodeEditor2
 
             return menuItem;
         }
- 
+
     }
 }

@@ -1,46 +1,23 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using AvaloniaEdit;
-using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Folding;
-using AvaloniaEdit.Rendering;
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Resources;
-using System.Security.Cryptography.X509Certificates;
-
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
-using Avalonia.Diagnostics;
-using AvaloniaEdit.TextMate;
-using TextMateSharp.Grammars;
-using System.Reflection.Emit;
-using System.Diagnostics.CodeAnalysis;
 using CodeEditor2.CodeEditor;
-using System.Threading;
-using Avalonia.Threading;
-using System.Diagnostics;
-using AjkAvaloniaLibs.Controls;
-using DynamicData.Binding;
-using Avalonia.Controls.Primitives;
-using System.Threading.Tasks;
-using Avalonia.VisualTree;
-using Avalonia.Rendering;
-using CodeEditor2.Data;
-using CodeEditor2.CodeEditor.PopupMenu;
-using CodeEditor2.CodeEditor.TextDecollation;
 using CodeEditor2.CodeEditor.CodeComplete;
 using CodeEditor2.CodeEditor.Parser;
 using CodeEditor2.CodeEditor.PopupHint;
-using System.Text.RegularExpressions;
+using CodeEditor2.CodeEditor.PopupMenu;
+using CodeEditor2.CodeEditor.TextDecollation;
+using CodeEditor2.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CodeEditor2.Views
 {
@@ -53,7 +30,7 @@ namespace CodeEditor2.Views
         //        private OverloadInsightWindow? _insightWindow;
         //        private TextMateSharp.Grammars.RegistryOptions? _registryOptions;
 
-//        private int _currentTheme = (int)ThemeName.DarkPlus;
+        //        private int _currentTheme = (int)ThemeName.DarkPlus;
 
         public CodeView()
         {
@@ -64,7 +41,7 @@ namespace CodeEditor2.Views
             _textEditor = Editor;
 
 
-//            if (Design.IsDesignMode) return;
+            //            if (Design.IsDesignMode) return;
 
 
             codeViewPopup = new PopupHandler(this);
@@ -178,7 +155,7 @@ namespace CodeEditor2.Views
         }
 
         internal ContextMenu contextMenu = new ContextMenu();
-//        internal DispatcherTimer timer = new DispatcherTimer();
+        //        internal DispatcherTimer timer = new DispatcherTimer();
         internal HighlightRenderer _highlightRenderer = null!;
         internal MarkerRenderer _markerRenderer = null!;
         internal FoldingManager _foldingManager = null!;
@@ -257,7 +234,7 @@ namespace CodeEditor2.Views
             {
                 await Caret_PositionChangedAsync(sender, e);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 CodeEditor2.Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
             }
@@ -271,7 +248,7 @@ namespace CodeEditor2.Views
                 return;
             }
 
-            if(clicked && CodeDocument.caretIndex != _textEditor.TextArea.Caret.Offset)
+            if (clicked && CodeDocument.caretIndex != _textEditor.TextArea.Caret.Offset)
             {
                 await addPositionHistory();
             }
@@ -288,7 +265,7 @@ namespace CodeEditor2.Views
             if (prevVersion != version && caretLine != prevCaretLine)
             {
                 prevVersion = version;
-                if(!Global.StopParse) codeViewParser.EntryParse();
+                if (!Global.StopParse) codeViewParser.EntryParse();
             }
 
 
@@ -335,7 +312,7 @@ namespace CodeEditor2.Views
             if (CodeDocument != CodeDocument) return;
 
             _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, selectionStart, selectionLast);
-//            _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, selectionStart, selectionLast + 1);
+            //            _textEditor.TextArea.Selection = Selection.Create(_textEditor.TextArea, selectionStart, selectionLast + 1);
         }
 
         private void TextArea_DocumentChanged(object? sender, DocumentChangedEventArgs e)
@@ -368,14 +345,14 @@ namespace CodeEditor2.Views
         public void UpdateFoldings()
         {
             if (CodeDocument == null) return;
-            _foldingManager.UpdateFoldings(CodeDocument.Foldings.Foldings,-1);
+            _foldingManager.UpdateFoldings(CodeDocument.Foldings.Foldings, -1);
         }
 
         private bool skipEvents = false;
 
-        public async Task SetTextFileAsync(Data.TextFile? textFile,bool parseEntry)
+        public async Task SetTextFileAsync(Data.TextFile? textFile, bool parseEntry)
         {
-            if(Dispatcher.UIThread.CheckAccess() == false)
+            if (Dispatcher.UIThread.CheckAccess() == false)
             {
                 await Dispatcher.UIThread.InvokeAsync(
                     async () => { await SetTextFileAsync(textFile, parseEntry); }
@@ -407,7 +384,7 @@ namespace CodeEditor2.Views
             if (textFile == null || textFile.CodeDocument == null)
             {
                 TextFile = null;
-//                editorCodeDocument = null;
+                //                editorCodeDocument = null;
                 skipEvents = false;
                 return;
             }
@@ -416,11 +393,11 @@ namespace CodeEditor2.Views
                 TextFile = textFile;
 
                 // Clone the TextFile's CodeDocument for editor use
-//                editorCodeDocument = textFile.CodeDocument.Clone();
-//                _textEditor.Document = editorCodeDocument.TextDocument;
+                //                editorCodeDocument = textFile.CodeDocument.Clone();
+                //                _textEditor.Document = editorCodeDocument.TextDocument;
 
                 // restore caret position
-//                _textEditor.CaretOffset = editorCodeDocument.CaretIndex;
+                //                _textEditor.CaretOffset = editorCodeDocument.CaretIndex;
                 _textEditor.ScrollToVerticalOffset(TextFile.StoredVerticalScrollPosition);
 
                 if (parseEntry && !Global.StopParse) codeViewParser.EntryParse();
@@ -428,9 +405,9 @@ namespace CodeEditor2.Views
                 updateEditorContextMenu();
             }
 
-            Controller.AddSelectHistory(new TextReference(textFile, _textEditor.CaretOffset,0));
+            Controller.AddSelectHistory(new TextReference(textFile, _textEditor.CaretOffset, 0));
             Controller.Tabs.SelectTab(Global.mainView.EditorTabItem);
-//            Controller.CodeEditor.Refresh();
+            //            Controller.CodeEditor.Refresh();
 
             // update ParseDocument Result to current Text
             if (textFile.ParsedDocument == null)
@@ -452,7 +429,7 @@ namespace CodeEditor2.Views
         private void updateEditorContextMenu()
         {
             contextMenu.Items.Clear();
-            if(TextFile != null) TextFile.CustomizeEditorContextMenu(contextMenu);
+            if (TextFile != null) TextFile.CustomizeEditorContextMenu(contextMenu);
 
             MenuItem editor_Copy = Global.CreateMenuItem("Copy", "Copy");
             editor_Copy.InputGesture = new KeyGesture(Key.C, KeyModifiers.Control);
@@ -478,7 +455,7 @@ namespace CodeEditor2.Views
             };
             contextMenu.Items.Add(editor_Cut);
 
-            if(TextFile != null) TextFile.ModifyEditorContextMenu(contextMenu);
+            if (TextFile != null) TextFile.ModifyEditorContextMenu(contextMenu);
         }
 
         private void attachToCodeDocument()
@@ -520,17 +497,18 @@ namespace CodeEditor2.Views
             // TextArea.Keydown will not assert @ cursor key
             if (e.KeyModifiers == KeyModifiers.Control)
             {
-                if(e.Key == Key.S)
+                if (e.Key == Key.S)
                 {
                     Dispatcher.UIThread.Post(
                         async () => { await Controller.CodeEditor.SaveAsync(); }
                         );
-                    
+
                     e.Handled = true;
                     return;
                 }
 
-            }else if(e.Key == Key.Space && e.KeyModifiers == KeyModifiers.Shift)
+            }
+            else if (e.Key == Key.Space && e.KeyModifiers == KeyModifiers.Shift)
             {
                 e.Handled = true;
                 codeViewPopupMenu.ShowToolSelectionPopupMenu();
@@ -582,7 +560,7 @@ namespace CodeEditor2.Views
         {
             if (skipEvents) return;
             codeViewPopupMenu.TextEntered(sender, e);
-            codeViewAutoComplete.TextEntered(sender,e);
+            codeViewAutoComplete.TextEntered(sender, e);
             TextFile?.TextEntered(e);
         }
 

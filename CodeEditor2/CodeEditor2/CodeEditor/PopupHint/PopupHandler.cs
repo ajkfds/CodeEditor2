@@ -1,18 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using AvaloniaEdit;
 using CodeEditor2.Views;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Media;
-using AvaloniaEdit;
-using AvaloniaEdit.CodeCompletion;
-using AvaloniaEdit.Document;
-using AvaloniaEdit.Editing;
-using AvaloniaEdit.Folding;
-using AvaloniaEdit.Rendering;
 
 namespace CodeEditor2.CodeEditor.PopupHint
 {
@@ -68,7 +58,7 @@ namespace CodeEditor2.CodeEditor.PopupHint
             if (codeView.PopupTextBlock.Inlines == null) throw new Exception();
 
             codeView.PopupTextBlock.Inlines.Clear();
-//            CodeEditor2.CodeEditor.TextBlockMessages messages = new TextBlockMessages(codeView.PopupTextBlock);
+            //            CodeEditor2.CodeEditor.TextBlockMessages messages = new TextBlockMessages(codeView.PopupTextBlock);
             PopupItem? popupItem = codeView.TextFile.GetPopupItem(codeView.CodeDocument.Version, index);
             if (popupItem != null && popupItem.ItemCount > 0)
             {

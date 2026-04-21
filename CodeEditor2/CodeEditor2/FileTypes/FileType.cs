@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Media;
 using CodeEditor2.Data;
+using System.Threading.Tasks;
 
 namespace CodeEditor2.FileTypes
 {
@@ -19,7 +15,7 @@ namespace CodeEditor2.FileTypes
         public bool Visible { get; set; } = true;
         public abstract Task<File> CreateFile(string relativeFilePath, Project project);
 
-        public virtual void CreateNewFile(string relativeFilePath,Project project)
+        public virtual void CreateNewFile(string relativeFilePath, Project project)
         {
 
         }

@@ -1,13 +1,8 @@
 using Avalonia.Controls;
-using Avalonia.Interactivity;
-using Avalonia.Layout;
-using Avalonia.Styling;
 using CodeEditor2.CodeEditor.PopupMenu;
-using CodeEditor2.Data;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 
 namespace CodeEditor2.Views
 {
@@ -52,7 +47,7 @@ namespace CodeEditor2.Views
             foreach (ToolItem item in Global.codeView.codeViewPopupMenu.PopupMenuItems)
             {
                 if (item.Text == null) continue;
-                if(targetText == "")
+                if (targetText == "")
                 {
                     PopupMenuItem popupItem = item.CreatePopupMenuItem();
                     topHititems.Add(popupItem);
@@ -63,7 +58,7 @@ namespace CodeEditor2.Views
                 {
                     topHititems.Add(item.CreatePopupMenuItem());
                 }
-                else if(item.Text.ToLower().Contains(targetText))
+                else if (item.Text.ToLower().Contains(targetText))
                 {
                     PopupMenuItem popupItem = item.CreatePopupMenuItem();
                     partialHititems.Add(popupItem);

@@ -1,16 +1,11 @@
-using Avalonia.Controls.Documents;
 using Microsoft.Extensions.AI;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.LLM.Tools
 {
-    public class WriteToFile:LLMTool
+    public class WriteToFile : LLMTool
     {
         public WriteToFile(Data.Project project) : base(project) { }
         /*
@@ -52,7 +47,7 @@ namespace CodeEditor2.LLM.Tools
             If the file doesn't exist, it will be created. This tool will automatically create any directories needed to write the file.
             出力コンテキストサイズが小さいため、building blockの定義だけを出力し、その後、replace_in_fileで更新すること。
             """)]
-            
+
         public string Run(
         [Description("The path of the file to write to (relative to the project root directory)")]
         string path,
@@ -62,7 +57,8 @@ namespace CodeEditor2.LLM.Tools
             You MUST include ALL parts of the file, even if they haven't been modified.
             """)]
         string content
-        ){
+        )
+        {
             try
             {
                 if (project == null) return "Failed to execute tool. Cannot get current project.";

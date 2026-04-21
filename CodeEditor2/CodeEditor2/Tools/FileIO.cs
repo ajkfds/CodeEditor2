@@ -1,18 +1,10 @@
-using AjkAvaloniaLibs.Controls;
-using Avalonia.Controls.Shapes;
-using CodeEditor2.Data;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Tmds.DBus.Protocol;
-using static System.Net.Mime.MediaTypeNames;
 
 
 
@@ -25,7 +17,7 @@ namespace CodeEditor2.Tools
         private static int TimeoutSeconds = 20;
         private static readonly SemaphoreSlim _fileSemaphore = new SemaphoreSlim(1, 1);
 
-        public static async Task AppendFileLists(string path, EnumerationOptions options, string[] ExcludedDirectories,Data.Project project, StringBuilder sb)
+        public static async Task AppendFileLists(string path, EnumerationOptions options, string[] ExcludedDirectories, Data.Project project, StringBuilder sb)
         {
             await WithTimeout(Task.Run(() =>
             {
@@ -56,7 +48,7 @@ namespace CodeEditor2.Tools
         }
         public static async Task<string[]> GetFiles(string path)
         {
-            System.Diagnostics.Debug.Print("read: "+path);
+            System.Diagnostics.Debug.Print("read: " + path);
             return await WithTimeout(Task.Run(() =>
             {
                 if (!System.IO.Directory.Exists(path)) throw new FileNotFoundException();
@@ -83,15 +75,15 @@ namespace CodeEditor2.Tools
 
         public class FileNode
         {
-            public void AddItem(List<string> path,FileSystemInfo fileSystemInfo)
+            public void AddItem(List<string> path, FileSystemInfo fileSystemInfo)
             {
                 if (!fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory))
                 {
-                    if(path.Count == 1)
+                    if (path.Count == 1)
                     {
                         Nodes.Add(path[0], new FileNode() { Name = path[0], IsDirectory = false, FileSystemInfo = fileSystemInfo });
                     }
-                    else if(Nodes.ContainsKey(path[0]))
+                    else if (Nodes.ContainsKey(path[0]))
                     {
                         FileNode nextNode = Nodes[path[0]];
                         path.RemoveAt(0);
@@ -120,7 +112,7 @@ namespace CodeEditor2.Tools
             public bool IsDirectory { get; set; } = false;
             public string Name { get; set; } = "";
             public FileSystemInfo? FileSystemInfo { get; set; }
-            public Dictionary<string,FileNode> Nodes = new Dictionary<string, FileNode>();
+            public Dictionary<string, FileNode> Nodes = new Dictionary<string, FileNode>();
         }
 
 
@@ -174,7 +166,7 @@ namespace CodeEditor2.Tools
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.Read,
-                bufferSize: 4096*32,
+                bufferSize: 4096 * 32,
                 useAsync: true)) // または FileOptions.Asynchronous
             {
                 using var sr = new StreamReader(fs, Encoding.UTF8, true);
@@ -222,7 +214,7 @@ namespace CodeEditor2.Tools
         }
 
 
- 
+
         private static async Task<T> WithTimeout<T>(Task<T> task, TimeSpan timeout)
         {
             if (RestrictToSingleAccess)

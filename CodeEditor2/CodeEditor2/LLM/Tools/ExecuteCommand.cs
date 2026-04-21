@@ -2,14 +2,9 @@ using Microsoft.Extensions.AI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CodeEditor2.LLM.Tools
 {
@@ -57,7 +52,7 @@ namespace CodeEditor2.LLM.Tools
                 bool isSafe;
                 string reason;
 
-                (isSafe,reason) = ValidateCommand(command);
+                (isSafe, reason) = ValidateCommand(command);
                 if (!isSafe)
                 {
                     return reason;
@@ -74,9 +69,9 @@ namespace CodeEditor2.LLM.Tools
                 string argument = command.Substring(mainCommand.Length).TrimStart();
 
 
-                CodeEditor2.Tools.YesNoWindow yesNoWindow = new CodeEditor2.Tools.YesNoWindow("execure_command request",$"Do you want to execute the following command? :{command}");
+                CodeEditor2.Tools.YesNoWindow yesNoWindow = new CodeEditor2.Tools.YesNoWindow("execure_command request", $"Do you want to execute the following command? :{command}");
                 await yesNoWindow.ShowDialog(CodeEditor2.Controller.GetMainWindow());
-                if(!yesNoWindow.Yes) return "command_execute rejected by user";
+                if (!yesNoWindow.Yes) return "command_execute rejected by user";
 
                 CommandParser parser = new CommandParser();
 

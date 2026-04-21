@@ -1,26 +1,10 @@
-using Avalonia.Controls.Shapes;
-using Avalonia.Media;
-using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Folding;
-using AvaloniaEdit.TextMate;
-using CodeEditor2.NavigatePanel;
 //using Microsoft.CodeAnalysis.CSharp.Syntax;
-using ReactiveUI;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.CodeEditor
 {
@@ -32,8 +16,8 @@ namespace CodeEditor2.CodeEditor
             initialize();
         }
 
-        public static int tagCount=0;
-        public string tag ="";
+        public static int tagCount = 0;
+        public string tag = "";
 
         public CodeDocument(Data.TextFile textFile, bool textOnly) : this()
         {
@@ -48,7 +32,7 @@ namespace CodeEditor2.CodeEditor
             initialize();
         }
 
-        public CodeDocument(Data.TextFile textFile, string text) 
+        public CodeDocument(Data.TextFile textFile, string text)
         {
             textFileRef = new WeakReference<Data.TextFile>(textFile);
             textDocument = new TextDocument();
@@ -121,7 +105,7 @@ namespace CodeEditor2.CodeEditor
             HighLights.OnTextEdit(e);
             Marks.OnTextEdit(e);
             Foldings.OnTextEdit(e);
-            if(Changing != null) Changing(sender, e);
+            if (Changing != null) Changing(sender, e);
         }
 
         private void TextDocument_Changed(object? sender, DocumentChangeEventArgs e)
@@ -134,7 +118,7 @@ namespace CodeEditor2.CodeEditor
             {
                 if (!IsDirty)
                 {
-//                    Version++;
+                    //                    Version++;
                     NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
                     await Dispatcher.UIThread.InvokeAsync(
                         () => { node?.UpdateVisual(); }
@@ -142,7 +126,7 @@ namespace CodeEditor2.CodeEditor
                 }
                 else
                 {
-//                    Version++;
+                    //                    Version++;
                 }
             }
             catch
@@ -153,7 +137,7 @@ namespace CodeEditor2.CodeEditor
 
         #endregion
 
- 
+
 
         private bool disposed = false;
         public void Dispose()
@@ -172,9 +156,10 @@ namespace CodeEditor2.CodeEditor
         public void Clean()
         {
             CleanVersion = Version;
-            Dispatcher.UIThread.Post(() => {
+            Dispatcher.UIThread.Post(() =>
+            {
                 NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
-                node?.UpdateVisual(); 
+                node?.UpdateVisual();
             });
         }
 
@@ -224,9 +209,9 @@ namespace CodeEditor2.CodeEditor
             Foldings.AppendBlock(startIndex, endIndex);
         }
 
-        public void AppendBlock(int startIndex, int endIndex,string name,bool defaultClose)
+        public void AppendBlock(int startIndex, int endIndex, string name, bool defaultClose)
         {
-            Foldings.AppendBlock(startIndex, endIndex,name,defaultClose);
+            Foldings.AppendBlock(startIndex, endIndex, name, defaultClose);
         }
 
         /////////////////////////////////////////
@@ -267,7 +252,7 @@ namespace CodeEditor2.CodeEditor
 
         public char GetCharAt(int index)
         {
-            if(Length <= index)
+            if (Length <= index)
             {
                 return ' ';
             }
@@ -288,7 +273,7 @@ namespace CodeEditor2.CodeEditor
             }
             document.Foldings.Foldings.Sort((x, y) => { return x.StartOffset - y.StartOffset; });
             Foldings.Foldings = new List<NewFolding>(document.Foldings.Foldings);
-            if(Global.codeView.TextFile != null && Global.codeView.TextFile.CodeDocument == this && System.Threading.Thread.CurrentThread.Name == "UI" )
+            if (Global.codeView.TextFile != null && Global.codeView.TextFile.CodeDocument == this && System.Threading.Thread.CurrentThread.Name == "UI")
             {
                 Global.codeView.UpdateFoldings();
             }
@@ -338,7 +323,7 @@ namespace CodeEditor2.CodeEditor
 
         public void Replace(int index, int replaceLength, byte colorIndex, string text)
         {
-            if(!Dispatcher.UIThread.CheckAccess())
+            if (!Dispatcher.UIThread.CheckAccess())
             {
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {

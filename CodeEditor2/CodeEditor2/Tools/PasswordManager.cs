@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace CodeEditor2.Tools
 {
@@ -14,7 +11,7 @@ namespace CodeEditor2.Tools
         public static async Task<bool> CheckPassWord()
         {
             if (Global.FileEncriptionKey != null) return true;
-            if(Global.Setup.PasswordHash =="")
+            if (Global.Setup.PasswordHash == "")
             { //  set new paddword
                 Tools.InputWindow inputWindow = new InputWindow("new password", "input new password");
                 inputWindow.PassWordMode = true;
@@ -23,7 +20,7 @@ namespace CodeEditor2.Tools
                 string passWord = inputWindow.InputText;
                 if (passWord == "") return false;
                 string passwordHash, passwordSalt, derivedSalt;
-                HashPassword(passWord,out passwordHash,out passwordSalt,out derivedSalt);
+                HashPassword(passWord, out passwordHash, out passwordSalt, out derivedSalt);
                 Global.Setup.PasswordHash = passwordHash;
                 Global.Setup.PasswordSalt = passwordSalt;
                 Global.Setup.DerivedSalt = derivedSalt;
@@ -32,7 +29,7 @@ namespace CodeEditor2.Tools
             }
             else
             { // input and check password
-                while(Global.FileEncriptionKey == null)
+                while (Global.FileEncriptionKey == null)
                 {
                     Tools.InputWindow inputWindow = new InputWindow("input password", "input password");
                     inputWindow.PassWordMode = true;
@@ -41,7 +38,7 @@ namespace CodeEditor2.Tools
                     string passWord = inputWindow.InputText;
                     byte[]? derivedKey;
                     if (VerifyPasswordAndGetDerivedKey(
-                        passWord, 
+                        passWord,
                         Global.Setup.PasswordHash,
                         Global.Setup.PasswordSalt,
                         Global.Setup.DerivedSalt,
@@ -68,7 +65,7 @@ namespace CodeEditor2.Tools
         /// パスワードをハッシュ化する（保存用）
         /// </summary>
         /// <returns>ソルトとハッシュを結合した文字列</returns>
-        public static void HashPassword(string password,out string passwordHash,out string passwordSalt,out string derivedSalt)
+        public static void HashPassword(string password, out string passwordHash, out string passwordSalt, out string derivedSalt)
         {
             // 1. ランダムなソルトを生成
             byte[] salt = RandomNumberGenerator.GetBytes(SaltSizeByte);

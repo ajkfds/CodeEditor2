@@ -1,10 +1,5 @@
 using CodeEditor2.CodeEditor;
-using SkiaSharp;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.Data
 {
@@ -20,7 +15,7 @@ namespace CodeEditor2.Data
             Length = length;
             Caption = textFile.Name;
             CodeDocument? document = textFile.CodeDocument;
-            if(document != null)
+            if (document != null)
             {
                 int line = document.GetLineAt(startIndex);
                 Caption = Caption + " : line" + line.ToString();
@@ -32,11 +27,13 @@ namespace CodeEditor2.Data
         public int Length { get; init; }
 
         private WeakReference<ITextFile> textFileRef { get; init; }
-        public ITextFile? TextFile { 
-            get {
+        public ITextFile? TextFile
+        {
+            get
+            {
                 if (!textFileRef.TryGetTarget(out ITextFile? textFile)) return null;
                 return textFile;
-            } 
+            }
         }
     }
 }

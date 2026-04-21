@@ -1,13 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Threading;
 using CodeEditor2.Tools;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.LLM
@@ -23,7 +19,7 @@ namespace CodeEditor2.LLM
             StackPanel.Children.Add(TextBox);
 
             HorizontalGridConstructor hgrid = new HorizontalGridConstructor();
-            hgrid.AppendContol(ModelSelector,null);
+            hgrid.AppendContol(ModelSelector, null);
             hgrid.AppendContolFill(ButtonBar);
 
             StackPanel.Children.Add(hgrid.Grid);

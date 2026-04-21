@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.CodeEditor.PopupMenu
@@ -19,7 +16,8 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             try
             {
                 await ApplyAsync();
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 CodeEditor2.Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
             }
@@ -37,7 +35,7 @@ namespace CodeEditor2.CodeEditor.PopupMenu
             }
             set
             {
-                text= value;
+                text = value;
             }
         }
 

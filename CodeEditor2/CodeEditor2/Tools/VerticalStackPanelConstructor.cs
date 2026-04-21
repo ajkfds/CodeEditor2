@@ -1,10 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.Tools
 {
@@ -36,14 +31,14 @@ namespace CodeEditor2.Tools
         {
             AppendText(text, null, Style.Normal);
         }
-        public void AppendText(string text, double? size,Style style)
+        public void AppendText(string text, double? size, Style style)
         {
             TextBlock textBlock = new TextBlock();
             if (style == Style.Bold)
             {
                 Bold boldText = new Bold();
                 boldText.Inlines.Add(new Run(text));
-                if(size !=null) boldText.FontSize = (double)size;
+                if (size != null) boldText.FontSize = (double)size;
                 textBlock.Inlines?.Add(boldText);
             }
             else

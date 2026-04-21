@@ -1,11 +1,9 @@
 using Avalonia.Controls;
-using CodeEditor2.MessageView;
-using System.Security.Cryptography.X509Certificates;
-using System.Collections.ObjectModel;
-using Avalonia.Styling;
 using Avalonia.Layout;
-using System.Linq;
+using Avalonia.Styling;
 using Avalonia.Threading;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace CodeEditor2.Views
 {
@@ -22,7 +20,7 @@ namespace CodeEditor2.Views
             Style style = new Style();
             style.Selector = ((Selector?)null).OfType(typeof(ListBoxItem));
             style.Add(new Setter(Layoutable.MinHeightProperty, 8.0));
-//            style.Add(new Setter(Layoutable.HeightProperty, 11.0));
+            //            style.Add(new Setter(Layoutable.HeightProperty, 11.0));
 
             InfoListBox0.Styles.Add(style);
         }

@@ -1,11 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using CodeEditor2.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.Tools
 {
@@ -36,7 +31,7 @@ namespace CodeEditor2.Tools
                 Content = "Activate Local Encripted File Cashe",
                 IsChecked = false
             };
-            gridConstructor.AppendContol(enableCheckBox,null);
+            gridConstructor.AppendContol(enableCheckBox, null);
             gridConstructor.AppendText("cashe path");
 
             pathText = new TextBox()
@@ -44,7 +39,7 @@ namespace CodeEditor2.Tools
                 AcceptsReturn = true,
                 TextWrapping = TextWrapping.Wrap
             };
-            gridConstructor.AppendContol(pathText,null);
+            gridConstructor.AppendContol(pathText, null);
 
             loadSetup();
             form.OkButtonControl.Click += OkButtonControl_Click;
@@ -65,7 +60,7 @@ namespace CodeEditor2.Tools
             {
                 project.LocalFileCasheEnable = false;
             }
-            if(pathText.Text != null)
+            if (pathText.Text != null)
             {
                 project.LocalFileCashePath = pathText.Text;
             }

@@ -8,7 +8,7 @@ namespace CodeEditor2.Tools
         {
             InitializeComponent();
 
-            initialize("","");
+            initialize("", "");
         }
 
         public YesNoWindow(string title, string caption)

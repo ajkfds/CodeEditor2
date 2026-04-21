@@ -1,29 +1,18 @@
-using AjkAvaloniaLibs.Libs.Json;
-using AjkAvaloniaLibs.Views;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
-using CodeEditor2.Data;
-using Svg;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using System.Text.Unicode;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.Setups
 {
     public class Setup
     {
-        public　static string ApplicationName { get; set; } = "CodeEditor2";
+        public static string ApplicationName { get; set; } = "CodeEditor2";
 
         public static Action<Window> InitializeWindow =
             (Window) =>
@@ -81,7 +70,7 @@ namespace CodeEditor2.Setups
             using (FileStream file = System.IO.File.Open(Path, FileMode.Open))
             {
                 Setup? setup = System.Text.Json.JsonSerializer.Deserialize<Setup>(file, options);
-                if( setup != null) Global.Setup = setup;
+                if (setup != null) Global.Setup = setup;
             }
             Global.IsBooting = false;
         }

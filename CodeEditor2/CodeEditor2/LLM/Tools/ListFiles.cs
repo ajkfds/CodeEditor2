@@ -1,16 +1,13 @@
-using Avalonia.Controls.Documents;
 using Microsoft.Extensions.AI;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeEditor2.LLM.Tools
 {
-    public class ListFiles:LLMTool
+    public class ListFiles : LLMTool
     {
         public ListFiles(Data.Project project) : base(project) { }
         /*
@@ -51,9 +48,9 @@ namespace CodeEditor2.LLM.Tools
             If recursive is true, it will list all files and directories recursively.
             """)]
         public string Run(
-        [Description("The path of the directory to list contents for (relative to the project root directory)")] 
+        [Description("The path of the directory to list contents for (relative to the project root directory)")]
         string path,
-        [Description("Whether to list files recursively. Use true for recursive listing, false or omit for top-level only.")] 
+        [Description("Whether to list files recursively. Use true for recursive listing, false or omit for top-level only.")]
         string recursive = "false")
         {
             try

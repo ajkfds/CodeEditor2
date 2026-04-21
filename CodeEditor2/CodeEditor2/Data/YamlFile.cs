@@ -1,10 +1,6 @@
 using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.Parser;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.Data
@@ -39,7 +35,7 @@ namespace CodeEditor2.Data
         {
             await base.AcceptParsedDocumentAsync(newParsedDocument);
 
-            if(AcceptCustomYamlParsedDocument != null) AcceptCustomYamlParsedDocument.Invoke(this);
+            if (AcceptCustomYamlParsedDocument != null) AcceptCustomYamlParsedDocument.Invoke(this);
         }
 
 

@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using System;
 
 namespace CodeEditor2.Tools;
@@ -16,7 +15,7 @@ public partial class ItemPropertyForm : Window
         if (item == null) return;
         RelativePathText.Text = item.RelativePath;
 
-        if(item is Data.File)
+        if (item is Data.File)
         {
             Data.File file = (Data.File)item;
             if (file.FileType != null)
@@ -62,7 +61,7 @@ public partial class ItemPropertyForm : Window
 
     private void ItemPropertyForm_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        Position = new PixelPoint((int)(Position.X+Width*0.1), (int)(Position.Y+Height*0.1));
+        Position = new PixelPoint((int)(Position.X + Width * 0.1), (int)(Position.Y + Height * 0.1));
         Width = Width * 0.8;
         Height = Height * 0.8;
     }

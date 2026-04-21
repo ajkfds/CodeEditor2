@@ -1,17 +1,6 @@
-using Avalonia.Controls;
-using Avalonia.Threading;
-using CodeEditor2.FileTypes;
 using CodeEditor2.NavigatePanel;
-using DynamicData;
-using DynamicData.Binding;
-using DynamicData.Kernel;
-using Svg;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -19,7 +8,7 @@ namespace CodeEditor2.Data
 {
     public class File : Item
     {
-        protected File() : base() 
+        protected File() : base()
         {
             FileWeakReferences.Add(new WeakReference<File>(this));
         }
@@ -30,10 +19,10 @@ namespace CodeEditor2.Data
         public static async Task<File> CreateAsync(string relativePath, Project project, Item parent)
         {
             FileTypes.FileType? fileType = project.GetFileType(relativePath);
-            if(fileType != null)
+            if (fileType != null)
             {
                 File file = await fileType.CreateFile(relativePath, project);
-                file.FileType = fileType;       
+                file.FileType = fileType;
                 return file;
             }
 

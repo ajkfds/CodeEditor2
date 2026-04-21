@@ -1,18 +1,10 @@
-using AjkAvaloniaLibs.Controls;
 using Avalonia.Controls;
-using Avalonia.Media;
 using Avalonia.Threading;
 using CodeEditor2.Data;
 using CodeEditor2.Tools;
-using HarfBuzzSharp;
-using SkiaSharp;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace CodeEditor2.NavigatePanel
 {
@@ -25,7 +17,7 @@ namespace CodeEditor2.NavigatePanel
 
         private void setImage()
         {
-            Image =  AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
+            Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                 "CodeEditor2/Assets/Icons/document.svg",
                 Avalonia.Media.Color.FromArgb(255, 120, 120, 120)
                 );
@@ -70,7 +62,7 @@ namespace CodeEditor2.NavigatePanel
 
         public virtual void PostUpdate()
         {
-            Dispatcher.UIThread.Post(async() =>
+            Dispatcher.UIThread.Post(async () =>
             {
                 await UpdateAsync();
             });
@@ -80,7 +72,7 @@ namespace CodeEditor2.NavigatePanel
         /// </summary>
         public virtual async Task UpdateAsync()
         {
-            if(!Dispatcher.UIThread.CheckAccess())
+            if (!Dispatcher.UIThread.CheckAccess())
             {
                 await Dispatcher.UIThread.InvokeAsync(UpdateAsync);
                 return;
@@ -118,13 +110,14 @@ namespace CodeEditor2.NavigatePanel
         {
             try
             {
-                Task.Run(async() =>
+                Task.Run(async () =>
                 {
                     await HierarchicalVisibleUpdateAsync();
                 });
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
-                if(System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
                 Controller.AppendLog("** error : NavigatePanelNode.OnExpand", Avalonia.Media.Colors.Red);
                 Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
             }
@@ -184,7 +177,7 @@ namespace CodeEditor2.NavigatePanel
         }
         public override void OnSelected()
         {
-            if(Item == null || Item.IsDeleted)
+            if (Item == null || Item.IsDeleted)
             {
                 Controller.NavigatePanel.RemoveNodePost(this);
                 return;
@@ -304,7 +297,7 @@ namespace CodeEditor2.NavigatePanel
         public virtual void InitializePropertyForm(ItemPropertyForm form)
         {
             Project project = GetProject();
-            if(this is ProjectNode)
+            if (this is ProjectNode)
             {
                 new Tools.EncryptedFileCachePropertyTab(form, project);
             }
@@ -312,7 +305,7 @@ namespace CodeEditor2.NavigatePanel
             foreach (var property in project.ProjectProperties.Values)
             {
                 // call item property customization
-                property.InitializePropertyForm(form,this,project);
+                property.InitializePropertyForm(form, this, project);
             }
         }
         public virtual void UpdatePropertyForm(Tools.ItemPropertyForm form)
@@ -355,7 +348,7 @@ namespace CodeEditor2.NavigatePanel
         }
         private async void menuItem_AddFolder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode(); 
+            NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
             if (node == null) return;
             Project project = GetProject();
 
@@ -480,7 +473,7 @@ namespace CodeEditor2.NavigatePanel
             NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
             if (node == null) return;
 
-            if(Controller.NavigatePanel.OpenInExploererClicked != null) Controller.NavigatePanel.OpenInExploererClicked(node);
+            if (Controller.NavigatePanel.OpenInExploererClicked != null) Controller.NavigatePanel.OpenInExploererClicked(node);
         }
 
     }

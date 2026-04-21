@@ -1,20 +1,13 @@
-using AjkAvaloniaLibs.Views;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.Metadata;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CodeEditor2.Data;
-using CodeEditor2.Setups;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Security.AccessControl;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.Views;
@@ -27,9 +20,9 @@ public partial class MainView : UserControl
     {
         Global.mainView = this;
         InitializeComponent();
-//        DataContext = new ViewModels.MainViewModel();
+        //        DataContext = new ViewModels.MainViewModel();
 
-        SplitterColumn1.BorderBrush = new SolidColorBrush(Color.FromArgb(255,50,50,50));
+        SplitterColumn1.BorderBrush = new SolidColorBrush(Color.FromArgb(255, 50, 50, 50));
         SplitterColumn1.BorderThickness = new Thickness(1, 0, 1, 0);
 
         {
@@ -38,7 +31,7 @@ public partial class MainView : UserControl
             image.Width = FontSize;
             image.Height = FontSize;
             RenderOptions.SetBitmapInterpolationMode(image, Avalonia.Media.Imaging.BitmapInterpolationMode.HighQuality);
-            Button backButton = new Button() { Content = image, Background = this.Background};
+            Button backButton = new Button() { Content = image, Background = this.Background };
             backButton.Click += BackButton_Click;
             ToolBar.Children.Add(backButton);
             {
@@ -47,7 +40,7 @@ public partial class MainView : UserControl
                 dropdownImage.Width = FontSize;
                 dropdownImage.Height = FontSize;
                 RenderOptions.SetBitmapInterpolationMode(dropdownImage, Avalonia.Media.Imaging.BitmapInterpolationMode.HighQuality);
-                
+
                 var backDropdownButton = new Button { Content = dropdownImage, Height = FontSize * 2, Background = this.Background };
                 backDropdownButton.Margin = new Thickness(0, backDropdownButton.Margin.Top, 0, backDropdownButton.Margin.Bottom);
                 backDropdownButton.Padding = new Thickness(0, backDropdownButton.Padding.Top, 0, backDropdownButton.Padding.Bottom);
@@ -99,33 +92,33 @@ public partial class MainView : UserControl
     private void ForwardBtn_Click(object? sender, RoutedEventArgs e)
     {
         int index = currentHistoryIndex - 1;
-        if(index < 0 || selectHistories.Count <= index) return;
+        if (index < 0 || selectHistories.Count <= index) return;
         Controller.SelectText(selectHistories[index]);
         currentHistoryIndex--;
     }
-   
+
     private void BackButton_Click(object? sender, RoutedEventArgs e)
     {
-        int index = currentHistoryIndex+1;
+        int index = currentHistoryIndex + 1;
         if (selectHistories.Count <= index) return;
         Controller.SelectText(selectHistories[index]);
         currentHistoryIndex++;
     }
 
-//    private Popup? backDropdownMenu;
+    //    private Popup? backDropdownMenu;
 
-    private List<TextReference>　selectHistories = new List<TextReference>();
+    private List<TextReference> selectHistories = new List<TextReference>();
     private const int selectHistoryMaxCount = 20;
     private int currentHistoryIndex = -1;
     public void AddSelectHistory(TextReference textReference)
     {
-        for(int i = 0;i<=currentHistoryIndex; i++)
+        for (int i = 0; i <= currentHistoryIndex; i++)
         {
             selectHistories.RemoveAt(0);
         }
         currentHistoryIndex = -1; // reset current index when new history is added
-        selectHistories.Insert(0,textReference);
-        if(selectHistories.Count > selectHistoryMaxCount)
+        selectHistories.Insert(0, textReference);
+        if (selectHistories.Count > selectHistoryMaxCount)
         {
             selectHistories.RemoveAt(0);
         }
@@ -137,13 +130,13 @@ public partial class MainView : UserControl
     {
         try
         {
-            if(!System.IO.File.Exists(Global.Solution.AbsolutePath))
+            if (!System.IO.File.Exists(Global.Solution.AbsolutePath))
             {
                 return;
             }
             await Global.Solution.LoadSetup(Global.Solution.AbsolutePath);
         }
-        catch(Exception)
+        catch (Exception)
         {
             throw;
         }
@@ -170,16 +163,16 @@ public partial class MainView : UserControl
     //}
 
 
-//    private Views.BrowserWindow browserWindow;
+    //    private Views.BrowserWindow browserWindow;
     private async void MenuItem_Test_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-//        browserWindow = new BrowserWindow();
-//        await browserWindow.ShowDialog(Global.mainWindow);
+        //        browserWindow = new BrowserWindow();
+        //        await browserWindow.ShowDialog(Global.mainWindow);
     }
     private async void MenuItem_Browser_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-//        Tools.BrowserWindow browserWindow = new Tools.BrowserWindow();
-//        browserWindow.Show();
+        //        Tools.BrowserWindow browserWindow = new Tools.BrowserWindow();
+        //        browserWindow.Show();
         //Global.mainWindow);
         //        browserWindow = new BrowserWindow();
         //        await browserWindow.ShowDialog(Global.mainWindow);
@@ -203,7 +196,7 @@ public partial class MainView : UserControl
 
         IStorageFolder folder = folders[0];
 
-        Controller.AppendLog("AddProject" + folder.Path.AbsolutePath,Avalonia.Media.Colors.DarkOrange);
+        Controller.AppendLog("AddProject" + folder.Path.AbsolutePath, Avalonia.Media.Colors.DarkOrange);
         string path;
         {
             path = folder.Path.AbsolutePath;
@@ -249,7 +242,7 @@ public partial class MainView : UserControl
     private void MenuItem_File_Save_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Dispatcher.UIThread.Post(
-            async () => { await Controller.CodeEditor.SaveAsync();  }
+            async () => { await Controller.CodeEditor.SaveAsync(); }
             );
         Controller.AppendLog("Saved");
     }

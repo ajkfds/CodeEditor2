@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Media;
 using Avalonia.Threading;
 using CodeEditor2.Data;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CodeEditor2.NavigatePanel
 {
@@ -46,7 +42,7 @@ namespace CodeEditor2.NavigatePanel
                 overrideIcons.Add(new AjkAvaloniaLibs.Libs.Icons.OverrideIcon()
                 {
                     SvgPath = "CodeEditor2/Assets/Icons/share.svg",
-                    Color =Global.Color_Gray,
+                    Color = Global.Color_Gray,
                     OverridePosition = AjkAvaloniaLibs.Libs.Icons.OverridePosition.Fill
                 });
             }
@@ -81,7 +77,7 @@ namespace CodeEditor2.NavigatePanel
             if (!Dispatcher.UIThread.CheckAccess())
             {
                 Dispatcher.UIThread.Post(
-                        new Action(async() =>
+                        new Action(async () =>
                         {
                             try
                             {

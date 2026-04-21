@@ -1,36 +1,26 @@
-using Avalonia.Controls;
 using Avalonia.Media;
-using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
-using AvaloniaEdit.Utils;
 using CodeEditor2.CodeEditor.PopupMenu;
-using HarfBuzzSharp;
-using SkiaSharp;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
-using static AjkAvaloniaLibs.Libs.Icons;
 
 namespace CodeEditor2.CodeEditor.CodeComplete
 {
     public class AutocompleteItem : PopupMenu.ToolItem
     {
-        public AutocompleteItem(string text, byte colorIndex, Color color) :base(text)
+        public AutocompleteItem(string text, byte colorIndex, Color color) : base(text)
         {
             this.Text = text;
             this.colorIndex = colorIndex;
             Color = color;
         }
-        public AutocompleteItem(string text, byte colorIndex, Color color,string svgPath) : base(text)
+        public AutocompleteItem(string text, byte colorIndex, Color color, string svgPath) : base(text)
         {
             this.Text = text;
             this.colorIndex = colorIndex;
             Color = color;
-            this.svgPath = svgPath; 
+            this.svgPath = svgPath;
         }
 
         public void Clean()
@@ -106,7 +96,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         public override PopupMenuItem CreatePopupMenuItem()
         {
             PopupMenuItem popupMenuItem = new PopupMenuItem(Text);
-            if(svgPath != null)
+            if (svgPath != null)
             {
                 popupMenuItem.Image = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
                     svgPath,

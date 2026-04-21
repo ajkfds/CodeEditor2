@@ -1,10 +1,7 @@
-using Avalonia.Controls.Shapes;
-using Avalonia.Remote.Protocol;
 using CodeEditor2.Tools;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,7 +41,7 @@ namespace CodeEditor2.Data
             {
                 return await getFileTextAsync(project, relativePath, false); // directly read from file without using cache
             }
-            else if(!await PasswordManager.CheckPassWord())
+            else if (!await PasswordManager.CheckPassWord())
             { // failed to get password
                 project.LocalFileCasheEnable = false;
                 return await getFileTextAsync(project, relativePath, false); // directly read from file without using cache
@@ -69,12 +66,12 @@ namespace CodeEditor2.Data
                 }
             }
 
-            if(System.IO.File.Exists(cashePath))
+            if (System.IO.File.Exists(cashePath))
             {
                 try
                 {
                     FileSystemInfo casheFileSystemInfo = new FileInfo(cashePath);
-                    if(fileSystemInfo != null && casheFileSystemInfo.LastWriteTime < fileSystemInfo.LastWriteTime) // cashe is older than original file
+                    if (fileSystemInfo != null && casheFileSystemInfo.LastWriteTime < fileSystemInfo.LastWriteTime) // cashe is older than original file
                     { // must reload
                         return await getFileTextAsync(project, relativePath, true); // directly read from file without using cache, and make a new cahche
                     }
@@ -84,7 +81,7 @@ namespace CodeEditor2.Data
                 }
                 catch (Exception)
                 {
-                    return await getFileTextAsync(project, relativePath,true); // if decryption fails, read directly from file without using cache, and make a new cahche
+                    return await getFileTextAsync(project, relativePath, true); // if decryption fails, read directly from file without using cache, and make a new cahche
                 }
             }
             else
@@ -93,7 +90,7 @@ namespace CodeEditor2.Data
                 return await getFileTextAsync(project, relativePath, true);
             }
         }
-        private static async Task<string> getFileTextAsync(Project project, string relativePath,bool casheFile)
+        private static async Task<string> getFileTextAsync(Project project, string relativePath, bool casheFile)
         {
             string text;
             using (FileStream fs = new FileStream(
@@ -127,26 +124,26 @@ namespace CodeEditor2.Data
         {
             if (!project.LocalFileCasheEnable)
             {
-                await saveFileAsync(project, relativePath, text,false); // directly write to file without using cache
+                await saveFileAsync(project, relativePath, text, false); // directly write to file without using cache
                 return;
             }
             else if (!await PasswordManager.CheckPassWord())
             { // failed to get password
                 project.LocalFileCasheEnable = false;
-                await saveFileAsync(project, relativePath, text,false); // directly write to file without using cache
+                await saveFileAsync(project, relativePath, text, false); // directly write to file without using cache
                 return;
             }
 
             // directly write to file and make a new cache
-            await saveFileAsync(project, relativePath, text,true);
+            await saveFileAsync(project, relativePath, text, true);
         }
 
-        private static async Task saveFileAsync(Project project, string relativePath, string text,bool casheFile)
+        private static async Task saveFileAsync(Project project, string relativePath, string text, bool casheFile)
         {
             using (FileStream fs = new FileStream(
                         project.GetAbsolutePath(relativePath),
                         FileMode.Create, FileAccess.Write, FileShare.Read,
-                        bufferSize: 4096*32, useAsync: true))
+                        bufferSize: 4096 * 32, useAsync: true))
             {
                 byte[] encodedText = Encoding.UTF8.GetBytes(text);
                 await fs.WriteAsync(encodedText, 0, encodedText.Length);
@@ -161,7 +158,7 @@ namespace CodeEditor2.Data
             {
                 Directory.CreateDirectory(casheDirectoryPath);
             }
-            if(Global.FileEncriptionKey == null) throw new Exception("FileEncriptionKey is null");
+            if (Global.FileEncriptionKey == null) throw new Exception("FileEncriptionKey is null");
             await EncryptToFile(text, cashePath, Global.FileEncriptionKey);
         }
 
@@ -174,11 +171,11 @@ namespace CodeEditor2.Data
                 FileSystemInfo fsi = new FileInfo(project.GetAbsolutePath(relativePath));
                 item.FileSystemInfo = fsi;
             }
-            catch(FileNotFoundException)
+            catch (FileNotFoundException)
             {
                 removeItemAsync(project, item);
             }
-            catch(DirectoryNotFoundException)
+            catch (DirectoryNotFoundException)
             {
                 removeItemAsync(project, item);
             }
@@ -189,10 +186,10 @@ namespace CodeEditor2.Data
             return Task.CompletedTask;
         }
 
-        public static async Task UpdateFieSystemInfoAndSubItemAsync(Project project,string relativePath)
+        public static async Task UpdateFieSystemInfoAndSubItemAsync(Project project, string relativePath)
         {
             var di = new DirectoryInfo(project.RootPath);
-            var options = new EnumerationOptions { RecurseSubdirectories = true,MaxRecursionDepth = 1, IgnoreInaccessible = true };
+            var options = new EnumerationOptions { RecurseSubdirectories = true, MaxRecursionDepth = 1, IgnoreInaccessible = true };
             var infos = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
 
             foreach (var info in infos)
@@ -205,7 +202,7 @@ namespace CodeEditor2.Data
             }
         }
 
-        private static void removeItemAsync(Project project,Item item)
+        private static void removeItemAsync(Project project, Item item)
         {
             item.FileSystemInfo = null;
             item.IsDeleted = true;
@@ -220,9 +217,10 @@ namespace CodeEditor2.Data
                 // フォルダの場合は、子アイテムも削除されたとみなす
                 foreach (var child in folder.Items)
                 {
-                    removeItemAsync(project,child);
+                    removeItemAsync(project, child);
                 }
-            }else if(item is File file)
+            }
+            else if (item is File file)
             {
                 if (project.LocalFileCasheEnable)
                 {
@@ -245,14 +243,14 @@ namespace CodeEditor2.Data
             foreach (var info in infos)
             {
                 Item? item = project.GetItem(project.GetRelativePath(info.FullName));
-                if(item != null)
+                if (item != null)
                 {
                     item.FileSystemInfo = info;
                 }
             }
         }
 
-        public static async Task<(List<string> absoluteFilePaths, List<string> absoluteFolderPaths)> GetFolderContents(Project project,string relativePath)
+        public static async Task<(List<string> absoluteFilePaths, List<string> absoluteFolderPaths)> GetFolderContents(Project project, string relativePath)
         {
             if (!project.LocalFileCasheEnable)
             {

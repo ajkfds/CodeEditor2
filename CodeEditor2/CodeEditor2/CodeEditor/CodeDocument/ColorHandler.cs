@@ -1,28 +1,8 @@
-using Avalonia.Controls.Shapes;
 using Avalonia.Media;
-using Avalonia.Media.TextFormatting;
 using AvaloniaEdit.Document;
-using AvaloniaEdit.TextMate;
 using CodeEditor2.CodeEditor.TextDecollation;
-using CodeEditor2.NavigatePanel;
-using DynamicData;
 //using Microsoft.CodeAnalysis.CSharp.Syntax;
-using ReactiveUI;
-using System;
-using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Security.AccessControl;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using static CodeEditor2.CodeEditor.TextDecollation.MarkerRenderer;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.CodeEditor
 {
@@ -93,7 +73,7 @@ namespace CodeEditor2.CodeEditor
                 LineInformation lineInfo = GetLineInformation(lineStart.LineNumber);
                 lock (lineInfo.Colors)
                 {
-                    lineInfo.Colors.Add(new LineInformation.Color(index- codeDocument.GetLineStartIndex(lineStart.LineNumber), length, color));
+                    lineInfo.Colors.Add(new LineInformation.Color(index - codeDocument.GetLineStartIndex(lineStart.LineNumber), length, color));
                 }
             }
             else
@@ -138,12 +118,12 @@ namespace CodeEditor2.CodeEditor
                 while (i >= 0)
                 {
                     insertLines++;
-                    i = insertedText.IndexOf('\n', i+1, insertedText.Length-i-1);
+                    i = insertedText.IndexOf('\n', i + 1, insertedText.Length - i - 1);
                 }
             }
 
             // edit in line
-            if(removeLines == 0 && insertLines == 0)
+            if (removeLines == 0 && insertLines == 0)
             { // inline edi
                 LineInformation lineInfo = GetLineInformation(startLine.LineNumber);
                 List<LineInformation.Color> removeTarget = new List<LineInformation.Color>();
@@ -164,7 +144,7 @@ namespace CodeEditor2.CodeEditor
             }
 
             // remove
-            if(removeLines != 0)
+            if (removeLines != 0)
             {
                 int startLineLength = 0;
                 { // startline
@@ -206,7 +186,7 @@ namespace CodeEditor2.CodeEditor
                             updateColor(0, 0, removalLength, color, removeTarget);
 
                             color.Offset += startLineLength;
-                            }
+                        }
                         foreach (var removeMark in removeTarget)
                         {
                             lineInfo.Colors.Remove(removeMark);
@@ -256,7 +236,7 @@ namespace CodeEditor2.CodeEditor
                 List<KeyValuePair<int, LineInformation>> shiftLines = new List<KeyValuePair<int, LineInformation>>();
                 foreach (var line in LineInformation)
                 {
-                    if (line.Key >  startLine.LineNumber) shiftLines.Add(line);
+                    if (line.Key > startLine.LineNumber) shiftLines.Add(line);
                 }
                 foreach (var line in shiftLines)
                 {
@@ -289,7 +269,7 @@ namespace CodeEditor2.CodeEditor
             }
 
             int insertionLengthAtStartline = insertedText.IndexOf('\n', 0, insertedText.Length);
-            int insertionLengthAtLastline = insertedText.Length - insertedText.LastIndexOf('\n', insertedText.Length-1, insertedText.Length)-1;
+            int insertionLengthAtLastline = insertedText.Length - insertedText.LastIndexOf('\n', insertedText.Length - 1, insertedText.Length) - 1;
             int insertOffsetAtStartline = e.Offset - codeDocument.GetLineStartIndex(startLine.LineNumber);
 
             { // insert startline
@@ -328,7 +308,7 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        public void updateColor(int offset,int insertionLength,int removalLength,LineInformation.Color color, List<LineInformation.Color> removeTarget)
+        public void updateColor(int offset, int insertionLength, int removalLength, LineInformation.Color color, List<LineInformation.Color> removeTarget)
         {
             if (offset < color.Offset)
             {
