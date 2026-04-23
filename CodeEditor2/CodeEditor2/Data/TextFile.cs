@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Hashing;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +30,185 @@ namespace CodeEditor2.Data
         protected readonly ReaderWriterLockSlim textFileLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         // do not call await in locked status
 
+        private CodeEditor.ParsedDocument? _parsedDocument = null;
+
+        /// <summary>
+        /// Gets or sets the parsed document containing parsed code information.
+        /// </summary>
+        public virtual CodeEditor.ParsedDocument? ParsedDocument
+        {
+            get
+            {
+                textFileLock.EnterReadLock();
+                try
+                {
+                    return _parsedDocument;
+                }
+                finally
+                {
+                    textFileLock.ExitReadLock();
+                }
+            }
+            set
+            {
+                textFileLock.EnterWriteLock();
+                try
+                {
+                    _parsedDocument = value;
+                }
+                finally
+                {
+                    textFileLock.ExitWriteLock();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the stored vertical scroll position for this text file.
+        /// </summary>
+        private double _storedVerticalScrollPosition = 0;
+
+        /// <summary>
+        /// Gets or sets the stored vertical scroll position for this text file.
+        /// </summary>
+        public double StoredVerticalScrollPosition
+        {
+            get
+            {
+                if (textFileLock.IsReadLockHeld) System.Diagnostics.Debugger.Break();
+                textFileLock.EnterReadLock();
+                try
+                {
+                    return _storedVerticalScrollPosition;
+                }
+                finally
+                {
+                    textFileLock.ExitReadLock();
+                }
+            }
+            set
+            {
+                textFileLock.EnterWriteLock();
+                try
+                {
+                    _storedVerticalScrollPosition = value;
+                }
+                finally
+                {
+                    textFileLock.ExitWriteLock();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Indicates whether a reparse has been requested for this text file.
+        /// </summary>
+        protected bool _reparseRequested = false;
+
+        /// <summary>
+        /// Gets or sets whether a reparse has been requested for this text file.
+        /// </summary>
+        public virtual bool ReparseRequested
+        {
+            get
+            {
+                if (textFileLock.IsReadLockHeld) System.Diagnostics.Debugger.Break();
+                textFileLock.EnterReadLock();
+                try
+                {
+                    return _reparseRequested;
+                }
+                finally
+                {
+                    textFileLock.ExitReadLock();
+                }
+            }
+            set
+            {
+                textFileLock.EnterWriteLock();
+                try
+                {
+                    _reparseRequested = value;
+                }
+                finally
+                {
+                    textFileLock.ExitWriteLock();
+                }
+            }
+        }
+
+        private CodeEditor.CodeDocument? _document = null;
+        /// <summary>
+        /// Gets the code document associated with this text file.
+        /// </summary>
+        public virtual CodeDocument? CodeDocument
+        {
+            get
+            {
+                if (textFileLock.IsReadLockHeld) System.Diagnostics.Debugger.Break();
+                textFileLock.EnterReadLock();
+                try
+                {
+                    return _document;
+                }
+                finally
+                {
+                    textFileLock.ExitReadLock();
+                }
+            }
+            protected set
+            {
+                textFileLock.EnterWriteLock();
+                try
+                {
+                    _document = value;
+                }
+                finally
+                {
+                    textFileLock.ExitWriteLock();
+                }
+
+            }
+        }
+
+        /// <summary>
+        /// The draw style for rendering code in this text file.
+        /// </summary>
+        private CodeDrawStyle? _drawStyle = null;
+
+        /// <summary>
+        /// Gets or sets the draw style for rendering code in this text file.
+        /// </summary>
+        public virtual CodeDrawStyle DrawStyle
+        {
+            get
+            {
+                textFileLock.EnterReadLock();
+                try
+                {
+                    return _drawStyle ?? Global.DefaultDrawStyle;
+                }
+                finally
+                {
+                    textFileLock.ExitReadLock();
+                }
+            }
+            set
+            {
+                textFileLock.EnterWriteLock();
+                try
+                {
+                    _drawStyle = value;
+                }
+                finally
+                {
+                    textFileLock.ExitWriteLock();
+                }
+            }
+        }
+
+        //----------------------------------------------------------
         protected TextFile() : base() { }
 
         /// <summary>
@@ -55,11 +235,10 @@ namespace CodeEditor2.Data
                 Name = name
             };
             await fileItem.FileCheck();
-            if (fileItem.document == null) System.Diagnostics.Debugger.Break();
+            if (fileItem.CodeDocument == null) System.Diagnostics.Debugger.Break();
             return fileItem;
         }
 
-        protected CodeEditor.CodeDocument? document = null;
         /// <summary>
         /// Modifies the context menu of the code editor for this text file.
         /// </summary>
@@ -69,14 +248,6 @@ namespace CodeEditor2.Data
 
         }
 
-        /// <summary>
-        /// Checks if the text file is currently unlocked (no read or write locks held).
-        /// </summary>
-        public void CheckUnlocked()
-        {
-            if (textFileLock.IsReadLockHeld) System.Diagnostics.Debugger.Break();
-            if (textFileLock.IsWriteLockHeld) System.Diagnostics.Debugger.Break();
-        }
 
         /// <summary>
         /// Gets the unique key for this text file.
@@ -99,91 +270,12 @@ namespace CodeEditor2.Data
         }
         public override void Dispose()
         {
-            textFileLock.EnterWriteLock();
-            try
-            {
-                document?.Dispose();
-                document = null;
-            }
-            finally
-            {
-                textFileLock.ExitWriteLock();
-            }
+            CodeDocument?.Dispose();
+            CodeDocument = null;
             base.Dispose();
         }
 
-        /// <summary>
-        /// Gets or sets the stored vertical scroll position for this text file.
-        /// </summary>
-        private double storedVerticalScrollPosition = 0;
 
-        /// <summary>
-        /// Gets or sets the stored vertical scroll position for this text file.
-        /// </summary>
-        public double StoredVerticalScrollPosition
-        {
-            get
-            {
-                if (textFileLock.IsReadLockHeld) System.Diagnostics.Debugger.Break();
-                textFileLock.EnterReadLock();
-                try
-                {
-                    return storedVerticalScrollPosition;
-                }
-                finally
-                {
-                    textFileLock.ExitReadLock();
-                }
-            }
-            set
-            {
-                textFileLock.EnterWriteLock();
-                try
-                {
-                    storedVerticalScrollPosition = value;
-                }
-                finally
-                {
-                    textFileLock.ExitWriteLock();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Indicates whether a reparse has been requested for this text file.
-        /// </summary>
-        protected bool reparseRequested = false;
-
-        /// <summary>
-        /// Gets or sets whether a reparse has been requested for this text file.
-        /// </summary>
-        public virtual bool ReparseRequested
-        {
-            get
-            {
-                textFileLock.EnterReadLock();
-                try
-                {
-                    return reparseRequested;
-                }
-                finally
-                {
-                    textFileLock.ExitReadLock();
-                }
-            }
-            set
-            {
-                textFileLock.EnterWriteLock();
-                try
-                {
-                    reparseRequested = value;
-                }
-                finally
-                {
-                    textFileLock.ExitWriteLock();
-                }
-            }
-        }
 
         /// <summary>
         /// Gets whether the code document is cached (loaded).
@@ -192,53 +284,10 @@ namespace CodeEditor2.Data
         {
             get
             {
-                textFileLock.EnterReadLock();
-                try
-                {
-                    return document != null;
-                }
-                finally
-                {
-                    textFileLock.ExitReadLock();
-                }
+                return (CodeDocument != null) ;
             }
         }
 
-        /// <summary>
-        /// The parsed document containing parsed code information.
-        /// </summary>
-        protected CodeEditor.ParsedDocument? parsedDocument = null;
-
-        /// <summary>
-        /// Gets or sets the parsed document containing parsed code information.
-        /// </summary>
-        public virtual CodeEditor.ParsedDocument? ParsedDocument
-        {
-            get
-            {
-                textFileLock.EnterReadLock();
-                try
-                {
-                    return parsedDocument;
-                }
-                finally
-                {
-                    textFileLock.ExitReadLock();
-                }
-            }
-            set
-            {
-                textFileLock.EnterWriteLock();
-                try
-                {
-                    parsedDocument = value;
-                }
-                finally
-                {
-                    textFileLock.ExitWriteLock();
-                }
-            }
-        }
 
         /// <summary>
         /// Posts a parse operation for this text file.
@@ -256,29 +305,13 @@ namespace CodeEditor2.Data
         /// <returns>A task representing the asynchronous operation.</returns>
         public virtual Task AcceptParsedDocumentAsync(CodeEditor2.CodeEditor.ParsedDocument newParsedDocument)
         {
-            textFileLock.EnterWriteLock();
             CodeEditor2.CodeEditor.ParsedDocument? oldParsedDocument;
-            try
-            {
-                oldParsedDocument = parsedDocument;
-                parsedDocument = null;
-            }
-            finally
-            {
-                textFileLock.ExitWriteLock();
-            }
+            oldParsedDocument = ParsedDocument;
+            ParsedDocument = null;
 
             oldParsedDocument?.Dispose();
 
-            textFileLock.EnterWriteLock();
-            try
-            {
-                parsedDocument = newParsedDocument;
-            }
-            finally
-            {
-                textFileLock.ExitWriteLock();
-            }
+            ParsedDocument = newParsedDocument;
 
             PostUIUpdate();
             return Task.CompletedTask;
@@ -288,19 +321,10 @@ namespace CodeEditor2.Data
         /// </summary>
         public virtual void Close()
         {
-            textFileLock.EnterReadLock();
             bool isDirty;
-            CodeEditor.CodeDocument? doc;
-            try
-            {
-                isDirty = document == null ? false : document.IsDirty;
-                doc = document;
-            }
-            finally
-            {
-                textFileLock.ExitReadLock();
-            }
-
+            CodeEditor.CodeDocument? doc = CodeDocument;
+            isDirty = doc == null ? false : doc.IsDirty;
+ 
             if (isDirty) return;
             if (doc == null) return;
             doc.Dispose();
@@ -313,16 +337,9 @@ namespace CodeEditor2.Data
         {
             get
             {
-                textFileLock.EnterReadLock();
-                try
-                {
-                    if (document == null) return false;
-                    return document.IsDirty;
-                }
-                finally
-                {
-                    textFileLock.ExitReadLock();
-                }
+                CodeDocument? doc = CodeDocument;
+                if (doc == null) return false;
+                return doc.IsDirty;
             }
         }
         /// <summary>
@@ -332,36 +349,11 @@ namespace CodeEditor2.Data
         public virtual Task<CodeEditor.CodeDocument> GetCodeDocumentAsync()
         {
             postFileCheck();
-            textFileLock.EnterReadLock();
-            try
-            {
-                if (document == null) throw new Exception();
-                return Task.FromResult(document);
-            }
-            finally
-            {
-                textFileLock.ExitReadLock();
-            }
+            CodeDocument doc = CodeDocument;
+            if (doc == null) throw new Exception();
+            return Task.FromResult(doc);
         }
 
-        /// <summary>
-        /// Gets the code document associated with this text file.
-        /// </summary>
-        public virtual CodeDocument? CodeDocument
-        {
-            get
-            {
-                textFileLock.EnterReadLock();
-                try
-                {
-                    return document;
-                }
-                finally
-                {
-                    textFileLock.ExitReadLock();
-                }
-            }
-        }
 
 
         public override void Remove()
@@ -395,16 +387,7 @@ namespace CodeEditor2.Data
             {
                 WeakReference<ListViewItem> itemRef = await Controller.AppendLogAndGetItem("Save " + RelativePath + "...", Avalonia.Media.Colors.Green);
 
-                textFileLock.EnterReadLock();
-                CodeEditor.CodeDocument? doc;
-                try
-                {
-                    doc = document;
-                }
-                finally
-                {
-                    textFileLock.ExitReadLock();
-                }
+                CodeEditor.CodeDocument? doc = CodeDocument;
 
                 if (doc == null) return;
 
@@ -457,7 +440,7 @@ namespace CodeEditor2.Data
         protected virtual void CreateCodeDocument()
         {
             // lockは呼び出し元で取得している前提
-            document = new CodeEditor.CodeDocument(this);
+            CodeDocument = new CodeEditor.CodeDocument(this);
         }
 
 
@@ -485,24 +468,16 @@ namespace CodeEditor2.Data
                 {
                     bool initialLoad = false;
                     bool dirty = false;
-                    if (textFileLock.IsReadLockHeld) System.Diagnostics.Debugger.Break();
-                    textFileLock.EnterWriteLock();
-                    try
+
+                    if (CodeDocument == null)
                     {
-                        if (document == null)
-                        {
-                            initialLoad = true;
-                            CreateCodeDocument();
-                            if (document == null) throw new Exception();
-                        }
-                        else
-                        {
-                            dirty = document.IsDirty;
-                        }
+                        initialLoad = true;
+                        CreateCodeDocument();
+                        if (CodeDocument == null) throw new Exception();
                     }
-                    finally
+                    else
                     {
-                        textFileLock.ExitWriteLock();
+                        dirty = CodeDocument.IsDirty;
                     }
 
                     if (initialLoad)
@@ -538,9 +513,7 @@ namespace CodeEditor2.Data
 
                     if (Dispatcher.UIThread.CheckAccess() | initialLoad)
                     {
-                        textFileLock.EnterReadLock();
-                        var doc = document;
-                        textFileLock.ExitReadLock();
+                        CodeDocument doc = CodeDocument;
 
                         if (doc != null)
                         {
@@ -550,9 +523,7 @@ namespace CodeEditor2.Data
                         loadFileHash = newHash;
                         if (initialLoad)
                         {
-                            textFileLock.EnterReadLock();
-                            var doc2 = document;
-                            textFileLock.ExitReadLock();
+                            var doc2 = CodeDocument;
                             doc2?.ClearHistory();
                         }
                         await FileChangedAsync();
@@ -561,9 +532,7 @@ namespace CodeEditor2.Data
                     {
                         await Dispatcher.UIThread.InvokeAsync(async () =>
                         {
-                            textFileLock.EnterReadLock();
-                            var doc = document;
-                            textFileLock.ExitReadLock();
+                            var doc = CodeDocument;
 
                             if (doc != null)
                             {
@@ -573,9 +542,7 @@ namespace CodeEditor2.Data
                             loadFileHash = newHash;
                             if (initialLoad)
                             {
-                                textFileLock.EnterReadLock();
-                                var doc2 = document;
-                                textFileLock.ExitReadLock();
+                                var doc2 = CodeDocument;
                                 doc2?.ClearHistory();
                             }
                             await FileChangedAsync();
@@ -619,16 +586,12 @@ namespace CodeEditor2.Data
                 {
                     if (await Controller.CodeEditor.GetTextFileAsync() == this)
                     {
-                        textFileLock.EnterReadLock();
-                        var parsed = parsedDocument;
-                        textFileLock.ExitReadLock();
+                        var parsed = ParsedDocument;
 
                         if (parsed != null) Controller.MessageView.Update(parsed);
 
                         // Copy color information from TextFile's CodeDocument to the editor's CodeDocument
-                        textFileLock.EnterReadLock();
-                        var textFileDoc = document;
-                        textFileLock.ExitReadLock();
+                        var textFileDoc = CodeDocument;
 
                         var editorDoc = Global.codeView.CodeDocument;
                         if (textFileDoc != null && editorDoc != null && textFileDoc.Version >= editorDoc.Version)
@@ -655,41 +618,6 @@ namespace CodeEditor2.Data
             return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         }
 
-        /// <summary>
-        /// The draw style for rendering code in this text file.
-        /// </summary>
-        private CodeDrawStyle? drawStyle = null;
-
-        /// <summary>
-        /// Gets or sets the draw style for rendering code in this text file.
-        /// </summary>
-        public virtual CodeDrawStyle DrawStyle
-        {
-            get
-            {
-                textFileLock.EnterReadLock();
-                try
-                {
-                    return drawStyle ?? Global.DefaultDrawStyle;
-                }
-                finally
-                {
-                    textFileLock.ExitReadLock();
-                }
-            }
-            set
-            {
-                textFileLock.EnterWriteLock();
-                try
-                {
-                    drawStyle = value;
-                }
-                finally
-                {
-                    textFileLock.ExitWriteLock();
-                }
-            }
-        }
 
 
 
@@ -826,9 +754,7 @@ namespace CodeEditor2.Data
             Data.ITextFile? textFile = item as Data.TextFile;
             if (textFile == null) return;
 
-            textFileLock.EnterReadLock();
-            var doc = document;
-            textFileLock.ExitReadLock();
+            var doc = CodeDocument;
 
             if (doc == null) return;
             if (parsedIds.Contains(textFile.ID)) return;

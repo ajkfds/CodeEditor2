@@ -25,7 +25,7 @@ namespace CodeEditor2.Data
             };
 
             await fileItem.FileCheck();
-            if (fileItem.document == null) System.Diagnostics.Debugger.Break();
+            if (fileItem.CodeDocument == null) System.Diagnostics.Debugger.Break();
             return fileItem;
         }
 
