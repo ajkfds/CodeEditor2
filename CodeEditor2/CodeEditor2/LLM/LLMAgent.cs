@@ -67,36 +67,42 @@ namespace CodeEditor2.LLM
         // Function Call
         private async Task<string?> ParseExecutePersudoFunctionCall(string responce, CancellationToken cancellationToken)
         {
-            var match = Regex.Match(responce, @"<\s*(?<tool>\w+)\s*>(?<params>.*?)</\s*\k<tool>\s*>", RegexOptions.Singleline);
+            var matches = Regex.Matches(responce, @"<\s*(?<tool>\w+)\s*>(?<params>.*?)</\s*\k<tool>\s*>", RegexOptions.Singleline);
 
-            if (match.Success)
+            if (matches.Count>0)
             {
-                try
-                {
-                    string toolName = match.Groups["tool"].Value;
-                    AITool? selectedTool = Tools.Where((tool) => { return tool.Name == toolName; }).First();
-                    if (selectedTool == null) return null;
+                StringBuilder sb = new StringBuilder();
 
-                    AIFunctionArguments args = new AIFunctionArguments();
-                    string innerContent = match.Groups["params"].Value;
-                    var paramMatches = Regex.Matches(innerContent, @"<\s*(?<key>\w+)\s*>(?<value>.*?)<\s*/\k<key>\s*>", RegexOptions.Singleline);
-                    foreach (Match p in paramMatches)
-                    {
-                        args.Add(p.Groups["key"].Value, p.Groups["value"].Value);
-                    }
-                    AIFunction? aIFunction = selectedTool as AIFunction;
-                    if (aIFunction == null) return "illgal function call";
-                    object? ret = await aIFunction.InvokeAsync(args, cancellationToken);
-                    string? s_ret = ret?.ToString();
-                    if (s_ret != null)
-                    {
-                        return s_ret;
-                    }
-                }
-                catch
+                foreach (Match match in matches)
                 {
-                    return "illagal function call. use xml code markdown tag for tool call. or tool call size is too large. divide into multiple tool call.";
+                    try
+                    {
+                        string toolName = match.Groups["tool"].Value;
+                        AITool? selectedTool = Tools.Where((tool) => { return tool.Name == toolName; }).First();
+                        if (selectedTool == null) return null;
+
+                        AIFunctionArguments args = new AIFunctionArguments();
+                        string innerContent = match.Groups["params"].Value;
+                        var paramMatches = Regex.Matches(innerContent, @"<\s*(?<key>\w+)\s*>(?<value>.*?)<\s*/\k<key>\s*>", RegexOptions.Singleline);
+                        foreach (Match p in paramMatches)
+                        {
+                            args.Add(p.Groups["key"].Value, p.Groups["value"].Value);
+                        }
+                        AIFunction? aIFunction = selectedTool as AIFunction;
+                        if (aIFunction == null) return "illgal function call";
+                        object? ret = await aIFunction.InvokeAsync(args, cancellationToken);
+                        string? s_ret = ret?.ToString();
+                        if (s_ret != null)
+                        {
+                            sb.AppendLine(s_ret);
+                        }
+                    }
+                    catch
+                    {
+                        sb.AppendLine("failed to parse or execute function call:" + match.Value);
+                    }
                 }
+                return ToString();
             }
             return null;
         }
