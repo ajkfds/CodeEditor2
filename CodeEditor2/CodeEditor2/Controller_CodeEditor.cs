@@ -269,6 +269,11 @@ namespace CodeEditor2
                 }
             }
 
+            public static void AutoCompleteHandled()
+            {
+                Global.codeView.codeViewPopupMenu.AfterAutoCompleteHandled();
+            }
+
         }
 
     }

@@ -89,7 +89,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 codeDocument.Replace(headIndex, length, ColorIndex, Text);
                 Controller.CodeEditor.SetCaretPosition(headIndex + Text.Length);
             }
-            Global.codeView.codeViewPopupMenu.AfterAutoCompleteHandled();
+            Controller.CodeEditor.AutoCompleteHandled();
             return Task.CompletedTask;
         }
 
