@@ -316,6 +316,7 @@ namespace CodeEditor2.Data
             PostUIUpdate();
             return Task.CompletedTask;
         }
+
         /// <summary>
         /// Closes the text file and releases the code document if not dirty.
         /// </summary>
@@ -349,7 +350,7 @@ namespace CodeEditor2.Data
         public virtual Task<CodeEditor.CodeDocument> GetCodeDocumentAsync()
         {
             postFileCheck();
-            CodeDocument doc = CodeDocument;
+            CodeDocument? doc = CodeDocument;
             if (doc == null) throw new Exception();
             return Task.FromResult(doc);
         }
