@@ -596,9 +596,19 @@ namespace CodeEditor2.Data
                         var textFileDoc = CodeDocument;
 
                         var editorDoc = Global.codeView.CodeDocument;
-                        if (textFileDoc != null && editorDoc != null && textFileDoc.Version >= editorDoc.Version)
+                        if (textFileDoc != null && editorDoc != null)
                         {
-                            editorDoc = textFileDoc.Clone();
+                            // Version-stamped color copy: capture version before copying
+                            // to prevent race condition where textFileDoc changes between
+                            // version check and actual copy operation
+                            ulong capturedVersion = textFileDoc.Version;
+                            
+                            // Only copy if textFileDoc is still at or newer than captured version
+                            // This prevents copying from a stale document during rapid updates
+                            if (editorDoc.Version < capturedVersion)
+                            {
+                                editorDoc = textFileDoc.Clone();
+                            }
                         }
                         Controller.CodeEditor.PostRefresh();
                     }

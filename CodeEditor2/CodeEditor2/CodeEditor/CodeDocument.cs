@@ -266,13 +266,30 @@ namespace CodeEditor2.CodeEditor
 
         public void CopyColorMarkFrom(CodeDocument document)
         {
-            TextColors.LineInformation = document.TextColors.LineInformation;
-            lock (Marks.marks)
+            // Capture source version to detect if source changes during copy
+            ulong sourceVersion = document.Version;
+            
+            // Lock the source document during the copy to prevent race conditions
+            // where the source document is modified while we're copying
+            lock (document.textDocument)
             {
-                Marks.marks = new List<CodeDrawStyle.MarkDetail>(document.Marks.marks);
+                // Check if source was modified during lock acquisition
+                if (document.Version != sourceVersion)
+                {
+                    // Source was modified, abort this copy
+                    return;
+                }
+                
+                // Safe to copy - source document is stable
+                TextColors.LineInformation = document.TextColors.LineInformation;
+                lock (Marks.marks)
+                {
+                    Marks.marks = new List<CodeDrawStyle.MarkDetail>(document.Marks.marks);
+                }
+                document.Foldings.Foldings.Sort((x, y) => { return x.StartOffset - y.StartOffset; });
+                Foldings.Foldings = new List<NewFolding>(document.Foldings.Foldings);
             }
-            document.Foldings.Foldings.Sort((x, y) => { return x.StartOffset - y.StartOffset; });
-            Foldings.Foldings = new List<NewFolding>(document.Foldings.Foldings);
+            
             if (Global.codeView.TextFile != null && Global.codeView.TextFile.CodeDocument == this && System.Threading.Thread.CurrentThread.Name == "UI")
             {
                 Global.codeView.UpdateFoldings();
