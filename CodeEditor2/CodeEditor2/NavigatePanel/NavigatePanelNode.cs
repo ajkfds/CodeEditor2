@@ -5,6 +5,7 @@ using CodeEditor2.Tools;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.NavigatePanel
 {
@@ -269,6 +270,17 @@ namespace CodeEditor2.NavigatePanel
             }
 
             {
+                MenuItem menuItem_CopyPath = CodeEditor2.Global.CreateMenuItem(
+                    "CopyPath",
+                    "CopyPath_Property",
+                    "CodeEditor2/Assets/Icons/gear.svg",
+                    Avalonia.Media.Color.FromArgb(100, 200, 200, 255)
+                    );
+                menuItem_CopyPath.Click += menuItem_CopyPath_Click;
+                contextMenu.Items.Add(menuItem_CopyPath);
+            }
+
+            {
                 MenuItem menuItem_OpenProperty = CodeEditor2.Global.CreateMenuItem(
                     "Property",
                     "MenuItem_Property",
@@ -280,6 +292,22 @@ namespace CodeEditor2.NavigatePanel
             }
         }
 
+        public async void menuItem_CopyPath_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            try
+            {
+                var topLevel = TopLevel.GetTopLevel(Global.mainWindow);
+
+                if (topLevel?.Clipboard is { } clipboard)
+                {
+                    await clipboard.SetTextAsync(Item.RelativePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
+            }
+        }
         public async void menuItem_OpenProperty_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             try
