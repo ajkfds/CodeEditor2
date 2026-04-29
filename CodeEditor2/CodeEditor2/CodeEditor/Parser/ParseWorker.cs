@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,7 +103,8 @@ namespace CodeEditor2.CodeEditor.Parser
             {
                 targetTextFile.PostUIUpdate();
             }
-            targetTextFile.NavigatePanelNode.UpdateVisual();
+            Dispatcher.UIThread.Post(() => { targetTextFile.NavigatePanelNode.UpdateVisual(); });
+            
         }
 
     }

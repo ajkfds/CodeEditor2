@@ -179,7 +179,7 @@ public partial class ChatControl : UserControl
     /// Log file path
     /// Storage location for chat history
     /// </summary>
-    public string? LogFilePath { set; get; } = null;
+    public string? LogFilePath { set; get; } = "chat.log";
 
     /// <summary>
     /// Input item (textbox and buttons)
@@ -315,22 +315,29 @@ public partial class ChatControl : UserControl
         // Ignore if input is not acceptable
         if (!inputAcceptable) return;
 
-        // Create new cancellation token
-        cancellationTokenSource = new CancellationTokenSource();
-        CancellationToken cancellationToken = cancellationTokenSource.Token;
-
-        // Clear hash history
-        hashHistory.Clear();
-
-        // Get tools
-        IList<AITool>? tools = null;
-        if (agent != null)
+        try
         {
-            tools = agent.Tools;
-            if (tools.Count == 0) tools = null;
+            // Create new cancellation token
+            cancellationTokenSource = new CancellationTokenSource();
+            CancellationToken cancellationToken = cancellationTokenSource.Token;
+
+            // Clear hash history
+            hashHistory.Clear();
+
+            // Get tools
+            IList<AITool>? tools = null;
+            if (agent != null)
+            {
+                tools = agent.Tools;
+                if (tools.Count == 0) tools = null;
+            }
+            // Execute command with tool calls
+            await completeWithFunctionCall(command, tools, cancellationToken, messageType);
         }
-        // Execute command with tool calls
-        await completeWithFunctionCall(command, tools, cancellationToken, messageType);
+        finally
+        {
+            inputAcceptable = true;
+        }
     }
 
     /// <summary>
@@ -479,6 +486,24 @@ public partial class ChatControl : UserControl
 
         // Reentrant lock: make input unacceptable
         inputAcceptable = false;
+
+        try
+        {
+            return await completeWork(command, tools, cancellationToken, messageType);
+        }
+        finally
+        {
+            inputAcceptable = true;
+        }
+    }
+
+    private async Task<string?> completeWork(
+        string command, IList<AITool>? tools,
+        CancellationToken cancellationToken,
+        CollapsibleTextItem.MessageType messageType
+        )
+    {
+        if (chat == null) return null;
 
         // Create and display command item
         CollapsibleTextItem commandItem = new CollapsibleTextItem(command, messageType);
@@ -661,7 +686,6 @@ public partial class ChatControl : UserControl
         }
 
         // Resume input acceptance
-        inputAcceptable = true;
         return resultItem.Text;
     }
 

@@ -20,6 +20,7 @@ namespace CodeEditor2.CodeEditor
             textFileRef = new WeakReference<Data.TextFile>(textFile);
         }
 
+
         // プラグイン等から見つかった派生クラスをここに登録していく
         public static List<JsonDerivedType> DerivedTypes { get; } = new();
 

@@ -32,6 +32,7 @@ namespace CodeEditor2.Data
 
         private CodeEditor.ParsedDocument? _parsedDocument = null;
 
+
         /// <summary>
         /// Gets or sets the parsed document containing parsed code information.
         /// </summary>
