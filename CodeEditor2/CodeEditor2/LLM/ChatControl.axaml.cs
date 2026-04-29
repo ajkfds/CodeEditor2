@@ -462,6 +462,7 @@ public partial class ChatControl : UserControl
     /// <summary>
     /// Execute interaction with LLM and process streaming response
     /// Includes progress timer, loop detection, and auto-scroll functionality
+    /// Retries on connection errors while preserving chat history
     /// </summary>
     /// <param name="command">Command to send</param>
     /// <param name="tools">List of available AI tools</param>
@@ -479,49 +480,53 @@ public partial class ChatControl : UserControl
         // Reentrant lock: make input unacceptable
         inputAcceptable = false;
 
-        try
+        // Create and display command item
+        CollapsibleTextItem commandItem = new CollapsibleTextItem(command, messageType);
+        inputItem.TextBox.Text = "";
+        commandItem.TextColor = commandColor;
+        Items.Insert(Items.Count - 1, commandItem);
+        if (messageType == CollapsibleTextItem.MessageType.functionCallReturn) commandItem.Collapsed = true;
+
+        // Create result item
+        CollapsibleTextItem resultItem = new CollapsibleTextItem("", CollapsibleTextItem.MessageType.responce);
+        Items.Insert(Items.Count - 1, resultItem);
+        lastResultItem = resultItem;
+
+        const int maxRetries = 3;
+        int retryCount = 0;
+        Exception? lastException = null;
+
+        while (retryCount <= maxRetries)
         {
-            // Create and display command item
-            CollapsibleTextItem commandItem = new CollapsibleTextItem(command, messageType);
-            inputItem.TextBox.Text = "";
-            commandItem.TextColor = commandColor;
-            Items.Insert(Items.Count - 1, commandItem);
-            if (messageType == CollapsibleTextItem.MessageType.functionCallReturn) commandItem.Collapsed = true;
-
-            // Create result item
-            CollapsibleTextItem resultItem = new CollapsibleTextItem("", CollapsibleTextItem.MessageType.responce);
-            Items.Insert(Items.Count - 1, resultItem);
-            lastResultItem = resultItem;
-
-            // Start progress timer
-            var stopwatch = Stopwatch.StartNew();
-
-            bool timerActivate = true; // timer activate flag, timer will be stopped when first result is returned
-            using var timerCancellationTokenSource = new CancellationTokenSource();
-            var displayTimerTask = Task.Run(async () =>
-            {
-                while (!timerCancellationTokenSource.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
-                {
-                    try
-                    {
-                        if (timerActivate)
-                        {
-                            await resultItem.SetText("waiting ... " + (stopwatch.ElapsedMilliseconds / 1000f).ToString("F1") + "s");
-                        }
-                        await Task.Delay(100, timerCancellationTokenSource.Token);
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        break;
-                    }
-                }
-            }, timerCancellationTokenSource.Token);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Execute chat command
             try
             {
+                // Start progress timer
+                var stopwatch = Stopwatch.StartNew();
+
+                bool timerActivate = true; // timer activate flag, timer will be stopped when first result is returned
+                using var timerCancellationTokenSource = new CancellationTokenSource();
+                var displayTimerTask = Task.Run(async () =>
+                {
+                    while (!timerCancellationTokenSource.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            if (timerActivate)
+                            {
+                                await resultItem.SetText("waiting ... " + (stopwatch.ElapsedMilliseconds / 1000f).ToString("F1") + "s");
+                            }
+                            await Task.Delay(100, timerCancellationTokenSource.Token);
+                        }
+                        catch (TaskCanceledException)
+                        {
+                            break;
+                        }
+                    }
+                }, timerCancellationTokenSource.Token);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // Execute chat command
                 // Process streaming response
                 await foreach (string ret in chat.GetAsyncCollectionChatResult(command, tools, cancellationToken))
                 {
@@ -563,40 +568,101 @@ public partial class ChatControl : UserControl
                     timerActivate = false;
                     await resultItem.SetText("blank");
                 }
+
+                // Wait for timer task to complete
+                await displayTimerTask;
+                stopwatch.Stop();
+
+                // Change color to completion color and save messages
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    resultItem.TextColor = completeColor;
+                    await SaveMessagesAsync();
+                });
+
+                string result = resultItem.Text;
+                return result;
             }
             // Do nothing if cancelled
             catch (OperationCanceledException)
             {
-
+                CodeEditor2.Controller.AppendLog("Operation cancelled", Avalonia.Media.Colors.Yellow);
+                return null;
             }
             catch (Exception ex)
             {
-                CodeEditor2.Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
+                lastException = ex;
+                retryCount++;
+
+                // Log the error
+                string errorType = ex is System.Net.Http.HttpRequestException ? "Connection Error" :
+                                  ex.Message;
+                CodeEditor2.Controller.AppendLog($"{errorType}: {ex.Message}", Avalonia.Media.Colors.Orange);
+
+                // Check if this is a retriable error (404, 500, connection issues, etc.)
+                bool isRetriable = ex is System.Net.Http.HttpRequestException ||
+                                  ex.Message.Contains("404") ||
+                                  ex.Message.Contains("500") ||
+                                  ex.Message.Contains("502") ||
+                                  ex.Message.Contains("503") ||
+                                  ex.Message.Contains("connection") ||
+                                  ex.Message.Contains("timeout") ||
+                                  ex.Message.Contains("unreachable") ||
+                                  ex.Message.Contains("network") ||
+                                  ex.Message.Contains("refused");
+
+                if (isRetriable && retryCount <= maxRetries)
+                {
+                    // Try to reconnect
+                    CodeEditor2.Controller.AppendLog($"Attempting reconnection (attempt {retryCount}/{maxRetries})...", Avalonia.Media.Colors.Yellow);
+
+                    // Remove the last user message so we can retry
+                    chat.RemoveLastUserMessage();
+
+                    // Attempt to reconnect
+                    bool reconnectSuccess = await chat.TryReconnectAsync();
+                    if (reconnectSuccess)
+                    {
+                        CodeEditor2.Controller.AppendLog("Reconnected successfully. Retrying...", Avalonia.Media.Colors.Green);
+
+                        // Clear the result item text for retry
+                        await resultItem.SetText("[Reconnecting...]\n");
+
+                        // Update UI
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            ListBox0.UpdateLayout();
+                        });
+
+                        continue; // Retry the request
+                    }
+                    else
+                    {
+                        CodeEditor2.Controller.AppendLog("Reconnection failed.", Avalonia.Media.Colors.Red);
+                    }
+                }
+
+                // If we've exhausted retries or it's not retriable, log error and return error message
+                if (retryCount > maxRetries)
+                {
+                    await resultItem.AppendText($"\n\n[Error: Max retries ({maxRetries}) exceeded. Please try again later.]\n");
+                    CodeEditor2.Controller.AppendLog($"Max retries exceeded after {maxRetries} attempts", Avalonia.Media.Colors.Red);
+                }
+                else
+                {
+                    await resultItem.AppendText($"\n\n[Error: {errorType}]\n");
+                }
+
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    resultItem.TextColor = Avalonia.Media.Colors.IndianRed;
+                });
             }
-            // Wait for timer task to complete
-            await displayTimerTask;
-            stopwatch.Stop();
+        }
 
-            // Change color to completion color and save messages
-            await Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                resultItem.TextColor = completeColor;
-                await SaveMessagesAsync();
-            });
-
-            string result = resultItem.Text;
-            return result;
-        }
-        catch (Exception ex)
-        {
-            CodeEditor2.Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
-        }
-        finally
-        {
-            // Resume input acceptance
-            inputAcceptable = true;
-        }
-        return null;
+        // Resume input acceptance
+        inputAcceptable = true;
+        return resultItem.Text;
     }
 
     /// <summary>

@@ -102,7 +102,7 @@ namespace CodeEditor2.LLM
                         sb.AppendLine("failed to parse or execute function call:" + match.Value);
                     }
                 }
-                return ToString();
+                return sb.ToString();
             }
             return null;
         }

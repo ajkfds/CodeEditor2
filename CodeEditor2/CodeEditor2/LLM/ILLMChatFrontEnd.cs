@@ -41,5 +41,17 @@ namespace CodeEditor2.LLM
         /// </summary>
         /// <param name="modelItem">The model to set as current</param>
         Task SetModelAsync(ModelItem modelItem);
+
+        /// <summary>
+        /// Attempts to reconnect to the LLM service.
+        /// Returns true if reconnection was successful, false otherwise.
+        /// </summary>
+        /// <returns>Task with boolean indicating success</returns>
+        Task<bool> TryReconnectAsync();
+
+        /// <summary>
+        /// Removes the last user message from history (used when retrying after connection failure).
+        /// </summary>
+        void RemoveLastUserMessage();
     }
 }
