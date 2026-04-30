@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using YamlDotNet.Core;
 
 namespace CodeEditor2.Views
 {
@@ -391,6 +392,7 @@ namespace CodeEditor2.Views
 
             { // set new CodeDocument and event
                 TextFile = textFile;
+                if (CodeDocument != null) prevVersion = CodeDocument.Version;
 
                 // Clone the TextFile's CodeDocument for editor use
                 //                editorCodeDocument = textFile.CodeDocument.Clone();
