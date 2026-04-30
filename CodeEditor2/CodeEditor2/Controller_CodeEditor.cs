@@ -127,7 +127,7 @@ namespace CodeEditor2
                 {
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        Global.codeView.RequestReparse();
+                        RequestReparsePost();
                     });
                     return;
                 }
