@@ -5,6 +5,7 @@ using CodeEditor2.CodeEditor.Parser;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -496,7 +497,15 @@ namespace CodeEditor2.Data
 
         public virtual void Dispose()
         {
-            itemLock?.Dispose();
+            //try
+            //{
+            //    itemLock?.Dispose();
+            //}
+            //catch (System.Threading.SynchronizationLockException)
+            //{
+            //    // Lock was held by another thread or current thread during disposal
+            //    // This can happen during application shutdown or race conditions
+            //}
         }
 
         /// <summary>
