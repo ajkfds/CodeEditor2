@@ -20,6 +20,7 @@ namespace CodeEditor2.LLM
 
             HorizontalGridConstructor hgrid = new HorizontalGridConstructor();
             hgrid.AppendContol(ModelSelector, null);
+            hgrid.AppendContol(ModeSelector, null);
             hgrid.AppendContolFill(ButtonBar);
 
             StackPanel.Children.Add(hgrid.Grid);
@@ -35,8 +36,10 @@ namespace CodeEditor2.LLM
                 ButtonBar.Children.Add(SendButton);
             }
 
-            // Set ItemsSource after ModelItems is initialized
+            // Set ItemsSource after ModelItems and ModeItems are initialized
             ModelSelector.ItemsSource = ModelItems;
+            ModeSelector.ItemsSource = ModeItems;
+            ModeSelector.SelectedIndex = 0; // Default to "Plan" mode
 
             SendButton.PropertyChanged += (sender, args) =>
             {
@@ -117,9 +120,31 @@ namespace CodeEditor2.LLM
         };
 
         /// <summary>
+        /// Collection of available modes for the mode selector
+        /// </summary>
+        public ObservableCollection<ModeItem> ModeItems { get; } = new ObservableCollection<ModeItem>
+        {
+            new ModeItem { Id = "plan", Name = "Plan" },
+            new ModeItem { Id = "implement", Name = "Implement" }
+        };
+
+        public ComboBox ModeSelector = new ComboBox()
+        {
+            MinWidth = 120,
+            Margin = new Thickness(0, 0, 10, 0),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left
+        };
+
+        /// <summary>
         /// Event raised when the selected model changes
         /// </summary>
         public event EventHandler<ModelItem?>? ModelChanged;
+
+        /// <summary>
+        /// Event raised when the selected mode changes
+        /// </summary>
+        public event EventHandler<ModeItem?>? ModeChanged;
 
         public StackPanel ButtonBar = new StackPanel()
         {
@@ -188,6 +213,17 @@ namespace CodeEditor2.LLM
         public string Id { get; set; } = "";
         public string Name { get; set; } = "";
         public object? Tag { get; set; }
+
+        public override string ToString() => Name;
+    }
+
+    /// <summary>
+    /// Represents a mode item for the mode selector (Plan/Implement)
+    /// </summary>
+    public class ModeItem
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
 
         public override string ToString() => Name;
     }

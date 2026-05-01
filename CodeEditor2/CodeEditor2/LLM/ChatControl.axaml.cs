@@ -164,6 +164,16 @@ public partial class ChatControl : UserControl
     private LLMAgent? agent { get; set; } = null;
 
     /// <summary>
+    /// Current chat mode (Plan or Implement)
+    /// </summary>
+    public string CurrentMode { get; private set; } = "plan";
+
+    /// <summary>
+    /// Flag indicating if tool call is currently in progress
+    /// </summary>
+    private bool isToolCallInProgress = false;
+
+    /// <summary>
     /// Auto-scroll enabled flag
     /// Whether to auto-scroll when new message is added
     /// </summary>
@@ -241,6 +251,9 @@ public partial class ChatControl : UserControl
 
             // Register model selection changed handler
             inputItem.ModelSelector.SelectionChanged += ModelSelector_SelectionChanged;
+
+            // Register mode selection changed handler
+            inputItem.ModeSelector.SelectionChanged += ModeSelector_SelectionChanged;
         }
 
         if (initialized)
@@ -271,6 +284,55 @@ public partial class ChatControl : UserControl
                 CodeEditor2.Controller.AppendLog($"Failed to change model: {ex.Message}", Avalonia.Media.Colors.Red);
             }
         }
+    }
+
+    /// <summary>
+    /// Handles mode selector selection changed
+    /// </summary>
+    private void ModeSelector_SelectionChanged(object? sender, Avalonia.Controls.SelectionChangedEventArgs e)
+    {
+        if (inputItem.ModeSelector.SelectedItem is ModeItem selectedMode)
+        {
+            CurrentMode = selectedMode.Id;
+            CodeEditor2.Controller.AppendLog($"Mode changed to: {selectedMode.Name}", Avalonia.Media.Colors.Green);
+        }
+    }
+
+    /// <summary>
+    /// Called when a tool call starts executing
+    /// Shows spinner in the result item and logs the start
+    /// </summary>
+    /// <param name="toolName">Name of the tool being executed</param>
+    public void ToolCallStarted(string toolName)
+    {
+        isToolCallInProgress = true;
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (lastResultItem != null)
+            {
+                lastResultItem.ShowSpinner(true);
+            }
+        });
+        CodeEditor2.Controller.AppendLog($"[Tool Call] Started: {toolName}", Avalonia.Media.Colors.Cyan);
+    }
+
+    /// <summary>
+    /// Called when a tool call finishes executing
+    /// Hides spinner in the result item and logs the result
+    /// </summary>
+    /// <param name="toolName">Name of the tool that finished</param>
+    /// <param name="result">Result of the tool execution</param>
+    public void ToolCallEnded(string toolName, string result)
+    {
+        isToolCallInProgress = false;
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (lastResultItem != null)
+            {
+                lastResultItem.ShowSpinner(false);
+            }
+        });
+        CodeEditor2.Controller.AppendLog($"[Tool Call] Finished: {toolName}", Avalonia.Media.Colors.LightGreen);
     }
 
     /// <summary>
@@ -389,9 +451,10 @@ public partial class ChatControl : UserControl
         {
             // Parse function call from response
             if (result == null) return;
-            string? functioncallCommand = await agent.ParseResponceAsync(result, cancellationToken);
+            string? functioncallCommand = await agent.ParseResponceAsync(result, cancellationToken, this);
             if (functioncallCommand == null) return;
 
+            // Tool call notification (already called by agent during execution)
             hashHistory.Add(getHash(functioncallCommand));
             result = await complete(functioncallCommand, tools, cancellationToken, CollapsibleTextItem.MessageType.functionCallReturn);
             if (result == null) return;

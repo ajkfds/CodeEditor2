@@ -33,11 +33,11 @@ namespace CodeEditor2.LLM
         /// </summary>
         public Dictionary<string, string> PromptParameters = new Dictionary<string, string>();
 
-        public async Task<string?> ParseResponceAsync(string responce, CancellationToken cancellationToken)
+        public async Task<string?> ParseResponceAsync(string responce, CancellationToken cancellationToken, ChatControl? chatControl = null)
         {
             if (PersudoFunctionCallMode)
             {
-                string? funcResult = await ParseExecutePersudoFunctionCall(responce, cancellationToken);
+                string? funcResult = await ParseExecutePersudoFunctionCall(responce, cancellationToken, chatControl);
                 return funcResult;
             }
             return null;
@@ -65,7 +65,7 @@ namespace CodeEditor2.LLM
         }
 
         // Function Call
-        private async Task<string?> ParseExecutePersudoFunctionCall(string responce, CancellationToken cancellationToken)
+        private async Task<string?> ParseExecutePersudoFunctionCall(string responce, CancellationToken cancellationToken, ChatControl? chatControl = null)
         {
             var matches = Regex.Matches(responce, @"<\s*(?<tool>\w+)\s*>(?<params>.*?)</\s*\k<tool>\s*>", RegexOptions.Singleline);
 
@@ -80,6 +80,9 @@ namespace CodeEditor2.LLM
                         string toolName = match.Groups["tool"].Value;
                         AITool? selectedTool = Tools.Where((tool) => { return tool.Name == toolName; }).First();
                         if (selectedTool == null) return null;
+
+                        // Notify tool call start
+                        chatControl?.ToolCallStarted(toolName);
 
                         AIFunctionArguments args = new AIFunctionArguments();
                         string innerContent = match.Groups["params"].Value;
@@ -96,10 +99,15 @@ namespace CodeEditor2.LLM
                         {
                             sb.AppendLine(s_ret);
                         }
+
+                        // Notify tool call end
+                        chatControl?.ToolCallEnded(toolName, s_ret ?? "");
                     }
                     catch
                     {
                         sb.AppendLine("failed to parse or execute function call:" + match.Value);
+                        // Notify tool call end (with error)
+                        chatControl?.ToolCallEnded(match.Groups["tool"].Value, "ERROR");
                     }
                 }
                 return sb.ToString();

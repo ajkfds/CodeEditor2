@@ -80,6 +80,7 @@ namespace CodeEditor2.LLM
             hamburgerButton.Content = "≡";
             hamburgerButton.Flyout = hamburgerFlyout;
 
+            collapseAndMenuPanel.Children.Add(spinnerImage);
             collapseAndMenuPanel.Children.Add(CollapseExpandButton);
             collapseAndMenuPanel.Children.Add(hamburgerButton);
 
@@ -235,6 +236,29 @@ namespace CodeEditor2.LLM
             MinWidth = 30,
             Padding = new Thickness(5, 2, 5, 2)
         };
+
+        private Image spinnerImage = new Image()
+        {
+            Width = 16,
+            Height = 16,
+            Margin = new Thickness(0, 0, 5, 0),
+            IsVisible = false
+        };
+
+        /// <summary>
+        /// Show or hide the spinner
+        /// </summary>
+        public async void ShowSpinner(bool show)
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                spinnerImage.IsVisible = show;
+                if (show)
+                {
+                    spinnerImage.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/spinner.svg", Avalonia.Media.Colors.Cyan);
+                }
+            });
+        }
 
         public Avalonia.Media.Color TextColor
         {
