@@ -499,7 +499,7 @@ namespace CodeEditor2.Data
                         return;
                     }
 
-                    if (dirty & !initialLoad)
+                    if (dirty & !initialLoad & loadFileHash!="")
                     {
                         await Dispatcher.UIThread.InvokeAsync(async () =>
                         {
@@ -760,6 +760,7 @@ namespace CodeEditor2.Data
             }
         }
 
+        protected readonly SemaphoreSlim itemUpdateSemaphore = new SemaphoreSlim(1, 1);
         private async Task parseHierarchyAsync(Data.Item item, List<string> parsedIds, Action<ITextFile> action)
         {
             if (item == null) return;
@@ -796,12 +797,18 @@ namespace CodeEditor2.Data
 
             // parse all child nodes
             List<Data.Item> items = new List<Data.Item>();
-            lock (textFile.Items)
+
+            await itemUpdateSemaphore.WaitAsync();
+
+            try
             {
                 foreach (Data.Item subItem in textFile.Items)
                 {
                     items.Add(subItem);
                 }
+            }finally
+            {
+                itemUpdateSemaphore.Release();
             }
 
             foreach (Data.Item subitem in items)
