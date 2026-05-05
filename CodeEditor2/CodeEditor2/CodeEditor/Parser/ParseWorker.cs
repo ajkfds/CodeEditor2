@@ -14,6 +14,7 @@ namespace CodeEditor2.CodeEditor.Parser
 
         public async Task Parse(Data.TextFile textFile)
         {
+            System.Diagnostics.Debug.Print("### parser run" + textFile.RelativePath);
             if (_cts != null)
             {
                 _cts.Cancel();
@@ -23,7 +24,8 @@ namespace CodeEditor2.CodeEditor.Parser
                     // wait completion of the previous task
                     //if (_currentTask != null) await _currentTask;
                 }
-                catch (OperationCanceledException) { }
+                catch (OperationCanceledException) {
+                }
             }
 
             _cts = new CancellationTokenSource();
@@ -40,6 +42,7 @@ namespace CodeEditor2.CodeEditor.Parser
             }
             catch (OperationCanceledException)
             {
+                System.Diagnostics.Debug.Print("### parser Stopped");
                 _currentTask = null;
             }
             finally
@@ -53,6 +56,7 @@ namespace CodeEditor2.CodeEditor.Parser
         {
             await runSingleParse(textFile, token);
             token.ThrowIfCancellationRequested();
+            return;
 
             if (textFile == null) return;
             List<Data.Item> items = textFile.Items.ToList();
@@ -99,12 +103,7 @@ namespace CodeEditor2.CodeEditor.Parser
             await parser.TextFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
             targetCodeDocument.CopyColorMarkFrom(parser.Document);
             // update current view
-            if (await Controller.CodeEditor.GetTextFileAsync() == textFile)
-            {
-                targetTextFile.PostUIUpdate();
-            }
-            Dispatcher.UIThread.Post(() => { targetTextFile.NavigatePanelNode.UpdateVisual(); });
-            
+            targetTextFile.PostUIUpdate();
         }
 
     }

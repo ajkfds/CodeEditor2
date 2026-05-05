@@ -18,6 +18,7 @@ namespace CodeEditor2.CodeEditor.Parser
             TextFile textFile = codeView.TextFile;
             ParseWorker worker = new ParseWorker();
 
+            System.Diagnostics.Debug.Print("### parserEntry "+textFile.RelativePath);
             // fire and forget
             Task.Run(async () => { await worker.Parse(textFile); });
         }

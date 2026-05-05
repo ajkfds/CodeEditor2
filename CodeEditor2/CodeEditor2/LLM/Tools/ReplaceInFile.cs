@@ -153,6 +153,7 @@ namespace CodeEditor2.LLM.Tools
                     // 最初の1箇所のみ置換（指示のルール通り）
                     int index = updatedContent.IndexOf(searchContent);
                     updatedContent = updatedContent.Remove(index, searchContent.Length).Insert(index, replaceContent);
+                    updatedContent = updatedContent.Replace("\r\n", "\n");
                 }
 
                 // 5. 保存

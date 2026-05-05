@@ -295,6 +295,7 @@ namespace CodeEditor2.Data
         /// </summary>
         public void PostParse()
         {
+            System.Diagnostics.Debug.Print("### postParse" + RelativePath);
             ParseWorker parseWorker = new();
             Task.Run(async () => { await parseWorker.Parse(this); });
         }
