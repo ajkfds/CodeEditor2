@@ -31,9 +31,9 @@ namespace CodeEditor2.Data
         }
 
         public static Action<YamlFile>? AcceptCustomYamlParsedDocument;
-        public override async Task AcceptParsedDocumentAsync(ParsedDocument newParsedDocument)
+        public override async Task AcceptParsedDocumentAsync(CodeEditor.Parser.DocumentParser parser)
         {
-            await base.AcceptParsedDocumentAsync(newParsedDocument);
+            await base.AcceptParsedDocumentAsync(parser);
 
             if (AcceptCustomYamlParsedDocument != null) AcceptCustomYamlParsedDocument.Invoke(this);
         }

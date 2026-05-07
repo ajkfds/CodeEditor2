@@ -416,10 +416,10 @@ namespace CodeEditor2.Views
             {
                 textFile.ReparseRequested = true;
             }
-            else
-            {
-                await textFile.AcceptParsedDocumentAsync(textFile.ParsedDocument);
-            }
+            //else
+            //{
+            //    await textFile.AcceptParsedDocumentAsync(textFile.ParsedDocument);
+            //}
             skipEvents = false;
             Controller.CodeEditor.PostRefresh();
         }

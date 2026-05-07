@@ -305,18 +305,24 @@ namespace CodeEditor2.Data
         /// </summary>
         /// <param name="newParsedDocument">The new parsed document to accept.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public virtual Task AcceptParsedDocumentAsync(CodeEditor2.CodeEditor.ParsedDocument newParsedDocument)
+        public virtual async Task AcceptParsedDocumentAsync(CodeEditor.Parser.DocumentParser parser)
         {
+            CodeEditor2.CodeEditor.ParsedDocument? newParsedDocument = parser.ParsedDocument;
+            if (newParsedDocument == null) return;
+
             CodeEditor2.CodeEditor.ParsedDocument? oldParsedDocument;
             oldParsedDocument = ParsedDocument;
-            ParsedDocument = null;
-
+            ParsedDocument = newParsedDocument;
             oldParsedDocument?.Dispose();
 
-            ParsedDocument = newParsedDocument;
+            TextFile? currentTextFile = await Controller.CodeEditor.GetTextFileAsync();
+            if(currentTextFile == this)
+            {
+                currentTextFile.CodeDocument?.CopyColorMarkFrom(parser.Document);
+            }
 
-            PostUIUpdate();
-            return Task.CompletedTask;
+            // update navigate node, message and refresh editor
+            await UpdateAsync();
         }
 
         /// <summary>
@@ -351,7 +357,7 @@ namespace CodeEditor2.Data
         /// <returns>A task that represents the asynchronous operation. The task result contains the code document.</returns>
         public virtual Task<CodeEditor.CodeDocument> GetCodeDocumentAsync()
         {
-            postFileCheck();
+            PostStatusCheck();
             CodeDocument? doc = CodeDocument;
             if (doc == null) throw new Exception();
             return Task.FromResult(doc);
@@ -447,7 +453,7 @@ namespace CodeEditor2.Data
         }
 
 
-        //非同期待機
+        // ファイルの状態を確認する。CodeDocumentが古くなってしまっている場合には更新する。
         private readonly SemaphoreSlim _fileSemaphore = new(1, 1);
         protected virtual async Task FileCheck()
         {
@@ -570,8 +576,10 @@ namespace CodeEditor2.Data
 
         }
 
+        // ファイルが修正されたとき
         public override Task FileChangedAsync()
         {
+            // エディタで選択されている場合には再描画
             if (Dispatcher.UIThread.CheckAccess() && Controller.NavigatePanel.GetSelectedFile() == this)
             {
                 Controller.CodeEditor.PostRefresh();
@@ -582,40 +590,7 @@ namespace CodeEditor2.Data
             return Task.CompletedTask;
         }
 
-        public override void PostUIUpdate()
-        {
-            Dispatcher.UIThread.Post(
-                async () =>
-                {
-                    if (await Controller.CodeEditor.GetTextFileAsync() == this)
-                    {
-                        var parsed = ParsedDocument;
 
-                        if (parsed != null) Controller.MessageView.Update(parsed);
-
-                        // Copy color information from TextFile's CodeDocument to the editor's CodeDocument
-                        var textFileDoc = CodeDocument;
-
-                        var editorDoc = Global.codeView.CodeDocument;
-                        if (textFileDoc != null && editorDoc != null)
-                        {
-                            // Version-stamped color copy: capture version before copying
-                            // to prevent race condition where textFileDoc changes between
-                            // version check and actual copy operation
-                            ulong capturedVersion = textFileDoc.Version;
-                            
-                            // Only copy if textFileDoc is still at or newer than captured version
-                            // This prevents copying from a stale document during rapid updates
-                            if (editorDoc.Version < capturedVersion)
-                            {
-                                editorDoc = textFileDoc.Clone();
-                            }
-                        }
-                        Controller.CodeEditor.PostRefresh();
-                    }
-                    NavigatePanelNode?.UpdateVisual();
-                });
-        }
 
 
 
@@ -645,8 +620,21 @@ namespace CodeEditor2.Data
         /// <returns>A task that represents the asynchronous update operation.</returns>
         public override async Task UpdateAsync()
         {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                await Dispatcher.UIThread.InvokeAsync(() => UpdateAsync());
+                return;
+            }
+
             await base.UpdateAsync();
-            postFileCheck();
+            PostStatusCheck();
+
+            NavigatePanelNode?.UpdateVisual();
+            if (CodeEditor2.Controller.NavigatePanel.GetSelectedFile() == this)
+            {
+                CodeEditor2.Controller.CodeEditor.PostRefresh();
+                if (ParsedDocument != null) CodeEditor2.Controller.MessageView.Update(ParsedDocument);
+            }
         }
 
 
@@ -655,16 +643,9 @@ namespace CodeEditor2.Data
         /// </summary>
         public override void PostStatusCheck()
         {
-            postFileCheck();
-        }
-
-        /// <summary>
-        /// Posts a file check operation asynchronously.
-        /// </summary>
-        protected void postFileCheck()
-        {
             _ = Task.Run(async () => { await FileCheck(); });
         }
+
 
         /// <summary>
         /// Creates a document parser for the specified parse mode.
@@ -790,9 +771,7 @@ namespace CodeEditor2.Data
                     {
                         return;
                     }
-                    await textFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
-                    await textFile.UpdateAsync();
-                    textFile.PostUIUpdate();
+                    await textFile.AcceptParsedDocumentAsync(parser);
                 }
             }
 
@@ -824,7 +803,7 @@ namespace CodeEditor2.Data
                 {
                     await parser.ParseAsync();
                     if (parser.ParsedDocument == null) return;
-                    await textFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
+                    await textFile.AcceptParsedDocumentAsync(parser);
 
                     // textFile.Items.ParsedDocuments Disposed already
                     System.Diagnostics.Debug.Print("# Re-ParseHier.Accept " + textFile.ID);

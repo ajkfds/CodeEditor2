@@ -38,7 +38,7 @@ namespace CodeEditor2.Tools
                 await parser.ParseAsync();
                 if (parser.ParsedDocument == null) return;
 
-                await textFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
+                await textFile.AcceptParsedDocumentAsync(parser);
                 textFile.ReparseRequested = true;
             }
 

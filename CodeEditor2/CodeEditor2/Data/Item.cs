@@ -20,6 +20,7 @@ namespace CodeEditor2.Data
     /// Item is the basic unit of all Data. 
     /// All items represent specific folders or files, and project/Directory/File objects are all represented as items that inherit from Item.
     /// This Item holds the associated data, and that data is reflected in the UI.
+    /// このオブジェクトへのアクセスはスレッドセーフにアクセス可能
     /// </summary>
     //    [JsonDerivedType(typeof(Item), typeDiscriminator: "Item")]
     //    [JsonDerivedType(typeof(Folder), typeDiscriminator: "Folder")]
@@ -34,17 +35,18 @@ namespace CodeEditor2.Data
 
         protected Item() { }
 
-        /*
 
-        Item        <-- File    <-- TextFile
-                    <-- Folder  <-- Project
+        public virtual string ID
+        {
+            get
+            {
+                return RelativePath;
+            }
+            set
+            {
 
-
-        (ITextFile) <-- TextFile
-        */
-
-
-
+            }
+        }
 
         // Maintain references to parent Items in the tree structure.
         // Items hold references from parent to child, while references to parents are held as weak references.
@@ -83,6 +85,29 @@ namespace CodeEditor2.Data
             }
         }
 
+        /// <summary>
+        /// file relative path from project root path. item should have uniquie relativepath in a project
+        /// </summary>
+        public required virtual string RelativePath { get; init; }
+
+        // item name
+        public required virtual string Name { get; init; }
+
+        /// <summary>
+        /// refrence to root project item. project item is root item in data.item iree
+        /// </summary>
+        public required virtual Project Project { get; init; }
+
+
+
+
+
+
+
+
+
+
+        #region JSON serializer / deserializer metohds
 
         static Item()
         {
@@ -90,9 +115,12 @@ namespace CodeEditor2.Data
             Data.Item.PolymorphicResolver.DerivedTypes.Add(new JsonDerivedType(typeof(Data.File)));
             Data.Item.PolymorphicResolver.DerivedTypes.Add(new JsonDerivedType(typeof(Data.Folder)));
         }
+
+
+        // ItemのJsonシリアライズ用クラス登録
+        // プラグイン等から見つかった派生クラスをここに登録する。
         public static class PolymorphicResolver
         {
-            // プラグイン等から見つかった派生クラスをここに登録していく
             public static List<JsonDerivedType> DerivedTypes { get; } = new();
 
             public static void MyTypeResolver(JsonTypeInfo jsonTypeInfo)
@@ -192,17 +220,10 @@ namespace CodeEditor2.Data
                 return null;
             }
         }
-        public virtual string ID
-        {
-            get
-            {
-                return RelativePath;
-            }
-            set
-            {
 
-            }
-        }
+
+        #endregion
+
 
         private bool ignore = false;
         public virtual bool Ignore
@@ -233,17 +254,6 @@ namespace CodeEditor2.Data
             }
         }
 
-        /// <summary>
-        /// file relative path
-        /// </summary>
-        public required virtual string RelativePath { get; init; }
-
-        public required virtual string Name { get; init; }
-
-        /// <summary>
-        /// refrence to root project item
-        /// </summary>
-        public required virtual Project Project { get; init; }
 
         protected ItemList items = new ItemList();
         /// <summary>
@@ -256,11 +266,13 @@ namespace CodeEditor2.Data
             private set { items = value; }
         }
 
+        // item status check. check external update of this item.
         public virtual void PostStatusCheck()
         {
 
         }
 
+        // deleted flag
         private bool isDeleted = false;
         public virtual bool IsDeleted
         {
@@ -509,7 +521,7 @@ namespace CodeEditor2.Data
         }
 
         /// <summary>
-        /// Update Data Items
+        /// Data.Itemの更新を行う。
         /// </summary>
         /// <returns></returns>
         public virtual System.Threading.Tasks.Task UpdateAsync()
@@ -517,11 +529,8 @@ namespace CodeEditor2.Data
             return Task.CompletedTask;
         }
 
-        public virtual void PostUIUpdate()
-        {
 
-        }
-
+        // EditorのContextMenuの上書き修正を行う
         public static Action<ContextMenu>? CustomizeItemEditorContextMenu;
 
         public void CustomizeEditorContextMenu(ContextMenu contextMenu)
@@ -529,7 +538,7 @@ namespace CodeEditor2.Data
             CustomizeItemEditorContextMenu?.Invoke(contextMenu);
         }
 
-
+        // このData.Itemに該当するNavigatePanelのノードを保持
         private NavigatePanel.NavigatePanelNode? node = null;
         public virtual NavigatePanel.NavigatePanelNode NavigatePanelNode
         {
@@ -571,7 +580,7 @@ namespace CodeEditor2.Data
         protected virtual NavigatePanel.NavigatePanelNode CreateNode()
         {
             // should set nodeRef
-            System.Diagnostics.Debugger.Break();
+            if(System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
             return NavigatePanelNode;
         }
 
@@ -586,15 +595,6 @@ namespace CodeEditor2.Data
         {
             return null;
         }
-
-
-        //public virtual NavigatePanel.NavigatePanelNode? CreateLinkNode()
-        //{
-        //    NavigatePanel.NavigatePanelNode node;
-        //    node = CreateNode();
-        //    return node;
-        //}
-
 
 
     }

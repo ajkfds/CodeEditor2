@@ -32,7 +32,9 @@ namespace CodeEditor2.NavigatePanel
         {
             NavigatePanel.NavigatePanelNode? navigatePanelNode = Controller.NavigatePanel.GetSelectedNode();
             if (navigatePanelNode == null) return;
-            Project project = navigatePanelNode.GetProject();
+            Item? item = navigatePanelNode.Item;
+            if (item == null) return;
+            Project project = item.Project;
         }
 
 

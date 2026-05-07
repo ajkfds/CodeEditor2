@@ -100,10 +100,7 @@ namespace CodeEditor2.CodeEditor.Parser
                 return;
             }
 
-            await parser.TextFile.AcceptParsedDocumentAsync(parser.ParsedDocument);
-            targetCodeDocument.CopyColorMarkFrom(parser.Document);
-            // update current view
-            targetTextFile.PostUIUpdate();
+            await parser.TextFile.AcceptParsedDocumentAsync(parser);
         }
 
     }

@@ -33,18 +33,7 @@ namespace CodeEditor2.NavigatePanel
 
 
 
-        //public bool Link
-        //{
-        //    get
-        //    {
-        //        return link;
-        //    }
-        //    set
-        //    {
-        //        link = value;
-        //    }
-        //}
-
+        // Data.Item へのback referenceはweak referenceで持つ
         private WeakReference<Item>? itemRef;
         public Item? Item
         {
@@ -60,6 +49,7 @@ namespace CodeEditor2.NavigatePanel
         public static Action<NavigatePanelNode>? NavigatePanelNodeCreated;
 
 
+        // fire and forget方式でUIのupdateを予約する.
 
         public virtual void PostUpdate()
         {
@@ -68,6 +58,7 @@ namespace CodeEditor2.NavigatePanel
                 await UpdateAsync();
             });
         }
+
         /// <summary>
         /// update this node and children
         /// </summary>
@@ -178,7 +169,8 @@ namespace CodeEditor2.NavigatePanel
         }
         public override void OnSelected()
         {
-            if (Item == null || Item.IsDeleted)
+            Item? item = Item;
+            if (item == null || item.IsDeleted)
             {
                 Controller.NavigatePanel.RemoveNodePost(this);
                 return;
@@ -187,19 +179,22 @@ namespace CodeEditor2.NavigatePanel
             createContextMenu();
         }
 
-        public Project GetProject()
-        {
-            Project? project = null;
-            NavigatePanelNode rootNode = GetRootNode();
-            if (rootNode is ProjectNode)
-            {
-                ProjectNode? projectNode = rootNode as ProjectNode;
-                if (projectNode == null) throw new System.Exception();
-                project = projectNode.Project;
-            }
-            if (project == null) throw new System.Exception();
-            return project;
-        }
+        //public Project GetProject()
+        //{
+        //    Item? item = Item;
+
+
+        //    //Project? project = null;
+        //    //NavigatePanelNode rootNode = GetRootNode();
+        //    //if (rootNode is ProjectNode)
+        //    //{
+        //    //    ProjectNode? projectNode = rootNode as ProjectNode;
+        //    //    if (projectNode == null) throw new System.Exception();
+        //    //    project = projectNode.Project;
+        //    //}
+        //    //if (project == null) throw new System.Exception();
+        //    //return project;
+        //}
 
 
         public static Action<ContextMenu>? CustomizeNavigateNodeContextMenu;
@@ -324,7 +319,10 @@ namespace CodeEditor2.NavigatePanel
 
         public virtual void InitializePropertyForm(ItemPropertyForm form)
         {
-            Project project = GetProject();
+            Item? item = Item;
+            if (item == null) return;
+
+            Project project = item.Project;
             if (this is ProjectNode)
             {
                 new Tools.EncryptedFileCachePropertyTab(form, project);
@@ -378,7 +376,10 @@ namespace CodeEditor2.NavigatePanel
         {
             NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
             if (node == null) return;
-            Project project = GetProject();
+            Item? item = node.Item;
+            if (item == null) return;
+
+            Project project = item.Project;
 
             string relativePath = getRelativeFolderPath(node);
             if (!relativePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) relativePath += System.IO.Path.DirectorySeparatorChar;
@@ -398,7 +399,9 @@ namespace CodeEditor2.NavigatePanel
         {
             NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
             if (node == null) return;
-            Project project = GetProject();
+            Item? item = Item;
+            if (item == null) return;
+            Project project = item.Project;
 
             string relativePath = getRelativeFolderPath(node);
             if (!relativePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) relativePath += System.IO.Path.DirectorySeparatorChar;
@@ -436,7 +439,10 @@ namespace CodeEditor2.NavigatePanel
         {
             NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
             if (node == null) return;
-            Project project = GetProject();
+            Item? item = Item;
+            if (item == null) return;
+
+            Project project = item.Project;
 
             if (node is ProjectNode) return;
 

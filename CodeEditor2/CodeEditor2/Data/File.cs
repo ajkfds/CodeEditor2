@@ -100,28 +100,11 @@ namespace CodeEditor2.Data
         {
             return new FileNode(this);
         }
-        //public record FileStatus(long Size, DateTime LastWriteTimeUtc);
-        //public FileStatus? CashedStatus { get; set; } = null;
 
 
         public override async Task UpdateAsync()
         {
             await base.UpdateAsync();
-
-            //var info = new FileInfo(AbsolutePath);
-            //var currentStatus = new FileStatus(info.Length, info.LastWriteTimeUtc);
-            //if (CashedStatus == null)
-            //{
-            //    CashedStatus = currentStatus;
-            //}
-            //else
-            //{
-            //    if(CashedStatus.LastWriteTimeUtc < currentStatus.LastWriteTimeUtc || CashedStatus.Size != currentStatus.Size)
-            //    {
-            //        await OnChangedExternallyAsync();
-            //        CashedStatus = currentStatus;
-            //    }
-            //}
         }
 
         public virtual Task FileChangedAsync()
@@ -135,10 +118,6 @@ namespace CodeEditor2.Data
             return Task.CompletedTask;
         }
 
-        //public virtual Task OnChangedExternallyAsync()
-        //{
-        //    return Task.CompletedTask;
-        //}
 
     }
 }
