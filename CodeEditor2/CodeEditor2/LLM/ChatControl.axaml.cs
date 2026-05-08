@@ -200,7 +200,7 @@ public partial class ChatControl : UserControl
     /// Reference to last result item
     /// Used for tracking streaming response
     /// </summary>
-    CollapsibleTextItem? lastResultItem = null;
+    MarkdownTextItem? lastResultItem = null;
 
     /// <summary>
     /// Display color for command (user input)
@@ -362,7 +362,7 @@ public partial class ChatControl : UserControl
         {
             string basePrompt = await agent.GetBasePromptAsync(cancellationTokenSource.Token);
             if (basePrompt == "") return;
-            await UserComplete(basePrompt, CollapsibleTextItem.MessageType.functionCallReturn);
+            await UserComplete(basePrompt, MarkdownTextItem.MessageType.functionCallReturn);
         }
     }
 
@@ -372,7 +372,7 @@ public partial class ChatControl : UserControl
     /// <param name="command">User input text</param>
     /// <param name="collapse">Whether to collapse input</param>
     /// <returns>Async operation task</returns>
-    private async Task UserComplete(string command, CollapsibleTextItem.MessageType messageType = CollapsibleTextItem.MessageType.command)
+    private async Task UserComplete(string command, MarkdownTextItem.MessageType messageType = MarkdownTextItem.MessageType.command)
     {
         // Ignore if input is not acceptable
         if (!inputAcceptable) return;
@@ -433,7 +433,7 @@ public partial class ChatControl : UserControl
     private async Task completeWithFunctionCall(
         string command, IList<AITool>? tools,
         CancellationToken cancellationToken,
-        CollapsibleTextItem.MessageType messageType
+        MarkdownTextItem.MessageType messageType
         )
     {
         string? result;
@@ -456,7 +456,7 @@ public partial class ChatControl : UserControl
 
             // Tool call notification (already called by agent during execution)
             hashHistory.Add(getHash(functioncallCommand));
-            result = await complete(functioncallCommand, tools, cancellationToken, CollapsibleTextItem.MessageType.functionCallReturn);
+            result = await complete(functioncallCommand, tools, cancellationToken, MarkdownTextItem.MessageType.functionCallReturn);
             if (result == null) return;
             hashHistory.Add(getHash(result));
 
@@ -473,7 +473,7 @@ public partial class ChatControl : UserControl
                 // Prompt to try escaping from loop
                 command = "You are in a loop. Please think from a different perspective.";
                 hashHistory.Add(getHash(command));
-                result = await complete(functioncallCommand, tools, cancellationToken, CollapsibleTextItem.MessageType.command);
+                result = await complete(functioncallCommand, tools, cancellationToken, MarkdownTextItem.MessageType.command);
             }
         }
     }
@@ -542,7 +542,7 @@ public partial class ChatControl : UserControl
     private async Task<string?> complete(
         string command, IList<AITool>? tools,
         CancellationToken cancellationToken,
-        CollapsibleTextItem.MessageType messageType
+        MarkdownTextItem.MessageType messageType
         )
     {
         if (chat == null) return null;
@@ -563,20 +563,20 @@ public partial class ChatControl : UserControl
     private async Task<string?> completeWork(
         string command, IList<AITool>? tools,
         CancellationToken cancellationToken,
-        CollapsibleTextItem.MessageType messageType
+        MarkdownTextItem.MessageType messageType
         )
     {
         if (chat == null) return null;
 
         // Create and display command item
-        CollapsibleTextItem commandItem = new CollapsibleTextItem(command, messageType);
+        MarkdownTextItem commandItem = new MarkdownTextItem(command, messageType);
         inputItem.TextBox.Text = "";
         commandItem.TextColor = commandColor;
         Items.Insert(Items.Count - 1, commandItem);
-        if (messageType == CollapsibleTextItem.MessageType.functionCallReturn) commandItem.Collapsed = true;
+        if (messageType == MarkdownTextItem.MessageType.functionCallReturn) commandItem.Collapsed = true;
 
         // Create result item
-        CollapsibleTextItem resultItem = new CollapsibleTextItem("", CollapsibleTextItem.MessageType.responce);
+        MarkdownTextItem resultItem = new MarkdownTextItem("", MarkdownTextItem.MessageType.responce);
         Items.Insert(Items.Count - 1, resultItem);
         lastResultItem = resultItem;
 
@@ -806,7 +806,7 @@ public partial class ChatControl : UserControl
     public async IAsyncEnumerable<string> GetAsyncCollectionChatResult(string command, IList<AITool>? tools, [EnumeratorCancellation] CancellationToken cancellation)
     {
         inputItem.TextBox.Text = command;
-        await complete(command, tools, cancellation, CollapsibleTextItem.MessageType.command);
+        await complete(command, tools, cancellation, MarkdownTextItem.MessageType.command);
         if (lastResultItem == null) yield break;
         yield return lastResultItem.Text;
     }
@@ -865,7 +865,7 @@ public partial class ChatControl : UserControl
         List<ChatMessageWrapper> chatmessages = chat.ChatMessageWrappers;
         foreach (ChatMessageWrapper chatmessage in chatmessages)
         {
-            CollapsibleTextItem resultItem = new CollapsibleTextItem(chatmessage.Text, CollapsibleTextItem.MessageType.responce);
+            MarkdownTextItem resultItem = new MarkdownTextItem(chatmessage.Text, MarkdownTextItem.MessageType.responce);
             if (chatmessage.Role == ChatRole.System)
             {
                 resultItem.TextColor = completeColor;
