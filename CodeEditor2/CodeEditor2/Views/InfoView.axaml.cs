@@ -17,12 +17,10 @@ namespace CodeEditor2.Views
             InfoListBox0.DataContext = this;
             InfoListBox0.ItemsSource = Items;
 
-            Style style = new Style();
-            style.Selector = ((Selector?)null).OfType(typeof(ListBoxItem));
-            style.Add(new Setter(Layoutable.MinHeightProperty, 8.0));
-            //            style.Add(new Setter(Layoutable.HeightProperty, 11.0));
-
-            InfoListBox0.Styles.Add(style);
+            //Style style = new Style();
+            //style.Selector = ((Selector?)null).OfType(typeof(ListBoxItem));
+            //style.Add(new Setter(Layoutable.MinHeightProperty, 8.0));
+            //InfoListBox0.Styles.Add(style);
         }
 
         ObservableCollection<ListBoxItem> Items = new ObservableCollection<ListBoxItem>();

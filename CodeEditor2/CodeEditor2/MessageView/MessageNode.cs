@@ -19,14 +19,16 @@ namespace CodeEditor2.MessageView
         public ListBoxItem ListBoxItem()
         {
             ListBoxItem item = new ListBoxItem();
-            textBlock.Height = 14;
-            textBlock.MinHeight = 14;
-            textBlock.FontSize = 10;
-            textBlock.Margin = new Avalonia.Thickness(0, 0, 0, 0);
-
+            item.Margin = new Avalonia.Thickness(0);
+            item.Padding = new Avalonia.Thickness(0);
             item.Content = textBlock;
             item.Tapped += Item_Tapped;
-            item.Height = 14;
+
+//            textBlock.MinHeight = 14;
+            textBlock.FontSize = 10;
+            textBlock.Margin = new Avalonia.Thickness(0, 0, 0, 0);
+            textBlock.Padding = new Avalonia.Thickness(0);
+
             return item;
         }
 
@@ -59,17 +61,17 @@ namespace CodeEditor2.MessageView
                     );
             Avalonia.Controls.Image image = new Avalonia.Controls.Image();
             image.Source = iimage;
-            image.Width = 12;
-            image.Height = 12;
+            image.Width = textBlock.FontSize;
+            image.Height = textBlock.FontSize;
             image.Margin = new Avalonia.Thickness(0, 0, 4, 0);
             image.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+
             {
                 InlineUIContainer uiContainer = new InlineUIContainer();
-                uiContainer.BaselineAlignment = Avalonia.Media.BaselineAlignment.Baseline;
+                uiContainer.BaselineAlignment = Avalonia.Media.BaselineAlignment.Center;// .Baseline;
                 uiContainer.Child = image;
                 textBlock.Inlines.Add(uiContainer);
             }
-
 
             Avalonia.Controls.Documents.Run run = new Avalonia.Controls.Documents.Run(text);
             textBlock.Inlines.Add(run);
