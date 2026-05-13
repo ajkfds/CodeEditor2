@@ -32,6 +32,24 @@ public partial class ChatControl : UserControl
     /// </summary>
     public ChatControl()
     {
+        Content = scrollViewer;
+
+
+        var stackLayout = new Avalonia.Layout.StackLayout
+        {
+            Spacing = 8,
+        };
+
+        itemsRepeater = new ItemsRepeater()
+        {
+            ItemsSource = Items,
+            Layout = stackLayout
+        };
+
+        scrollViewer.Content = itemsRepeater;
+        itemsRepeater.ItemsSource = Items;
+
+
         DataContext = this;
         InitializeComponent();
 
@@ -65,17 +83,25 @@ public partial class ChatControl : UserControl
         inputItem.TextBox.Focus();
 
         // Register for ListBox Loaded event
-        ListBox0.Loaded += ListBox0_Loaded;
+        itemsRepeater.Loaded += ListBox0_Loaded;
     }
 
+    private Avalonia.Controls.ItemsRepeater itemsRepeater;
 
     // ScrollViewer and auto-scroll control fields
-    private ScrollViewer? scrollViewer;
+    private ScrollViewer scrollViewer = new ScrollViewer()
+    {
+        VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+        VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Bottom
+    };
+
     /// <summary>
     /// Flag indicating whether system is scrolling
     /// Used for auto-scroll control
     /// </summary>
     private bool _isInternalScrolling = false;
+    
+    
     /// <summary>
     /// Initialization complete flag
     /// Prevents duplicate execution of ResetAsync
@@ -90,13 +116,6 @@ public partial class ChatControl : UserControl
     /// <param name="e">Event arguments</param>
     private void ListBox0_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        // Find ScrollViewer
-        var scrollViewer = ListBox0.FindDescendantOfType<ScrollViewer>();
-        if (scrollViewer == null) throw new Exception();
-
-        scrollViewer = ListBox0.FindDescendantOfType<ScrollViewer>();
-        if (scrollViewer == null) return;
-
         // Handle scroll extent change (for auto-scroll)
         scrollViewer.GetObservable(ScrollViewer.ExtentProperty).Subscribe(_ =>
         {
@@ -132,7 +151,6 @@ public partial class ChatControl : UserControl
                 autoScroll = true;
             }
         };
-        this.scrollViewer = scrollViewer;
 
         // Execute reset only on first load
         if (!initialized)
@@ -643,7 +661,7 @@ public partial class ChatControl : UserControl
                         // Immediately finalize layout on render thread
                         Dispatcher.UIThread.Post(() =>
                         {
-                            ListBox0.UpdateLayout();
+                            itemsRepeater.UpdateLayout();
                             scrollViewer?.ScrollToEnd();
                             // Reset flag after scroll completes
                             _isInternalScrolling = false;
@@ -719,7 +737,7 @@ public partial class ChatControl : UserControl
                         // Update UI
                         await Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            ListBox0.UpdateLayout();
+                            itemsRepeater.UpdateLayout();
                         });
 
                         continue; // Retry the request

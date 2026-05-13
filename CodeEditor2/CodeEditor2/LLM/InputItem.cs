@@ -73,6 +73,19 @@ namespace CodeEditor2.LLM
                     e.Handled = true;
                 }
             };
+
+            //GotFocus += (sender, e) =>
+            //{
+            //    Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            //    {
+            //        this.TextBox.Focus();
+            //    }, Avalonia.Threading.DispatcherPriority.Input);
+            //};
+        }
+
+        private void InputItem_GotFocus(object? sender, Avalonia.Input.GotFocusEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
