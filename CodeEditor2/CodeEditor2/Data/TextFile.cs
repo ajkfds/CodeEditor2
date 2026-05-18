@@ -453,6 +453,19 @@ namespace CodeEditor2.Data
         }
 
 
+        public void CopyCodeDocumentFrom(TextFile text)
+        {
+            //await Dispatcher.UIThread.InvokeAsync(() =>
+            //{
+                CodeDocument? doc = CodeDocument;
+                CodeDocument? sourceDoc = text.CodeDocument;
+                if (doc == null || sourceDoc == null) return;
+                loadFileHash = text.loadFileHash;
+                doc.TextDocument.Replace(0, doc.TextDocument.TextLength, sourceDoc.TextDocument.Text);
+                doc.Clean();
+            //});
+        }
+
         // ファイルの状態を確認する。CodeDocumentが古くなってしまっている場合には更新する。
         private readonly SemaphoreSlim _fileSemaphore = new(1, 1);
         protected virtual async Task FileCheck()
@@ -520,6 +533,7 @@ namespace CodeEditor2.Data
                         });
                     }
 
+                    // load current file
                     if (Dispatcher.UIThread.CheckAccess() | initialLoad)
                     {
                         CodeDocument doc = CodeDocument;
@@ -542,7 +556,6 @@ namespace CodeEditor2.Data
                         await Dispatcher.UIThread.InvokeAsync(async () =>
                         {
                             var doc = CodeDocument;
-
                             if (doc != null)
                             {
                                 doc.TextDocument.Replace(0, doc.TextDocument.TextLength, text);
