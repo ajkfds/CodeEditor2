@@ -620,21 +620,18 @@ namespace CodeEditor2.Data
         /// <returns>A task that represents the asynchronous update operation.</returns>
         public override async Task UpdateAsync()
         {
-            if (!Dispatcher.UIThread.CheckAccess())
-            {
-                await Dispatcher.UIThread.InvokeAsync(() => UpdateAsync());
-                return;
-            }
-
             await base.UpdateAsync();
             PostStatusCheck();
 
-            NavigatePanelNode?.UpdateVisual();
-            if (CodeEditor2.Controller.NavigatePanel.GetSelectedFile() == this)
+            Dispatcher.UIThread.Post(() =>
             {
-                CodeEditor2.Controller.CodeEditor.PostRefresh();
-                if (ParsedDocument != null) CodeEditor2.Controller.MessageView.Update(ParsedDocument);
-            }
+                NavigatePanelNode?.UpdateVisual();
+                if (CodeEditor2.Controller.NavigatePanel.GetSelectedFile() == this)
+                {
+                    CodeEditor2.Controller.CodeEditor.PostRefresh();
+                    if (ParsedDocument != null) CodeEditor2.Controller.MessageView.Update(ParsedDocument);
+                }
+            });
         }
 
 
