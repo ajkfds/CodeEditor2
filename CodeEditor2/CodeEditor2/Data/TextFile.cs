@@ -455,14 +455,15 @@ namespace CodeEditor2.Data
 
         public void CopyCodeDocumentFrom(TextFile text)
         {
+            CodeDocument = text.CodeDocument;
             //await Dispatcher.UIThread.InvokeAsync(() =>
             //{
-                CodeDocument? doc = CodeDocument;
-                CodeDocument? sourceDoc = text.CodeDocument;
-                if (doc == null || sourceDoc == null) return;
-                loadFileHash = text.loadFileHash;
-                doc.TextDocument.Replace(0, doc.TextDocument.TextLength, sourceDoc.TextDocument.Text);
-                doc.Clean();
+                //CodeDocument? doc = CodeDocument;
+                //CodeDocument? sourceDoc = text.CodeDocument;
+                //if (doc == null || sourceDoc == null) return;
+                //loadFileHash = text.loadFileHash;
+                //doc.TextDocument.Replace(0, doc.TextDocument.TextLength, sourceDoc.TextDocument.Text);
+                //doc.Clean();
             //});
         }
 
