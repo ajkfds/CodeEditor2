@@ -74,6 +74,13 @@ namespace CodeEditor2.CodeEditor.Parser
 
         private async Task runSingleParse(Data.TextFile textFile, System.Threading.CancellationToken token)
         {
+            // run on background thread to avoid blocking UI
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                await System.Threading.Tasks.Task.Run(async () => await runSingleParse(textFile, token));
+                return;
+            }
+
             DocumentParser? parser = textFile?.CreateDocumentParser(DocumentParser.ParseModeEnum.EditParse, token);
             if (parser == null) return;
             await parser.ParseAsync();

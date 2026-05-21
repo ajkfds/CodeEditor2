@@ -351,6 +351,7 @@ namespace CodeEditor2.Data
         /// </summary>
         public class ItemList : IEnumerable<Item>
         {
+ 
             private readonly List<Item> itemList = new List<Item>();
             private readonly Dictionary<string, Item> itemDict = new Dictionary<string, Item>();
             private readonly object _lock = new object();

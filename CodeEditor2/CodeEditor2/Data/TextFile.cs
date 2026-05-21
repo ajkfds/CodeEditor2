@@ -553,7 +553,7 @@ namespace CodeEditor2.Data
                         await FileChangedAsync();
                     }
                     else
-                    {
+                    { // background
                         await Dispatcher.UIThread.InvokeAsync(async () =>
                         {
                             var doc = CodeDocument;
