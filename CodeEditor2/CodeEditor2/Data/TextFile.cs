@@ -235,7 +235,7 @@ namespace CodeEditor2.Data
                 RelativePath = relativePath,
                 Name = name
             };
-            await fileItem.FileCheck();
+            await fileItem.FileCheckAsync();
             if (fileItem.CodeDocument == null) System.Diagnostics.Debugger.Break();
             return fileItem;
         }
@@ -293,11 +293,18 @@ namespace CodeEditor2.Data
         /// <summary>
         /// Posts a parse operation for this text file.
         /// </summary>
-        public void PostParse()
+        public async void PostParse()
         {
-            System.Diagnostics.Debug.Print("### postParse" + RelativePath);
-            ParseWorker parseWorker = new();
-            Task.Run(async () => { await parseWorker.Parse(this); });
+            try
+            {
+                System.Diagnostics.Debug.Print("### postParse" + RelativePath);
+                ParseWorker parseWorker = new();
+                await Task.Run(async () => { await parseWorker.Parse(this); });
+            }
+            catch(Exception exception)
+            {
+                CodeEditor2.Controller.AppendLog("failedToPostParse:"+exception.Message, Avalonia.Media.Colors.Red);
+            }
         }
 
         /// <summary>
@@ -469,7 +476,7 @@ namespace CodeEditor2.Data
 
         // ファイルの状態を確認する。CodeDocumentが古くなってしまっている場合には更新する。
         private readonly SemaphoreSlim _fileSemaphore = new(1, 1);
-        protected virtual async Task FileCheck()
+        protected virtual async Task FileCheckAsync()
         {
             // 待ち時間 0 でトライ。入れなければ false が返る
             if (!await _fileSemaphore.WaitAsync(0))
@@ -510,50 +517,11 @@ namespace CodeEditor2.Data
                         {
                             PostStatusCheck();
                         }
-                    }
 
-
-                    string text = await DataAccess.GetFileTextAsync(Project, RelativePath);
-                    string newHash = newHash = GetHash(text);
-                    if (newHash == loadFileHash)
-                    {
-                        return;
-                    }
-
-                    if (dirty & !initialLoad & loadFileHash!="")
-                    {
-                        await Dispatcher.UIThread.InvokeAsync(async () =>
-                        {
-                            Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
-                            await checkUpdate.ShowDialog(Controller.GetMainWindow());
-                            if (!checkUpdate.Yes) // keep current file
-                            {
-                                loadFileHash = newHash;
-                                return;
-                            }
-                        });
-                    }
-
-                    // load current file
-                    if (Dispatcher.UIThread.CheckAccess() | initialLoad)
-                    {
-                        CodeDocument doc = CodeDocument;
-
-                        if (doc != null)
-                        {
-                            doc.TextDocument.Replace(0, doc.TextDocument.TextLength, text);
-                            doc.Clean();
-                        }
+                        string text = await DataAccess.GetFileTextAsync(Project, RelativePath);
+                        string newHash = newHash = GetHash(text);
                         loadFileHash = newHash;
-                        if (initialLoad)
-                        {
-                            var doc2 = CodeDocument;
-                            doc2?.ClearHistory();
-                        }
-                        await FileChangedAsync();
-                    }
-                    else
-                    { // background
+
                         await Dispatcher.UIThread.InvokeAsync(async () =>
                         {
                             var doc = CodeDocument;
@@ -563,14 +531,15 @@ namespace CodeEditor2.Data
                                 doc.Clean();
                             }
                             loadFileHash = newHash;
-                            if (initialLoad)
-                            {
-                                var doc2 = CodeDocument;
-                                doc2?.ClearHistory();
-                            }
                             await FileChangedAsync();
                         });
+
                     }
+                    else
+                    {
+                        await FileCheckBackgroundAsync(dirty);
+                    }
+
                 }
                 catch (FileNotFoundException)
                 {
@@ -586,6 +555,66 @@ namespace CodeEditor2.Data
             finally
             {
                 _fileSemaphore.Release();
+            }
+
+        }
+
+        private async Task FileCheckBackgroundAsync(bool dirty)
+        {
+            // run on background
+            if (Dispatcher.UIThread.CheckAccess())
+            { // ui thread
+                await Task.Run(async () => await FileCheckBackgroundAsync(dirty));
+                return;
+            }
+
+            string text = await DataAccess.GetFileTextAsync(Project, RelativePath);
+            string newHash = newHash = GetHash(text);
+            if (newHash == loadFileHash)
+            {
+                return;
+            }
+
+            if (dirty & loadFileHash != "")
+            {
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
+                    await checkUpdate.ShowDialog(Controller.GetMainWindow());
+                    if (!checkUpdate.Yes) // keep current file
+                    {
+                        loadFileHash = newHash;
+                        return;
+                    }
+                });
+            }
+
+            // load current file
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                CodeDocument doc = CodeDocument;
+
+                if (doc != null)
+                {
+                    doc.TextDocument.Replace(0, doc.TextDocument.TextLength, text);
+                    doc.Clean();
+                }
+                loadFileHash = newHash;
+                await FileChangedAsync();
+            }
+            else
+            { // background
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    var doc = CodeDocument;
+                    if (doc != null)
+                    {
+                        doc.TextDocument.Replace(0, doc.TextDocument.TextLength, text);
+                        doc.Clean();
+                    }
+                    loadFileHash = newHash;
+                    await FileChangedAsync();
+                });
             }
 
         }
@@ -654,7 +683,7 @@ namespace CodeEditor2.Data
         /// </summary>
         public override void PostStatusCheck()
         {
-            _ = Task.Run(async () => { await FileCheck(); });
+            _ = Task.Run(async () => { await FileCheckAsync(); });
         }
 
 
