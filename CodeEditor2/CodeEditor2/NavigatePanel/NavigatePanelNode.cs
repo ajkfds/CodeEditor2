@@ -9,7 +9,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeEditor2.NavigatePanel
 {
-    public class NavigatePanelNode : AjkAvaloniaLibs.Controls.TreeNode
+    public class NavigatePanelNode : AjkAvaloniaLibs.Controls.TreeControls.TreeNode
     {
         protected NavigatePanelNode()
         {

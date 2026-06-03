@@ -370,6 +370,33 @@ namespace CodeEditor2.Data
                 }
             }
 
+            public void ReplaceTo(List<Item> newList)
+            {
+                lock (_lock)
+                {
+                    itemDict.Clear();
+                    itemList.Clear();
+                    foreach (var item in newList)
+                    {
+                        if (itemDict.ContainsKey(item.Name)) continue;
+                        itemDict.Add(item.Name, item);
+                        itemList.Add(item);
+                    }
+                }
+            }
+            public void ReplaceTo(Dictionary<string,Item> newDict)
+            {
+                lock (_lock)
+                {
+                    itemDict.Clear();
+                    itemList.Clear();
+                    foreach (var item in newDict)
+                    {
+                        itemDict.Add(item.Key, item.Value);
+                        itemList.Add(item.Value);
+                    }
+                }
+            }
             //public bool TryInsert(int index, string key, Item item)
             //{
             //    lock (_lock)
