@@ -64,11 +64,6 @@ namespace CodeEditor2.NavigatePanel
         /// </summary>
         public virtual async Task UpdateAsync()
         {
-            if (!Dispatcher.UIThread.CheckAccess())
-            {
-                await Dispatcher.UIThread.InvokeAsync(UpdateAsync);
-                return;
-            }
             return;
         }
 
@@ -287,15 +282,18 @@ namespace CodeEditor2.NavigatePanel
             }
         }
 
+        #pragma warning disable VSTHRD100 // 理由: UIイベントの起点であり、内部で完全にtry-catchしているため安全
         public async void menuItem_CopyPath_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+            string? path = Item?.RelativePath;
+            if (path == null) return;
             try
             {
                 var topLevel = TopLevel.GetTopLevel(Global.mainWindow);
 
                 if (topLevel?.Clipboard is { } clipboard)
                 {
-                    await clipboard.SetTextAsync(Item.RelativePath);
+                    await clipboard.SetTextAsync(path);
                 }
             }
             catch (Exception ex)
@@ -338,14 +336,14 @@ namespace CodeEditor2.NavigatePanel
         {
 
         }
-        public async Task UpdateFolder(NavigatePanelNode node)
+        public async Task UpdateFolderAsync(NavigatePanelNode node)
         {
             FileNode? fileNode = node as FileNode;
             if (fileNode != null)
             {
                 NavigatePanelNode? parentNode = fileNode.Parent as NavigatePanelNode;
                 if (parentNode == null) throw new System.Exception();
-                await UpdateFolder(parentNode);
+                await UpdateFolderAsync(parentNode);
             }
 
             FolderNode? folderNode = node as FolderNode;
@@ -392,7 +390,7 @@ namespace CodeEditor2.NavigatePanel
 
             System.IO.Directory.CreateDirectory(project.GetAbsolutePath(relativePath + folderName));
 
-            await UpdateFolder(node);
+            await UpdateFolderAsync(node);
         }
 
         private async void menuItem_AddBlankFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -465,7 +463,7 @@ namespace CodeEditor2.NavigatePanel
                 {
                     CodeEditor2.Controller.AppendLog("failed to delete " + relativePath + ":" + ex.Message);
                 }
-                await UpdateFolder(node);
+                await UpdateFolderAsync(node);
                 return;
             }
 
@@ -492,7 +490,7 @@ namespace CodeEditor2.NavigatePanel
                 NavigatePanelNode? parentNode = node.Parent as NavigatePanelNode;
                 if (parentNode != null)
                 {
-                    await UpdateFolder(parentNode);
+                    await UpdateFolderAsync(parentNode);
                 }
 
                 return;

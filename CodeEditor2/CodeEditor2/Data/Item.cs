@@ -443,6 +443,16 @@ namespace CodeEditor2.Data
                 }
             }
 
+            public void Clear(out List<Item> clearedItems)
+            {
+                lock (_lock)
+                {
+                    clearedItems = itemList.ToList();
+                    itemList.Clear();
+                    itemDict.Clear();
+                }
+            }
+
             public void Sort(Comparison<Item> comparison)
             {
                 lock (_lock)
@@ -466,6 +476,17 @@ namespace CodeEditor2.Data
                 {
                     yield return item;
                 }
+            }
+
+            public List<Item> GetSnapShot()
+            {
+                List<Item> snapshot;
+                lock (_lock)
+                {
+                    // 現在のリストの状態を新しいリストにコピー（スナップショット）
+                    snapshot = itemList.ToList();
+                }
+                return snapshot;
             }
 
             IEnumerator IEnumerable.GetEnumerator()
@@ -530,7 +551,7 @@ namespace CodeEditor2.Data
             }
         }
 
-        public virtual Task SyncStatus()
+        public virtual Task SyncStatusAsync()
         {
             return Task.CompletedTask;
         }

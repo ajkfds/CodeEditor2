@@ -125,13 +125,12 @@ namespace CodeEditor2
             {
                 if (!Dispatcher.UIThread.CheckAccess())
                 {
-                    Dispatcher.UIThread.InvokeAsync(() =>
+                    Dispatcher.UIThread.Post(() =>
                     {
                         RequestReparsePost();
                     });
                     return;
                 }
-                if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
                 Global.codeView.RequestReparse();
             }
 

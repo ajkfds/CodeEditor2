@@ -570,10 +570,7 @@ namespace CodeEditor2.Data
 
             string text = await DataAccess.GetFileTextAsync(Project, RelativePath);
             string newHash = newHash = GetHash(text);
-            if (newHash == loadFileHash)
-            {
-                return;
-            }
+            if (newHash == loadFileHash) return;
 
             if (dirty & loadFileHash != "")
             {
@@ -588,6 +585,7 @@ namespace CodeEditor2.Data
                     }
                 });
             }
+            if (newHash == loadFileHash) return;
 
             // load current file
             if (Dispatcher.UIThread.CheckAccess())

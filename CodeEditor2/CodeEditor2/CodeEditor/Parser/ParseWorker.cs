@@ -54,7 +54,7 @@ namespace CodeEditor2.CodeEditor.Parser
 
         private async Task runParse(Data.TextFile textFile, System.Threading.CancellationToken token)
         {
-            await runSingleParse(textFile, token);
+            await runBackgroundSingleParseAsync(textFile, token);
             token.ThrowIfCancellationRequested();
             return;
 
@@ -66,18 +66,18 @@ namespace CodeEditor2.CodeEditor.Parser
                 if (item is not Data.TextFile) continue;
                 Data.TextFile subFile = (Data.TextFile)item;
                 if (!subFile.ReparseRequested) continue;
-                await runSingleParse(subFile, token);
+                await runBackgroundSingleParseAsync(subFile, token);
 
                 token.ThrowIfCancellationRequested();
             }
         }
 
-        private async Task runSingleParse(Data.TextFile textFile, System.Threading.CancellationToken token)
+        private async Task runBackgroundSingleParseAsync(Data.TextFile textFile, System.Threading.CancellationToken token)
         {
             // run on background thread to avoid blocking UI
             if (Dispatcher.UIThread.CheckAccess())
             {
-                await System.Threading.Tasks.Task.Run(async () => await runSingleParse(textFile, token));
+                await System.Threading.Tasks.Task.Run(async () => await runBackgroundSingleParseAsync(textFile, token));
                 return;
             }
 
