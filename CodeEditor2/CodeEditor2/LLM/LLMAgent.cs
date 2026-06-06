@@ -37,7 +37,7 @@ namespace CodeEditor2.LLM
         {
             if (PersudoFunctionCallMode)
             {
-                string? funcResult = await ParseExecutePersudoFunctionCall(responce, cancellationToken, chatControl);
+                string? funcResult = await ParseExecutePersudoFunctionCallAsync(responce, cancellationToken, chatControl);
                 return funcResult;
             }
             return null;
@@ -65,7 +65,7 @@ namespace CodeEditor2.LLM
         }
 
         // Function Call
-        private async Task<string?> ParseExecutePersudoFunctionCall(string responce, CancellationToken cancellationToken, ChatControl? chatControl = null)
+        private async Task<string?> ParseExecutePersudoFunctionCallAsync(string responce, CancellationToken cancellationToken, ChatControl? chatControl = null)
         {
             var matches = Regex.Matches(responce, @"<\s*(?<tool>\w+)\s*>(?<params>.*?)</\s*\k<tool>\s*>", RegexOptions.Singleline);
 
