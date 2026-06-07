@@ -1,4 +1,5 @@
 using AjkAvaloniaLibs.Controls;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using CodeEditor2.NavigatePanel;
@@ -53,6 +54,41 @@ namespace CodeEditor2
         public static Window GetMainWindow()
         {
             return Global.mainWindow;
+        }
+
+        /// <summary>
+        /// 指定したダイアログをmainWindowの中央に表示します。
+        /// Linux+X11環境でも正常に位置合わせされます。
+        /// </summary>
+        /// <param name="dialog">表示するダイアログウィンドウ</param>
+        public static async Task ShowDialog(Window dialog)
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                await Dispatcher.UIThread.InvokeAsync(() => ShowDialog(dialog));
+                return;
+            }
+
+            var mainWindow = GetMainWindow();
+            if (mainWindow == null)
+            {
+                throw new InvalidOperationException("Main window is not available");
+            }
+
+            // dialog.Width/Heightが設定されていない場合、ActualWidth/ActualHeightを使用
+            double dialogWidth = dialog.Width > 0 ? dialog.Width : dialog.Bounds.Width;
+            double dialogHeight = dialog.Height > 0 ? dialog.Height : dialog.Bounds.Height;
+
+            // それでも0の場合はデフォルト値を設定
+            if (dialogWidth <= 0) dialogWidth = 400;
+            if (dialogHeight <= 0) dialogHeight = 300;
+
+            // mainWindowの中央に配置
+            int x = (int)(mainWindow.Position.X + (mainWindow.Bounds.Width - dialogWidth) / 2);
+            int y = (int)(mainWindow.Position.Y + (mainWindow.Bounds.Height - dialogHeight) / 2);
+            dialog.Position = new PixelPoint(x, y);
+
+            await dialog.ShowDialog(mainWindow);
         }
 
         //public static System.Drawing.Color GetBackColor()
