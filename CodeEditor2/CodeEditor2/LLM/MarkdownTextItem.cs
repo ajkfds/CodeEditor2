@@ -209,6 +209,7 @@ namespace CodeEditor2.LLM
             Margin = new Thickness(10, 5, 10, 5),
             MinHeight = 30,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
+            FontFamily = new Avalonia.Media.FontFamily("Yu Gothic UI, Meiryo, MS Gothic, sans-serif"),
         };
 
         private StackPanel collapseAndMenuPanel = new StackPanel()
