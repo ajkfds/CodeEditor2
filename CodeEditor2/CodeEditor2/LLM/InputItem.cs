@@ -108,7 +108,8 @@ namespace CodeEditor2.LLM
             Margin = new Thickness(10, 5, 10, 5),
             TextWrapping = Avalonia.Media.TextWrapping.Wrap,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
-            AcceptsReturn = true
+            AcceptsReturn = true,
+            FontFamily = new Avalonia.Media.FontFamily("Yu Gothic UI, Meiryo, MS Gothic, sans-serif")
         };
 
         public StackPanel BottomPanel = new StackPanel()
