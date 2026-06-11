@@ -35,6 +35,10 @@ namespace CodeEditor2
 
             Global.logView.AppendLog(message, color);
         }
+        public static void AppendLog(System.Exception exception)
+        {
+            AppendLog("Exception : " + exception.Message, Avalonia.Media.Colors.Red);
+        }
 
         public static async Task<WeakReference<ListViewItem>> AppendLogAndGetItem(string message, Avalonia.Media.Color color)
         {
