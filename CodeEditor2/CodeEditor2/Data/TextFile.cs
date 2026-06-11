@@ -408,6 +408,17 @@ namespace CodeEditor2.Data
                 if (doc == null) return;
 
                 string filePath = AbsolutePath;
+
+                // Normalize line endings to \n in UI thread
+                if (Dispatcher.UIThread.CheckAccess())
+                {
+                    NormalizeLineEndings(doc);
+                }
+                else
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() => NormalizeLineEndings(doc));
+                }
+
                 string saveText = doc.CreateString();
                 ulong savedVersion = doc.Version;
 
@@ -426,6 +437,7 @@ namespace CodeEditor2.Data
                 }
                 if (savedVersion == doc.Version) doc.Clean();
                 loadFileHash = newHash;
+                loadFileVersion = savedVersion;
             }
             finally
             {
@@ -452,6 +464,7 @@ namespace CodeEditor2.Data
         }
 
         protected string loadFileHash = "";
+        protected ulong loadFileVersion = 0;
 
         protected virtual void CreateCodeDocument()
         {
@@ -507,7 +520,7 @@ namespace CodeEditor2.Data
                     }
                     else
                     {
-                        dirty = CodeDocument.IsDirty;
+                        if (CodeDocument.Version != loadFileVersion) dirty = true;
                     }
 
                     if (initialLoad)
@@ -572,8 +585,17 @@ namespace CodeEditor2.Data
             string newHash = newHash = GetHash(text);
             if (newHash == loadFileHash) return;
 
-            if (dirty & loadFileHash != "")
+            if (loadFileVersion != CodeDocument.Version & loadFileHash != "")
             {
+                /*
+                
+                                                                         save
+                loadFileHash    0------------------------------------------1---------------------------->
+                loadVersion     0----------------------------------------->1---------------------------->
+                                                        edit
+                Version         0----------------------->1----------------------->2--------------------->
+                 
+                 */
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
@@ -647,8 +669,19 @@ namespace CodeEditor2.Data
             return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         }
 
-
-
+        /// <summary>
+        /// Normalizes line endings in the document to \n (LF).
+        /// </summary>
+        /// <param name="doc">The code document to normalize.</param>
+        private void NormalizeLineEndings(CodeDocument doc)
+        {
+            string currentText = doc.CreateString();
+            string normalizedText = currentText.Replace("\r\n", "\n").Replace("\r", "\n");
+            if (currentText != normalizedText)
+            {
+                doc.TextDocument.Replace(0, doc.TextDocument.TextLength, normalizedText);
+            }
+        }
 
         protected override NavigatePanelNode CreateNode()
         {
