@@ -147,7 +147,9 @@ namespace CodeEditor2.Data
             {
                 byte[] encodedText = Encoding.UTF8.GetBytes(text);
                 await fs.WriteAsync(encodedText, 0, encodedText.Length);
-                await fs.FlushAsync();
+                // OSのページキャッシュから物理ディスクへの同期をバックグラウンドで行い、完了を待つ
+                // ※Flush(true) は内部バッファのフラッシュも行うため、元の FlushAsync() は不要になります
+                await Task.Run(() => fs.Flush(true));
             }
 
             if (!casheFile) return;
