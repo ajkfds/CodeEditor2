@@ -14,7 +14,12 @@ namespace CodeEditor2.Views
             InitializeComponent();
 
             Global.logView = this;
-            Avalonia.Media.RenderOptions.SetTextRenderingMode(ListView, Global.TextRenderingMode);
+            if (Global.ReducedRendering)
+            {
+                Avalonia.Media.RenderOptions.SetTextRenderingMode(ListView, Avalonia.Media.TextRenderingMode.Alias);
+                var customFont = new Avalonia.Media.FontFamily("avares://CodeEditor2/Assets/font/tamazen-font/Tamzen8x15b.ttf#Tamzen");
+                ListView.FontFamily = customFont;
+            }
         }
 
         const int maxLogs = 100;

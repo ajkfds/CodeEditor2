@@ -19,7 +19,12 @@ namespace CodeEditor2.Views
             TreeControl.ToggleButtonColor = Color.FromRgb(200, 200, 200);
             TreeControl.OnFontSizeChanged += OnFontSizeChaned;
 
-            Avalonia.Media.RenderOptions.SetTextRenderingMode(TreeControl, Global.TextRenderingMode);
+            if (Global.ReducedRendering)
+            {
+                Avalonia.Media.RenderOptions.SetTextRenderingMode(TreeControl, TextRenderingMode.Alias );
+                var customFont = new FontFamily("avares://CodeEditor2/Assets/font/tamazen-font/Tamzen8x15b.ttf#Tamzen");
+                TreeControl.FontFamily = customFont;
+            }
         }
 
         internal void OnFontSizeChaned(double fontSize)

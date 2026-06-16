@@ -5,6 +5,7 @@ using CodeEditor2.Data;
 using CodeEditor2.Setups;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace CodeEditor2
@@ -51,7 +52,7 @@ namespace CodeEditor2
         public static Avalonia.Media.Color Color_Error = Avalonia.Media.Color.FromRgb(255, 20, 20);
         public static Avalonia.Media.Color Color_Warning = Avalonia.Media.Color.FromRgb(255, 255, 20);
 
-        public static Avalonia.Media.TextRenderingMode TextRenderingMode = Avalonia.Media.TextRenderingMode.Alias;
+        public static bool ReducedRendering = true;
 
         public static byte[]? FileEncriptionKey = null;
         public static MenuItem CreateMenuItem(string header, string name)

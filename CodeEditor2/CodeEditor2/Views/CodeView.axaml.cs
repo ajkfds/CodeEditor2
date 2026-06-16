@@ -60,7 +60,13 @@ namespace CodeEditor2.Views
             _textEditor.Options.EnableImeSupport = true;
             _textEditor.Options.ShowEndOfLine = true;
             _textEditor.TextArea.Background = this.Background;
-            Avalonia.Media.RenderOptions.SetTextRenderingMode(_textEditor, Global.TextRenderingMode);
+
+            if (Global.ReducedRendering)
+            {
+                Avalonia.Media.RenderOptions.SetTextRenderingMode(_textEditor, TextRenderingMode.Alias);
+                var customFont = new FontFamily("avares://CodeEditor2/Assets/font/tamazen-font/Tamzen8x15b.ttf#Tamzen");
+                _textEditor.FontFamily = customFont;
+            }
 
 
             _textEditor.Options.ShowBoxForControlCharacters = true;

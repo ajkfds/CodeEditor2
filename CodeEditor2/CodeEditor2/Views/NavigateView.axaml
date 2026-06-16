@@ -8,7 +8,7 @@
 	<ajkctrl:TreeControl
 		Name="TreeControl"
 		FontSize="12"
-		FontFamily="{StaticResource Tamazen},Cascadia Mono,Consolas,Menlo,Monospace"
+		FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
 		FontWeight="Normal"
 		Background="Black"
 		SelectedBackgroundColor="#0078d4"
