@@ -25,13 +25,26 @@
 		
 	</Application.Styles>
 
-    <Application.Resources>
-    <!-- Your other resources here -->
+
+<Application.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceInclude Source="avares://LiveMarkdown.Avalonia/Defaults.axaml"/>
+        </ResourceDictionary.MergedDictionaries>
+
+        <FontFamily x:Key="Tamazen">avares://CodeEditor2/Assets/font/tamazen-font/Tamzen8x15b.ttf#Tamzen</FontFamily>
+        
+        </ResourceDictionary>
+</Application.Resources>
+
+    <!--Application.Resources>
+
+	<FontFamily x:Key="tamazen">avares://CodeEditor2/Assets/font/tamazen-font/Tamzen8x15b.ttf#tamazen8x15b</FontFamily>
     <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://LiveMarkdown.Avalonia/Defaults.axaml"/>
         </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
-    </Application.Resources> 
+    </Application.Resources--> 
 	
 </Application>

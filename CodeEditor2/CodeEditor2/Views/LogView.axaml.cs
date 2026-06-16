@@ -14,6 +14,7 @@ namespace CodeEditor2.Views
             InitializeComponent();
 
             Global.logView = this;
+            Avalonia.Media.RenderOptions.SetTextRenderingMode(ListView, Global.TextRenderingMode);
         }
 
         const int maxLogs = 100;

@@ -18,6 +18,8 @@ namespace CodeEditor2.Views
             TreeControl.SelectedForegroundColor = Color.FromRgb(255, 255, 255);
             TreeControl.ToggleButtonColor = Color.FromRgb(200, 200, 200);
             TreeControl.OnFontSizeChanged += OnFontSizeChaned;
+
+            Avalonia.Media.RenderOptions.SetTextRenderingMode(TreeControl, Global.TextRenderingMode);
         }
 
         internal void OnFontSizeChaned(double fontSize)

@@ -60,6 +60,7 @@ namespace CodeEditor2.Views
             _textEditor.Options.EnableImeSupport = true;
             _textEditor.Options.ShowEndOfLine = true;
             _textEditor.TextArea.Background = this.Background;
+            Avalonia.Media.RenderOptions.SetTextRenderingMode(_textEditor, Global.TextRenderingMode);
 
 
             _textEditor.Options.ShowBoxForControlCharacters = true;
