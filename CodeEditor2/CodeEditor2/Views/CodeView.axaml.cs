@@ -64,7 +64,7 @@ namespace CodeEditor2.Views
             if (Global.ReducedRendering)
             {
                 Avalonia.Media.RenderOptions.SetTextRenderingMode(_textEditor, TextRenderingMode.Alias);
-                var customFont = new FontFamily("avares://CodeEditor2/Assets/font/tamazen-font/Tamzen8x15b.ttf#Tamzen");
+                var customFont = new FontFamily(Global.CodeFontFamily);
                 _textEditor.FontFamily = customFont;
             }
 

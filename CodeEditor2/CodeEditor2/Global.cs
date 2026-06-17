@@ -54,6 +54,11 @@ namespace CodeEditor2
 
         public static bool ReducedRendering = true;
 
+        public static string CodeFontFamily =
+            "avares://CodeEditor2/Assets/font/proggyfontsfont/ProggyClean.ttf," +
+            "avares://CodeEditor2/Assets/font/tamazen-font/Tamzen8x15b.ttf#Tamzen," +
+            "Cascadia Mono,Consolas,Menlo,Monospace,DejaVu Sans Mono,Liberation Mono,Noto Sans Mono,Source Code Pro";
+
         public static byte[]? FileEncriptionKey = null;
         public static MenuItem CreateMenuItem(string header, string name)
         {

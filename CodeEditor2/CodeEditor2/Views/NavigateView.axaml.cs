@@ -22,7 +22,7 @@ namespace CodeEditor2.Views
             if (Global.ReducedRendering)
             {
                 Avalonia.Media.RenderOptions.SetTextRenderingMode(TreeControl, TextRenderingMode.Alias );
-                var customFont = new FontFamily("avares://CodeEditor2/Assets/font/tamazen-font/Tamzen8x15b.ttf#Tamzen");
+                var customFont = new FontFamily(Global.CodeFontFamily);
                 TreeControl.FontFamily = customFont;
             }
         }
