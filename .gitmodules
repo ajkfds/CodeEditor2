@@ -1,3 +1,6 @@
 [submodule "tamzen-font"]
 	path = tamzen-font
 	url = https://github.com/sunaku/tamzen-font.git
+[submodule "proggyfonts"]
+	path = proggyfonts
+	url = https://github.com/bluescan/proggyfonts.git
