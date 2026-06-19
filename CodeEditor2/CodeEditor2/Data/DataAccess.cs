@@ -140,17 +140,17 @@ namespace CodeEditor2.Data
 
         private static async Task saveFileAsync(Project project, string relativePath, string text, bool casheFile)
         {
-            using (FileStream fs = new FileStream(
+            await using (FileStream fs = new FileStream(
                         project.GetAbsolutePath(relativePath),
                         FileMode.Create, FileAccess.Write, FileShare.Read,
                         bufferSize: 4096 * 32, useAsync: true))
             {
                 byte[] encodedText = Encoding.UTF8.GetBytes(text);
                 await fs.WriteAsync(encodedText, 0, encodedText.Length);
-                // OSのページキャッシュから物理ディスクへの同期をバックグラウンドで行い、完了を待つ
-                // ※Flush(true) は内部バッファのフラッシュも行うため、元の FlushAsync() は不要になります
-                await Task.Run(() => fs.Flush(true));
+                // 内部バッファとOSのページキャッシュから物理ディスクへの同期を行う
+                await fs.FlushAsync();
             }
+            Controller.AppendLog("saved "+relativePath);
 
             if (!casheFile) return;
             string cashePath = project.GetCahsePath(relativePath);
@@ -356,14 +356,14 @@ namespace CodeEditor2.Data
             // IV（初期化ベクトル）を自動生成
             aes.GenerateIV();
 
-            using FileStream fs = new FileStream(filePath, FileMode.Create);
+            await using FileStream fs = new FileStream(filePath, FileMode.Create);
             // 後で復号するために、ソルトとIVをファイルの先頭に書き込む
-            fs.Write(salt, 0, salt.Length);
-            fs.Write(aes.IV, 0, aes.IV.Length);
+            await fs.WriteAsync(salt, 0, salt.Length);
+            await fs.WriteAsync(aes.IV, 0, aes.IV.Length);
 
             using var encryptor = aes.CreateEncryptor();
-            using var cryptoStream = new CryptoStream(fs, encryptor, CryptoStreamMode.Write);
-            using var writer = new StreamWriter(cryptoStream);
+            using CryptoStream cryptoStream = new CryptoStream(fs, encryptor, CryptoStreamMode.Write);
+            using StreamWriter writer = new StreamWriter(cryptoStream);
 
             await writer.WriteAsync(content);
         }
@@ -377,7 +377,7 @@ namespace CodeEditor2.Data
         private static async Task<string> DecryptFromFile(string filePath, byte[] fileEncriptkey)
         {
             // FileShare.ReadWrite を指定することで、他プロセスが書き込み中でも読み取り可能になります
-            using FileStream fs = new FileStream(
+            await using FileStream fs = new FileStream(
                 filePath,
                 FileMode.Open,
                 FileAccess.Read,
@@ -400,8 +400,8 @@ namespace CodeEditor2.Data
             aes.IV = iv;
 
             using var decryptor = aes.CreateDecryptor();
-            using var cryptoStream = new CryptoStream(fs, decryptor, CryptoStreamMode.Read);
-            using var reader = new StreamReader(cryptoStream);
+            using CryptoStream cryptoStream = new CryptoStream(fs, decryptor, CryptoStreamMode.Read);
+            using StreamReader reader = new StreamReader(cryptoStream);
 
             return await reader.ReadToEndAsync();
         }

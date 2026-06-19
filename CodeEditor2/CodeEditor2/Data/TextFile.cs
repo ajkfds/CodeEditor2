@@ -582,7 +582,9 @@ namespace CodeEditor2.Data
             }
 
             string text = await DataAccess.GetFileTextAsync(Project, RelativePath);
-            string newHash = newHash = GetHash(text);
+            // 保存時に正規化しているため、読み込み時にも正規化してハッシュ計算を一致させる
+            text = text.Replace("\r\n", "\n").Replace("\r", "\n");
+            string newHash = GetHash(text);
             if (newHash == loadFileHash) return;
 
             if (loadFileVersion != CodeDocument.Version & loadFileHash != "")
@@ -596,6 +598,7 @@ namespace CodeEditor2.Data
                 Version         0----------------------->1----------------------->2--------------------->
                  
                  */
+                Controller.AppendLog("Conflict Detected "+RelativePath);
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
