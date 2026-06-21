@@ -58,6 +58,7 @@ namespace CodeEditor2
             "avares://CodeEditor2/Assets/font/proggyfontsfont/ProggyClean.ttf," +
             "avares://CodeEditor2/Assets/font/tamazen-font/Tamzen8x15b.ttf#Tamzen," +
             "Cascadia Mono,Consolas,Menlo,Monospace,DejaVu Sans Mono,Liberation Mono,Noto Sans Mono,Source Code Pro";
+        public static int FontGridSize = 12;
 
         public static byte[]? FileEncriptionKey = null;
         public static MenuItem CreateMenuItem(string header, string name)

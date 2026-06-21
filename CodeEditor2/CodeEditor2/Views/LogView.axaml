@@ -8,6 +8,6 @@
 	<ajkctrl:ListViewControl 
         Name="ListView" 
         FontSize="10"
-		FontFamily="{StaticResource Tamazen},Cascadia Mono,Consolas,Menlo,Monospace,DejaVu Sans Mono,Liberation Mono,Noto Sans Mono,Source Code Pro"
+		FontFamily="Cascadia Mono,Consolas,Menlo,Monospace,DejaVu Sans Mono,Liberation Mono,Noto Sans Mono,Source Code Pro"
      />
 </UserControl>

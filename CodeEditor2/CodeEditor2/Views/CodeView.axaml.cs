@@ -67,6 +67,14 @@ namespace CodeEditor2.Views
                 var customFont = new FontFamily(Global.CodeFontFamily);
                 _textEditor.FontFamily = customFont;
             }
+            AttachedToVisualTree += (s, e) =>
+            {
+                if (Global.ReducedRendering)
+                {
+                    double scale = this.VisualRoot?.RenderScaling ?? 1.0;
+                    _textEditor.FontSize = Math.Ceiling((float)Global.FontGridSize * 1.05 / scale);
+                }
+            };
 
 
             _textEditor.Options.ShowBoxForControlCharacters = true;
@@ -160,6 +168,7 @@ namespace CodeEditor2.Views
 
             contextMenu.Padding = new Avalonia.Thickness(10, 0, 10, 0);
             Editor.ContextMenu = contextMenu;
+
         }
 
         internal ContextMenu contextMenu = new ContextMenu();
