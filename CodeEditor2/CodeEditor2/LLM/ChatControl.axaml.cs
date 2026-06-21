@@ -91,8 +91,7 @@ public partial class ChatControl : UserControl
     // ScrollViewer and auto-scroll control fields
     private ScrollViewer scrollViewer = new ScrollViewer()
     {
-        VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
-        VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Bottom
+        VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
     };
 
     /// <summary>
