@@ -52,7 +52,7 @@ namespace CodeEditor2
         public static Avalonia.Media.Color Color_Error = Avalonia.Media.Color.FromRgb(255, 20, 20);
         public static Avalonia.Media.Color Color_Warning = Avalonia.Media.Color.FromRgb(255, 255, 20);
 
-        public static bool ReducedRendering = true;
+        public static bool ReducedRendering = false;
 
         public static string CodeFontFamily =
             "avares://CodeEditor2/Assets/font/proggyfontsfont/ProggyClean.ttf," +

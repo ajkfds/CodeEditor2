@@ -392,6 +392,9 @@ namespace CodeEditor2.Data
             }
         }
 
+        protected string currentFileHash = "";
+        protected string currentFileText = "";
+        protected ulong currentFileVersion = 0;
         /// <summary>
         /// Saves the text file to disk asynchronously.
         /// </summary>
@@ -422,22 +425,16 @@ namespace CodeEditor2.Data
                 string saveText = doc.CreateString();
                 ulong savedVersion = doc.Version;
 
-                string? newHash = null;
                 await Task.Run(
                     async () =>
                     {
-                        newHash = await SaveTextAndGetHash(saveText);
+                        await DataAccess.SaveFileAsync(Project, RelativePath, saveText);
                     }
                 );
 
-                if (newHash == null)
-                {
-                    Controller.AppendLog("filed to save " + AbsolutePath, Avalonia.Media.Colors.Red);
-                    return;
-                }
                 if (savedVersion == doc.Version) doc.Clean();
-                loadFileHash = newHash;
-                loadFileVersion = savedVersion;
+                currentFileHash = GetHash(saveText);
+                currentFileVersion = savedVersion;
             }
             finally
             {
@@ -445,26 +442,6 @@ namespace CodeEditor2.Data
             }
         }
 
-        /// <summary>
-        /// Saves the text and returns the hash of the saved content.
-        /// </summary>
-        /// <param name="text">The text to save.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains the hash string, or null if save failed.</returns>
-        public async Task<string?> SaveTextAndGetHash(string text)
-        {
-            try
-            {
-                await DataAccess.SaveFileAsync(Project, RelativePath, text);
-                return GetHash(text);
-            }
-            catch (IOException)
-            {
-                return null;
-            }
-        }
-
-        protected string loadFileHash = "";
-        protected ulong loadFileVersion = 0;
 
         protected virtual void CreateCodeDocument()
         {
@@ -520,7 +497,7 @@ namespace CodeEditor2.Data
                     }
                     else
                     {
-                        if (CodeDocument.Version != loadFileVersion) dirty = true;
+                        if (CodeDocument.Version != currentFileVersion) dirty = true;
                     }
 
                     if (initialLoad)
@@ -534,8 +511,6 @@ namespace CodeEditor2.Data
                         string text = await DataAccess.GetFileTextAsync(Project, RelativePath);
                         // 保存時に正規化しているため、読み込み時にも正規化してハッシュ計算を一致させる
                         text = text.Replace("\r\n", "\n").Replace("\r", "\n");
-                        string newHash = GetHash(text);
-                        loadFileHash = newHash;
 
                         await Dispatcher.UIThread.InvokeAsync(async () =>
                         {
@@ -545,7 +520,8 @@ namespace CodeEditor2.Data
                                 doc.TextDocument.Replace(0, doc.TextDocument.TextLength, text);
                                 doc.Clean();
                             }
-                            loadFileHash = newHash;
+                            currentFileHash = GetHash(text);
+                            currentFileText = text;
                             await FileChangedAsync();
                         });
 
@@ -587,32 +563,25 @@ namespace CodeEditor2.Data
             // 保存時に正規化しているため、読み込み時にも正規化してハッシュ計算を一致させる
             text = text.Replace("\r\n", "\n").Replace("\r", "\n");
             string newHash = GetHash(text);
-            if (newHash == loadFileHash) return;
+            if (newHash == currentFileHash) return;
 
-            if (loadFileVersion != CodeDocument.Version & loadFileHash != "")
-            {
-                /*
-                
-                                                                         save
-                loadFileHash    0------------------------------------------1---------------------------->
-                loadVersion     0----------------------------------------->1---------------------------->
-                                                        edit
-                Version         0----------------------->1----------------------->2--------------------->
-                 
-                 */
+            if (currentFileVersion != CodeDocument.Version & currentFileHash != "")
+            { // dirty & 
                 Controller.AppendLog("Conflict Detected "+RelativePath);
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check", RelativePath + " changed externally. Can I dispose local change ?");
-                    await checkUpdate.ShowDialog(Controller.GetMainWindow());
+                    Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check\n", RelativePath + " changed externally.\nCan I dispose local change and accept external file?");
+                    await CodeEditor2.Controller.ShowDialog(checkUpdate);
                     if (!checkUpdate.Yes) // keep current file
                     {
-                        loadFileHash = newHash;
+                        currentFileHash = newHash;
+                        currentFileVersion = CodeDocument.Version;
+                        currentFileText = text;
                         return;
                     }
                 });
             }
-            if (newHash == loadFileHash) return;
+            if (newHash == currentFileHash) return;
 
             // load current file
             if (Dispatcher.UIThread.CheckAccess())
@@ -624,7 +593,8 @@ namespace CodeEditor2.Data
                     doc.TextDocument.Replace(0, doc.TextDocument.TextLength, text);
                     doc.Clean();
                 }
-                loadFileHash = newHash;
+                currentFileHash = newHash;
+                currentFileText = text;
                 await FileChangedAsync();
             }
             else
@@ -637,7 +607,7 @@ namespace CodeEditor2.Data
                         doc.TextDocument.Replace(0, doc.TextDocument.TextLength, text);
                         doc.Clean();
                     }
-                    loadFileHash = newHash;
+                    currentFileHash = newHash;
                     await FileChangedAsync();
                 });
             }

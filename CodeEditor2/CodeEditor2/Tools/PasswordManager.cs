@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using System;
 using System.Security.Cryptography;
 using System.Text;
@@ -52,6 +53,18 @@ namespace CodeEditor2.Tools
                 }
             }
             return false;
+        }
+
+        private async static Task<Tools.InputWindow> InputPasswordAsync()
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                return await Dispatcher.UIThread.InvokeAsync(() => InputPasswordAsync());
+            }
+            Tools.InputWindow inputWindow = new InputWindow("input password", "input password");
+            inputWindow.PassWordMode = true;
+            await CodeEditor2.Controller.ShowDialog(inputWindow);
+            return inputWindow;
         }
 
         // セキュリティ設定（2026年現在の推奨値）
