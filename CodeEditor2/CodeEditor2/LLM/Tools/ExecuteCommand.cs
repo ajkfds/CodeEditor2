@@ -70,7 +70,7 @@ namespace CodeEditor2.LLM.Tools
 
 
                 CodeEditor2.Tools.YesNoWindow yesNoWindow = new CodeEditor2.Tools.YesNoWindow("execure_command request", $"Do you want to execute the following command? :{command}");
-                await yesNoWindow.ShowDialog(CodeEditor2.Controller.GetMainWindow());
+                await CodeEditor2.Controller.ShowDialog(yesNoWindow);
                 if (!yesNoWindow.Yes) return "command_execute rejected by user";
 
                 CommandParser parser = new CommandParser();
