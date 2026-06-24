@@ -55,10 +55,10 @@ namespace CodeEditor2
             return Global.logView.AppendLogAndGetLastItem(message, color);
         }
 
-        public static Window GetMainWindow()
-        {
-            return Global.mainWindow;
-        }
+        //public static Window GetMainWindow()
+        //{
+        //    return Global.mainWindow;
+        //}
 
         /// <summary>
         /// 指定したダイアログをmainWindowの中央に表示します。
@@ -73,7 +73,7 @@ namespace CodeEditor2
                 return;
             }
 
-            var mainWindow = GetMainWindow();
+            var mainWindow = Global.mainWindow;
             if (mainWindow == null)
             {
                 throw new InvalidOperationException("Main window is not available");

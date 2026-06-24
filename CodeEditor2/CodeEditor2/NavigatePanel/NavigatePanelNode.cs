@@ -307,7 +307,7 @@ namespace CodeEditor2.NavigatePanel
             {
                 Tools.ItemPropertyForm form = new Tools.ItemPropertyForm(this);
                 form.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                await form.ShowDialog(Controller.GetMainWindow());
+                await Controller.ShowDialog(form);
             }
             catch (Exception ex)
             {
@@ -383,7 +383,7 @@ namespace CodeEditor2.NavigatePanel
             if (!relativePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) relativePath += System.IO.Path.DirectorySeparatorChar;
 
             Tools.InputWindow window = new Tools.InputWindow("Create New Folder", "new Folder Name");
-            await window.ShowDialog(Controller.GetMainWindow());
+            await Controller.ShowDialog(window);
 
             if (window.Cancel) return;
             string folderName = window.InputText.Trim();
@@ -405,7 +405,7 @@ namespace CodeEditor2.NavigatePanel
             if (!relativePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) relativePath += System.IO.Path.DirectorySeparatorChar;
 
             Tools.InputWindow window = new Tools.InputWindow("Create Blank File", "new File Name");
-            await window.ShowDialog(Controller.GetMainWindow());
+            await Controller.ShowDialog(window);
 
             if (window.Cancel) return;
             string fileName = window.InputText.Trim();
@@ -451,7 +451,7 @@ namespace CodeEditor2.NavigatePanel
                 string relativePath = fileNode.FileItem.RelativePath;
 
                 Tools.YesNoWindow window = new Tools.YesNoWindow("Delete File", "delete " + relativePath + " ?");
-                await window.ShowDialog(Controller.GetMainWindow());
+                await Controller.ShowDialog(window);
 
                 if (!window.Yes) return;
 
@@ -474,7 +474,7 @@ namespace CodeEditor2.NavigatePanel
                 string relativePath = folderNode.Folder.RelativePath;
 
                 Tools.YesNoWindow window = new Tools.YesNoWindow("Delete File", "delete " + relativePath + " ?");
-                await window.ShowDialog(Controller.GetMainWindow());
+                await Controller.ShowDialog(window);
 
                 if (!window.Yes) return;
 

@@ -16,7 +16,7 @@ namespace CodeEditor2.Tools
             { //  set new paddword
                 Tools.InputWindow inputWindow = new InputWindow("new password", "input new password");
                 inputWindow.PassWordMode = true;
-                await inputWindow.ShowDialog(Controller.GetMainWindow());
+                await Controller.ShowDialog(inputWindow);
                 if (inputWindow.Cancel) return false;
                 string passWord = inputWindow.InputText;
                 if (passWord == "") return false;
@@ -34,7 +34,7 @@ namespace CodeEditor2.Tools
                 {
                     Tools.InputWindow inputWindow = new InputWindow("input password", "input password");
                     inputWindow.PassWordMode = true;
-                    await inputWindow.ShowDialog(Controller.GetMainWindow());
+                    await Controller.ShowDialog(inputWindow);
                     if (inputWindow.Cancel) return false;
                     string passWord = inputWindow.InputText;
                     byte[]? derivedKey;
