@@ -82,11 +82,11 @@ namespace CodeEditor2.LLM.Tools
         [Description("""
             One or more SEARCH/REPLACE blocks following this exact format:
             ```
-            ------- SEARCH
+            <<<<<<< SEARCH
             [exact content to find]
             =======
             [new content to replace with]
-            +++++++ REPLACE
+            >>>>>>> REPLACE
             ```
             Critical rules:
             1. SEARCH content must match the associated file section to find EXACTLY:
@@ -113,7 +113,7 @@ namespace CodeEditor2.LLM.Tools
         {
             try
             {
-                if (project == null) return "Failed to execute tool.No project selected.";
+                if (project == null) return "Failed to execute tool. No project selected.";
 
                 // 1. 安全なパスの解決
                 string fullPath = project.GetAbsolutePath(path);
@@ -123,18 +123,24 @@ namespace CodeEditor2.LLM.Tools
                 if (!System.IO.File.Exists(fullPath))
                     return $"Error: File not found at '{path}'.";
 
-                // 2. ファイル内容の読み込み（改行コードを正規化して扱うのがコツ）
-                string fileContent = System.IO.File.ReadAllText(fullPath).Replace("\r\n", "\n");
+                // 2. ファイル内容とエンコーディング/改行コードの判定
+                // 元のファイルの改行コードを保持するために記録します
+                string originalText = System.IO.File.ReadAllText(fullPath);
+                bool isCrLf = originalText.Contains("\r\n");
+
+                // 比較・置換処理はすべて LF (\n) に正規化して行います
+                string fileContent = originalText.Replace("\r\n", "\n");
+                string diffNormalized = diff.Replace("\r\n", "\n");
 
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // 3. SEARCH/REPLACE ブロックのパース
-                // 正規表現でブロックを抽出します
-                var blockRegex = new Regex(@"------- SEARCH\r?\n(.*?)\r?\n=======\r?\n(.*?)\r?\n\+\+\+\+\+\+\+ REPLACE", RegexOptions.Singleline);
-                var matches = blockRegex.Matches(diff.Replace("\r\n", "\n"));
+                // 空のブロック（削除・先頭挿入など）にも対応できるよう、改行をオプショナル（\n?）にします
+                var blockRegex = new Regex(@"<<<<<<< SEARCH\n(.*?)\n?=======\n(.*?)\n?>>>>>>> REPLACE", RegexOptions.Singleline);
+                var matches = blockRegex.Matches(diffNormalized);
 
                 if (matches.Count == 0)
-                    return "Error: No valid SEARCH/REPLACE blocks found. Please check your format.";
+                    return "Error: No valid SEARCH/REPLACE blocks found. Please check your formatting exactly.";
 
                 string updatedContent = fileContent;
 
@@ -143,21 +149,42 @@ namespace CodeEditor2.LLM.Tools
                     string searchContent = match.Groups[1].Value;
                     string replaceContent = match.Groups[2].Value;
 
-                    // 4. 厳密一致のチェック
-                    // 注意: LLMは時々改行コードを混同するため、string.Replaceを試みる前に存在を確認
+                    // 4. 厳密一致のチェックと自己修復ヒントの提供
                     if (!updatedContent.Contains(searchContent))
                     {
-                        return $"Error: Could not find the EXACT original content in '{path}'. Make sure whitespace and indentation match perfectly.";
-                    }
+                        // ヒントとなる類似コードブロックを探索
+                        string hint = FindSimilarCodeBlock(updatedContent, searchContent);
 
-                    // 最初の1箇所のみ置換（指示のルール通り）
+                        return $"Error: Could not find the EXACT original content in '{path}'. " +
+                               $"Make sure you included ALL whitespace, indentation, and comments exactly as they appear in the file. " +
+                               $"Do not truncate lines.{hint}";
+                    }
+                    //// 4. 厳密一致のチェック
+                    //if (!updatedContent.Contains(searchContent))
+                    //{
+                    //    // LLMへの親切なエラーメッセージ（自己修復を促す）
+                    //    return $"Error: Could not find the EXACT original content in '{path}'. " +
+                    //           $"Make sure you included ALL whitespace, indentation, and comments exactly as they appear in the file. " +
+                    //           $"Do not truncate lines.";
+                    //}
+
+                    // 最初の1箇所のみ置換
                     int index = updatedContent.IndexOf(searchContent);
                     updatedContent = updatedContent.Remove(index, searchContent.Length).Insert(index, replaceContent);
-                    updatedContent = updatedContent.Replace("\r\n", "\n");
+
+                    // ※ここでは updatedContent.Replace("\r\n", "\n") は不要です（既にLF正規化済みのため）
                 }
 
-                // 5. 保存
-                System.IO.File.WriteAllText(fullPath, updatedContent);
+                // 5. 元の改行コードに復元
+                if (isCrLf)
+                {
+                    updatedContent = updatedContent.Replace("\n", "\r\n");
+                }
+
+                // 6. 保存（元のエンコーディングを極力維持するため、元のファイルのEncodingを使用するか、BOM付き/無しを意識する）
+                // UTF-8 (BOMあり) を維持したい場合は、File.WriteAllTextにエンコーディングを指定します
+                var encoding = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false); // 必要に応じてBOMを判定
+                System.IO.File.WriteAllText(fullPath, updatedContent, encoding);
 
                 await Task.Delay(0);
                 return $"Success: Applied {matches.Count} change(s) to '{path}'.";
@@ -172,6 +199,78 @@ namespace CodeEditor2.LLM.Tools
             インデントの感度: LLMは時々タブとスペースを間違えます。もしマッチング失敗が多発する場合は、string.Contains の代わりに「空白の差異を無視する正規表現」を動的に生成してマッチングさせる手法もあります。
             ブロックの順序: 引数の説明にある通り、複数の置換がある場合は「ファイルの先頭から順に」処理しないと、置換後のインデックスがズレて予期せぬ場所を書き換えるリスクがあります。             
              */
+        }
+
+        // 類似するコードブロックを探索してヒント文字列を生成するメソッド
+        private string FindSimilarCodeBlock(string fileContent, string searchContent)
+        {
+            var fileLines = fileContent.Split('\n');
+            var searchLines = searchContent.Split('\n');
+            int searchLineCount = searchLines.Length;
+
+            // 検索行数がファイル行数より多い場合などはスキップ
+            if (searchLineCount == 0 || fileLines.Length < searchLineCount)
+                return string.Empty;
+
+            int bestDistance = int.MaxValue;
+            string bestMatch = null;
+
+            // ファイル全体を1行ずつスライドしながら、同じ行数のブロックを比較する
+            for (int i = 0; i <= fileLines.Length - searchLineCount; i++)
+            {
+                // 検索ブロックと同じ行数を切り出す
+                var windowLines = new string[searchLineCount];
+                Array.Copy(fileLines, i, windowLines, 0, searchLineCount);
+                string candidate = string.Join("\n", windowLines);
+
+                // レーベンシュタイン距離を計算
+                int distance = ComputeLevenshteinDistance(searchContent, candidate);
+
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    bestMatch = candidate;
+                }
+            }
+
+            // 類似度（0.0 〜 1.0）を計算
+            int maxLength = Math.Max(searchContent.Length, bestMatch?.Length ?? 1);
+            double similarity = 1.0 - ((double)bestDistance / maxLength);
+
+            // 類似度が一定以上（例：50%以上）の場合のみヒントとして返す
+            // 全く関係ないコードを返してLLMを混乱させないための閾値
+            if (similarity > 0.5)
+            {
+                return $"\n\nDid you mean:\n<<<<<<< SEARCH\n{bestMatch}\n=======\n\n(Similarity: {similarity:P0})";
+            }
+
+            return string.Empty;
+        }
+
+        // 2つの文字列のレーベンシュタイン距離（編集距離）を計算する標準的なアルゴリズム
+        private int ComputeLevenshteinDistance(string s, string t)
+        {
+            if (string.IsNullOrEmpty(s)) return t?.Length ?? 0;
+            if (string.IsNullOrEmpty(t)) return s.Length;
+
+            int n = s.Length;
+            int m = t.Length;
+            int[,] d = new int[n + 1, m + 1];
+
+            for (int i = 0; i <= n; d[i, 0] = i++) { }
+            for (int j = 0; j <= m; d[0, j] = j++) { }
+
+            for (int i = 1; i <= n; i++)
+            {
+                for (int j = 1; j <= m; j++)
+                {
+                    int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
+                    d[i, j] = Math.Min(
+                        Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                        d[i - 1, j - 1] + cost);
+                }
+            }
+            return d[n, m];
         }
     }
 }
