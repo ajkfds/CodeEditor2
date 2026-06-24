@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using CodeEditor2.Tools;
 using System;
@@ -25,10 +26,7 @@ namespace CodeEditor2.LLM
 
             StackPanel.Children.Add(hgrid.Grid);
 
-            // Add model selector and button bar to the bottom panel
-
             {
-                //                ButtonBar.Children.Add(TestButton);
                 ButtonBar.Children.Add(ClearButton);
                 ButtonBar.Children.Add(LoadButton);
                 ButtonBar.Children.Add(SaveButton);
@@ -36,10 +34,9 @@ namespace CodeEditor2.LLM
                 ButtonBar.Children.Add(SendButton);
             }
 
-            // Set ItemsSource after ModelItems and ModeItems are initialized
             ModelSelector.ItemsSource = ModelItems;
             ModeSelector.ItemsSource = ModeItems;
-            ModeSelector.SelectedIndex = 0; // Default to "Plan" mode
+            ModeSelector.SelectedIndex = 0;
 
             SendButton.PropertyChanged += (sender, args) =>
             {
@@ -68,24 +65,29 @@ namespace CodeEditor2.LLM
             {
                 if (e.Key == Avalonia.Input.Key.Left || e.Key == Avalonia.Input.Key.Right)
                 {
-                    // テキストボックス内でのカーソル移動のみを許容し、
-                    // 親のListBoxへのイベント伝播（フォーカス移動）を止める
                     e.Handled = true;
                 }
             };
 
-            //GotFocus += (sender, e) =>
-            //{
-            //    Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-            //    {
-            //        this.TextBox.Focus();
-            //    }, Avalonia.Threading.DispatcherPriority.Input);
-            //};
+            // Ctrl+SpaceでAutoCompleteを起動
+            TextBox.KeyDown += TextBox_KeyDown;
         }
 
-        private void InputItem_GotFocus(object? sender, Avalonia.Input.GotFocusEventArgs e)
+        /// <summary>
+        /// Event raised when Ctrl+Space is pressed to trigger auto-complete
+        /// </summary>
+        public event EventHandler? AutoCompleteRequested;
+
+        /// <summary>
+        /// Handle key down events for Ctrl+Space auto-complete
+        /// </summary>
+        private void TextBox_KeyDown(object? sender, KeyEventArgs e)
         {
-            throw new NotImplementedException();
+            if (e.Key == Key.Space && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+            {
+                e.Handled = true;
+                AutoCompleteRequested?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
@@ -119,9 +121,6 @@ namespace CodeEditor2.LLM
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
         };
 
-        /// <summary>
-        /// Collection of available models for the model selector
-        /// </summary>
         public ObservableCollection<ModelItem> ModelItems { get; } = new ObservableCollection<ModelItem>();
 
         public ComboBox ModelSelector = new ComboBox()
@@ -133,9 +132,6 @@ namespace CodeEditor2.LLM
             PlaceholderText = "Select Model"
         };
 
-        /// <summary>
-        /// Collection of available modes for the mode selector
-        /// </summary>
         public ObservableCollection<ModeItem> ModeItems { get; } = new ObservableCollection<ModeItem>
         {
             new ModeItem { Id = "plan", Name = "Plan" },
@@ -150,14 +146,7 @@ namespace CodeEditor2.LLM
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left
         };
 
-        /// <summary>
-        /// Event raised when the selected model changes
-        /// </summary>
         public event EventHandler<ModelItem?>? ModelChanged;
-
-        /// <summary>
-        /// Event raised when the selected mode changes
-        /// </summary>
         public event EventHandler<ModeItem?>? ModeChanged;
 
         public StackPanel ButtonBar = new StackPanel()
@@ -216,29 +205,20 @@ namespace CodeEditor2.LLM
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
         };
-
     }
 
-    /// <summary>
-    /// Represents an LLM model item for the model selector
-    /// </summary>
     public class ModelItem
     {
         public string Id { get; set; } = "";
         public string Name { get; set; } = "";
         public object? Tag { get; set; }
-
         public override string ToString() => Name;
     }
 
-    /// <summary>
-    /// Represents a mode item for the mode selector (Plan/Implement)
-    /// </summary>
     public class ModeItem
     {
         public string Id { get; set; } = "";
         public string Name { get; set; } = "";
-
         public override string ToString() => Name;
     }
 }
