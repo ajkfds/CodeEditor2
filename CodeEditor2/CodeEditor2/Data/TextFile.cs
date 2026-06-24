@@ -423,7 +423,11 @@ namespace CodeEditor2.Data
                 }
 
                 string saveText = doc.CreateString();
-                ulong savedVersion = doc.Version;
+
+                // 保存開始前にハッシュとバージョンを更新
+                // これにより、保存中にファイルチェックが走ってもコンフリクトと誤検出されない
+                currentFileHash = GetHash(saveText);
+                currentFileVersion = doc.Version;
 
                 await Task.Run(
                     async () =>
@@ -432,9 +436,7 @@ namespace CodeEditor2.Data
                     }
                 );
 
-                if (savedVersion == doc.Version) doc.Clean();
-                currentFileHash = GetHash(saveText);
-                currentFileVersion = savedVersion;
+                if (currentFileVersion == doc.Version) doc.Clean();
             }
             finally
             {
