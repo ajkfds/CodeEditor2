@@ -15,9 +15,9 @@ namespace CodeEditor2.CodeEditor
 
         public bool IsDirty { get; }
 
-        public ulong Version { get; set; }
+        public uint Version { get; set; }
 
-        public ulong CleanVersion { get; }
+        public uint CleanVersion { get; }
 
 
         public int Length { get; }
@@ -38,7 +38,6 @@ namespace CodeEditor2.CodeEditor
         public void SetCharAt(int index, char value);
 
         public void CopyColorMarkFrom(CodeDocument document);
-        public void CopyFrom(CodeDocument document);
         public void CopyTextOnlyFrom(CodeDocument document);
 
         public void ClearColorMark();

@@ -428,6 +428,7 @@ namespace CodeEditor2.Data
                 // これにより、保存中にファイルチェックが走ってもコンフリクトと誤検出されない
                 currentFileHash = GetHash(saveText);
                 currentFileVersion = doc.Version;
+                currentFileText = saveText;
 
                 await Task.Run(
                     async () =>
@@ -610,6 +611,7 @@ namespace CodeEditor2.Data
                         doc.Clean();
                     }
                     currentFileHash = newHash;
+                    currentFileText = text;
                     await FileChangedAsync();
                 });
             }

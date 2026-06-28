@@ -5,6 +5,7 @@ using AvaloniaEdit.Folding;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reactive;
 
 namespace CodeEditor2.CodeEditor
 {
@@ -19,14 +20,32 @@ namespace CodeEditor2.CodeEditor
         public static int tagCount = 0;
         public string tag = "";
 
+        protected readonly System.Threading.ReaderWriterLockSlim docLock = new System.Threading.ReaderWriterLockSlim(System.Threading.LockRecursionPolicy.NoRecursion);
+
         public CodeDocument(Data.TextFile textFile, bool textOnly) : this()
         {
-            textFileRef = new WeakReference<Data.TextFile>(textFile);
-            textDocument = new TextDocument();
-            initialize();
+            docLock.EnterWriteLock();
+            try
+            {
+                textFileRef = new WeakReference<Data.TextFile>(textFile);
+                textDocument = new TextDocument();
+                initialize();
+            }
+            finally
+            {
+                docLock.ExitWriteLock();
+            }
         }
         public CodeDocument(Data.TextFile textFile)
         {
+            docLock.EnterWriteLock();
+            try
+            {
+            }
+            finally
+            {
+                docLock.ExitWriteLock();
+            }
             textFileRef = new WeakReference<Data.TextFile>(textFile);
             textDocument = new TextDocument();
             initialize();
@@ -34,6 +53,14 @@ namespace CodeEditor2.CodeEditor
 
         public CodeDocument(Data.TextFile textFile, string text)
         {
+            docLock.EnterWriteLock();
+            try
+            {
+            }
+            finally
+            {
+                docLock.ExitWriteLock();
+            }
             textFileRef = new WeakReference<Data.TextFile>(textFile);
             textDocument = new TextDocument();
             textDocument.Text = text;
@@ -79,7 +106,7 @@ namespace CodeEditor2.CodeEditor
         #region handle AvaloniaEdit.TextDocument
 
         protected TextDocument textDocument;
-        public TextDocument TextDocument
+        internal TextDocument TextDocument
         {
             get
             {
@@ -93,9 +120,17 @@ namespace CodeEditor2.CodeEditor
             get
             {
                 Data.TextFile? ret;
-                if (textFileRef == null) return null;
-                if (!textFileRef.TryGetTarget(out ret)) return null;
-                return ret;
+                docLock.EnterReadLock();
+                try
+                {
+                    if (textFileRef == null) return null;
+                    if (!textFileRef.TryGetTarget(out ret)) return null;
+                    return ret;
+                }
+                finally
+                {
+                    docLock.ExitReadLock();
+                }
             }
         }
         private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
@@ -114,25 +149,25 @@ namespace CodeEditor2.CodeEditor
 
         private async void TextDocument_TextChanged(object? sender, EventArgs e)
         {
-            try
-            {
-                if (!IsDirty)
-                {
-                    //                    Version++;
-                    NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
-                    await Dispatcher.UIThread.InvokeAsync(
-                        () => { node?.UpdateVisual(); }
-                        );
-                }
-                else
-                {
-                    //                    Version++;
-                }
-            }
-            catch
-            {
-                if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
-            }
+            //try
+            //{
+            //    if (!IsDirty)
+            //    {
+            //        //                    Version++;
+            //        NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
+            //        await Dispatcher.UIThread.InvokeAsync(
+            //            () => { node?.UpdateVisual(); }
+            //            );
+            //    }
+            //    else
+            //    {
+            //        //                    Version++;
+            //    }
+            //}
+            //catch
+            //{
+            //    if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+            //}
         }
 
         #endregion
@@ -149,18 +184,29 @@ namespace CodeEditor2.CodeEditor
         {
             get
             {
+                docLock.EnterReadLock();
+                try
+                {
+
+                }
+                finally
+                {
+                    docLock.ExitReadLock();
+                }
                 return disposed;
             }
         }
 
         public void Clean()
         {
-            CleanVersion = Version;
-            Dispatcher.UIThread.Post(() =>
+            docLock.EnterWriteLock();
+            try{
+                CleanVersion = Version;
+            }
+            finally
             {
-                NavigatePanel.NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
-                node?.UpdateVisual();
-            });
+                docLock.ExitWriteLock();
+            }
         }
 
         public void ClearHistory()
@@ -172,27 +218,61 @@ namespace CodeEditor2.CodeEditor
         {
             get
             {
-                if (CleanVersion == Version) return false;
-                return true;
+                if (docLock.IsReadLockHeld)
+                {
+                    if (CleanVersion == Version) return false;
+                    return true;
+                }
+                {
+                    docLock.EnterReadLock();
+                    try
+                    {
+                        if (CleanVersion == Version) return false;
+                        return true;
+                    }
+                    finally
+                    {
+                        docLock.ExitReadLock();
+                    }
+                }
             }
         }
 
         public Action<int, int, byte, string>? Replaced = null;
 
 
-        public virtual ulong Version { get; set; } = 0;
 
-        public ulong CleanVersion { get; private set; } = 0;
+        private volatile uint version = 0;
+    
+        public uint Version
+        {
+            get { return version; }
+            set { version = value; }
+        }
+
+        private volatile uint cleanVersion = 0;
+        public uint CleanVersion
+        {
+            get { return cleanVersion; }
+            set { cleanVersion = value; }
+        }
 
 
 
         public string _tag = "";
-
         public int Length
         {
             get
             {
-                return textDocument.TextLength;
+                docLock.EnterReadLock();
+                try
+                {
+                    return textDocument.TextLength;
+                }
+                finally
+                {
+                    docLock.ExitReadLock();
+                }
             }
         }
 
@@ -200,18 +280,30 @@ namespace CodeEditor2.CodeEditor
         // block handling /////////////////////////////
 
 
-        // block information cash
-        //public void ClearBlock()
-        //{
-        //}
         public void AppendBlock(int startIndex, int endIndex)
         {
-            Foldings.AppendBlock(startIndex, endIndex);
+            docLock.EnterWriteLock();
+            try
+            {
+                Foldings.AppendBlock(startIndex, endIndex);
+            }
+            finally
+            {
+                docLock.ExitWriteLock();
+            }
         }
 
         public void AppendBlock(int startIndex, int endIndex, string name, bool defaultClose)
         {
-            Foldings.AppendBlock(startIndex, endIndex, name, defaultClose);
+            docLock.EnterWriteLock();
+            try
+            {
+                Foldings.AppendBlock(startIndex, endIndex, name, defaultClose);
+            }
+            finally
+            {
+                docLock.ExitWriteLock();
+            }
         }
 
         /////////////////////////////////////////
@@ -221,11 +313,19 @@ namespace CodeEditor2.CodeEditor
         {
             get
             {
-                return selectionStart;
+                docLock.EnterReadLock();
+                try
+                {
+                    return selectionStart;
+                }
+                finally
+                {
+                    docLock.ExitReadLock();
+                }
             }
         }
 
-        internal int selectionLast;
+        internal volatile int selectionLast;
         public int SelectionLast
         {
             get
@@ -236,9 +336,16 @@ namespace CodeEditor2.CodeEditor
 
         public void SetSelection(int startIndex, int lastIndex)
         {
-            if (Global.codeView.CodeDocument != this) return;
-
-            Global.codeView.SetSelection(startIndex, lastIndex);
+            docLock.EnterWriteLock();
+            try
+            {
+                if (Global.codeView.CodeDocument != this) return;
+                Global.codeView.SetSelection(startIndex, lastIndex);
+            }
+            finally
+            {
+                docLock.ExitWriteLock();
+            }
         }
 
         internal int caretIndex;
@@ -246,17 +353,33 @@ namespace CodeEditor2.CodeEditor
         {
             get
             {
-                return caretIndex;
+                docLock.EnterReadLock();
+                try
+                {
+                    return caretIndex;
+                }
+                finally
+                {
+                    docLock.ExitReadLock();
+                }
             }
         }
 
         public char GetCharAt(int index)
         {
-            if (Length <= index)
+            docLock.EnterReadLock();
+            try
             {
-                return ' ';
+                if (textDocument.TextLength <= index)
+                {
+                    return ' ';
+                }
+                return textDocument.GetCharAt(index);
             }
-            return textDocument.GetCharAt(index);
+            finally
+            {
+                docLock.ExitReadLock();
+            }
         }
 
         public void SetCharAt(int index, char value)
@@ -266,20 +389,20 @@ namespace CodeEditor2.CodeEditor
 
         public void CopyColorMarkFrom(CodeDocument document)
         {
-            // Capture source version to detect if source changes during copy
-            ulong sourceVersion = document.Version;
-            
+            docLock.EnterWriteLock();
             // Lock the source document during the copy to prevent race conditions
             // where the source document is modified while we're copying
-            lock (document.textDocument)
+            document.EnterReadLock();
+            try
             {
+                // Capture source version to detect if source changes during copy
+                ulong sourceVersion = document.Version;
                 // Check if source was modified during lock acquisition
                 if (document.Version != sourceVersion)
                 {
                     // Source was modified, abort this copy
                     return;
                 }
-                
                 // Safe to copy - source document is stable
                 TextColors.LineInformation = document.TextColors.LineInformation;
                 lock (Marks.marks)
@@ -289,83 +412,129 @@ namespace CodeEditor2.CodeEditor
                 document.Foldings.Foldings.Sort((x, y) => { return x.StartOffset - y.StartOffset; });
                 Foldings.Foldings = new List<NewFolding>(document.Foldings.Foldings);
             }
-            
-            if (Global.codeView.TextFile != null && Global.codeView.TextFile.CodeDocument == this && System.Threading.Thread.CurrentThread.Name == "UI")
+            finally
             {
-                Global.codeView.UpdateFoldings();
+                docLock.ExitWriteLock();
+                document.ExitReadLock();
+            }
+
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                if (Global.codeView.TextFile != null && Global.codeView.TextFile.CodeDocument == this)
+                {
+                    Global.codeView.UpdateFoldings();
+                }
             }
         }
-        public void CopyFrom(CodeDocument document)
+        protected void EnterReadLock()
         {
-            textDocument.Text = document.textDocument.Text;
+            docLock.EnterReadLock();
+        }
+        protected void ExitReadLock()
+        {
+            docLock.ExitReadLock();
         }
 
         public void CopyTextOnlyFrom(CodeDocument document)
         {
-            if (document == null) return;
-            var snap = document.textDocument.CreateSnapshot();
-            textDocument.Text = snap.Text;
-            Version = document.Version;
+            docLock.EnterWriteLock();
+            document.EnterReadLock();
+            try
+            {
+                if (document == null) return;
+                textDocument.Text = document.createString();
+                Version = document.Version;
+            }
+            finally
+            {
+                docLock.ExitWriteLock();
+                document.ExitReadLock();
+            }
         }
 
         public CodeDocument Clone()
         {
-            if (this.TextFile == null) throw new Exception("TextFile is null");
-            var clone = new CodeDocument(this.TextFile, this.CreateString());
-            clone.CopyColorMarkFrom(this);
-            clone.caretIndex = this.caretIndex;
-            clone.selectionStart = this.selectionStart;
-            clone.selectionLast = this.selectionLast;
-            clone.CleanVersion = this.CleanVersion;
-            clone.Version = this.Version;
-            return clone;
+            docLock.EnterWriteLock();
+            try
+            {
+                if (this.TextFile == null) throw new Exception("TextFile is null");
+                var clone = new CodeDocument(this.TextFile, this.createString());
+                clone.CopyColorMarkFrom(this);
+                clone.caretIndex = this.caretIndex;
+                clone.selectionStart = this.selectionStart;
+                clone.selectionLast = this.selectionLast;
+                clone.CleanVersion = this.CleanVersion;
+                clone.Version = this.Version;
+                return clone;
+            }
+            finally
+            {
+                docLock.ExitWriteLock();
+            }
         }
 
         public void ClearColorMark()
         {
-            TextColors.LineInformation.Clear();
-            lock (Marks.marks)
+            docLock.EnterWriteLock();
+            try
             {
-                Marks.marks.Clear();
+                TextColors.LineInformation.Clear();
+                lock (Marks.marks)
+                {
+                    Marks.marks.Clear();
+                }
+            }
+            finally
+            {
+                docLock.ExitWriteLock();
             }
         }
 
 
-
-
-        //
-
-
-
-
         public void Replace(int index, int replaceLength, byte colorIndex, string text)
         {
-            if (!Dispatcher.UIThread.CheckAccess())
+            docLock.EnterWriteLock();
+            try
             {
-                Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    Replace(index, replaceLength, colorIndex, text);
-                }).Wait();
-                return;
-            }
-            if (textDocument == null) return;
-            lock (this)
-            {
+                if (textDocument == null) return;
                 textDocument.Replace(index, replaceLength, text);
                 TextColors.SetColorAt(index, colorIndex, text.Length);
-                // set color
+            }
+            finally
+            {
+                docLock.ExitWriteLock();
             }
         }
 
         public int GetLineAt(int index)
         {
-            if (textDocument == null) return 0;
-            if (index > Length) return 0;
-            return textDocument.GetLineByOffset(index).LineNumber;
+            docLock.EnterReadLock();
+            try
+            {
+                if (textDocument == null) return 0;
+                if (index > textDocument.TextLength) return 0;
+                return textDocument.GetLineByOffset(index).LineNumber;
+            }
+            finally {
+                docLock.ExitReadLock(); 
+            }
         }
 
 
         public int GetLineStartIndex(int line)
+        {
+            docLock.EnterReadLock();
+            try
+            {
+                return getLineStartIndex(line);
+            }
+            finally
+            {
+                docLock.ExitReadLock();
+            }
+        }
+
+        private int getLineStartIndex(int line)
         {
             if (textDocument == null) return 0;
             TextLocation location = new TextLocation(line, 0);
@@ -374,11 +543,38 @@ namespace CodeEditor2.CodeEditor
 
         public int GetLineLength(int line)
         {
+            docLock.EnterReadLock();
+            try
+            {
+                return getLineLength(line);
+            }
+            finally
+            {
+                docLock.ExitReadLock();
+            }
+        }
+        private int getLineLength(int line)
+        {
             if (textDocument == null) return 0;
             return textDocument.GetLineByNumber(line).Length;
         }
 
         public int Lines
+        {
+            get
+            {
+                docLock.EnterReadLock();
+                try
+                {
+                    return lines;
+                }
+                finally
+                {
+                    docLock.ExitReadLock();
+                }
+            }
+        }
+        private int lines
         {
             get
             {
@@ -389,28 +585,37 @@ namespace CodeEditor2.CodeEditor
 
         public int FindIndexOf(string targetString, int startIndex)
         {
-            if (textDocument == null) return -1;
-            if (targetString.Length == 0) return -1;
-            for (int i = startIndex; i < Length - targetString.Length; i++)
+            docLock.EnterReadLock();
+            try
             {
-                if (targetString[0] != textDocument.GetCharAt(i)) continue;
-                bool match = true;
-                for (int j = 1; j < targetString.Length; j++)
+                if (textDocument == null) return -1;
+                if (targetString.Length == 0) return -1;
+                for (int i = startIndex; i < Length - targetString.Length; i++)
                 {
-                    if (targetString[j] != textDocument.GetCharAt(i + j))
+                    if (targetString[0] != textDocument.GetCharAt(i)) continue;
+                    bool match = true;
+                    for (int j = 1; j < targetString.Length; j++)
                     {
-                        match = false;
-                        break;
+                        if (targetString[j] != textDocument.GetCharAt(i + j))
+                        {
+                            match = false;
+                            break;
+                        }
                     }
+                    if (match) return i;
                 }
-                if (match) return i;
+                return -1;
             }
-            return -1;
+            finally
+            {
+                docLock.ExitReadLock();
+            }
         }
 
         public int FindPreviousIndexOf(string targetString, int startIndex)
         {
-            lock (this)
+            docLock.EnterReadLock();
+            try
             {
                 if (targetString.Length == 0) return -1;
                 if (startIndex > Length - targetString.Length) startIndex = Length - targetString.Length;
@@ -431,41 +636,68 @@ namespace CodeEditor2.CodeEditor
                 }
                 return -1;
             }
+            finally
+            {
+                docLock.ExitReadLock();
+            }
         }
 
         public string CreateString()
+        {
+            docLock.EnterReadLock();
+            try
+            {
+                return createString();
+            }
+            finally
+            {
+                docLock.ExitReadLock();
+            }
+        }
+        private string createString()
         {
             return textDocument.GetText(0, textDocument.TextLength);
         }
 
         public string CreateString(int index, int length)
         {
+            docLock.EnterReadLock();
+            try
+            {
+                return createString(index, length);
+            }
+            finally
+            {
+                docLock.ExitReadLock();
+            }
+        }
+        private string createString(int index, int length)
+        {
             if (System.Diagnostics.Debugger.IsAttached && length < 0) System.Diagnostics.Debugger.Break();
             return textDocument.GetText(index, length);
         }
 
-        //public char[] CreateCharArray()
-        //{
-        //    return chars.CreateArray();
-        //}
-
         public string CreateLineString(int line)
         {
-            return textDocument.GetText(GetLineStartIndex(line), GetLineLength(line));
+            docLock.EnterReadLock();
+            try
+            {
+                return createLineString(line);
+            }
+            finally
+            {
+                docLock.ExitReadLock();
+            }
         }
-
-        //public char[] CreateLineArray(int line)
-        //{
-        //    unsafe
-        //    {
-        //        char[] array = chars.CreateArray(GetLineStartIndex(line), GetLineLength(line));
-        //        return array;
-        //    }
-        //}
+        private string createLineString(int line)
+        {
+            return textDocument.GetText(getLineStartIndex(line), getLineLength(line));
+        }
 
         public virtual void GetWord(int index, out int headIndex, out int length)
         {
-            lock (this)
+            docLock.EnterReadLock();
+            try
             {
                 headIndex = index;
                 length = 0;
@@ -492,6 +724,10 @@ namespace CodeEditor2.CodeEditor
                     }
                     length++;
                 }
+            }
+            finally
+            {
+                docLock.ExitReadLock();
             }
         }
 
