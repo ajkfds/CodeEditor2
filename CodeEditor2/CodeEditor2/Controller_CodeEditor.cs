@@ -73,7 +73,7 @@ namespace CodeEditor2
                     lastIndex = -1;
                     return;
                 }
-                startIndex = codeDocument.selectionStart;
+                startIndex = codeDocument._selectionStart;
                 lastIndex = codeDocument.selectionLast;
             }
             public static async Task SaveAsync()

@@ -265,7 +265,7 @@ namespace CodeEditor2.Views
                 return;
             }
 
-            if (clicked && CodeDocument.caretIndex != _textEditor.TextArea.Caret.Offset)
+            if (clicked && CodeDocument._caretIndex != _textEditor.TextArea.Caret.Offset)
             {
                 await addPositionHistory();
             }
@@ -274,7 +274,7 @@ namespace CodeEditor2.Views
             // update caret position in CodeDocument
             // ( all code CodeDocument must have it's unique caret position
             //   to recover its caret position when th document selected after deselect )
-            CodeDocument.caretIndex = _textEditor.TextArea.Caret.Offset;
+            CodeDocument._caretIndex = _textEditor.TextArea.Caret.Offset;
 
             // entry code parse if caret line changed
             int caretLine = _textEditor.TextArea.Caret.Line;
@@ -303,7 +303,7 @@ namespace CodeEditor2.Views
             SelectionSegment segment;
             segment = _textEditor.TextArea.Selection.Segments.First();
 
-            CodeDocument.selectionStart = segment.StartOffset;
+            CodeDocument._selectionStart = segment.StartOffset;
             int offset;
             offset = segment.EndOffset;
             if (offset != 0) offset--;
@@ -313,15 +313,15 @@ namespace CodeEditor2.Views
         public void SetCaretPosition(int index)
         {
             if (CodeDocument == null) return;
-            if (_textEditor.CaretOffset == index && CodeDocument.caretIndex == index) return;
+            if (_textEditor.CaretOffset == index && CodeDocument._caretIndex == index) return;
             _textEditor.CaretOffset = index;
-            CodeDocument.caretIndex = index;
+            CodeDocument._caretIndex = index;
         }
 
         public int? GetCaretPosition()
         {
             if (CodeDocument == null) return null;
-            return CodeDocument.caretIndex;
+            return CodeDocument._caretIndex;
         }
         public void SetSelection(int selectionStart, int selectionLast)
         {

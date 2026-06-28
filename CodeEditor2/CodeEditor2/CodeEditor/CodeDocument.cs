@@ -174,39 +174,23 @@ namespace CodeEditor2.CodeEditor
 
 
 
-        private bool disposed = false;
+        private volatile bool _disposed = false;
         public void Dispose()
         {
-            disposed = true;
+            _disposed = true;
         }
 
         public bool IsDisposed
         {
             get
             {
-                docLock.EnterReadLock();
-                try
-                {
-
-                }
-                finally
-                {
-                    docLock.ExitReadLock();
-                }
-                return disposed;
+                return _disposed;
             }
         }
 
         public void Clean()
         {
-            docLock.EnterWriteLock();
-            try{
-                CleanVersion = Version;
-            }
-            finally
-            {
-                docLock.ExitWriteLock();
-            }
+            _cleanVersion = _version;
         }
 
         public void ClearHistory()
@@ -214,26 +198,14 @@ namespace CodeEditor2.CodeEditor
             textDocument.UndoStack.ClearAll();
         }
 
+
         public bool IsDirty
         {
             get
             {
-                if (docLock.IsReadLockHeld)
                 {
-                    if (CleanVersion == Version) return false;
+                    if (_cleanVersion == _version) return false;
                     return true;
-                }
-                {
-                    docLock.EnterReadLock();
-                    try
-                    {
-                        if (CleanVersion == Version) return false;
-                        return true;
-                    }
-                    finally
-                    {
-                        docLock.ExitReadLock();
-                    }
                 }
             }
         }
@@ -242,24 +214,32 @@ namespace CodeEditor2.CodeEditor
 
 
 
-        private volatile uint version = 0;
+        private volatile uint _version = 0;
     
         public uint Version
         {
-            get { return version; }
-            set { version = value; }
+            get { return _version; }
+            set { _version = value; }
         }
 
-        private volatile uint cleanVersion = 0;
+        private volatile uint _cleanVersion = 0;
         public uint CleanVersion
         {
-            get { return cleanVersion; }
-            set { cleanVersion = value; }
+            get { return _cleanVersion; }
+            set { _cleanVersion = value; }
         }
 
 
 
         public string _tag = "";
+
+        private int _length
+        {
+            get
+            {
+                return textDocument.TextLength;
+            }
+        }
         public int Length
         {
             get
@@ -267,7 +247,7 @@ namespace CodeEditor2.CodeEditor
                 docLock.EnterReadLock();
                 try
                 {
-                    return textDocument.TextLength;
+                    return _length;
                 }
                 finally
                 {
@@ -308,20 +288,12 @@ namespace CodeEditor2.CodeEditor
 
         /////////////////////////////////////////
 
-        internal int selectionStart;
+        internal volatile int _selectionStart;
         public int SelectionStart
         {
             get
             {
-                docLock.EnterReadLock();
-                try
-                {
-                    return selectionStart;
-                }
-                finally
-                {
-                    docLock.ExitReadLock();
-                }
+                return _selectionStart;
             }
         }
 
@@ -348,33 +320,29 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        internal int caretIndex;
+        internal volatile int _caretIndex;
         public int CaretIndex
         {
             get
             {
-                docLock.EnterReadLock();
-                try
-                {
-                    return caretIndex;
-                }
-                finally
-                {
-                    docLock.ExitReadLock();
-                }
+                return _caretIndex;
             }
         }
 
+        private char getCharAt(int index)
+        {
+            if (textDocument.TextLength <= index)
+            {
+                return ' ';
+            }
+            return textDocument.GetCharAt(index);
+        }
         public char GetCharAt(int index)
         {
             docLock.EnterReadLock();
             try
             {
-                if (textDocument.TextLength <= index)
-                {
-                    return ' ';
-                }
-                return textDocument.GetCharAt(index);
+                return getCharAt(index);
             }
             finally
             {
@@ -460,8 +428,8 @@ namespace CodeEditor2.CodeEditor
                 if (this.TextFile == null) throw new Exception("TextFile is null");
                 var clone = new CodeDocument(this.TextFile, this.createString());
                 clone.CopyColorMarkFrom(this);
-                clone.caretIndex = this.caretIndex;
-                clone.selectionStart = this.selectionStart;
+                clone._caretIndex = this._caretIndex;
+                clone._selectionStart = this._selectionStart;
                 clone.selectionLast = this.selectionLast;
                 clone.CleanVersion = this.CleanVersion;
                 clone.Version = this.Version;
@@ -701,12 +669,12 @@ namespace CodeEditor2.CodeEditor
             {
                 headIndex = index;
                 length = 0;
-                char ch = GetCharAt(index);
+                char ch = getCharAt(index);
                 if (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t') return;
 
                 while (headIndex > 0)
                 {
-                    ch = GetCharAt(headIndex);
+                    ch = getCharAt(headIndex);
                     if (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t')
                     {
                         break;
@@ -715,9 +683,9 @@ namespace CodeEditor2.CodeEditor
                 }
                 headIndex++;
 
-                while (headIndex + length < Length)
+                while (headIndex + length < _length)
                 {
-                    ch = GetCharAt(headIndex + length);
+                    ch = getCharAt(headIndex + length);
                     if (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t')
                     {
                         break;
