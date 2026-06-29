@@ -33,10 +33,11 @@ namespace CodeEditor2.CodeEditor.Parser
         {
             LoadParse,
             BackgroundParse,
-            ActivatedParse,
+//            ActivatedParse,
             EditParse,
-            PostEditParse
-        }
+//            PostEditParse
+            SingleHierParse
+        }   
 
         public virtual async Task ParseAsync()
         {

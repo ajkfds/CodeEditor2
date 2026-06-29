@@ -119,13 +119,10 @@ namespace CodeEditor2.CodeEditor
         {
             get
             {
-                Data.TextFile? ret;
-                docLock.EnterReadLock();
+                 docLock.EnterReadLock();
                 try
                 {
-                    if (textFileRef == null) return null;
-                    if (!textFileRef.TryGetTarget(out ret)) return null;
-                    return ret;
+                    return _textFile;
                 }
                 finally
                 {
@@ -133,6 +130,18 @@ namespace CodeEditor2.CodeEditor
                 }
             }
         }
+        internal Data.TextFile? _textFile
+        {
+            get
+            {
+                Data.TextFile? ret;
+                if (textFileRef == null) return null;
+                if (!textFileRef.TryGetTarget(out ret)) return null;
+                return ret;
+            }
+        }
+
+
         private void TextDocument_Changing(object? sender, DocumentChangeEventArgs e)
         {
             Version++;
@@ -464,14 +473,18 @@ namespace CodeEditor2.CodeEditor
             docLock.EnterWriteLock();
             try
             {
-                if (textDocument == null) return;
-                textDocument.Replace(index, replaceLength, text);
-                TextColors.SetColorAt(index, colorIndex, text.Length);
+                replace(index, replaceLength,colorIndex, text);
             }
             finally
             {
                 docLock.ExitWriteLock();
             }
+        }
+        private void replace(int index, int replaceLength, byte colorIndex, string text)
+        {
+            if (textDocument == null) return;
+            textDocument.Replace(index, replaceLength, text);
+            TextColors.SetColorAt(index, colorIndex, text.Length);
         }
 
         public int GetLineAt(int index)
@@ -479,15 +492,19 @@ namespace CodeEditor2.CodeEditor
             docLock.EnterReadLock();
             try
             {
-                if (textDocument == null) return 0;
-                if (index > textDocument.TextLength) return 0;
-                return textDocument.GetLineByOffset(index).LineNumber;
+                return getLineAt(index);
             }
             finally {
                 docLock.ExitReadLock(); 
             }
         }
 
+        private int getLineAt(int index)
+        {
+            if (textDocument == null) return 0;
+            if (index > textDocument.TextLength) return 0;
+            return textDocument.GetLineByOffset(index).LineNumber;
+        }
 
         public int GetLineStartIndex(int line)
         {
@@ -502,7 +519,7 @@ namespace CodeEditor2.CodeEditor
             }
         }
 
-        private int getLineStartIndex(int line)
+        internal int getLineStartIndex(int line)
         {
             if (textDocument == null) return 0;
             TextLocation location = new TextLocation(line, 0);
@@ -521,7 +538,7 @@ namespace CodeEditor2.CodeEditor
                 docLock.ExitReadLock();
             }
         }
-        private int getLineLength(int line)
+        internal int getLineLength(int line)
         {
             if (textDocument == null) return 0;
             return textDocument.GetLineByNumber(line).Length;
@@ -558,7 +575,7 @@ namespace CodeEditor2.CodeEditor
             {
                 if (textDocument == null) return -1;
                 if (targetString.Length == 0) return -1;
-                for (int i = startIndex; i < Length - targetString.Length; i++)
+                for (int i = startIndex; i < _length - targetString.Length; i++)
                 {
                     if (targetString[0] != textDocument.GetCharAt(i)) continue;
                     bool match = true;
@@ -586,7 +603,7 @@ namespace CodeEditor2.CodeEditor
             try
             {
                 if (targetString.Length == 0) return -1;
-                if (startIndex > Length - targetString.Length) startIndex = Length - targetString.Length;
+                if (startIndex > _length - targetString.Length) startIndex = _length - targetString.Length;
 
                 for (int i = startIndex; i >= 0; i--)
                 {
