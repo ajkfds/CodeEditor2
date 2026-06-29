@@ -38,6 +38,8 @@ public partial class ChatControl : UserControl
         DataContext = this;
         InitializeComponent();
 
+        itemsRepeater = new ItemsRepeater();
+
         // ChatScrollViewer is auto-generated from XAML (Name="ChatScrollViewer")
         // Set up scrollViewer with itemsRepeater
         ChatScrollViewer.Content = itemsRepeater;

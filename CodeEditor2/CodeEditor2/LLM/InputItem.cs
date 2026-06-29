@@ -14,9 +14,10 @@ namespace CodeEditor2.LLM
     {
         public InputItem()
         {
-            Content = StackPanel;
+            Content = StackPanelBorder;
             TextEditor.Margin = new Thickness(10, 5, 10, 5);
 
+            StackPanelBorder.Child = StackPanel;
             StackPanel.Children.Add(TextEditor);
 
             HorizontalGridConstructor hgrid = new HorizontalGridConstructor();
@@ -98,10 +99,19 @@ namespace CodeEditor2.LLM
             set => SetValue(SelectionBrushProperty, value);
         }
 
+        public Border StackPanelBorder = new Border()
+        {
+            Background = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 30, 30, 30)),
+            BorderBrush = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 10, 10, 10)),
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(10, 5, 10, 5),
+            Padding = new Thickness(0)
+        };
+
         public StackPanel StackPanel = new StackPanel()
         {
             Orientation = Avalonia.Layout.Orientation.Vertical,
-            Margin = new Thickness(10, 5, 10, 5),
+            Margin = new Thickness(0),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
         };
 
