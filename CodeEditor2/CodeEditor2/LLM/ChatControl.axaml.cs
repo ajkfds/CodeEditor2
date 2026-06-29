@@ -1,8 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using CodeEditor2.CodeEditor.PopupMenu;
+using CodeEditor2.Views;
 using Microsoft.Extensions.AI;
 using ReactiveUI;
 using System;
@@ -32,26 +35,19 @@ public partial class ChatControl : UserControl
     /// </summary>
     public ChatControl()
     {
-        Content = scrollViewer;
+        DataContext = this;
+        InitializeComponent();
 
+        // ChatScrollViewer is auto-generated from XAML (Name="ChatScrollViewer")
+        // Set up scrollViewer with itemsRepeater
+        ChatScrollViewer.Content = itemsRepeater;
+        itemsRepeater.ItemsSource = Items;
 
         var stackLayout = new Avalonia.Layout.StackLayout
         {
             Spacing = 8,
         };
-
-        itemsRepeater = new ItemsRepeater()
-        {
-            ItemsSource = Items,
-            Layout = stackLayout
-        };
-
-        scrollViewer.Content = itemsRepeater;
-        itemsRepeater.ItemsSource = Items;
-
-
-        DataContext = this;
-        InitializeComponent();
+        itemsRepeater.Layout = stackLayout;
 
         // Skip initialization in design mode
         if (Design.IsDesignMode)
@@ -70,7 +66,7 @@ public partial class ChatControl : UserControl
                 inputItem.SendButton.Focus();
             }),
         };
-        inputItem.TextBox.KeyBindings.Add(keyBinding);
+        inputItem.TextEditor.KeyBindings.Add(keyBinding);
 
         // Register click event handlers for various buttons
         inputItem.SendButton.Click += SendButton_Click;
@@ -79,20 +75,146 @@ public partial class ChatControl : UserControl
         inputItem.LoadButton.Click += LoadButton_Click;
         inputItem.AbortButton.Click += AbortButton_Click;
 
+        // Register auto-complete request handler
+        inputItem.AutoCompleteRequested += InputItem_AutoCompleteRequested;
+
         // Focus textbox on initialization
-        inputItem.TextBox.Focus();
+        inputItem.TextEditor.Focus();
 
         // Register for ListBox Loaded event
         itemsRepeater.Loaded += ListBox0_Loaded;
     }
 
-    private Avalonia.Controls.ItemsRepeater itemsRepeater;
-
-    // ScrollViewer and auto-scroll control fields
-    private ScrollViewer scrollViewer = new ScrollViewer()
+    /// <summary>
+    /// Handle auto-complete request from InputItem
+    /// Opens autocomplete popup with candidates from current TextFile
+    /// </summary>
+    private void InputItem_AutoCompleteRequested(object? sender, EventArgs e)
     {
-        VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
-    };
+        // Get the current text file from Global.codeView
+        var codeView = Global.codeView;
+        if (codeView == null) return;
+        if (codeView.TextFile == null) return;
+        if (codeView.CodeDocument == null) return;
+
+        // Get caret position in the chat input
+        int caretOffset = inputItem.TextEditor.CaretOffset;
+        if (caretOffset == 0) return;
+
+        // Get the text before caret to determine the word to complete
+        string text = inputItem.TextEditor.Text ?? "";
+        if (string.IsNullOrEmpty(text)) return;
+
+        // Find the start of the word at caret
+        int wordStart = caretOffset - 1;
+        while (wordStart >= 0 && IsWordChar(text[wordStart]))
+        {
+            wordStart--;
+        }
+        wordStart++;
+
+        // Get the candidate word
+        string candidateWord = text.Substring(wordStart, caretOffset - wordStart);
+
+        // Get autocomplete items from the TextFile
+        int index = codeView.CodeDocument.CaretIndex;
+        var autocompleteItems = codeView.TextFile.GetAutoCompleteItems(index, out string? cantidateText);
+        if (autocompleteItems == null || autocompleteItems.Count == 0) return;
+
+        // Filter items by candidate word
+        List<ToolItem> toolItems = new List<ToolItem>();
+        foreach (var item in autocompleteItems)
+        {
+            if (string.IsNullOrEmpty(candidateWord) || item.Text.StartsWith(candidateWord))
+            {
+                item.Assign(codeView.CodeDocument);
+                toolItems.Add(item);
+            }
+        }
+
+        if (toolItems.Count == 0) return;
+
+        // Open the popup menu at the chat input location
+        OpenAutoComplete(toolItems, candidateWord);
+    }
+
+    /// <summary>
+    /// Check if character is part of a word (for word detection)
+    /// </summary>
+    private bool IsWordChar(char c)
+    {
+        return char.IsLetterOrDigit(c) || c == '_' || c == '$';
+    }
+
+    /// <summary>
+    /// Open autocomplete popup with the given candidates
+    /// </summary>
+    private void OpenAutoComplete(List<ToolItem> candidates, string candidateWord)
+    {
+        PopupMenuFlyout? flyout = FlyoutBase.GetAttachedFlyout(ChatScrollViewer) as PopupMenuFlyout;
+        if (flyout == null) return;
+        if (flyout.IsOpen) return;
+
+        // Get the position of the chat input
+        var textEditor = inputItem.TextEditor;
+        var caretRect = textEditor.TextArea.Caret.CalculateCaretRectangle();
+
+        PopupMenuItems.Clear();
+        foreach (ToolItem item in candidates)
+        {
+            PopupMenuItems.Add(item);
+        }
+
+        flyout.ShowMode = FlyoutShowMode.Transient;
+        flyout.Placement = PlacementMode.AnchorAndGravity;
+        flyout.VerticalOffset = caretRect.Top + caretRect.Height;
+        flyout.HorizontalOffset = caretRect.Left;
+        flyout.PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight;
+        flyout.PlacementAnchor = Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.TopLeft;
+
+        var popupMenuView = (PopupMenuView)flyout.Content;
+        popupMenuView.TextBox0.IsVisible = false;
+
+        // Set up the selection handler
+        popupMenuView.Selected = (selectedItem) =>
+        {
+            if (selectedItem != null)
+            {
+                // Insert the selected item's text
+                InsertAutoCompleteText(selectedItem.Text, candidateWord);
+            }
+            flyout.Hide();
+        };
+
+        flyout.ShowAt(ChatScrollViewer);
+    }
+
+    /// <summary>
+    /// Insert the selected autocomplete text into the editor
+    /// </summary>
+    private void InsertAutoCompleteText(string fullText, string candidateWord)
+    {
+        var textEditor = inputItem.TextEditor;
+        string text = textEditor.Text ?? "";
+        int caretOffset = textEditor.CaretOffset;
+
+        // Find the start of the word to replace
+        int wordStart = caretOffset - candidateWord.Length;
+        if (wordStart < 0) wordStart = 0;
+
+        // Replace the candidate word with the full text
+        textEditor.Text = text.Substring(0, wordStart) + fullText + text.Substring(caretOffset);
+
+        // Set caret position after the inserted text
+        textEditor.CaretOffset = wordStart + fullText.Length;
+    }
+
+    /// <summary>
+    /// List of popup menu items for autocomplete
+    /// </summary>
+    private List<ToolItem> PopupMenuItems = new List<ToolItem>();
+
+    private Avalonia.Controls.ItemsRepeater itemsRepeater;
 
     /// <summary>
     /// Flag indicating whether system is scrolling
@@ -116,13 +238,13 @@ public partial class ChatControl : UserControl
     private void ListBox0_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         // Handle scroll extent change (for auto-scroll)
-        scrollViewer.GetObservable(ScrollViewer.ExtentProperty).Subscribe(_ =>
+        ChatScrollViewer.GetObservable(ScrollViewer.ExtentProperty).Subscribe(_ =>
         {
             if (autoScroll)
             {
                 _isInternalScrolling = true; // Signal that system is about to scroll
                 // Scroll to bottom
-                scrollViewer.Offset = new Vector(scrollViewer.Offset.X, double.MaxValue);
+                ChatScrollViewer.Offset = new Vector(ChatScrollViewer.Offset.X, double.MaxValue);
 
                 // Reset flag when render cycle completes
                 Dispatcher.UIThread.Post(() => _isInternalScrolling = false, DispatcherPriority.Loaded);
@@ -130,14 +252,14 @@ public partial class ChatControl : UserControl
         });
 
         // Handle scroll position change
-        scrollViewer.ScrollChanged += (s, ev) =>
+        ChatScrollViewer.ScrollChanged += (s, ev) =>
         {
             // Skip manual check if scrolling is caused by system (extent change)
             if (_isInternalScrolling) return;
 
             // Threshold (in pixels) for determining if near bottom
             const double threshold = 30; // Add some buffer
-            bool isAtBottom = scrollViewer.Offset.Y >= (scrollViewer.Extent.Height - scrollViewer.Viewport.Height - threshold);
+            bool isAtBottom = ChatScrollViewer.Offset.Y >= (ChatScrollViewer.Extent.Height - ChatScrollViewer.Viewport.Height - threshold);
 
             if (!isAtBottom)
             {
@@ -587,7 +709,7 @@ public partial class ChatControl : UserControl
 
         // Create and display command item
         MarkdownTextItem commandItem = new MarkdownTextItem(command, messageType);
-        inputItem.TextBox.Text = "";
+        inputItem.TextEditor.Text = "";
         commandItem.TextColor = commandColor;
         Items.Insert(Items.Count - 1, commandItem);
         if (messageType == MarkdownTextItem.MessageType.functionCallReturn) commandItem.Collapsed = true;
@@ -661,7 +783,7 @@ public partial class ChatControl : UserControl
                         Dispatcher.UIThread.Post(() =>
                         {
                             itemsRepeater.UpdateLayout();
-                            scrollViewer?.ScrollToEnd();
+                            ChatScrollViewer?.ScrollToEnd();
                             // Reset flag after scroll completes
                             _isInternalScrolling = false;
                         }, DispatcherPriority.Render); // Immediate reflection at Render priority
@@ -822,7 +944,7 @@ public partial class ChatControl : UserControl
     /// <returns>Async enumerable of response text</returns>
     public async IAsyncEnumerable<string> GetAsyncCollectionChatResult(string command, IList<AITool>? tools, [EnumeratorCancellation] CancellationToken cancellation)
     {
-        inputItem.TextBox.Text = command;
+        inputItem.TextEditor.Text = command;
         await complete(command, tools, cancellation, MarkdownTextItem.MessageType.command);
         if (lastResultItem == null) yield break;
         yield return lastResultItem.Text;
@@ -1007,14 +1129,14 @@ public partial class ChatControl : UserControl
     {
         try
         {
-            string? command = inputItem.TextBox.Text;
+            string? command = inputItem.TextEditor.Text;
             if (command == null) return;
 
             // Process user input
             await UserComplete(command);
 
             // Focus textbox to maintain BM
-            inputItem.TextBox.Focus();
+            inputItem.TextEditor.Focus();
         }
         catch (Exception exception)
         {

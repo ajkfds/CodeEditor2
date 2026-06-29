@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using AvaloniaEdit;
 using CodeEditor2.Tools;
 using System;
 using System.Collections.ObjectModel;
@@ -14,10 +15,9 @@ namespace CodeEditor2.LLM
         public InputItem()
         {
             Content = StackPanel;
-            TextBox.Margin = new Thickness(10, 5, 10, 5);
-            TextBox.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
+            TextEditor.Margin = new Thickness(10, 5, 10, 5);
 
-            StackPanel.Children.Add(TextBox);
+            StackPanel.Children.Add(TextEditor);
 
             HorizontalGridConstructor hgrid = new HorizontalGridConstructor();
             hgrid.AppendContol(ModelSelector, null);
@@ -61,7 +61,7 @@ namespace CodeEditor2.LLM
                 SendButton.Background = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 20, 20, 20));
             };
 
-            TextBox.KeyDown += (sender, e) =>
+            TextEditor.KeyDown += (sender, e) =>
             {
                 if (e.Key == Avalonia.Input.Key.Left || e.Key == Avalonia.Input.Key.Right)
                 {
@@ -70,7 +70,7 @@ namespace CodeEditor2.LLM
             };
 
             // Ctrl+SpaceでAutoCompleteを起動
-            TextBox.KeyDown += TextBox_KeyDown;
+            TextEditor.KeyDown += TextEditor_KeyDown;
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace CodeEditor2.LLM
         /// <summary>
         /// Handle key down events for Ctrl+Space auto-complete
         /// </summary>
-        private void TextBox_KeyDown(object? sender, KeyEventArgs e)
+        private void TextEditor_KeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Space && e.KeyModifiers.HasFlag(KeyModifiers.Control))
             {
@@ -91,7 +91,7 @@ namespace CodeEditor2.LLM
         }
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
-            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrush));
+            AvaloniaProperty.Register<TextEditor, IBrush?>(nameof(SelectionBrush));
         public IBrush? SelectionBrush
         {
             get => GetValue(SelectionBrushProperty);
@@ -105,13 +105,14 @@ namespace CodeEditor2.LLM
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
         };
 
-        public TextBox TextBox = new TextBox()
+        public TextEditor TextEditor = new TextEditor()
         {
             Margin = new Thickness(10, 5, 10, 5),
-            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
-            AcceptsReturn = true,
-            FontFamily = new Avalonia.Media.FontFamily("Yu Gothic UI, Meiryo, MS Gothic, sans-serif")
+            FontFamily = new Avalonia.Media.FontFamily("Yu Gothic UI, Meiryo, MS Gothic, sans-serif"),
+            FontSize = 12,
+            HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
         };
 
         public StackPanel BottomPanel = new StackPanel()
