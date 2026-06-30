@@ -32,7 +32,6 @@ namespace CodeEditor2.Data
 
 
             folder.Parent = parent;
-            //project.RegisterProjectItem(folder);
 
             return folder;
         }

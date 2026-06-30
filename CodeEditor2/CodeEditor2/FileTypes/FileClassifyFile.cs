@@ -2,6 +2,9 @@ using System.Threading.Tasks;
 
 namespace CodeEditor2.FileTypes
 {
+    /// <summary>
+    /// project rootに配置した".fileClassify"ファイルはファイル種別判定をオーバーライドするために使用できる。
+    /// </summary>
     public class FileClassifyFile : CodeEditor2.FileTypes.FileType
     {
         public override string ID { get => "FileClassifyFile"; }

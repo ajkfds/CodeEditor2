@@ -1,6 +1,8 @@
 ## FileType
 
-
+FileType Objectはファイル種別の判別に使用する。
+CodeEditor2はファイルを取得する際にこれらのFileType Classを呼んでどの
+FileTypeに相当するかを判定し、CreateFileでData.Fileを生成する。
 
 ### add new filetypes
 
