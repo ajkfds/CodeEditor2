@@ -247,7 +247,9 @@ namespace CodeEditor2.LLM.Tools
             return string.Empty;
         }
 
-        // 2つの文字列のレーベンシュタイン距離（編集距離）を計算する標準的なアルゴリズム
+        // Myers' Bit-Vector Algorithm for Levenshtein distance
+        // O(n * m / w) where w is word size (64 bits), significantly faster than standard DP
+        // Reference: "A Fast Bit-Vector Algorithm for Approximate String Matching" by Myers
         private int ComputeLevenshteinDistance(string s, string t)
         {
             if (string.IsNullOrEmpty(s)) return t?.Length ?? 0;
@@ -255,22 +257,110 @@ namespace CodeEditor2.LLM.Tools
 
             int n = s.Length;
             int m = t.Length;
-            int[,] d = new int[n + 1, m + 1];
 
-            for (int i = 0; i <= n; d[i, 0] = i++) { }
-            for (int j = 0; j <= m; d[0, j] = j++) { }
+            // For very short strings, use standard DP for efficiency
+            if (m <= 0 || n <= 0)
+            {
+                return m > 0 ? m : n;
+            }
+
+            // Use standard DP for short strings (faster due to less overhead)
+            if (m <= 64 || n <= 64)
+            {
+                return ComputeLevenshteinDistanceDP(s, t);
+            }
+
+            // Myers' bit-vector algorithm for longer strings
+            // Precompute character bitmasks for pattern string s
+            ulong[] charMasks = new ulong[256];
+            for (int i = 0; i < 256; i++)
+            {
+                charMasks[i] = 0;
+            }
+
+            for (int i = 0; i < n; i++)
+            {
+                char c = s[i];
+                charMasks[(byte)c] |= (1UL << i);
+            }
+
+            // Initialize
+            ulong Pv = ~0UL;           // Previous vector
+            ulong Mv = 0UL;            // Match vector
+            ulong Score = (ulong)m;    // Current score
+
+            // Main loop
+            for (int j = 0; j < m; j++)
+            {
+                char tChar = t[j];
+                ulong charMask = charMasks[(byte)tChar];
+
+                // Compute the new vectors
+                // Eq = charMask; (characters that match)
+                // Xv = Mv | ~ (Eq | currentRow);
+                // Xh = (((Eq & Pv) + Pv) ^ Pv) | Eq;
+                
+                ulong Eq = charMask;
+                ulong Xv = Mv | ~(Eq | ((ulong)Score - 1));
+                ulong Xh = (((Eq & Pv) + Pv) ^ Pv) | Eq;
+
+                // Update Mv (horizontal vectors)
+                ulong Ph = Mv | ~(Xh | ((ulong)Score));
+                ulong Mh = Score + (~Xh & ((ulong)Score - 1));
+
+                // Compute score for this column
+                // Score = (Score + 1) & ~Mh | Xh ^ Pv ^ Mv;
+                if ((Mh & (1UL << (n - 1))) != 0)
+                    Score--;
+                if ((Ph & (1UL << (n - 1))) != 0)
+                    Score++;
+
+                // Update vectors for next iteration
+                // Pv = (Mh << 1) | ~(Xh << 1 | Eq | ((ulong)Score - 1));
+                // Mv = (Xh << 1) & (Mh << 1);
+                Pv = (Mh << 1) | ~(Xh << 1 | Eq | ((ulong)Score - 1));
+                Mv = (Xh << 1) & (Mh << 1);
+            }
+
+            return (int)Score;
+        }
+
+        // Standard DP algorithm for short strings (optimal for small inputs)
+        private int ComputeLevenshteinDistanceDP(string s, string t)
+        {
+            int n = s.Length;
+            int m = t.Length;
+
+            // 1次元配列2つで2次元配列の代用（row-swapping technique）
+            int[] previousRow = new int[m + 1];
+            int[] currentRow = new int[m + 1];
+
+            // 初期化: previousRow = [0, 1, 2, ..., m]
+            for (int j = 0; j <= m; j++)
+            {
+                previousRow[j] = j;
+            }
 
             for (int i = 1; i <= n; i++)
             {
+                currentRow[0] = i;
+
                 for (int j = 1; j <= m; j++)
                 {
                     int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
-                    d[i, j] = Math.Min(
-                        Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
-                        d[i - 1, j - 1] + cost);
+                    currentRow[j] = Math.Min(
+                        Math.Min(previousRow[j] + 1, currentRow[j - 1] + 1),
+                        previousRow[j - 1] + cost);
                 }
+
+                // 行を交換
+                int[] temp = previousRow;
+                previousRow = currentRow;
+                currentRow = temp;
             }
-            return d[n, m];
+
+            // 最後の交換後のpreviousRowが結果を含む
+            return previousRow[m];
         }
     }
 }
