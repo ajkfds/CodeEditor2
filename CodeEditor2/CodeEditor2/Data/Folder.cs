@@ -222,15 +222,35 @@ namespace CodeEditor2.Data
         {
             List<string> absoluteFilePaths = new List<string>();
             List<string> absoluteFolderPaths = new List<string>();
+
+            // Get base path for constructing absolute paths
+            string basePath = project.GetAbsolutePath(RelativePath);
+
             foreach (FileIO.FileNode subNode in node.Nodes.Values)
             {
                 if (subNode.IsDirectory)
                 {
-                    absoluteFolderPaths.Add(subNode.Name);
+                    // Use FileSystemInfo.FullName if available, otherwise construct from basePath
+                    if (subNode.FileSystemInfo != null)
+                    {
+                        absoluteFolderPaths.Add(subNode.FileSystemInfo.FullName);
+                    }
+                    else
+                    {
+                        absoluteFolderPaths.Add(System.IO.Path.Combine(basePath, subNode.Name));
+                    }
                 }
                 else
                 {
-                    absoluteFilePaths.Add(subNode.Name);
+                    // Use FileSystemInfo.FullName if available, otherwise construct from basePath
+                    if (subNode.FileSystemInfo != null)
+                    {
+                        absoluteFilePaths.Add(subNode.FileSystemInfo.FullName);
+                    }
+                    else
+                    {
+                        absoluteFilePaths.Add(System.IO.Path.Combine(basePath, subNode.Name));
+                    }
                 }
             }
             await updateItems(absoluteFilePaths, absoluteFolderPaths);
