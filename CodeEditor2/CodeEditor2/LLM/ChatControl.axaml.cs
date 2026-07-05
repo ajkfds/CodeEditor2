@@ -260,7 +260,7 @@ public partial class ChatControl : UserControl
             if (_isInternalScrolling) return;
 
             // Threshold (in pixels) for determining if near bottom
-            const double threshold = 30; // Add some buffer
+            const double threshold = 10; // Add some buffer
             bool isAtBottom = ChatScrollViewer.Offset.Y >= (ChatScrollViewer.Extent.Height - ChatScrollViewer.Viewport.Height - threshold);
 
             if (!isAtBottom)

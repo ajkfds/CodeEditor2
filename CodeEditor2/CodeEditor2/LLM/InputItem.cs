@@ -14,10 +14,10 @@ namespace CodeEditor2.LLM
     {
         public InputItem()
         {
-            Content = StackPanelBorder;
+            Content = StackPanel;// StackPanelBorder;
             TextEditor.Margin = new Thickness(10, 5, 10, 5);
 
-            StackPanelBorder.Child = StackPanel;
+//            StackPanelBorder.Child = StackPanel;
             StackPanel.Children.Add(TextEditor);
 
             HorizontalGridConstructor hgrid = new HorizontalGridConstructor();
@@ -62,14 +62,6 @@ namespace CodeEditor2.LLM
                 SendButton.Background = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 20, 20, 20));
             };
 
-            TextEditor.KeyDown += (sender, e) =>
-            {
-                if (e.Key == Avalonia.Input.Key.Left || e.Key == Avalonia.Input.Key.Right)
-                {
-                    e.Handled = true;
-                }
-            };
-
             // Ctrl+SpaceでAutoCompleteを起動
             TextEditor.KeyDown += TextEditor_KeyDown;
         }
@@ -84,6 +76,11 @@ namespace CodeEditor2.LLM
         /// </summary>
         private void TextEditor_KeyDown(object? sender, KeyEventArgs e)
         {
+            if (e.Key == Avalonia.Input.Key.Left || e.Key == Avalonia.Input.Key.Right)
+            {
+                e.Handled = true;
+                return;
+            }
             if (e.Key == Key.Space && e.KeyModifiers.HasFlag(KeyModifiers.Control))
             {
                 e.Handled = true;
@@ -99,20 +96,21 @@ namespace CodeEditor2.LLM
             set => SetValue(SelectionBrushProperty, value);
         }
 
-        public Border StackPanelBorder = new Border()
-        {
-            Background = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 30, 30, 30)),
-            BorderBrush = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 10, 10, 10)),
-            BorderThickness = new Thickness(1),
-            Margin = new Thickness(10, 5, 10, 5),
-            Padding = new Thickness(0)
-        };
+        //public Border StackPanelBorder = new Border()
+        //{
+        //    Background = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 40, 40, 40)),
+        //    BorderBrush = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 200, 200, 200)),
+        //    BorderThickness = new Thickness(1),
+        //    Margin = new Thickness(10, 5, 10, 5),
+        //    Padding = new Thickness(0),
+        //    CornerRadius = new CornerRadius(5)
+        //};
 
         public StackPanel StackPanel = new StackPanel()
         {
             Orientation = Avalonia.Layout.Orientation.Vertical,
             Margin = new Thickness(0),
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+           VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
         };
 
         public TextEditor TextEditor = new TextEditor()
@@ -122,7 +120,13 @@ namespace CodeEditor2.LLM
             FontFamily = new Avalonia.Media.FontFamily("Yu Gothic UI, Meiryo, MS Gothic, sans-serif"),
             FontSize = 12,
             HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
-            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+
+            Background = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 40, 40, 40)),
+            BorderBrush = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 200, 200, 200)),
+            BorderThickness = new Thickness(1),
+            Padding = new Thickness(5),
+            CornerRadius = new CornerRadius(5)
         };
 
         public StackPanel BottomPanel = new StackPanel()

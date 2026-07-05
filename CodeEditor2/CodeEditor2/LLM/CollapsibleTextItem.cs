@@ -140,10 +140,6 @@ namespace CodeEditor2.LLM
             CollapseExpandButton.Click += CollapseExpandButton_Click;
         }
 
-        private void CopyAllTextMenuItem_Click1(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
 
         private void CopyAllTextMenuItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {

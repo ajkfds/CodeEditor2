@@ -92,6 +92,7 @@ namespace CodeEditor2.LLM.Tools
                     string relativePath = Path.GetRelativePath(project.RootPath, entry);
                     bool isDir = Directory.Exists(entry);
                     sb.AppendLine($"{(isDir ? "[DIR] " : "[FILE]")} {relativePath}");
+                    if (sb.Length > 20000) break;
                 }
 
                 return sb.Length > 20000
