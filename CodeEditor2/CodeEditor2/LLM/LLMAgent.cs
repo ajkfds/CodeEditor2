@@ -78,6 +78,8 @@ namespace CodeEditor2.LLM
                     try
                     {
                         string toolName = match.Groups["tool"].Value;
+                        if (toolName == "reasoning" || toolName == "think") continue;
+
                         AITool? selectedTool = Tools.Where((tool) => { return tool.Name == toolName; }).First();
                         if (selectedTool == null) return null;
 
@@ -110,6 +112,7 @@ namespace CodeEditor2.LLM
                         chatControl?.ToolCallEnded(match.Groups["tool"].Value, "ERROR");
                     }
                 }
+                if (sb.Length == 0) return null;
                 return sb.ToString();
             }
             return null;
