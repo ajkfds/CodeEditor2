@@ -28,6 +28,8 @@ namespace CodeEditor2.Data
             RelativePath = relativePath;
             Project = this;
             FileClassify = new FileClassify(this);
+            ParseRuleDefinition = new ParseRuleDefinition(this);
+            ParseRule = new ParseRule(this);
         }
 
         public Dictionary<string, ProjectProperty> ProjectProperties = new Dictionary<string, ProjectProperty>();
@@ -44,6 +46,38 @@ namespace CodeEditor2.Data
         }
 
         public FileClassify FileClassify { get; set; }
+        public ParseRuleDefinition ParseRuleDefinition { get; set; }
+        public ParseRule ParseRule { get; set; }
+
+        /// <summary>
+        /// 指定されたファイルに適用されるParseRuleを取得
+        /// </summary>
+        /// <param name="relativePath">ファイルの相対パス</param>
+        /// <param name="defaultRule">デフォルトのRule名</param>
+        /// <returns>適用するParseRuleDefinition.Rule（見つからない場合はnull）</returns>
+        public ParseRuleDefinition.Rule? GetParseRule(string relativePath, string? defaultRule = null)
+        {
+            // .parseRuleファイルからRule名を取得
+            string? ruleName = null;
+            if (ParseRule.HasDefinition())
+            {
+                ruleName = ParseRule.GetParseRule(relativePath, defaultRule);
+            }
+
+            // Rule名が取得できなかった場合はデフォルトを使用
+            if (string.IsNullOrEmpty(ruleName))
+            {
+                ruleName = defaultRule;
+            }
+
+            // Rule名が取得できれば、定義からオプションを取得
+            if (!string.IsNullOrEmpty(ruleName) && ParseRuleDefinition.HasDefinition())
+            {
+                return ParseRuleDefinition.GetRule(ruleName);
+            }
+
+            return null;
+        }
 
         // setup object to convert project to json file
         public class Setup

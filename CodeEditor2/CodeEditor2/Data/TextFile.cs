@@ -705,6 +705,18 @@ namespace CodeEditor2.Data
         /// <returns>A DocumentParser instance, or null if not supported.</returns>
         public override DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token)
         {
+            return CreateDocumentParser(parseMode, token, null);
+        }
+
+        /// <summary>
+        /// Creates a document parser for the specified parse mode with optional ParseRule override.
+        /// </summary>
+        /// <param name="parseMode">The parse mode.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <param name="parseRuleOverride">Optional ParseRule to override default.</param>
+        /// <returns>A DocumentParser instance, or null if not supported.</returns>
+        public virtual DocumentParser? CreateDocumentParser(DocumentParser.ParseModeEnum parseMode, System.Threading.CancellationToken? token, ParseRuleDefinition.Rule? parseRuleOverride)
+        {
             return null;
         }
 
