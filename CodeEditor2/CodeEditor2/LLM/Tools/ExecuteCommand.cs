@@ -21,7 +21,7 @@ namespace CodeEditor2.LLM.Tools
             ```
             """;
 
-        private static readonly HashSet<string> AllowedCommands = new() { "dotnet", "git", "ls", "dir" };
+        private static readonly HashSet<string> AllowedCommands = new() { "dotnet", "git", "dir" };
 
 
         [Description("""

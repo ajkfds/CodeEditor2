@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using System;
 using System.Threading.Tasks;
@@ -263,7 +264,7 @@ namespace CodeEditor2.LLM
                 {
                     spinnerImage.IsVisible = true;
                     spinnerImage.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/spinner"+ spinnerCount.ToString() + ".svg", Avalonia.Media.Colors.Cyan);
-                    spinnerCount = (spinnerCount + 1) % 4; // Cycle through 8 spinner images
+                    spinnerCount = (spinnerCount + 1) % 3; // Cycle through 8 spinner images
                 }
                 else
                 {

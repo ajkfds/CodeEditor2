@@ -85,7 +85,7 @@ namespace CodeEditor2.LLM
                         if (selectedTool == null) return null;
 
                         // Notify tool call start
-                        chatControl?.ToolCallStarted(toolName);
+                        chatControl?.ToolCallStarted();
                         
 
                         AIFunctionArguments args = new AIFunctionArguments();
@@ -96,26 +96,48 @@ namespace CodeEditor2.LLM
                         {
                             args.Add(p.Groups["key"].Value, p.Groups["value"].Value);
                         }
-                        Progress<string> progress = new Progress<string>((message) => { chatControl?.ToolCallStarted(toolName); });
+                        Progress<string> progress = new Progress<string>((message) => { chatControl?.ToolCallStarted(); });
                         args.Add("progress", progress);
 
                         AIFunction? aIFunction = selectedTool as AIFunction;
+                        CancellationTokenSource spinner_cts = new CancellationTokenSource();
+                        CancellationToken spinner_cancel = spinner_cts.Token;
                         if (aIFunction == null) return "illgal function call";
+
+                        Task task = Task.Run(async () => {
+                            try
+                            {
+                                while (!spinner_cancel.IsCancellationRequested)
+                                {
+                                    await Task.Delay(100, spinner_cancel); // 100ms待機を非同期で行う
+                                    chatControl?.ToolCallStarted();
+                                }
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                // キャンセル時は正常終了として扱う
+                            }
+                        }, spinner_cancel);
+
                         object? ret = await aIFunction.InvokeAsync(args, cancellationToken);
+
+                        await spinner_cts.CancelAsync();
+                        await task; // これなら例外を気にせず待てる
+                        task.Dispose();
+                        
                         string? s_ret = ret?.ToString();
                         if (s_ret != null)
                         {
                             sb.AppendLine(s_ret);
                         }
-
-                        // Notify tool call end
-                        chatControl?.ToolCallEnded(toolName, s_ret ?? "");
                     }
                     catch
                     {
                         sb.AppendLine("failed to parse or execute function call:" + match.Value);
-                        // Notify tool call end (with error)
-                        chatControl?.ToolCallEnded(match.Groups["tool"].Value, "ERROR");
+                    }
+                    finally
+                    {
+                        chatControl?.ToolCallEnded();
                     }
                 }
                 if (sb.Length == 0) return null;

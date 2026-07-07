@@ -444,7 +444,7 @@ public partial class ChatControl : UserControl
     /// Shows spinner in the result item and logs the start
     /// </summary>
     /// <param name="toolName">Name of the tool being executed</param>
-    public void ToolCallStarted(string toolName)
+    public void ToolCallStarted()
     {
         isToolCallInProgress = true;
         Dispatcher.UIThread.Post(() =>
@@ -454,7 +454,6 @@ public partial class ChatControl : UserControl
                 lastResultItem.ShowSpinner(true);
             }
         });
-        CodeEditor2.Controller.AppendLog($"[Tool Call] Started: {toolName}", Avalonia.Media.Colors.Cyan);
     }
 
     /// <summary>
@@ -463,17 +462,16 @@ public partial class ChatControl : UserControl
     /// </summary>
     /// <param name="toolName">Name of the tool that finished</param>
     /// <param name="result">Result of the tool execution</param>
-    public void ToolCallEnded(string toolName, string result)
+    public void ToolCallEnded()
     {
         isToolCallInProgress = false;
-        Dispatcher.UIThread.Post(() =>
+        Dispatcher.UIThread.Invoke(() =>
         {
             if (lastResultItem != null)
             {
                 lastResultItem.ShowSpinner(false);
             }
         });
-        CodeEditor2.Controller.AppendLog($"[Tool Call] Finished: {toolName}", Avalonia.Media.Colors.LightGreen);
     }
 
     /// <summary>
