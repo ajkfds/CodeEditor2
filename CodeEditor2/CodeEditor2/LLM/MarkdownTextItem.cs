@@ -250,6 +250,8 @@ namespace CodeEditor2.LLM
             IsVisible = false
         };
 
+
+        private int spinnerCount = 0;
         /// <summary>
         /// Show or hide the spinner
         /// </summary>
@@ -257,10 +259,15 @@ namespace CodeEditor2.LLM
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                spinnerImage.IsVisible = show;
                 if (show)
                 {
-                    spinnerImage.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/spinner.svg", Avalonia.Media.Colors.Cyan);
+                    spinnerImage.IsVisible = true;
+                    spinnerImage.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/spinner"+ spinnerCount.ToString() + ".svg", Avalonia.Media.Colors.Cyan);
+                    spinnerCount = (spinnerCount + 1) % 4; // Cycle through 8 spinner images
+                }
+                else
+                {
+                    spinnerImage.IsVisible = false;
                 }
             });
         }

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.AI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -85,14 +86,19 @@ namespace CodeEditor2.LLM
 
                         // Notify tool call start
                         chatControl?.ToolCallStarted(toolName);
+                        
 
                         AIFunctionArguments args = new AIFunctionArguments();
+
                         string innerContent = match.Groups["params"].Value;
                         var paramMatches = Regex.Matches(innerContent, @"<\s*(?<key>\w+)\s*>(?<value>.*?)<\s*/\k<key>\s*>", RegexOptions.Singleline);
                         foreach (Match p in paramMatches)
                         {
                             args.Add(p.Groups["key"].Value, p.Groups["value"].Value);
                         }
+                        Progress<string> progress = new Progress<string>((message) => { chatControl?.ToolCallStarted(toolName); });
+                        args.Add("progress", progress);
+
                         AIFunction? aIFunction = selectedTool as AIFunction;
                         if (aIFunction == null) return "illgal function call";
                         object? ret = await aIFunction.InvokeAsync(args, cancellationToken);
@@ -117,6 +123,8 @@ namespace CodeEditor2.LLM
             }
             return null;
         }
+
+        
 
         // Build Prompt
         private string buildPrompt(StringBuilder sb)
