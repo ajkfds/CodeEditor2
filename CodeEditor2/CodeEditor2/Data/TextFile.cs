@@ -30,7 +30,7 @@ namespace CodeEditor2.Data
         protected readonly ReaderWriterLockSlim textFileLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         // do not call await in locked status
 
-        private CodeEditor.ParsedDocument? _parsedDocument = null;
+        protected CodeEditor.ParsedDocument? _parsedDocument = null;
 
 
         /// <summary>
