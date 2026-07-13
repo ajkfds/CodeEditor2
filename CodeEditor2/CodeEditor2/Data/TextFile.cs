@@ -319,15 +319,16 @@ namespace CodeEditor2.Data
 
             CodeEditor2.CodeEditor.ParsedDocument? oldParsedDocument;
             oldParsedDocument = ParsedDocument;
-            ParsedDocument = newParsedDocument;
             oldParsedDocument?.Dispose();
 
             TextFile? currentTextFile = await Controller.CodeEditor.GetTextFileAsync();
             if(currentTextFile == this)
             {
                 currentTextFile.CodeDocument?.CopyColorMarkFrom(parser.Document);
+                CodeEditor2.Controller.MessageView.Update(newParsedDocument);
             }
 
+            _parsedDocument = newParsedDocument;
             // update navigate node, message and refresh editor
             await UpdateAsync();
         }
