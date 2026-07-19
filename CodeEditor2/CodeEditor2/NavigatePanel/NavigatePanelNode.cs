@@ -53,10 +53,19 @@ namespace CodeEditor2.NavigatePanel
 
         public virtual void PostUpdate()
         {
-            Dispatcher.UIThread.Post(async () =>
+            _ = UpdateBackGroundAsync();
+        }
+
+        private async Task UpdateBackGroundAsync()
+        {
+            try
             {
                 await UpdateAsync();
-            });
+            }
+            catch (Exception ex)
+            {
+                Controller.AppendLog(ex);
+            }
         }
 
         /// <summary>
@@ -95,12 +104,14 @@ namespace CodeEditor2.NavigatePanel
         }
         public override void OnExpand()
         {
+            _ = OnExpandBackgroundAsync();
+        }
+
+        private async Task OnExpandBackgroundAsync()
+        {
             try
             {
-                Task.Run(async () =>
-                {
-                    await HierarchicalVisibleUpdateAsync();
-                });
+                await HierarchicalVisibleUpdateAsync();
             }
             catch (Exception ex)
             {
@@ -112,12 +123,14 @@ namespace CodeEditor2.NavigatePanel
 
         public override void OnCollapse()
         {
+            _ = OnCollapseBackGroundAsync();
+        }
+
+        private async Task OnCollapseBackGroundAsync()
+        {
             try
             {
-                Task.Run(async () =>
-                {
-                    await HierarchicalVisibleUpdateAsync();
-                });
+                await HierarchicalVisibleUpdateAsync();
             }
             catch (Exception ex)
             {
@@ -214,7 +227,6 @@ namespace CodeEditor2.NavigatePanel
                     //Avalonia.Media.Color.FromArgb(100, 100, 150, 255)
                     );
                 contextMenu.Items.Add(menuItem_Add);
-
                 {
                     MenuItem menuItem_AddFolder = CodeEditor2.Global.CreateMenuItem(
                     "Folder",
@@ -222,32 +234,28 @@ namespace CodeEditor2.NavigatePanel
                     "CodeEditor2/Assets/Icons/folder.svg",
                     Avalonia.Media.Color.FromArgb(100, 100, 150, 255)
                     );
-                    menuItem_AddFolder.Click += menuItem_AddFolder_Click;
+                    menuItem_AddFolder.Click += MenuItem_AddFolder_Click;
                     menuItem_Add.Items.Add(menuItem_AddFolder);
-                }
 
-                {
                     MenuItem menuItem_AddBlankFile = CodeEditor2.Global.CreateMenuItem(
                     "Blank File",
                     "MenuItem_AddBlankFile",
                     "CodeEditor2/Assets/Icons/paper2.svg",
                     Avalonia.Media.Color.FromArgb(100, 100, 100, 255)
                     );
-                    menuItem_AddBlankFile.Click += menuItem_AddBlankFile_Click;
+                    menuItem_AddBlankFile.Click += MenuItem_AddBlankFile_Click;
                     menuItem_Add.Items.Add(menuItem_AddBlankFile);
                 }
-
             }
             {
                 MenuItem menuItem_Delete = CodeEditor2.Global.CreateMenuItem("Delete", "MenuItem_Delete");
-                menuItem_Delete.Click += menuItem_Delete_Click;
+                menuItem_Delete.Click += MenuItem_Delete_Click;
                 contextMenu.Items.Add(menuItem_Delete);
             }
             contextMenu.Items.Add(new Separator());
 
             customizeSpecificNodeContextMenu?.Invoke(contextMenu);
             CustomizeNavigateNodeContextMenu?.Invoke(contextMenu);
-
             {
                 MenuItem menuItem_OpenInExplorer = CodeEditor2.Global.CreateMenuItem(
                     "Open in Explorer",
@@ -266,7 +274,7 @@ namespace CodeEditor2.NavigatePanel
                     "CodeEditor2/Assets/Icons/gear.svg",
                     Avalonia.Media.Color.FromArgb(100, 200, 200, 255)
                     );
-                menuItem_CopyPath.Click += menuItem_CopyPath_Click;
+                menuItem_CopyPath.Click += MenuItem_CopyPath_Click;
                 contextMenu.Items.Add(menuItem_CopyPath);
             }
 
@@ -282,8 +290,8 @@ namespace CodeEditor2.NavigatePanel
             }
         }
 
-        #pragma warning disable VSTHRD100 // 理由: UIイベントの起点であり、内部で完全にtry-catchしているため安全
-        public async void menuItem_CopyPath_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<event handler with try-catch>")]
+        public async void MenuItem_CopyPath_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             string? path = Item?.RelativePath;
             if (path == null) return;
@@ -301,6 +309,8 @@ namespace CodeEditor2.NavigatePanel
                 Controller.AppendLog(ex.Message, Avalonia.Media.Colors.Red);
             }
         }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<event handler with try-catch>")]
         public async void menuItem_OpenProperty_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             try
@@ -370,7 +380,8 @@ namespace CodeEditor2.NavigatePanel
             }
             return "";
         }
-        private async void menuItem_AddFolder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<event handler with try-catch>")]
+        private async void MenuItem_AddFolder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
             if (node == null) return;
@@ -380,7 +391,7 @@ namespace CodeEditor2.NavigatePanel
             Project project = item.Project;
 
             string relativePath = getRelativeFolderPath(node);
-            if (!relativePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) relativePath += System.IO.Path.DirectorySeparatorChar;
+            if (!relativePath.EndsWith(System.IO.Path.DirectorySeparatorChar) && relativePath!="") relativePath += System.IO.Path.DirectorySeparatorChar;
 
             Tools.InputWindow window = new Tools.InputWindow("Create New Folder", "new Folder Name");
             await Controller.ShowDialog(window);
@@ -393,7 +404,9 @@ namespace CodeEditor2.NavigatePanel
             await UpdateFolderAsync(node);
         }
 
-        private async void menuItem_AddBlankFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<event handler with try-catch>")]
+
+        private async void MenuItem_AddBlankFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
             if (node == null) return;
@@ -433,7 +446,7 @@ namespace CodeEditor2.NavigatePanel
             await CodeEditor2.Controller.NavigatePanel.UpdateFolderAsync(node);
         }
 
-        private async void menuItem_Delete_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void MenuItem_Delete_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             NavigatePanelNode? node = Controller.NavigatePanel.GetSelectedNode();
             if (node == null) return;
