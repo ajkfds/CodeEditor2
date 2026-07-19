@@ -22,7 +22,7 @@ namespace CodeEditor2.Views
             if (Global.ReducedRendering)
             {
                 Avalonia.Media.RenderOptions.SetTextRenderingMode(TreeControl, TextRenderingMode.Alias );
-                var customFont = new FontFamily(Global.CodeFontFamily);
+                var customFont = new FontFamily(Global.ReducedRenderingCodeFontFamily);
                 TreeControl.FontFamily = customFont;
             }
         }

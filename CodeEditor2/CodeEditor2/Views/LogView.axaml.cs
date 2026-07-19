@@ -17,7 +17,7 @@ namespace CodeEditor2.Views
             if (Global.ReducedRendering)
             {
                 Avalonia.Media.RenderOptions.SetTextRenderingMode(ListView, Avalonia.Media.TextRenderingMode.Alias);
-                var customFont = new Avalonia.Media.FontFamily(Global.CodeFontFamily);
+                var customFont = new Avalonia.Media.FontFamily(Global.ReducedRenderingCodeFontFamily);
                 ListView.FontFamily = customFont;
             }
         }

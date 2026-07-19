@@ -64,7 +64,7 @@ namespace CodeEditor2.Views
             if (Global.ReducedRendering)
             {
                 Avalonia.Media.RenderOptions.SetTextRenderingMode(_textEditor, TextRenderingMode.Alias);
-                var customFont = new FontFamily(Global.CodeFontFamily);
+                var customFont = new FontFamily(Global.ReducedRenderingCodeFontFamily);
                 _textEditor.FontFamily = customFont;
             }
             AttachedToVisualTree += (s, e) =>
@@ -72,7 +72,7 @@ namespace CodeEditor2.Views
                 if (Global.ReducedRendering)
                 {
                     double scale = this.VisualRoot?.RenderScaling ?? 1.0;
-                    _textEditor.FontSize = Math.Ceiling((float)Global.FontGridSize * 1.05 / scale);
+                    _textEditor.FontSize = Math.Ceiling((float)Global.ReducedRenderingFontSize / scale);
                 }
             };
 
@@ -152,8 +152,14 @@ namespace CodeEditor2.Views
             this.AddHandler(PointerWheelChangedEvent, (o, i) =>
             {
                 if (i.KeyModifiers != KeyModifiers.Control) return;
-                if (i.Delta.Y > 0) _textEditor.FontSize++;
-                else _textEditor.FontSize = _textEditor.FontSize > 1 ? _textEditor.FontSize - 1 : 1;
+                if (i.Delta.Y > 0)
+                {
+                    _textEditor.FontSize = (int)_textEditor.FontSize + 1;
+                }
+                else
+                {
+                    _textEditor.FontSize = _textEditor.FontSize > 1 ? (int)_textEditor.FontSize - 1 : 1;
+                }
 
                 PopupTextBlock.FontSize = _textEditor.FontSize;
                 PopupMenu.FontSize = _textEditor.FontSize;

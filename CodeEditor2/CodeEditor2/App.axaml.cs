@@ -55,7 +55,7 @@ public partial class App : Application
 
             if (System.OperatingSystem.IsLinux())
             {
-                System.Diagnostics.Process.Start("nautilus " + folderPath + " &");
+                System.Diagnostics.Process.Start(Global.ExploererApplicationOnLinux+" " + folderPath + " &");
             }
             else
             {

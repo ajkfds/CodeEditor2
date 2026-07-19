@@ -52,13 +52,18 @@ namespace CodeEditor2
         public static Avalonia.Media.Color Color_Error = Avalonia.Media.Color.FromRgb(255, 20, 20);
         public static Avalonia.Media.Color Color_Warning = Avalonia.Media.Color.FromRgb(255, 255, 20);
 
-        public static bool ReducedRendering = false;
 
-        public static string CodeFontFamily =
-            "avares://CodeEditor2/Assets/font/proggyfontsfont/ProggyClean.ttf," +
-            "avares://CodeEditor2/Assets/font/tamazen-font/Tamzen8x15b.ttf#Tamzen," +
+        public static string ExploererApplicationOnLinux = "nautilus";
+
+
+        public static bool ReducedRendering = true;
+        public static string ReducedRenderingCodeFontFamily =
+//            "avares://CodeEditor2/Assets/font/proggyfontsfont/ProggyClean.ttf," +
+            "avares://CodeEditor2/Assets/font/tamazen-font/Tamzen6x12r.ttf#Tamzen," +
             "Cascadia Mono,Consolas,Menlo,Monospace,DejaVu Sans Mono,Liberation Mono,Noto Sans Mono,Source Code Pro";
-        public static int FontGridSize = 12;
+        public static int ReducedRenderingFontSize = 12;
+
+
 
         public static byte[]? FileEncriptionKey = null;
         public static MenuItem CreateMenuItem(string header, string name)
@@ -71,7 +76,6 @@ namespace CodeEditor2
             menuItem.FontStyle = Avalonia.Media.FontStyle.Normal;
             menuItem.FontWeight = Avalonia.Media.FontWeight.Normal;
             menuItem.MinHeight = 12;
-            //            menuItem.Height = 16;
             menuItem.Padding = new Avalonia.Thickness(0, 0, 0, 0);
             menuItem.Margin = new Avalonia.Thickness(0, 0, 0, 0);
             return menuItem;
@@ -96,8 +100,6 @@ namespace CodeEditor2
             RenderOptions.SetBitmapInterpolationMode(image, Avalonia.Media.Imaging.BitmapInterpolationMode.HighQuality);
             image.Source = imageSource;
             image.Margin = new Avalonia.Thickness(2, 2, 2, 2);
-            //            image.Width = 12;
-            //            image.Height = 12;
             menuItem.Icon = image;
 
             return menuItem;
