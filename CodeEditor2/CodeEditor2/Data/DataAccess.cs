@@ -39,7 +39,15 @@ namespace CodeEditor2.Data
         {
             if (!project.LocalFileCasheEnable)
             {
-                return await getFileTextAsync(project, relativePath, false); // directly read from file without using cache
+                try
+                {
+                    return await getFileTextAsync(project, relativePath, false); // directly read from file without using cache
+                }
+                catch (Exception ex)
+                {
+                    Controller.AppendLog(ex);
+                    if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+                }
             }
             else if (!await PasswordManager.CheckPassWord())
             { // failed to get password
@@ -86,7 +94,6 @@ namespace CodeEditor2.Data
             }
             else
             {
-
                 return await getFileTextAsync(project, relativePath, true);
             }
         }
