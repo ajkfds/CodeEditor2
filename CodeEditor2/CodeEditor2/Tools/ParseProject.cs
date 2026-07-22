@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using Avalonia.Threading;
 using CodeEditor2.Data;
 using System;
@@ -33,7 +34,8 @@ namespace CodeEditor2.Tools
                 await runParse(progressWindow, projectNode.Project);
                 progressWindow.Close();
             };
-            await progress.ShowDialog(Global.mainWindow);
+            await Controller.ShowDialog(progress);
+//            await progress.ShowDialog(Global.mainWindow);
         }
 
 
