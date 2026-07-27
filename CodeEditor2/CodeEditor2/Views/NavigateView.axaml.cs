@@ -4,6 +4,7 @@ using Avalonia.Media;
 using CodeEditor2.Data;
 using CodeEditor2.NavigatePanel;
 using System.Collections.Generic;
+using System;
 
 namespace CodeEditor2.Views
 {
@@ -25,6 +26,14 @@ namespace CodeEditor2.Views
                 var customFont = new FontFamily(Global.ReducedRenderingCodeFontFamily);
                 TreeControl.FontFamily = customFont;
             }
+            AttachedToVisualTree += (s, e) =>
+            {
+                if (Global.ReducedRendering)
+                {
+                    double scale = this.VisualRoot?.RenderScaling ?? 1.0;
+                    TreeControl.FontSize = Math.Ceiling((float)Global.ReducedRenderingFontSize / scale);
+                }
+            };
         }
 
         internal void OnFontSizeChaned(double fontSize)

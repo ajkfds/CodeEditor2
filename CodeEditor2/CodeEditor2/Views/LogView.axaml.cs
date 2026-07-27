@@ -20,6 +20,14 @@ namespace CodeEditor2.Views
                 var customFont = new Avalonia.Media.FontFamily(Global.ReducedRenderingCodeFontFamily);
                 ListView.FontFamily = customFont;
             }
+            AttachedToVisualTree += (s, e) =>
+            {
+                if (Global.ReducedRendering)
+                {
+                    double scale = this.VisualRoot?.RenderScaling ?? 1.0;
+                    ListView.FontSize = Math.Ceiling((float)Global.ReducedRenderingFontSize / scale);
+                }
+            };
         }
 
         const int maxLogs = 100;
