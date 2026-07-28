@@ -26,21 +26,16 @@ namespace CodeEditor2.MessageView
 
             textBlock.Margin = new Avalonia.Thickness(0, 0, 0, 0);
             textBlock.Padding = new Avalonia.Thickness(0);
-            // FontSizeの変更を購読してアイコンサイズを更新
-            textBlock.PropertyChanged += TextBlock_PropertyChanged;
+
+            item.PropertyChanged += Item_PropertyChanged;
 
             return item;
         }
 
         private Avalonia.Controls.Image? _iconImage;
-
-        private void TextBlock_PropertyChanged(object? sender, Avalonia.AvaloniaPropertyChangedEventArgs e)
+        private void Item_PropertyChanged(object? sender, Avalonia.AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Property == TextBlock.FontSizeProperty && _iconImage != null)
-            {
-                _iconImage.Width = textBlock.FontSize;
-                _iconImage.Height = textBlock.FontSize;
-            }
+            Update();
         }
 
         private void Item_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)

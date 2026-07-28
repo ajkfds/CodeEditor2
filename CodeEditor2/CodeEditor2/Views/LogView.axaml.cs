@@ -4,6 +4,9 @@ using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 
 namespace CodeEditor2.Views
 {
@@ -28,6 +31,18 @@ namespace CodeEditor2.Views
                     ListView.FontSize = Math.Ceiling((float)Global.ReducedRenderingFontSize / scale);
                 }
             };
+            this.AddHandler(PointerWheelChangedEvent, (o, i) =>
+            {
+                if (i.KeyModifiers != KeyModifiers.Control) return;
+                if (i.Delta.Y > 0)
+                {
+                    ListView.FontSize = (int)ListView.FontSize + 1;
+                }
+                else
+                {
+                    ListView.FontSize = ListView.FontSize > 1 ? (int)ListView.FontSize - 1 : 1;
+                }
+            }, RoutingStrategies.Bubble, true);
         }
 
         const int maxLogs = 100;
