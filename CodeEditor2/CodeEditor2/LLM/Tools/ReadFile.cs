@@ -122,10 +122,12 @@ namespace CodeEditor2.LLM.Tools
 
                 // 6. 行番号付きで出力 (Cline 互換: "<n> | <content>")
                 var sb = new StringBuilder();
+                sb.Append("```\n");
                 for (int i = effectiveStart; i <= effectiveEnd; i++)
                 {
                     sb.Append(i).Append(" | ").Append(lines[i - 1]).Append('\n');
                 }
+                sb.Append("```\n");
 
                 return sb.ToString();
             }
