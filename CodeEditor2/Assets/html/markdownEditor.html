@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Editor</title>
+
+    <!-- MathJax 設定 -->
+    <script>
+        window.onload = function () {
+            window.MathJax = {
+                tex: {
+                    inlineMath: [['$', '$'], ['\\(', '\\)']],
+                    displayMath: [['$$', '$$'], ['\\[', '\\]']]
+                }
+            };
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- CodeMirror -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+
+    <!-- Prism.js -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+
+    <!-- Marked.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.0/marked.min.js"></script>
+
+    <!-- Mermaid.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.4.0/mermaid.min.js"></script>
+
+    <!-- WaveDrom -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.2.0/wavedrom.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.2.0/skins/default.js"></script>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            height: 80vh;
+            gap: 15px;
+        }
+
+        .editor, .preview {
+            width: 50%;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .CodeMirror {
+            height: 100%;
+            border-radius: 5px;
+            font-size: 14px;
+            background: #f8f9fa;
+        }
+
+        .preview {
+            overflow-y: auto;
+            border-left: 4px solid #486745;
+        }
+    </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            mermaid.initialize({ startOnLoad: false });
+
+            window.editor = CodeMirror.fromTextArea(document.getElementById("markdown-input"), {
+                mode: "markdown",
+                theme: "default",
+                lineNumbers: true,
+                lineWrapping: true,
+            });
+
+            marked.setOptions({
+                highlight: function (code, lang) {
+                    return Prism.highlight(code, Prism.languages[lang] || Prism.languages.markup, lang);
+                }
+            });
+
+            window.editor.on("change", function () {
+                renderMarkdown();
+            });
+
+            renderMarkdown();
+        });
+
+        function renderMarkdown() {
+            if (!window.editor) return;
+
+            const input = window.editor.getValue();
+            document.getElementById("output").innerHTML = marked.parse(input);
+            Prism.highlightAll();
+
+            // MathJax 適用
+            if (window.MathJax) {
+                setTimeout(() => MathJax.typesetPromise(), 200);
+            }
+
+            // Mermaid の修正: <code class="language-mermaid"> → <div class="mermaid">
+            document.querySelectorAll("code.language-mermaid").forEach((el) => {
+                const newEl = document.createElement("div");
+                newEl.className = "mermaid";
+                newEl.textContent = el.textContent;
+                el.replaceWith(newEl);
+            });
+
+            if (window.mermaid) {
+                mermaid.init(undefined, document.querySelectorAll(".mermaid"));
+            }
+
+            // WaveDrom
+            WaveDrom.ProcessAll();
+        }
+    </script>
+
+</head>
+<body>
+
+<h2>Markdown Live Preview</h2>
+
+<div class="container">
+    <div class="editor">
+        <h3>Markdown</h3>
+        <textarea id="markdown-input"></textarea>
+    </div>
+
+    <div class="preview">
+        <h3>Preview</h3>
+        <div id="output"></div>
+    </div>
+</div>
+
+</body>
+</html>

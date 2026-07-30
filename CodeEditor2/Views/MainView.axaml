@@ -1,0 +1,85 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:CodeEditor2.ViewModels;assembly=CodeEditor2"
+             xmlns:views="clr-namespace:CodeEditor2.Views;assembly=CodeEditor2"
+             xmlns:ajkctrl="clr-namespace:AjkAvaloniaLibs.Controls;assembly=AjkAvaloniaLibs"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+             x:Class="CodeEditor2.Views.MainView"
+             >
+  <Design.DataContext>
+    <!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+  </Design.DataContext>
+
+	<DockPanel Background="#202020" >
+		
+		<!-- Menu -->
+		<Menu DockPanel.Dock="Top" Name="Menu" FontSize="12">
+			<MenuItem Header="_File" Name="MenuItem_File">
+				<MenuItem Header="_Open..." Name="MenuItem_File_Open" Click="MenuItem_File_Open_Click"/>
+				<MenuItem Header="_Save" Name="MenuItem_File_Save" Click="MenuItem_File_Save_Click"/>
+				<MenuItem Header="SaveProjects" Name="MenuItem_File_SaveProjects" Click="MenuItem_File_SaveProjects_Click"/>
+				<Separator/>
+				<MenuItem Header="_Exit" Click="MenuItem_File_Exit_Click"/>
+			</MenuItem>
+			<MenuItem Header="_Edit" Name="MenuItem_Edit">
+				<MenuItem Header="Copy"/>
+				<MenuItem Header="Paste"/>
+			</MenuItem>
+			<MenuItem Header="_Project" Name="MenuItem_Project">
+				<MenuItem Header="Add Project" Click="MenuItem_AddProject_Click"/>
+				<!--<MenuItem Header="Add ProjectPath" Click="MenuItem_AddProjectPath_Click"/>-->
+			</MenuItem>
+			<MenuItem Header="_Tools" Name="MenuItem_Tools">
+				<MenuItem Header="_Test" Name="MenuItem_Test" Click="MenuItem_Test_Click"></MenuItem>
+				<MenuItem Header="_Browser" Name="MenuItem_Browser" Click="MenuItem_Browser_Click"></MenuItem>
+			</MenuItem>
+			<MenuItem Header="_Help" Name="MenuItem_Help">
+				
+			</MenuItem>
+		</Menu>
+
+		<StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Name="ToolBar">
+		</StackPanel>
+		
+		<Grid RowDefinitions="*, 4, 100" Name="MainArea">
+			<Grid ColumnDefinitions="200, 4, *, 4, 200" Grid.Row="0">
+				<TabControl Name="LeftTab" >
+					<TabItem Header="Navigate" FontSize="12">
+						<views:NavigateView Name="NavigateView"/>
+					</TabItem>
+					<TabItem Header="FileType" FontSize="12">
+						<views:FileTypeView Name="FileTypeView"/>
+					</TabItem>
+				</TabControl>
+
+				<GridSplitter Grid.Column="1" Name="SplitterColumn1" ResizeDirection="Columns"/>
+				
+
+				<!-- Code View -->
+				<TabControl Margin="1" Grid.Column="2" Name="TabControl0">
+					<TabItem Header="Code"  FontSize="12" Name="EditorTabItem">
+						<views:CodeView Grid.Column="2" Name="CodeView"/>
+					</TabItem>
+					<TabItem Header="Shell"  FontSize="12" Name="ShellTabItem">
+						<views:ShellPanelView Name="ShellPanelView"></views:ShellPanelView>
+					</TabItem>
+				</TabControl>
+				
+
+				<GridSplitter Grid.Column="3" ResizeDirection="Columns"/>
+
+				<!-- Info View -->
+				<views:InfoView Grid.Column="4" />
+			</Grid>
+			<!--Rectangle Grid.Row="0" Fill="Blue"/-->
+			<GridSplitter Grid.Row="1" ResizeDirection ="Rows"/>
+			
+			<!-- Log View -->
+			<views:LogView Grid.Row="2" />
+		</Grid>
+
+	</DockPanel>
+</UserControl>
