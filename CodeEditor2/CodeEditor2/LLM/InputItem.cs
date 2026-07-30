@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using AvaloniaEdit;
+using CodeEditor2.Data;
 using CodeEditor2.Tools;
 using System;
 using System.Collections.ObjectModel;
@@ -64,7 +65,35 @@ namespace CodeEditor2.LLM
 
             // Ctrl+SpaceでAutoCompleteを起動
             TextEditor.KeyDown += TextEditor_KeyDown;
+
+            // Keep ChatInputTextFile's CodeDocument in sync with the TextEditor's text
+            // so that auto-complete candidates are derived from the chat input itself
+            // (and not from the MainWindow's codeView).
+            TextFile = CreateChatInputTextFile();
+            TextEditor.TextChanged += (s, e) =>
+            {
+                ChatInputTextFile? chatTextFile = TextFile as ChatInputTextFile;
+                if (chatTextFile == null) return;
+                string text = TextEditor.Text ?? "";
+                chatTextFile.MirrorText(text);
+            };
+            // Initial mirror
+            ((ChatInputTextFile)TextFile).MirrorText(TextEditor.Text ?? "");
         }
+
+        private ChatInputTextFile CreateChatInputTextFile()
+        {
+            // Use the object-initializer-based factory to satisfy the
+            // required Item members before the base constructor runs.
+            return ChatInputTextFile.CreateInstance();
+        }
+
+        /// <summary>
+        /// The TextFile associated with this InputItem.
+        /// Used to provide auto-complete candidates based on the chat input text,
+        /// not the MainWindow's codeView.
+        /// </summary>
+        public Data.TextFile TextFile { get; private set; } = null!;
 
         /// <summary>
         /// Event raised when Ctrl+Space is pressed to trigger auto-complete

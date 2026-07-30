@@ -136,6 +136,23 @@ namespace CodeEditor2.LLM
                     };
                     contextMenu.Items.Add(menuItem);
                 }
+                {
+                    // Context menu item to toggle vertical size collapse / expand
+                    MenuItem collapseExpandMenuItem = new MenuItem()
+                    {
+                        Header = collapsed ? "Expand" : "Collapse"
+                    };
+                    collapseExpandMenuItem.Click += (sender, e) =>
+                    {
+                        Collapsed = !Collapsed;
+                    };
+                    contextMenu.Items.Add(collapseExpandMenuItem);
+                    // Keep the menu label in sync with the current collapse state
+                    contextMenu.Opening += (sender, e) =>
+                    {
+                        collapseExpandMenuItem.Header = collapsed ? "Expand" : "Collapse";
+                    };
+                }
             }
 
             markdown.ContextMenu = contextMenu;

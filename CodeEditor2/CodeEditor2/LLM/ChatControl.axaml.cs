@@ -89,15 +89,15 @@ public partial class ChatControl : UserControl
 
     /// <summary>
     /// Handle auto-complete request from InputItem
-    /// Opens autocomplete popup with candidates from current TextFile
+    /// Opens autocomplete popup with candidates from the InputItem's own TextFile
+    /// (not from the MainWindow's codeView).
     /// </summary>
     private void InputItem_AutoCompleteRequested(object? sender, EventArgs e)
     {
-        // Get the current text file from Global.codeView
-        var codeView = Global.codeView;
-        if (codeView == null) return;
-        if (codeView.TextFile == null) return;
-        if (codeView.CodeDocument == null) return;
+        // Use the InputItem's own TextFile / CodeDocument, not the MainWindow's codeView.
+        Data.TextFile? textFile = inputItem.TextFile;
+        if (textFile == null) return;
+        if (textFile.CodeDocument == null) return;
 
         // Get caret position in the chat input
         int caretOffset = inputItem.TextEditor.CaretOffset;
@@ -107,29 +107,35 @@ public partial class ChatControl : UserControl
         string text = inputItem.TextEditor.Text ?? "";
         if (string.IsNullOrEmpty(text)) return;
 
-        // Find the start of the word at caret
-        int wordStart = caretOffset - 1;
-        while (wordStart >= 0 && IsWordChar(text[wordStart]))
-        {
-            wordStart--;
-        }
-        wordStart++;
-
-        // Get the candidate word
-        string candidateWord = text.Substring(wordStart, caretOffset - wordStart);
-
-        // Get autocomplete items from the TextFile
-        int index = codeView.CodeDocument.CaretIndex;
-        var autocompleteItems = codeView.TextFile.GetAutoCompleteItems(index, out string? cantidateText);
+        // Get autocomplete items from the InputItem's TextFile, using the chat input's caret position
+        var autocompleteItems = textFile.GetAutoCompleteItems(caretOffset, out string? candidateText);
         if (autocompleteItems == null || autocompleteItems.Count == 0) return;
 
-        // Filter items by candidate word
+        // Use the candidate word returned by the TextFile's autocomplete logic.
+        // Fall back to extracting it locally if the TextFile did not provide one.
+        string candidateWord = candidateText ?? "";
+        if (string.IsNullOrEmpty(candidateWord))
+        {
+            int wordStart = caretOffset - 1;
+            while (wordStart >= 0 && IsWordChar(text[wordStart]))
+            {
+                wordStart--;
+            }
+            wordStart++;
+            if (wordStart < caretOffset)
+            {
+                candidateWord = text.Substring(wordStart, caretOffset - wordStart);
+            }
+        }
+
+        // Filter items by candidate word (the TextFile may have already filtered them,
+        // but be defensive in case it returned a broader set).
         List<ToolItem> toolItems = new List<ToolItem>();
         foreach (var item in autocompleteItems)
         {
             if (string.IsNullOrEmpty(candidateWord) || item.Text.StartsWith(candidateWord))
             {
-                item.Assign(codeView.CodeDocument);
+                item.Assign(textFile.CodeDocument);
                 toolItems.Add(item);
             }
         }
