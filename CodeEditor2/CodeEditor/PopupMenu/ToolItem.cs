@@ -11,6 +11,13 @@ namespace CodeEditor2.CodeEditor.PopupMenu
         }
         string text;
 
+        public CodeDocument? codeDocument;
+
+        public void Assign(CodeDocument codeDocument)
+        {
+            this.codeDocument = codeDocument;
+        }
+
         public async void Apply()
         {
             try

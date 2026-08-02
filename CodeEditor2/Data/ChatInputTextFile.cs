@@ -93,7 +93,7 @@ namespace CodeEditor2.Data
         /// Scans the current chat input text and proposes identifiers already
         /// present in the buffer as candidates.
         /// </summary>
-        public override List<AutocompleteItem>? GetAutoCompleteItems(int index, out string? candidateWord)
+        public override List<CodeEditor.PopupMenu.ToolItem>? GetAutoCompleteItems(int index, out string? candidateWord)
         {
             candidateWord = "";
             if (CodeDocument == null) return null;
@@ -116,7 +116,7 @@ namespace CodeEditor2.Data
             // Collect unique identifiers from the text
             var matches = Regex.Matches(text, @"[A-Za-z_$][A-Za-z0-9_$]*");
             var seen = new HashSet<string>();
-            var items = new List<AutocompleteItem>();
+            var items = new List<CodeEditor.PopupMenu.ToolItem>();
             foreach (Match m in matches)
             {
                 string word = m.Value;

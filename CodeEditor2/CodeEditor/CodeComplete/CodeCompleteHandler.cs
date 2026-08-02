@@ -102,7 +102,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
 
             string? candidateWord;
-            List<AutocompleteItem>? items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out candidateWord);
+            List<PopupMenu.ToolItem>? items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out candidateWord);
             if (items == null || candidateWord == null)
             {
                 Close();
@@ -115,7 +115,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
 
             List<PopupMenu.ToolItem> toolItems = new List<PopupMenu.ToolItem>();
-            foreach (AutocompleteItem aItem in items)
+            foreach (PopupMenu.ToolItem aItem in items)
             {
                 if (candidateWord.Length < 1 || aItem.Text.StartsWith(candidateWord))
                 {

@@ -44,12 +44,6 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
         }
 
-        public CodeDocument? codeDocument;
-
-        public void Assign(CodeDocument codeDocument)
-        {
-            this.codeDocument = codeDocument;
-        }
 
         public byte ColorIndex
         {
