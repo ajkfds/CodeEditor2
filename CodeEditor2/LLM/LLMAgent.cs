@@ -235,10 +235,16 @@ namespace CodeEditor2.LLM
 
             if (UseToolCallId)
             {
-                sb.AppendLine("You may attach an optional `id` attribute to each tool call. " +
-                              "The system will wrap the matching result in <tool_result id=\"...\">...</tool_result> " +
-                              "so you can correlate results with their originating calls. " +
-                              "If you omit the `id`, the result is returned as plain text.");
+                sb.AppendLine("You SHOULD attach an `id` attribute to EVERY tool call. " +
+                              "The system wraps the matching result in <tool_result id=\"...\">...</tool_result> " +
+                              "so you can correlate each result with the originating call. " +
+                              "If you omit the `id`, the result is returned as plain text and you may lose track of which call produced it.");
+                sb.AppendLine("");
+                sb.AppendLine("Id rules:");
+                sb.AppendLine("- Each id MUST be unique within a single turn. Do NOT reuse an id you have already used.");
+                sb.AppendLine("- Prefer a short, monotonically increasing counter like `call_001`, `call_002`, ... and increment it for every new tool call.");
+                sb.AppendLine("- The user message contains a hint of the next id to use (e.g. `Next tool call id: call_004`). Use that hint as the starting point for the next id and keep incrementing from there.");
+                sb.AppendLine("- If multiple tools are called in one response, give every call a distinct id (e.g. `call_004`, `call_005`, ...).");
                 sb.AppendLine("");
             }
 

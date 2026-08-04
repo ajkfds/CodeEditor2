@@ -502,6 +502,10 @@ public partial class ChatControl : UserControl
         // Create new cancellation token
         cancellationTokenSource = new CancellationTokenSource();
 
+        // Reset the per-turn tool-call id counter whenever the chat is reset,
+        // so the very next user turn starts fresh from call_000.
+        nextToolCallIdCounter = 0;
+
         // Start from base prompt if agent is set
         if (agent != null)
         {
@@ -531,6 +535,15 @@ public partial class ChatControl : UserControl
             // Clear hash history
             hashHistory.Clear();
 
+            // Start a fresh id sequence for this user turn. The hint is appended
+            // to the original command right before it is sent to the LLM, and the
+            // counter advances naturally as AllocateNextToolCallId() is called
+            // when the hint for the next turn is generated.
+            if (messageType == MarkdownTextItem.MessageType.command)
+            {
+                nextToolCallIdCounter = 0;
+            }
+
             // Get tools
             IList<AITool>? tools = null;
             if (agent != null)
@@ -538,8 +551,13 @@ public partial class ChatControl : UserControl
                 tools = agent.Tools;
                 if (tools.Count == 0) tools = null;
             }
+
+            // Append a "Next tool call id: call_NNN" hint to the user command so
+            // the LLM can keep its ids monotonic across turns.
+            string commandWithHint = AppendToolCallIdHintIfNeeded(command);
+
             // Execute command with tool calls
-            await completeWithFunctionCall(command, tools, cancellationToken, messageType);
+            await completeWithFunctionCall(commandWithHint, tools, cancellationToken, messageType);
         }
         finally
         {
@@ -565,6 +583,85 @@ public partial class ChatControl : UserControl
     /// Used for loop detection
     /// </summary>
     private List<string> hashHistory = new List<string>();
+
+    /// <summary>
+    /// Monotonic counter used to suggest the next tool call id to the LLM.
+    /// Reset on every new user turn (see <see cref="UserComplete"/>).
+    /// </summary>
+    private int nextToolCallIdCounter = 0;
+
+    /// <summary>
+    /// Returns the next tool call id (e.g. "call_004") and increments the counter.
+    /// </summary>
+    private string AllocateNextToolCallId()
+    {
+        int n = nextToolCallIdCounter;
+        nextToolCallIdCounter = n + 1;
+        return $"call_{n.ToString("D3")}";
+    }
+
+    /// <summary>
+    /// After a tool call response has been executed, scan the tool result text
+    /// for <c>&lt;tool_result id="..."&gt;</c> blocks and advance the counter
+    /// past any id the LLM actually used. This keeps the hint in sync with the
+    /// LLM's own id numbering even if the LLM ignored (or partially ignored)
+    /// the hint.
+    /// </summary>
+    private void AdvanceCounterFromToolResults(string toolResultText)
+    {
+        if (string.IsNullOrEmpty(toolResultText)) return;
+
+        var matches = System.Text.RegularExpressions.Regex.Matches(
+            toolResultText,
+            @"<tool_result\s+id\s*=\s*""(?<id>[^""]+)""",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        foreach (System.Text.RegularExpressions.Match m in matches)
+        {
+            string id = m.Groups["id"].Value;
+            int parsed;
+            if (TryParseCallNumber(id, out parsed))
+            {
+                // +1 so the next AllocateNextToolCallId() returns a value strictly
+                // greater than any id the LLM has already used.
+                if (parsed + 1 > nextToolCallIdCounter)
+                {
+                    nextToolCallIdCounter = parsed + 1;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Parse the trailing numeric portion of an id like "call_004" or "call_42".
+    /// Returns false if the id does not match the expected "call_<digits>" shape.
+    /// </summary>
+    private static bool TryParseCallNumber(string id, out int number)
+    {
+        number = 0;
+        if (string.IsNullOrEmpty(id)) return false;
+        if (!id.StartsWith("call_", StringComparison.OrdinalIgnoreCase)) return false;
+        string tail = id.Substring("call_".Length);
+        return int.TryParse(tail, System.Globalization.NumberStyles.Integer,
+                            System.Globalization.CultureInfo.InvariantCulture, out number);
+    }
+
+    /// <summary>
+    /// When UseToolCallId is enabled on the agent, append a "Next tool call id: call_NNN"
+    /// hint to the user command so the LLM can keep incrementing tool call ids across
+    /// turns without losing track.
+    /// </summary>
+    private string AppendToolCallIdHintIfNeeded(string command)
+    {
+        if (agent == null) return command;
+        if (!agent.UseToolCallId) return command;
+        string hintId = AllocateNextToolCallId();
+        // Pre-allocate the rest of this turn's ids by reserving one for the first
+        // tool call. We still allocate per-call in the parse loop, but we want the
+        // hint value to be the very next one that will be consumed.
+        return command
+            + "\n\n<system-hint>\nNext tool call id: " + hintId + "\nUse it for your next tool call and increment for any additional calls in the same response.\n</system-hint>";
+    }
 
     /// <summary>
     /// Execute interaction with LLM, calling tools as needed
@@ -601,6 +698,15 @@ public partial class ChatControl : UserControl
 
             // Tool call notification (already called by agent during execution)
             hashHistory.Add(getHash(functioncallCommand));
+
+            // The parser wrapped each tool result in <tool_result id="...">.
+            // Use those ids to keep the next-hint counter in sync with the ids
+            // the LLM actually used in this response.
+            if (agent != null && agent.UseToolCallId)
+            {
+                AdvanceCounterFromToolResults(functioncallCommand);
+            }
+
             result = await complete(functioncallCommand, tools, cancellationToken, MarkdownTextItem.MessageType.functionCallReturn);
             if (result == null) return;
             hashHistory.Add(getHash(result));
