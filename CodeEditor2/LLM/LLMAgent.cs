@@ -86,6 +86,8 @@ namespace CodeEditor2.LLM
                 foreach (Match match in matches)
                 {
                     string? toolCallId = null;
+                    CancellationTokenSource? spinner_cts = null;
+                    Task? spinnerTask = null;
                     try
                     {
                         string toolName = match.Groups["tool"].Value;
@@ -96,8 +98,13 @@ namespace CodeEditor2.LLM
                             toolCallId = match.Groups["id"].Value;
                         }
 
-                        AITool? selectedTool = Tools.Where((tool) => { return tool.Name == toolName; }).First();
-                        if (selectedTool == null) return null;
+                        // Use FirstOrDefault so a missing tool name doesn't throw.
+                        AITool? selectedTool = Tools.Where((tool) => { return tool.Name == toolName; }).FirstOrDefault();
+                        if (selectedTool == null)
+                        {
+                            AppendToolResult(sb, toolCallId, $"Error: Unknown tool '{toolName}'. Available tools: {string.Join(", ", Tools.Select(t => t.Name))}");
+                            continue;
+                        }
 
                         // Notify tool call start
                         chatControl?.ToolCallStarted();
@@ -109,17 +116,29 @@ namespace CodeEditor2.LLM
                         var paramMatches = Regex.Matches(innerContent, @"<\s*(?<key>\w+)\s*>(?<value>.*?)<\s*/\k<key>\s*>", RegexOptions.Singleline);
                         foreach (Match p in paramMatches)
                         {
-                            args.Add(p.Groups["key"].Value, p.Groups["value"].Value);
+                            // Avoid ArgumentException from duplicate keys; keep the last value.
+                            if (args.ContainsKey(p.Groups["key"].Value))
+                            {
+                                args[p.Groups["key"].Value] = p.Groups["value"].Value;
+                            }
+                            else
+                            {
+                                args.Add(p.Groups["key"].Value, p.Groups["value"].Value);
+                            }
                         }
                         Progress<string> progress = new Progress<string>((message) => { chatControl?.ToolCallStarted(); });
-                        args.Add("progress", progress);
+                        args["progress"] = progress;
 
                         AIFunction? aIFunction = selectedTool as AIFunction;
-                        CancellationTokenSource spinner_cts = new CancellationTokenSource();
-                        CancellationToken spinner_cancel = spinner_cts.Token;
-                        if (aIFunction == null) return "illgal function call";
+                        if (aIFunction == null)
+                        {
+                            AppendToolResult(sb, toolCallId, $"Error: Tool '{toolName}' is not invokable (not an AIFunction).");
+                            continue;
+                        }
 
-                        Task task = Task.Run(async () => {
+                        spinner_cts = new CancellationTokenSource();
+                        CancellationToken spinner_cancel = spinner_cts.Token;
+                        spinnerTask = Task.Run(async () => {
                             try
                             {
                                 while (!spinner_cancel.IsCancellationRequested)
@@ -136,22 +155,29 @@ namespace CodeEditor2.LLM
 
                         object? ret = await aIFunction.InvokeAsync(args, cancellationToken);
 
-                        await spinner_cts.CancelAsync();
-                        await task; // これなら例外を気にせず待てる
-                        task.Dispose();
-
                         string? s_ret = ret?.ToString();
                         if (s_ret != null)
                         {
                             AppendToolResult(sb, toolCallId, s_ret);
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        AppendToolResult(sb, toolCallId, "failed to parse or execute function call:" + match.Value);
+                        AppendToolResult(sb, toolCallId, $"Error: failed to parse or execute function call '{match.Groups["tool"].Value}': {ex.GetType().Name}: {ex.Message}\n--- matched block ---\n{match.Value}");
                     }
                     finally
                     {
+                        // Stop the spinner task on every exit path so we never leak it.
+                        if (spinner_cts != null)
+                        {
+                            await spinner_cts.CancelAsync();
+                        }
+                        if (spinnerTask != null)
+                        {
+                            try { await spinnerTask; } catch { /* ignore spinner task cancellation */ }
+                            spinnerTask.Dispose();
+                        }
+                        spinner_cts?.Dispose();
                         chatControl?.ToolCallEnded();
                     }
                 }
