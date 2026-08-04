@@ -633,17 +633,34 @@ public partial class ChatControl : UserControl
     }
 
     /// <summary>
-    /// Parse the trailing numeric portion of an id like "call_004" or "call_42".
-    /// Returns false if the id does not match the expected "call_<digits>" shape.
+    /// Parse the trailing numeric portion of a tool-call id.
+    /// Accepts the recommended "call_004" / "call_42" shape as well as any other
+    /// "<word>_<digits>" variant (e.g. "tool_7", "step-3", "x42") so that the
+    /// counter stays in sync with the LLM even if it picked a different prefix.
+    /// Returns false only if the id has no numeric tail or is empty.
     /// </summary>
     private static bool TryParseCallNumber(string id, out int number)
     {
         number = 0;
         if (string.IsNullOrEmpty(id)) return false;
-        if (!id.StartsWith("call_", StringComparison.OrdinalIgnoreCase)) return false;
-        string tail = id.Substring("call_".Length);
-        return int.TryParse(tail, System.Globalization.NumberStyles.Integer,
-                            System.Globalization.CultureInfo.InvariantCulture, out number);
+
+        // Find the last run of digits at the end of the id.
+        int i = id.Length;
+        while (i > 0 && id[i - 1] >= '0' && id[i - 1] <= '9')
+        {
+            i--;
+        }
+        if (i == id.Length) return false; // no trailing digits
+        if (i == 0) return false;         // no prefix at all - just a bare number isn't an id
+
+        string tail = id.Substring(i);
+        if (!int.TryParse(tail, System.Globalization.NumberStyles.Integer,
+                          System.Globalization.CultureInfo.InvariantCulture, out number))
+        {
+            return false;
+        }
+        if (number < 0) return false;
+        return true;
     }
 
     /// <summary>
