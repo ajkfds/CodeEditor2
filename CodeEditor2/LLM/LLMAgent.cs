@@ -25,6 +25,14 @@ namespace CodeEditor2.LLM
         /// </summary>
         public bool PersudoFunctionCallMode = false;
         /// <summary>
+        /// If true, tool calls support an optional 'id' attribute and the result
+        /// is wrapped in &lt;tool_result id="..."&gt;...&lt;/tool_result&gt; so the
+        /// LLM can correlate each result with the originating call.
+        /// If false (default), behavior is unchanged: results are appended as
+        /// plain text and no id is read or emitted.
+        /// </summary>
+        public bool UseToolCallId = false;
+        /// <summary>
         ///  base prompt for initial message
         /// </summary>
         public string BasePrompt { get; set; } = "";
@@ -68,7 +76,8 @@ namespace CodeEditor2.LLM
         // Function Call
         private async Task<string?> ParseExecutePersudoFunctionCallAsync(string responce, CancellationToken cancellationToken, ChatControl? chatControl = null)
         {
-            var matches = Regex.Matches(responce, @"<\s*(?<tool>\w+)\s*>(?<params>.*?)</\s*\k<tool>\s*>", RegexOptions.Singleline);
+            // Optional 'id' attribute on the opening tag (only meaningful when UseToolCallId is enabled).
+            var matches = Regex.Matches(responce, @"<\s*(?<tool>\w+)(?:\s+id\s*=\s*""(?<id>[^""]*)"")?\s*>(?<params>.*?)</\s*\k<tool>\s*>", RegexOptions.Singleline);
 
             if (matches.Count>0)
             {
@@ -76,17 +85,23 @@ namespace CodeEditor2.LLM
 
                 foreach (Match match in matches)
                 {
+                    string? toolCallId = null;
                     try
                     {
                         string toolName = match.Groups["tool"].Value;
                         if (toolName == "reasoning" || toolName == "think") continue;
+
+                        if (UseToolCallId && match.Groups["id"].Success)
+                        {
+                            toolCallId = match.Groups["id"].Value;
+                        }
 
                         AITool? selectedTool = Tools.Where((tool) => { return tool.Name == toolName; }).First();
                         if (selectedTool == null) return null;
 
                         // Notify tool call start
                         chatControl?.ToolCallStarted();
-                        
+
 
                         AIFunctionArguments args = new AIFunctionArguments();
 
@@ -124,16 +139,16 @@ namespace CodeEditor2.LLM
                         await spinner_cts.CancelAsync();
                         await task; // これなら例外を気にせず待てる
                         task.Dispose();
-                        
+
                         string? s_ret = ret?.ToString();
                         if (s_ret != null)
                         {
-                            sb.AppendLine(s_ret);
+                            AppendToolResult(sb, toolCallId, s_ret);
                         }
                     }
                     catch
                     {
-                        sb.AppendLine("failed to parse or execute function call:" + match.Value);
+                        AppendToolResult(sb, toolCallId, "failed to parse or execute function call:" + match.Value);
                     }
                     finally
                     {
@@ -144,6 +159,32 @@ namespace CodeEditor2.LLM
                 return sb.ToString();
             }
             return null;
+        }
+
+        /// <summary>
+        /// Append a single tool result to the output buffer.
+        /// When UseToolCallId is true and <paramref name="toolCallId"/> is non-empty,
+        /// the result is wrapped in &lt;tool_result id="..."&gt;...&lt;/tool_result&gt;.
+        /// Otherwise the result is appended as plain text (original behavior).
+        /// </summary>
+        private void AppendToolResult(StringBuilder sb, string? toolCallId, string result)
+        {
+            if (UseToolCallId && !string.IsNullOrEmpty(toolCallId))
+            {
+                sb.Append("<tool_result id=\"")
+                  .Append(toolCallId)
+                  .AppendLine("\">");
+                // Indent the inner content slightly so the wrapper is easy to spot.
+                foreach (string line in result.Replace("\r\n", "\n").Split('\n'))
+                {
+                    sb.Append("  ").AppendLine(line);
+                }
+                sb.AppendLine("</tool_result>");
+            }
+            else
+            {
+                sb.AppendLine(result);
+            }
         }
 
         
@@ -165,6 +206,15 @@ namespace CodeEditor2.LLM
 
             sb.AppendLine("# Tools");
             sb.AppendLine("");
+
+            if (UseToolCallId)
+            {
+                sb.AppendLine("You may attach an optional `id` attribute to each tool call. " +
+                              "The system will wrap the matching result in <tool_result id=\"...\">...</tool_result> " +
+                              "so you can correlate results with their originating calls. " +
+                              "If you omit the `id`, the result is returned as plain text.");
+                sb.AppendLine("");
+            }
 
             foreach (var tool in Tools)
             {
@@ -205,7 +255,14 @@ namespace CodeEditor2.LLM
                 }
                 sb.AppendLine("Usage:");
                 sb.AppendLine("```xml");
-                sb.AppendLine("<" + tool.Name + " >");
+                if (UseToolCallId)
+                {
+                    sb.AppendLine("<" + tool.Name + " id=\"call_abc123\">");
+                }
+                else
+                {
+                    sb.AppendLine("<" + tool.Name + " >");
+                }
                 sb.Append(usage.ToString());
                 sb.AppendLine("</" + tool.Name + " >");
                 sb.AppendLine("```");
