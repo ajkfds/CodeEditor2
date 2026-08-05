@@ -431,14 +431,23 @@ namespace CodeEditor2.Data
                 currentFileVersion = doc.Version;
                 currentFileText = saveText;
 
+                bool failed = false;
                 await Task.Run(
                     async () =>
                     {
-                        await DataAccess.SaveFileAsync(Project, RelativePath, saveText);
+                        try
+                        {
+                            await DataAccess.SaveFileAsync(Project, RelativePath, saveText);
+                        }
+                        catch(Exception ex)
+                        {
+                            Controller.AppendLog(ex);
+                            failed = true;
+                        }
                     }
                 );
 
-                if (currentFileVersion == doc.Version) doc.Clean();
+                if(!failed) if (currentFileVersion == doc.Version) doc.Clean();
             }
             finally
             {
@@ -591,11 +600,12 @@ namespace CodeEditor2.Data
             if (Dispatcher.UIThread.CheckAccess())
             {
                 CodeDocument doc = CodeDocument;
-
+                int carletPosition = doc.CaretIndex;
                 if (doc != null)
                 {
                     doc.TextDocument.Replace(0, doc.TextDocument.TextLength, text);
                     doc.Clean();
+                    doc.SetSelection(carletPosition, carletPosition);
                 }
                 currentFileHash = newHash;
                 currentFileText = text;
