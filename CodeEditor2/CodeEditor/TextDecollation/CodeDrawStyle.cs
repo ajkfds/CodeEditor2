@@ -1,4 +1,5 @@
 using Avalonia.Media;
+using System.Runtime.InteropServices;
 //using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeEditor2.CodeEditor
@@ -36,6 +37,7 @@ namespace CodeEditor2.CodeEditor
                 {
                     Color = Color.FromRgb(212, 212, 212),
                     Style = MarkDetail.MarkStyleEnum.WaveLine,
+                    ZOrder =1
                 },
                 // 1
                 new MarkDetail
@@ -91,6 +93,7 @@ namespace CodeEditor2.CodeEditor
             public MarkStyleEnum Style;
             public int Offset;
             public int LastOffset;
+            public int ZOrder=0;
             public enum MarkStyleEnum
             {
                 UnderLine,

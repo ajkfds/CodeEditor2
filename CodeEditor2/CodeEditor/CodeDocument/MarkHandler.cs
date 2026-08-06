@@ -77,6 +77,7 @@ namespace CodeEditor2.CodeEditor
             mark.DecorationHeight = markStyle.DecorationHeight;
             mark.DecorationWidth = markStyle.DecorationWidth;
             mark.Style = markStyle.Style;
+            mark.ZOrder = markStyle.ZOrder;
             return mark;
         }
 

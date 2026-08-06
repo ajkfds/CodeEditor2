@@ -14,6 +14,7 @@ namespace CodeEditor2.CodeEditor.TextDecollation
         public MarkerRenderer()
         {
         }
+
         private TextSegmentCollection<TextSegment> marks { get; } = new TextSegmentCollection<TextSegment>();
 
         public void ClearMark()
@@ -184,6 +185,7 @@ namespace CodeEditor2.CodeEditor.TextDecollation
             public double DecorationWidth = 4;
             public double DecorationHeight = 1;
             public double Thickness = 1;
+            public int ZOrder = 0;
             public CodeDrawStyle.MarkDetail.MarkStyleEnum Style;
 
             public static Mark CloneFrom(CodeDrawStyle.MarkDetail markInfo)
@@ -196,6 +198,7 @@ namespace CodeEditor2.CodeEditor.TextDecollation
                 mark.StartOffset = markInfo.Offset;
                 mark.EndOffset = markInfo.LastOffset;
                 mark.Thickness = markInfo.Thickness;
+                mark.ZOrder = markInfo.ZOrder;
                 return mark;
             }
         }
@@ -220,6 +223,9 @@ namespace CodeEditor2.CodeEditor.TextDecollation
             var viewStart = visualLines.First().FirstDocumentLine.Offset;
             var viewEnd = visualLines.Last().LastDocumentLine.EndOffset;
 
+
+            List<(SolidColorBrush,Pen,Geometry,int)> geometories = new List<(SolidColorBrush, Pen, Geometry,int)>();
+
             foreach (var result in marks.FindOverlappingSegments(viewStart, viewEnd - viewStart))
             {
                 Mark? mark = result as Mark;
@@ -239,10 +245,18 @@ namespace CodeEditor2.CodeEditor.TextDecollation
                         pen = new Pen(brush, mark.Thickness);
                         break;
                 }
-                if (geometry != null)
-                {
-                    drawingContext.DrawGeometry(brush, pen, geometry);
-                }
+                geometories.Add((brush,pen, geometry,mark.ZOrder));
+                //if (geometry != null)
+                //{
+                //    drawingContext.DrawGeometry(brush, pen, geometry);
+                //}
+            }
+            geometories.Sort((a, b) => (a.Item4).CompareTo(b.Item4));
+
+
+            foreach (var geo in geometories)
+            {
+                drawingContext.DrawGeometry(geo.Item1, geo.Item2, geo.Item3);
             }
         }
 
