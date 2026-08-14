@@ -37,6 +37,14 @@ namespace CodeEditor2
         }
         public static void AppendLog(System.Exception exception)
         {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    AppendLog(exception);
+                }, DispatcherPriority.Background);
+                return;
+            }
             AppendLog("Exception : " + exception.Message, Avalonia.Media.Colors.Red);
         }
 
