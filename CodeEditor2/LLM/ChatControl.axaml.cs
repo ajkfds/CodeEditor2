@@ -88,6 +88,29 @@ public partial class ChatControl : UserControl
     }
 
     /// <summary>
+    /// 入力用TextBoxへフォーカスを当て、IMEを強制リセットします
+    /// </summary>
+    public void FocusInput()
+    {
+        if (inputItem?.TextEditor != null)
+        {
+            // UIのレイアウト更新完了後にフォーカスとIME適用を実行
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                var editor = inputItem.TextEditor;
+
+                // 1. IMEプロパティを一度FalseにしてからTrueにし、Win32 IMEコンテキストを再生成する
+                InputMethod.SetIsInputMethodEnabled(editor, false);
+                InputMethod.SetIsInputMethodEnabled(editor, true);
+//                InputMethod.SetPreferredImeState(editor, InputMethodState.On);
+
+                // 2. 実際の入力エディタ本体にフォーカスをあてる
+                editor.Focus();
+            }, DispatcherPriority.Render);
+        }
+    }
+
+    /// <summary>
     /// Handle auto-complete request from InputItem
     /// Opens autocomplete popup with candidates from the InputItem's own TextFile
     /// (not from the MainWindow's codeView).
