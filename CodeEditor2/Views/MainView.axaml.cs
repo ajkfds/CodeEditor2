@@ -6,6 +6,7 @@ using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CodeEditor2.Data;
+using CodeEditor2.NavigatePanel;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -204,8 +205,48 @@ public partial class MainView : UserControl
             path = path.Replace('/', System.IO.Path.DirectorySeparatorChar);
         }
 
+        // 1) プロジェクトを作成し NavigatePanel に登録する(まだ parse はしない)
         Data.Project newProject = await Project.CreateAsync(path);
-        await Controller.AddProject(newProject);
+        await Controller.AddProjectToNavigatePanel(newProject);
+
+        ProjectNode? projectNode = Global.navigateView.GetProjectNode(newProject.Name);
+        if (projectNode == null)
+        {
+            Controller.AppendLog("failed to create project node for " + newProject.Name);
+            return;
+        }
+
+        // 2) Project の property 設定 window を開く
+        //    ユーザーが OK したときに初めて parse を走らせる。
+        Tools.ItemPropertyForm form = new Tools.ItemPropertyForm(projectNode);
+        form.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+        bool loadOnClose = false;
+        void OkClickHandler(object? s, Avalonia.Interactivity.RoutedEventArgs ev)
+        {
+            loadOnClose = true;
+        }
+        form.OkButtonControl.Click += OkClickHandler;
+
+        try
+        {
+            await Controller.ShowDialog(form);
+        }
+        finally
+        {
+            form.OkButtonControl.Click -= OkClickHandler;
+        }
+
+        if (loadOnClose)
+        {
+            // 3) Project を load(parse)する
+            await Controller.LoadProject(newProject);
+        }
+        else
+        {
+            // Cancel されたので、NavigatePanel から取り除く
+            Controller.RemoveProject(newProject);
+        }
     }
 
     // MenuItem File

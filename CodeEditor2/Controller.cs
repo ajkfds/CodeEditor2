@@ -153,16 +153,27 @@ namespace CodeEditor2
             }
             else
             {
-                Global.Projects.Add(project.Name, project);
-                await addProject(project);
+                await AddProjectToNavigatePanel(project);
+                await LoadProject(project);
             }
         }
 
-        private static async Task addProject(Data.Project project)
+        /// <summary>
+        /// プロジェクトを Global.Projects と NavigatePanel に登録する(まだ parse は行わない)。
+        /// Property 設定のために先に project node を表示したい場合に使用する。
+        /// </summary>
+        internal static async Task AddProjectToNavigatePanel(Data.Project project)
         {
-            // add project node
+            if (Global.Projects.ContainsKey(project.Name)) return;
+            Global.Projects.Add(project.Name, project);
             await Global.navigateView.AddProject(project);
+        }
 
+        /// <summary>
+        /// NavigatePanel に登録済みのプロジェクトの parse を行う。
+        /// </summary>
+        internal static async Task LoadProject(Data.Project project)
+        {
             // parse project
             CodeEditor2.Tools.ParseProject parser = new Tools.ParseProject();
             ProjectNode? projectNode = Global.navigateView.GetProjectNode(project.Name);
@@ -174,6 +185,23 @@ namespace CodeEditor2
                     await parser.Run(projectNode);
                 }
             );
+        }
+
+        /// <summary>
+        /// プロジェクトを Global.Projects と NavigatePanel から取り除く。
+        /// まだ parse が走っていない段階で property 設定をキャンセルした場合などに使用する。
+        /// </summary>
+        internal static void RemoveProject(Data.Project project)
+        {
+            if (Global.Projects.TryGetValue(project.Name, out Data.Project? existing) && existing == project)
+            {
+                Global.Projects.Remove(project.Name);
+            }
+            ProjectNode? projectNode = Global.navigateView.GetProjectNode(project.Name);
+            if (projectNode != null)
+            {
+                Global.navigateView.RemoveNode(projectNode);
+            }
         }
 
         //public static Menu GetMenuStrip()
