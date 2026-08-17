@@ -79,6 +79,11 @@ namespace CodeEditor2.LLM
             };
             // Initial mirror
             ((ChatInputTextFile)TextFile).MirrorText(TextEditor.Text ?? "");
+
+            GotFocus += (s, e) =>
+            {
+                TextEditor.Focus();
+            };
         }
 
         private ChatInputTextFile CreateChatInputTextFile()
