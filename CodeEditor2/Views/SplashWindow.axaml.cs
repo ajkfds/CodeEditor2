@@ -58,111 +58,138 @@ public partial class SplashWindow : Window
     }
 
     // Open exsisted solution.set solution and open mainwindow
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<exception handled>")]
     private async void OpenSolutionButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        var files = await this.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        try
         {
-            Title = "Open Text File",
-            AllowMultiple = false,
-            FileTypeFilter = new[]
+            var files = await this.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
+                Title = "Open Text File",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
                 new FilePickerFileType("Solution File")
                 {
                     Patterns = new[] { "*"+Solution.FileExtention },
                     MimeTypes = new[] { "text/plain" }
                 },
             }
-        });
+            });
 
-        if (files.Count != 1) return;
+            if (files.Count != 1) return;
 
-        System.Uri uri = files[0].Path;
+            System.Uri uri = files[0].Path;
 
-        Global.Solution.AbsolutePath = uri.LocalPath + Uri.UnescapeDataString(uri.Fragment);
-        openMainWindow();
+            Global.Solution.AbsolutePath = uri.LocalPath + Uri.UnescapeDataString(uri.Fragment);
+            openMainWindow();
 
-        this.Close();
+            this.Close();
+        }
+        catch (Exception ex)
+        {
+            Tools.YesNoWindow alartWindow = new Tools.YesNoWindow("Error", "Failed to open solution file.\n" + ex.Message,true,false);
+            await alartWindow.ShowDialog(this);
+        }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<exception handled>")]
     private async void CreateNewSolutionButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        var file = await this.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        try
         {
-            Title = "Create New Solution File",
-            FileTypeChoices = new[]
+            var file = await this.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
+                Title = "Create New Solution File",
+                FileTypeChoices = new[]
+                {
                 new FilePickerFileType("Solution File")
                 {
                     Patterns = new[] { "*"+Solution.FileExtention },
                     MimeTypes = new[] { "text/plain" }
                 },
             }
-        });
+            });
 
-        if (file == null) return;
-        System.Uri uri = file.Path;
+            if (file == null) return;
+            System.Uri uri = file.Path;
 
-        Global.Solution.AbsolutePath = uri.LocalPath + Uri.UnescapeDataString(uri.Fragment);
+            Global.Solution.AbsolutePath = uri.LocalPath + Uri.UnescapeDataString(uri.Fragment);
 
-        string name = "";
-        name = System.IO.Path.GetFileName(Global.Solution.AbsolutePath);
-        if (name.EndsWith(Solution.FileExtention))
-        {
-            name = name.Substring(0, name.Length - Solution.FileExtention.Length);
+            string name = "";
+            name = System.IO.Path.GetFileName(Global.Solution.AbsolutePath);
+            if (name.EndsWith(Solution.FileExtention))
+            {
+                name = name.Substring(0, name.Length - Solution.FileExtention.Length);
+            }
+            if (name == "") return;
+
+            Global.Solution.Name = name;
+            openMainWindow();
+
+            string? path = System.IO.Path.GetDirectoryName(Global.Solution.AbsolutePath);
+            if (path != null)
+            {
+                Data.Project newProject = await Project.CreateAsync(path);
+                await Controller.addProjectAsync(newProject);
+            }
+
+            this.Close();
         }
-        if (name == "") return;
-
-        Global.Solution.Name = name;
-        openMainWindow();
-
-        string? path = System.IO.Path.GetDirectoryName(Global.Solution.AbsolutePath);
-        if (path != null)
+        catch (Exception ex)
         {
-            Data.Project newProject = await Project.CreateAsync(path);
-            await Controller.addProjectAsync(newProject);
+            Tools.YesNoWindow alartWindow = new Tools.YesNoWindow("Error", "Failed to create solution file.\n" + ex.Message, true, false);
+            await alartWindow.ShowDialog(this);
         }
-
-        this.Close();
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<保留中>")]
     private async void openMainWindow()
     {
-        // update opened Solution history file
+        try
+        {
+            // update opened Solution history file
 
-        Setups.Setup.History? history = Global.Setup.Historys
-            .Find((x) =>
+            Setups.Setup.History? history = Global.Setup.Historys
+                .Find((x) =>
+                {
+                    if (x.AbsolutePath == Global.Solution.AbsolutePath && x.Name == Global.Solution.Name)
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+            if (history == null)
             {
-                if (x.AbsolutePath == Global.Solution.AbsolutePath && x.Name == Global.Solution.Name)
-                {
-                    return true;
-                }
-                return false;
-            });
-        if (history == null)
-        {
-            Global.Setup.Historys.Add(
-                new Setups.Setup.History()
-                {
-                    AbsolutePath = Global.Solution.AbsolutePath,
-                    LastAccessed = DateTime.Now,
-                    Name = Global.Solution.Name
-                }); ;
+                Global.Setup.Historys.Add(
+                    new Setups.Setup.History()
+                    {
+                        AbsolutePath = Global.Solution.AbsolutePath,
+                        LastAccessed = DateTime.Now,
+                        Name = Global.Solution.Name
+                    }); ;
+            }
+            else
+            {
+                history.LastAccessed = DateTime.Now;
+            }
+            Global.Setup.SaveSetup();
+
+
+            MainWindow mainWindow = new MainWindow();
+            mainWindow.Title = Setups.Setup.ApplicationName + " " + Global.Solution.Name;
+            Global.currentWindow = mainWindow;
+
+            initialize();
+            mainWindow.Show();
+
+            await mainWindow.MainView0.Initialize(); // load projects in solution
         }
-        else
+        catch (Exception ex)
         {
-            history.LastAccessed = DateTime.Now;
+            Tools.YesNoWindow alartWindow = new Tools.YesNoWindow("Error", "Failed to create solution file.\n" + ex.Message, true, false);
+            await alartWindow.ShowDialog(this);
         }
-        Global.Setup.SaveSetup();
-
-
-        MainWindow mainWindow = new MainWindow();
-        mainWindow.Title = Setups.Setup.ApplicationName + " " + Global.Solution.Name;
-        Global.currentWindow = mainWindow;
-
-        initialize();
-        mainWindow.Show();
-
-        await mainWindow.MainView0.Initialize(); // load projects in solution
     }
 
     private void initialize()

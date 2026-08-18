@@ -17,6 +17,14 @@ namespace CodeEditor2.Tools
 
             initialize(title, caption);
         }
+        public YesNoWindow(string title, string caption,bool yesVsisiable, bool noVisible)
+        {
+            InitializeComponent();
+            YesButton.IsVisible = yesVsisiable;
+            NoButton.IsVisible = noVisible;
+
+            initialize(title, caption);
+        }
         private void initialize(string title, string caption)
         {
             this.Title = title;
