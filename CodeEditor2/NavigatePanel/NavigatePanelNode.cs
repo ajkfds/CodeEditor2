@@ -317,7 +317,7 @@ namespace CodeEditor2.NavigatePanel
             {
                 Tools.ItemPropertyForm form = new Tools.ItemPropertyForm(this);
                 form.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                await Controller.ShowDialog(form);
+                await Controller.ShowDialogAsync(form);
             }
             catch (Exception ex)
             {
@@ -394,7 +394,7 @@ namespace CodeEditor2.NavigatePanel
             if (!relativePath.EndsWith(System.IO.Path.DirectorySeparatorChar) && relativePath!="") relativePath += System.IO.Path.DirectorySeparatorChar;
 
             Tools.InputWindow window = new Tools.InputWindow("Create New Folder", "new Folder Name");
-            await Controller.ShowDialog(window);
+            await Controller.ShowDialogAsync(window);
 
             if (window.Cancel) return;
             string folderName = window.InputText.Trim();
@@ -418,7 +418,7 @@ namespace CodeEditor2.NavigatePanel
             if (!relativePath.EndsWith(System.IO.Path.DirectorySeparatorChar)) relativePath += System.IO.Path.DirectorySeparatorChar;
 
             Tools.InputWindow window = new Tools.InputWindow("Create Blank File", "new File Name");
-            await Controller.ShowDialog(window);
+            await Controller.ShowDialogAsync(window);
 
             if (window.Cancel) return;
             string fileName = window.InputText.Trim();
@@ -464,7 +464,7 @@ namespace CodeEditor2.NavigatePanel
                 string relativePath = fileNode.FileItem.RelativePath;
 
                 Tools.YesNoWindow window = new Tools.YesNoWindow("Delete File", "delete " + relativePath + " ?");
-                await Controller.ShowDialog(window);
+                await Controller.ShowDialogAsync(window);
 
                 if (!window.Yes) return;
 
@@ -487,7 +487,7 @@ namespace CodeEditor2.NavigatePanel
                 string relativePath = folderNode.Folder.RelativePath;
 
                 Tools.YesNoWindow window = new Tools.YesNoWindow("Delete File", "delete " + relativePath + " ?");
-                await Controller.ShowDialog(window);
+                await Controller.ShowDialogAsync(window);
 
                 if (!window.Yes) return;
 

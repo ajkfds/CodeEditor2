@@ -48,13 +48,13 @@ namespace CodeEditor2
             AppendLog("Exception : " + exception.Message, Avalonia.Media.Colors.Red);
         }
 
-        public static async Task<WeakReference<ListViewItem>> AppendLogAndGetItem(string message, Avalonia.Media.Color color)
+        public static async Task<WeakReference<ListViewItem>> AppendLogAndGetItemAsync(string message, Avalonia.Media.Color color)
         {
             if (!Dispatcher.UIThread.CheckAccess())
             {
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    return await AppendLogAndGetItem(message, color);
+                    return await AppendLogAndGetItemAsync(message, color);
                 }
                 );
                 throw new Exception();
@@ -73,11 +73,11 @@ namespace CodeEditor2
         /// Linux+X11環境でも正常に位置合わせされます。
         /// </summary>
         /// <param name="dialog">表示するダイアログウィンドウ</param>
-        public static async Task ShowDialog(Window dialog)
+        public static async Task ShowDialogAsync(Window dialog)
         {
             if (!Dispatcher.UIThread.CheckAccess())
             {
-                await Dispatcher.UIThread.InvokeAsync(() => ShowDialog(dialog));
+                await Dispatcher.UIThread.InvokeAsync(() => ShowDialogAsync(dialog));
                 return;
             }
 
@@ -144,7 +144,7 @@ namespace CodeEditor2
             Global.mainView.AddSelectHistory(textReference);
         }
 
-        internal static async Task AddProject(Data.Project project)
+        internal static async Task addProjectAsync(Data.Project project)
         {
             if (Global.Projects.ContainsKey(project.Name))
             {
@@ -153,8 +153,9 @@ namespace CodeEditor2
             }
             else
             {
-                await AddProjectToNavigatePanel(project);
-                await LoadProject(project);
+                await addProjectToNavigatePanelAsync(project);
+                
+                await loadProjectAsync(project);
             }
         }
 
@@ -162,17 +163,18 @@ namespace CodeEditor2
         /// プロジェクトを Global.Projects と NavigatePanel に登録する(まだ parse は行わない)。
         /// Property 設定のために先に project node を表示したい場合に使用する。
         /// </summary>
-        internal static async Task AddProjectToNavigatePanel(Data.Project project)
+        internal static async Task addProjectToNavigatePanelAsync(Data.Project project)
         {
+            AppendLog("Add Project "+project.Name);
             if (Global.Projects.ContainsKey(project.Name)) return;
             Global.Projects.Add(project.Name, project);
-            await Global.navigateView.AddProject(project);
+            await Global.navigateView.AddProjectAsync(project);
         }
 
         /// <summary>
         /// NavigatePanel に登録済みのプロジェクトの parse を行う。
         /// </summary>
-        internal static async Task LoadProject(Data.Project project)
+        internal static async Task loadProjectAsync(Data.Project project)
         {
             // parse project
             CodeEditor2.Tools.ParseProject parser = new Tools.ParseProject();
@@ -191,7 +193,7 @@ namespace CodeEditor2
         /// プロジェクトを Global.Projects と NavigatePanel から取り除く。
         /// まだ parse が走っていない段階で property 設定をキャンセルした場合などに使用する。
         /// </summary>
-        internal static void RemoveProject(Data.Project project)
+        internal static void removeProject(Data.Project project)
         {
             if (Global.Projects.TryGetValue(project.Name, out Data.Project? existing) && existing == project)
             {

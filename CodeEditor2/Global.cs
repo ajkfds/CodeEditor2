@@ -61,7 +61,17 @@ namespace CodeEditor2
 //            "avares://CodeEditor2/Assets/font/proggyfontsfont/ProggyClean.ttf," +
             "avares://CodeEditor2/Assets/font/tamazen-font/Tamzen6x12r.ttf#Tamzen," +
             "Cascadia Mono,Consolas,Menlo,Monospace,DejaVu Sans Mono,Liberation Mono,Noto Sans Mono,Source Code Pro";
-        public static int ReducedRenderingFontSize = 12;
+        public static int ReducedRenderingFontSize
+        {
+            get
+            {
+                if (System.OperatingSystem.IsLinux())
+                {
+                    return 13;
+                }
+                return 12;
+            }
+        }
 
 
 

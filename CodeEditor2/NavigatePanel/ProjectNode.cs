@@ -47,6 +47,8 @@ namespace CodeEditor2.NavigatePanel
                 return Item as Project;
             }
         }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<event handler with try-catch>")]
         public override async void OnSelected()
         {
             try

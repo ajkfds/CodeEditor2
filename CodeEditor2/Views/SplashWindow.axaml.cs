@@ -119,7 +119,7 @@ public partial class SplashWindow : Window
         if (path != null)
         {
             Data.Project newProject = await Project.CreateAsync(path);
-            await Controller.AddProject(newProject);
+            await Controller.addProjectAsync(newProject);
         }
 
         this.Close();

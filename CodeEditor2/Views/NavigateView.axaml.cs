@@ -41,7 +41,7 @@ namespace CodeEditor2.Views
             ContextMenu.FontSize = fontSize;
         }
 
-        internal async System.Threading.Tasks.Task AddProject(Project project)
+        internal async System.Threading.Tasks.Task AddProjectAsync(Project project)
         {
             ProjectNode pNode = new NavigatePanel.ProjectNode(project);
             TreeControl.Nodes.Add(pNode);

@@ -405,7 +405,7 @@ namespace CodeEditor2.Data
             await _fileSemaphore.WaitAsync();
             try
             {
-                WeakReference<ListViewItem> itemRef = await Controller.AppendLogAndGetItem("Save " + RelativePath + "...", Avalonia.Media.Colors.Green);
+                WeakReference<ListViewItem> itemRef = await Controller.AppendLogAndGetItemAsync("Save " + RelativePath + "...", Avalonia.Media.Colors.Green);
 
                 CodeEditor.CodeDocument? doc = CodeDocument;
 
@@ -584,7 +584,7 @@ namespace CodeEditor2.Data
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check\n", RelativePath + " changed externally.\nCan I dispose local change and accept external file?");
-                    await CodeEditor2.Controller.ShowDialog(checkUpdate);
+                    await CodeEditor2.Controller.ShowDialogAsync(checkUpdate);
                     if (!checkUpdate.Yes) // keep current file
                     {
                         currentFileHash = newHash;

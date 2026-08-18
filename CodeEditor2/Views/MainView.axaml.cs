@@ -207,7 +207,7 @@ public partial class MainView : UserControl
 
         // 1) プロジェクトを作成し NavigatePanel に登録する(まだ parse はしない)
         Data.Project newProject = await Project.CreateAsync(path);
-        await Controller.AddProjectToNavigatePanel(newProject);
+        await Controller.addProjectToNavigatePanelAsync(newProject);
 
         ProjectNode? projectNode = Global.navigateView.GetProjectNode(newProject.Name);
         if (projectNode == null)
@@ -230,7 +230,7 @@ public partial class MainView : UserControl
 
         try
         {
-            await Controller.ShowDialog(form);
+            await Controller.ShowDialogAsync(form);
         }
         finally
         {
@@ -240,12 +240,12 @@ public partial class MainView : UserControl
         if (loadOnClose)
         {
             // 3) Project を load(parse)する
-            await Controller.LoadProject(newProject);
+            await Controller.loadProjectAsync(newProject);
         }
         else
         {
             // Cancel されたので、NavigatePanel から取り除く
-            Controller.RemoveProject(newProject);
+            Controller.removeProject(newProject);
         }
     }
 

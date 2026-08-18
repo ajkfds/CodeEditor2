@@ -81,7 +81,7 @@ namespace CodeEditor2.NavigatePanel
                         {
                             try
                             {
-                                await updateFolder();
+                                await updateFolderAsync();
                             }
                             catch (Exception ex)
                             {
@@ -91,12 +91,12 @@ namespace CodeEditor2.NavigatePanel
                     );
                 return;
             }
-            await updateFolder();
+            await updateFolderAsync();
             return;
         }
 
 
-        private async Task updateFolder()
+        private async Task updateFolderAsync()
         {
             if (!Dispatcher.UIThread.CheckAccess())
             {
