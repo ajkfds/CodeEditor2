@@ -34,7 +34,7 @@ namespace CodeEditor2.Views
             {
                 if (Global.ReducedRendering)
                 {
-                    double scale = this.VisualRoot?.RenderScaling ?? 1.0;
+                    double scale = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
                     InfoListBox0.FontSize = System.Math.Ceiling((float)Global.ReducedRenderingFontSize / scale);
                 }
             };

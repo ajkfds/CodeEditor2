@@ -71,7 +71,8 @@ namespace CodeEditor2.Views
             {
                 if (Global.ReducedRendering)
                 {
-                    double scale = this.VisualRoot?.RenderScaling ?? 1.0;
+
+                    double scale = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
                     _textEditor.FontSize = Math.Ceiling((float)Global.ReducedRenderingFontSize / scale);
                 }
             };
@@ -92,10 +93,8 @@ namespace CodeEditor2.Views
             };
             _textEditor.ContextRequested += TextEditor_ContextRequested;
 
-            // tab indent is no supported by AvaloniaEdit. So I've forked AvaloniaEdit to implement fixed indent size.
-            // tab indent is implemented in Avalonia Edit. 
             _textEditor.Options.ShowTabs = true;
-            _textEditor.Options.IndentationSize = 1;
+            _textEditor.Options.IndentationSize = 4;
 
             // event setup
             _textEditor.TextArea.TextEntered += textEditor_TextArea_TextEntered;

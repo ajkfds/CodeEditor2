@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using System;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace CodeEditor2.LLM
             functionCallReturn
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD101:Avoid unsupported async delegates", Justification = "<保留中>")]
         public CollapsibleTextItem(string text, MessageType messageType)
         {
             Content = grid;
@@ -113,22 +115,43 @@ namespace CodeEditor2.LLM
                     {
                         Header = "Copy All"
                     };
-                    menuItem.Click += (sender, e) =>
+                    menuItem.Click += async (sender, e) =>
                     {
-                        var top = TopLevel.GetTopLevel(this);
-                        top?.Clipboard?.SetTextAsync(textBox.Text);
+                        try
+                        {
+                            var top = TopLevel.GetTopLevel(this);
+                            if (top?.Clipboard is { } clipboard)
+                            {
+                                await clipboard.SetTextAsync(textBox.Text);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.Print($"clipboard error: {ex.Message}");
+                        }
                     };
                     contextMenu.Items.Add(menuItem);
                 }
+
                 {
                     MenuItem menuItem = new MenuItem()
                     {
                         Header = "Copy"
                     };
-                    menuItem.Click += (sender, e) =>
+                    menuItem.Click += async (sender, e) =>
                     {
-                        var top = TopLevel.GetTopLevel(this);
-                        top?.Clipboard?.SetTextAsync(textBox.SelectedText);
+                        try
+                        {
+                            var top = TopLevel.GetTopLevel(this);
+                            if (top?.Clipboard is { } clipboard)
+                            {
+                                await clipboard.SetTextAsync(textBox.SelectedText);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.Print($"clipboard error: {ex.Message}");
+                        }
                     };
                     contextMenu.Items.Add(menuItem);
                 }

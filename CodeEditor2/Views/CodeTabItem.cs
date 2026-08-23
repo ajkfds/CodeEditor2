@@ -6,7 +6,7 @@ using System;
 
 namespace CodeEditor2.Views
 {
-    public class CodeTabItem : Avalonia.Controls.TabItem, IStyleable // IStylable is need to inherit from TabItem (https://github.com/AvaloniaUI/Avalonia/issues/2566)
+    public class CodeTabItem : Avalonia.Controls.TabItem//, IStyleable // IStylable is need to inherit from TabItem (https://github.com/AvaloniaUI/Avalonia/issues/2566)
     {
         public CodeTabItem(string title, string? iconName, Avalonia.Media.Color? iconColor, bool closeButtonEnable)
         {
@@ -79,7 +79,7 @@ namespace CodeEditor2.Views
 
         public Action? CloseButton_Clicked;
 
-        Type IStyleable.StyleKey => typeof(TabItem); // need to inherit from TabItem (https://github.com/AvaloniaUI/Avalonia/issues/2566)
+//        Type IStyleable.StyleKey => typeof(TabItem); // need to inherit from TabItem (https://github.com/AvaloniaUI/Avalonia/issues/2566)
         Image? CloseButton;
 
 

@@ -197,7 +197,7 @@ namespace CodeEditor2.Data
             if (Created != null) Created(project, setup);
             //            project.startFileSystemWatcher();
             await project.UpdateAsync();
-            await DataAccess.UpdateFieSystemInfoAsync(project);
+//            await DataAccess.UpdateFieSystemInfoAsync(project);
         }
 
         public async Task InitializeSubItemsAsync()

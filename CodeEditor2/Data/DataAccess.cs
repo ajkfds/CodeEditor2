@@ -243,21 +243,21 @@ namespace CodeEditor2.Data
                 }
             }
         }
-        public static async Task UpdateFieSystemInfoAsync(Project project)
-        {
-            var di = new DirectoryInfo(project.RootPath);
-            var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true };
-            var infos = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
+        //public static async Task UpdateFieSystemInfoAsync(Project project)
+        //{
+        //    var di = new DirectoryInfo(project.RootPath);
+        //    var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true };
+        //    var infos = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
 
-            foreach (var info in infos)
-            {
-                Item? item = project.GetItem(project.GetRelativePath(info.FullName));
-                if (item != null)
-                {
-                    item.FileSystemInfo = info;
-                }
-            }
-        }
+        //    foreach (var info in infos)
+        //    {
+        //        Item? item = project.GetItem(project.GetRelativePath(info.FullName));
+        //        if (item != null)
+        //        {
+        //            item.FileSystemInfo = info;
+        //        }
+        //    }
+        //}
 
         public static async Task<(List<string> absoluteFilePaths, List<string> absoluteFolderPaths)> GetFolderContents(Project project, string relativePath)
         {
