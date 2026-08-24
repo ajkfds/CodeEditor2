@@ -175,7 +175,7 @@ namespace CodeEditor2.Data
                 // skip invisible folder
                 string body = absoluteFolderPath;
                 if (body.Contains(System.IO.Path.DirectorySeparatorChar)) body = body.Substring(body.LastIndexOf(System.IO.Path.DirectorySeparatorChar) + 1);
-                if (body.StartsWith(".")) continue;
+                if (body !=".agents" && body.StartsWith(".")) continue;
 
                 if (items.TryGetValue(body, out Item? oldItem))
                 {
