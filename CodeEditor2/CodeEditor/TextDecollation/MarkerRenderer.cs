@@ -30,6 +30,7 @@ namespace CodeEditor2.CodeEditor.TextDecollation
             {
                 foreach (var mark in marks)
                 {
+                    if (mark.LastOffset < mark.Offset) continue;
                     this.marks.Add(Mark.CloneFrom(mark));
                 }
             }
