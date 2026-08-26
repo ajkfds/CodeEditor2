@@ -198,7 +198,9 @@ namespace CodeEditor2.Data
         public static async Task UpdateFieSystemInfoAndSubItemAsync(Project project, string relativePath)
         {
             var di = new DirectoryInfo(project.RootPath);
-            var options = new EnumerationOptions { RecurseSubdirectories = true, MaxRecursionDepth = 1, IgnoreInaccessible = true };
+            // MatchType.Win32 を指定することで、Unix系OSでもWindowsと同等のマッチ動作となり、
+            // ".svn" ".git" などの "." で始まるパスも列挙される。
+            var options = new EnumerationOptions { RecurseSubdirectories = true, MaxRecursionDepth = 1, IgnoreInaccessible = true, MatchType = MatchType.Win32 };
             var infos = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
 
             foreach (var info in infos)
@@ -289,7 +291,9 @@ namespace CodeEditor2.Data
                     }
 
                     var di = new DirectoryInfo(cashePath);
-                    var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = true };
+                    // MatchType.Win32 を指定することで、Unix系OSでもWindowsと同等のマッチ動作となり、
+                    // ".svn" ".git" などの "." で始まるパスも列挙される。
+                    var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = true, MatchType = MatchType.Win32 };
                     var infoList = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
 
                     foreach (var info in infoList)
@@ -320,7 +324,9 @@ namespace CodeEditor2.Data
             List<string> absoluteFilePaths = new List<string>();
             List<string> absoluteFolderPaths = new List<string>();
             var di = new DirectoryInfo(project.GetAbsolutePath(relativePath));
-            var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = true };
+            // MatchType.Win32 を指定することで、Unix系OSでもWindowsと同等のマッチ動作となり、
+            // ".svn" ".git" などの "." で始まるパスも列挙される。
+            var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = true, MatchType = MatchType.Win32 };
 
             // 列挙自体は同期処理だが、Task.Run内で回すことで非同期ストリーム化
             var infoList = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
