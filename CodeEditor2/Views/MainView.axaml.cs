@@ -221,23 +221,10 @@ public partial class MainView : UserControl
         Tools.ItemPropertyForm form = new Tools.ItemPropertyForm(projectNode);
         form.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
-        bool loadOnClose = false;
-        void OkClickHandler(object? s, Avalonia.Interactivity.RoutedEventArgs ev)
-        {
-            loadOnClose = true;
-        }
-        form.OkButtonControl.Click += OkClickHandler;
 
-        try
-        {
-            await Controller.ShowDialogAsync(form);
-        }
-        finally
-        {
-            form.OkButtonControl.Click -= OkClickHandler;
-        }
+        await Controller.ShowDialogAsync(form);
 
-        if (loadOnClose)
+        if (form.OkClickedFlag)
         {
             // 3) Project を load(parse)する
             await Controller.loadProjectAsync(newProject);

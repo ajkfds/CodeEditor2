@@ -30,6 +30,7 @@ public partial class ItemPropertyForm : Window
         CancelButton.Click += CancelButton_Click;
     }
 
+    public bool OkClickedFlag { get; private set; } = false;
 
     // workaround
     // X11環境では呼び出し側でのWindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -84,6 +85,7 @@ public partial class ItemPropertyForm : Window
 
     private void OkButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        OkClickedFlag = true;
         Close();
     }
 }
