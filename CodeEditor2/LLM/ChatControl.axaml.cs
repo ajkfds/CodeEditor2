@@ -545,10 +545,10 @@ public partial class ChatControl : UserControl
             // to the original command right before it is sent to the LLM, and the
             // counter advances naturally as AllocateNextToolCallId() is called
             // when the hint for the next turn is generated.
-            if (messageType == MarkdownTextItem.MessageType.command)
-            {
-                nextToolCallIdCounter = 0;
-            }
+            //if (messageType == MarkdownTextItem.MessageType.command)
+            //{
+            //    nextToolCallIdCounter = 0;
+            //}
 
             // Get tools
             IList<AITool>? tools = null;

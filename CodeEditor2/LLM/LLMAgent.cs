@@ -182,7 +182,7 @@ namespace CodeEditor2.LLM
                     }
                 }
                 if (sb.Length == 0) return null;
-                return sb.ToString();
+                return "```xml\n"+sb.ToString()+"\n```\n";
             }
             return null;
         }
