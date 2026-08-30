@@ -94,7 +94,7 @@ namespace CodeEditor2.Views
             _textEditor.ContextRequested += TextEditor_ContextRequested;
 
             _textEditor.Options.ShowTabs = true;
-            _textEditor.Options.IndentationSize = 4;
+            _textEditor.Options.IndentationSize = 1;
 
             // event setup
             _textEditor.TextArea.TextEntered += textEditor_TextArea_TextEntered;

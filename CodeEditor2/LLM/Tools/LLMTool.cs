@@ -2,6 +2,7 @@ using Microsoft.Extensions.AI;
 
 namespace CodeEditor2.LLM.Tools
 {
+    // base cass to implement LLM tool call
     public abstract class LLMTool
     {
         public LLMTool(Data.Project project)
