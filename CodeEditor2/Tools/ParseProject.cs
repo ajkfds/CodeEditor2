@@ -35,7 +35,6 @@ namespace CodeEditor2.Tools
                 progressWindow.Close();
             };
             await Controller.ShowDialogAsync(progress);
-//            await progress.ShowDialog(Global.mainWindow);
         }
 
 

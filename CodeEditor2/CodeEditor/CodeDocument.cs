@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using Avalonia.Threading;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Folding;
@@ -470,6 +471,11 @@ namespace CodeEditor2.CodeEditor
 
         public void Replace(int index, int replaceLength, byte colorIndex, string text)
         {
+            if (docLock.IsWriteLockHeld)
+            {
+                replace(index, replaceLength, colorIndex, text);
+            }
+
             docLock.EnterWriteLock();
             try
             {
@@ -489,13 +495,19 @@ namespace CodeEditor2.CodeEditor
 
         public int GetLineAt(int index)
         {
+            if (docLock.IsReadLockHeld || docLock.IsWriteLockHeld)
+            {
+                return getLineAt(index);
+            }
+
             docLock.EnterReadLock();
             try
             {
                 return getLineAt(index);
             }
-            finally {
-                docLock.ExitReadLock(); 
+            finally
+            {
+                docLock.ExitReadLock();
             }
         }
 
@@ -508,6 +520,11 @@ namespace CodeEditor2.CodeEditor
 
         public int GetLineStartIndex(int line)
         {
+            if (docLock.IsReadLockHeld || docLock.IsWriteLockHeld)
+            {
+                return getLineStartIndex(line);
+            }
+
             docLock.EnterReadLock();
             try
             {
@@ -528,6 +545,11 @@ namespace CodeEditor2.CodeEditor
 
         public int GetLineLength(int line)
         {
+            if (docLock.IsReadLockHeld || docLock.IsWriteLockHeld)
+            {
+                return getLineLength(line);
+            }
+
             docLock.EnterReadLock();
             try
             {
@@ -548,6 +570,11 @@ namespace CodeEditor2.CodeEditor
         {
             get
             {
+                if (docLock.IsReadLockHeld || docLock.IsWriteLockHeld)
+                {
+                    return lines;
+                }
+
                 docLock.EnterReadLock();
                 try
                 {
@@ -570,65 +597,88 @@ namespace CodeEditor2.CodeEditor
 
         public int FindIndexOf(string targetString, int startIndex)
         {
+            if (docLock.IsReadLockHeld || docLock.IsWriteLockHeld)
+            {
+                return findIndexOf(targetString, startIndex);
+            }
+
             docLock.EnterReadLock();
             try
             {
-                if (textDocument == null) return -1;
-                if (targetString.Length == 0) return -1;
-                for (int i = startIndex; i < _length - targetString.Length; i++)
-                {
-                    if (targetString[0] != textDocument.GetCharAt(i)) continue;
-                    bool match = true;
-                    for (int j = 1; j < targetString.Length; j++)
-                    {
-                        if (targetString[j] != textDocument.GetCharAt(i + j))
-                        {
-                            match = false;
-                            break;
-                        }
-                    }
-                    if (match) return i;
-                }
-                return -1;
+                return findIndexOf(targetString, startIndex);
             }
             finally
             {
                 docLock.ExitReadLock();
             }
+        }
+        private int findIndexOf(string targetString, int startIndex)
+        {
+            if (textDocument == null) return -1;
+            if (targetString.Length == 0) return -1;
+            for (int i = startIndex; i < _length - targetString.Length; i++)
+            {
+                if (targetString[0] != textDocument.GetCharAt(i)) continue;
+                bool match = true;
+                for (int j = 1; j < targetString.Length; j++)
+                {
+                    if (targetString[j] != textDocument.GetCharAt(i + j))
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) return i;
+            }
+            return -1;
         }
 
         public int FindPreviousIndexOf(string targetString, int startIndex)
         {
+            if (docLock.IsReadLockHeld)
+            {
+                return findPreviousIndexOf(targetString, startIndex);
+            }
+
             docLock.EnterReadLock();
             try
             {
-                if (targetString.Length == 0) return -1;
-                if (startIndex > _length - targetString.Length) startIndex = _length - targetString.Length;
-
-                for (int i = startIndex; i >= 0; i--)
-                {
-                    if (targetString[0] != textDocument.GetCharAt(i)) continue;
-                    bool match = true;
-                    for (int j = 1; j < targetString.Length; j++)
-                    {
-                        if (targetString[j] != textDocument.GetCharAt(i + j))
-                        {
-                            match = false;
-                            break;
-                        }
-                    }
-                    if (match) return i;
-                }
-                return -1;
+                return findPreviousIndexOf(targetString, startIndex);
             }
             finally
             {
                 docLock.ExitReadLock();
             }
         }
+        private int findPreviousIndexOf(string targetString, int startIndex)
+        {
+            if (targetString.Length == 0) return -1;
+            if (startIndex > _length - targetString.Length) startIndex = _length - targetString.Length;
+
+            for (int i = startIndex; i >= 0; i--)
+            {
+                if (targetString[0] != textDocument.GetCharAt(i)) continue;
+                bool match = true;
+                for (int j = 1; j < targetString.Length; j++)
+                {
+                    if (targetString[j] != textDocument.GetCharAt(i + j))
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) return i;
+            }
+            return -1;
+        }
 
         public string CreateString()
         {
+            if (docLock.IsReadLockHeld)
+            {
+                return createString();
+            }
+
             docLock.EnterReadLock();
             try
             {
@@ -646,6 +696,11 @@ namespace CodeEditor2.CodeEditor
 
         public string CreateString(int index, int length)
         {
+            if (docLock.IsReadLockHeld)
+            {
+                return createString(index, length);
+            }
+
             docLock.EnterReadLock();
             try
             {
@@ -659,6 +714,7 @@ namespace CodeEditor2.CodeEditor
         private string createString(int index, int length)
         {
             if (System.Diagnostics.Debugger.IsAttached && length < 0) System.Diagnostics.Debugger.Break();
+            //if (System.Diagnostics.Debugger.IsAttached && index + length > Length) System.Diagnostics.Debugger.Break();
             return textDocument.GetText(index, length);
         }
 
