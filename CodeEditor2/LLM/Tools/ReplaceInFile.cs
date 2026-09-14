@@ -149,11 +149,25 @@ namespace CodeEditor2.LLM.Tools
                     string searchContent = match.Groups[1].Value;
                     string replaceContent = match.Groups[2].Value;
 
+
                     // 4. 厳密一致のチェックと自己修復ヒントの提供
                     if (!updatedContent.Contains(searchContent))
                     {
                         // ヒントとなる類似コードブロックを探索
-                        string hint = FindSimilarCodeBlock(updatedContent, searchContent);
+                        //string hint = FindSimilarCodeBlock(updatedContent, searchContent);
+
+                        string hint = """
+
+                            One or more SEARCH/REPLACE blocks following this exact format:
+                            
+                            ```
+                            <<<<<<< SEARCH
+                            [exact content to find]
+                            =======
+                            [new content to replace with]
+                            >>>>>>> REPLACE
+                            ```
+                            """;
 
                         return $"Error: Could not find the EXACT original content in '{path}'. " +
                                $"Make sure you included ALL whitespace, indentation, and comments exactly as they appear in the file. " +
@@ -202,6 +216,7 @@ namespace CodeEditor2.LLM.Tools
         }
 
         // 類似するコードブロックを探索してヒント文字列を生成するメソッド
+        /*
         private string FindSimilarCodeBlock(string fileContent, string searchContent)
         {
             var fileLines = fileContent.Split('\n');
@@ -362,5 +377,6 @@ namespace CodeEditor2.LLM.Tools
             // 最後の交換後のpreviousRowが結果を含む
             return previousRow[m];
         }
+        */
     }
 }

@@ -38,18 +38,18 @@ namespace CodeEditor2.Parser
         public override async Task ParseAsync()
         {
 
-            for (int line = 1; line < Document.Lines; line++)
-            {
-                string lineText = Document.CreateString(Document.GetLineStartIndex(line), Document.GetLineLength(line));
-                if (lineText.StartsWith("#"))
-                {
-                    colorLine(Style.Color.Header, line);
-                }
-            }
+            //for (int line = 1; line < Document.Lines; line++)
+            //{
+            //    string lineText = Document.CreateString(Document.GetLineStartIndex(line), Document.GetLineLength(line));
+            //    if (lineText.StartsWith("#"))
+            //    {
+            //        ColorLine(Style.Color.Header, line);
+            //    }
+            //}
             if (ParseCustomYaml != null) ParseCustomYaml.Invoke(this);
         }
 
-        private void colorLine(Style.Color color, int line)
+        public void ColorLine(Style.Color color, int line)
         {
             int start = Document.GetLineStartIndex(line);
             int end = start + Document.GetLineLength(line);
@@ -58,5 +58,26 @@ namespace CodeEditor2.Parser
                 Document.TextColors.SetColorAt(i, (byte)color);
             }
         }
+        public void Color(Style.Color color, int start, int length)
+        {
+            for (int i = start; i < start+length; i++)
+            {
+                Document.TextColors.SetColorAt(i, (byte)color);
+            }
+        }
+
+        public void AddError(int index, int length, string message)
+        {
+            int lineNo = Document.GetLineAt(index);
+            if (ParsedDocument == null) return;
+            // add mark
+            Document.Marks.SetMarkAt(index, length, 0);
+
+
+            ParsedDocument.Messages.Add(new CodeEditor2.CodeEditor.ParsedDocument.Message() { Index = index, Project = ParsedDocument.Project, Text = message, Length = length });
+
+        }
+
+
     }
 }

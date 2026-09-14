@@ -77,11 +77,11 @@ namespace CodeEditor2.CodeEditor
 
         public class Message
         {
-            public int Index { get; protected set; }
-            public int Length { get; protected set; }
-            public string Text { get; protected set; } = "";
+            public int Index { get;  set; }
+            public int Length { get;  set; }
+            public string Text { get;  set; } = "";
 
-            public Data.Project? Project { get; protected set; } = null;
+            public Data.Project? Project { get;  set; } = null;
             public virtual MessageView.MessageNode? CreateMessageNode()
             {
                 return null;
