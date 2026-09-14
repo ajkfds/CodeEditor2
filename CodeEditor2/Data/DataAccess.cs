@@ -200,7 +200,11 @@ namespace CodeEditor2.Data
             var di = new DirectoryInfo(project.RootPath);
             // MatchType.Win32 を指定することで、Unix系OSでもWindowsと同等のマッチ動作となり、
             // ".svn" ".git" などの "." で始まるパスも列挙される。
-            var options = new EnumerationOptions { RecurseSubdirectories = true, MaxRecursionDepth = 1, IgnoreInaccessible = true, MatchType = MatchType.Win32 };
+            // AttributesToSkip に FileAttributes.Hidden を含めず System のみスキップすることで、
+            // Linux 環境で ".fileClassify" のような "." で始まる隠しファイルも列挙されるようにする。
+            // (デフォルトの AttributesToSkip には Hidden が含まれており、Linux では "." 始まりが
+            //  隠しファイル扱いとなるため列挙から除外されてしまう)
+            var options = new EnumerationOptions { RecurseSubdirectories = true, MaxRecursionDepth = 1, IgnoreInaccessible = true, MatchType = MatchType.Win32, AttributesToSkip = FileAttributes.System };
             var infos = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
 
             foreach (var info in infos)
@@ -293,7 +297,9 @@ namespace CodeEditor2.Data
                     var di = new DirectoryInfo(cashePath);
                     // MatchType.Win32 を指定することで、Unix系OSでもWindowsと同等のマッチ動作となり、
                     // ".svn" ".git" などの "." で始まるパスも列挙される。
-                    var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = true, MatchType = MatchType.Win32 };
+                    // AttributesToSkip に FileAttributes.Hidden を含めず System のみスキップすることで、
+                    // Linux 環境でも ".fileClassify" のような "." で始まる隠しファイルが列挙されるようにする。
+                    var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = true, MatchType = MatchType.Win32, AttributesToSkip = FileAttributes.System };
                     var infoList = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
 
                     foreach (var info in infoList)
@@ -326,7 +332,9 @@ namespace CodeEditor2.Data
             var di = new DirectoryInfo(project.GetAbsolutePath(relativePath));
             // MatchType.Win32 を指定することで、Unix系OSでもWindowsと同等のマッチ動作となり、
             // ".svn" ".git" などの "." で始まるパスも列挙される。
-            var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = true, MatchType = MatchType.Win32 };
+            // AttributesToSkip に FileAttributes.Hidden を含めず System のみスキップすることで、
+            // Linux 環境でも ".fileClassify" のような "." で始まる隠しファイルが列挙されるようにする。
+            var options = new EnumerationOptions { RecurseSubdirectories = false, IgnoreInaccessible = true, MatchType = MatchType.Win32, AttributesToSkip = FileAttributes.System };
 
             // 列挙自体は同期処理だが、Task.Run内で回すことで非同期ストリーム化
             var infoList = await Task.Run(() => di.EnumerateFileSystemInfos("*", options));
