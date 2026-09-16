@@ -101,14 +101,20 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 prevChar = codeView.CodeDocument.GetCharAt(prevIndex);
             }
 
-            string? candidateWord;
-            List<PopupMenu.ToolItem>? items = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset, out candidateWord);
-            if (items == null || candidateWord == null)
+            CompletionContext? completionContext = codeView.TextFile.GetAutoCompleteItems(codeView._textEditor.CaretOffset);
+            if(completionContext== null)
             {
                 Close();
                 return;
             }
-            if (candidateWord == "" & prevChar != '.')
+
+            List<PopupMenu.ToolItem>? items = completionContext.AutoCompleteItems;
+            if (items == null || completionContext.CandidateWord == null)
+            {
+                Close();
+                return;
+            }
+            if (completionContext.CandidateWord == "" & prevChar != '.')
             {
                 Close();
                 return;
@@ -117,7 +123,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             List<PopupMenu.ToolItem> toolItems = new List<PopupMenu.ToolItem>();
             foreach (PopupMenu.ToolItem aItem in items)
             {
-                if (candidateWord.Length < 1 || aItem.Text.StartsWith(candidateWord))
+                if (completionContext.CandidateWord.Length < 1 || aItem.Text.StartsWith(completionContext.CandidateWord))
                 {
                     aItem.Assign(codeView.CodeDocument);
                     toolItems.Add(aItem);

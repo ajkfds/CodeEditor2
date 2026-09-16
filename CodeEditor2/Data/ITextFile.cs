@@ -63,7 +63,7 @@ namespace CodeEditor2.Data
         //        void BeforeKeyDown(System.Windows.Forms.KeyEventArgs e);
 
         //        PopupItem GetPopupItem(ulong Version, int index);
-        List<CodeEditor.PopupMenu.ToolItem>? GetAutoCompleteItems(int index, out string? cantidateText);
+        CodeEditor.CodeComplete.CompletionContext? GetAutoCompleteItems(int index);
         List<ToolItem>? GetToolItems(int index);
 
 

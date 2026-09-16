@@ -746,11 +746,9 @@ namespace CodeEditor2.Data
         /// Gets auto-complete items at the specified index.
         /// </summary>
         /// <param name="index">The index in the document.</param>
-        /// <param name="candidateWord">The candidate word for auto-completion.</param>
         /// <returns>A list of AutocompleteItem if available, or null.</returns>
-        public virtual List<CodeEditor.PopupMenu.ToolItem>? GetAutoCompleteItems(int index, out string? candidateWord)
+        public virtual  CodeEditor.CodeComplete.CompletionContext? GetAutoCompleteItems(int index)
         {
-            candidateWord = "";
             return null;
         }
 

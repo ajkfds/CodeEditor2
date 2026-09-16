@@ -105,51 +105,52 @@ public partial class ChatControl : UserControl
         if (textFile == null) return;
         if (textFile.CodeDocument == null) return;
 
-        // Get caret position in the chat input
-        int caretOffset = inputItem.TextEditor.CaretOffset;
-        if (caretOffset == 0) return;
+        //// Get caret position in the chat input
+        //int caretOffset = inputItem.TextEditor.CaretOffset;
+        //if (caretOffset == 0) return;
 
-        // Get the text before caret to determine the word to complete
-        string text = inputItem.TextEditor.Text ?? "";
-        if (string.IsNullOrEmpty(text)) return;
+        //// Get the text before caret to determine the word to complete
+        //string text = inputItem.TextEditor.Text ?? "";
+        //if (string.IsNullOrEmpty(text)) return;
 
-        // Get autocomplete items from the InputItem's TextFile, using the chat input's caret position
-        var autocompleteItems = textFile.GetAutoCompleteItems(caretOffset, out string? candidateText);
-        if (autocompleteItems == null || autocompleteItems.Count == 0) return;
+        //// Get autocomplete items from the InputItem's TextFile, using the chat input's caret position
+        ////        var autocompleteItems = textFile.GetAutoCompleteItems(caretOffset, out string? candidateText);
+        ////        if (autocompleteItems == null || autocompleteItems.Count == 0) return;
+        //string? candidateText = "";
 
-        // Use the candidate word returned by the TextFile's autocomplete logic.
-        // Fall back to extracting it locally if the TextFile did not provide one.
-        string candidateWord = candidateText ?? "";
-        if (string.IsNullOrEmpty(candidateWord))
-        {
-            int wordStart = caretOffset - 1;
-            while (wordStart >= 0 && IsWordChar(text[wordStart]))
-            {
-                wordStart--;
-            }
-            wordStart++;
-            if (wordStart < caretOffset)
-            {
-                candidateWord = text.Substring(wordStart, caretOffset - wordStart);
-            }
-        }
+        //// Use the candidate word returned by the TextFile's autocomplete logic.
+        //// Fall back to extracting it locally if the TextFile did not provide one.
+        //string candidateWord = candidateText ?? "";
+        //if (string.IsNullOrEmpty(candidateWord))
+        //{
+        //    int wordStart = caretOffset - 1;
+        //    while (wordStart >= 0 && IsWordChar(text[wordStart]))
+        //    {
+        //        wordStart--;
+        //    }
+        //    wordStart++;
+        //    if (wordStart < caretOffset)
+        //    {
+        //        candidateWord = text.Substring(wordStart, caretOffset - wordStart);
+        //    }
+        //}
 
-        // Filter items by candidate word (the TextFile may have already filtered them,
-        // but be defensive in case it returned a broader set).
-        List<ToolItem> toolItems = new List<ToolItem>();
-        foreach (var item in autocompleteItems)
-        {
-            if (string.IsNullOrEmpty(candidateWord) || item.Text.StartsWith(candidateWord))
-            {
-                item.Assign(textFile.CodeDocument);
-                toolItems.Add(item);
-            }
-        }
+        //// Filter items by candidate word (the TextFile may have already filtered them,
+        //// but be defensive in case it returned a broader set).
+        //List<ToolItem> toolItems = new List<ToolItem>();
+        //foreach (var item in autocompleteItems)
+        //{
+        //    if (string.IsNullOrEmpty(candidateWord) || item.Text.StartsWith(candidateWord))
+        //    {
+        //        item.Assign(textFile.CodeDocument);
+        //        toolItems.Add(item);
+        //    }
+        //}
 
-        if (toolItems.Count == 0) return;
+        //if (toolItems.Count == 0) return;
 
-        // Open the popup menu at the chat input location
-        OpenAutoComplete(toolItems, candidateWord);
+        //// Open the popup menu at the chat input location
+        //OpenAutoComplete(toolItems, candidateWord);
     }
 
     /// <summary>

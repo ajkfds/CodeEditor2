@@ -60,13 +60,13 @@ namespace CodeEditor2.LLM.Tools
         public override AIFunction GetAIFunction() { return AIFunctionFactory.Create(Run, "replace_in_file"); }
 
         public override string XmlExample { get; } = """
+            One or more SEARCH/REPLACE blocks following this exact format:
             ```xml
-            <replace_in_file>
-            <path>File path here</path>
-            <diff>
-            Search and replace blocks here
-            </diff>
-            </replace_in_file>         
+            <<<<<<< SEARCH
+            [exact content to find]
+            =======
+            [new content to replace with]
+            >>>>>>> REPLACE
             ```
             """;
 
@@ -81,7 +81,7 @@ namespace CodeEditor2.LLM.Tools
         string path,
         [Description("""
             One or more SEARCH/REPLACE blocks following this exact format:
-            ```
+            ```xml
             <<<<<<< SEARCH
             [exact content to find]
             =======
@@ -89,7 +89,7 @@ namespace CodeEditor2.LLM.Tools
             >>>>>>> REPLACE
             ```
             Critical rules:
-            1. SEARCH content must match the associated file section to find EXACTLY:
+            1. SEARCH content must match the associated file section to find EXACTLY:z
                * Match character-for-character including whitespace, indentation, line endings
                * Include all comments, docstrings, etc.
             2. SEARCH/REPLACE blocks will ONLY replace the first match occurrence.
@@ -140,7 +140,10 @@ namespace CodeEditor2.LLM.Tools
                 var matches = blockRegex.Matches(diffNormalized);
 
                 if (matches.Count == 0)
-                    return "Error: No valid SEARCH/REPLACE blocks found. Please check your formatting exactly.";
+                {
+                    return "Error: No valid SEARCH/REPLACE blocks found. Please check your formatting exactly."+ "\n\n" + XmlExample;
+
+                }
 
                 string updatedContent = fileContent;
 
@@ -156,18 +159,7 @@ namespace CodeEditor2.LLM.Tools
                         // ヒントとなる類似コードブロックを探索
                         //string hint = FindSimilarCodeBlock(updatedContent, searchContent);
 
-                        string hint = """
-
-                            One or more SEARCH/REPLACE blocks following this exact format:
-                            
-                            ```
-                            <<<<<<< SEARCH
-                            [exact content to find]
-                            =======
-                            [new content to replace with]
-                            >>>>>>> REPLACE
-                            ```
-                            """;
+                        string hint = "\n\n"+XmlExample;
 
                         return $"Error: Could not find the EXACT original content in '{path}'. " +
                                $"Make sure you included ALL whitespace, indentation, and comments exactly as they appear in the file. " +

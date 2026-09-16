@@ -93,45 +93,46 @@ namespace CodeEditor2.Data
         /// Scans the current chat input text and proposes identifiers already
         /// present in the buffer as candidates.
         /// </summary>
-        public override List<CodeEditor.PopupMenu.ToolItem>? GetAutoCompleteItems(int index, out string? candidateWord)
+        public override CodeEditor.CodeComplete.CompletionContext? GetAutoCompleteItems(int index)
         {
-            candidateWord = "";
-            if (CodeDocument == null) return null;
+            return null;
+            //candidateWord = "";
+            //if (CodeDocument == null) return null;
 
-            // Extract current word (identifier-like) at index
-            string text = CodeDocument.CreateString();
-            if (string.IsNullOrEmpty(text)) return null;
-            if (index <= 0 || index > text.Length) return null;
+            //// Extract current word (identifier-like) at index
+            //string text = CodeDocument.CreateString();
+            //if (string.IsNullOrEmpty(text)) return null;
+            //if (index <= 0 || index > text.Length) return null;
 
-            int wordStart = index - 1;
-            while (wordStart >= 0 && IsWordChar(text[wordStart]))
-            {
-                wordStart--;
-            }
-            wordStart++;
+            //int wordStart = index - 1;
+            //while (wordStart >= 0 && IsWordChar(text[wordStart]))
+            //{
+            //    wordStart--;
+            //}
+            //wordStart++;
 
-            if (wordStart >= index) return null;
-            candidateWord = text.Substring(wordStart, index - wordStart);
+            //if (wordStart >= index) return null;
+            //candidateWord = text.Substring(wordStart, index - wordStart);
 
-            // Collect unique identifiers from the text
-            var matches = Regex.Matches(text, @"[A-Za-z_$][A-Za-z0-9_$]*");
-            var seen = new HashSet<string>();
-            var items = new List<CodeEditor.PopupMenu.ToolItem>();
-            foreach (Match m in matches)
-            {
-                string word = m.Value;
-                if (word.Length < 2) continue;
-                if (seen.Contains(word)) continue;
-                if (!string.IsNullOrEmpty(candidateWord) && !word.StartsWith(candidateWord)) continue;
-                seen.Add(word);
-                items.Add(new AutocompleteItem(
-                    word,
-                    0,
-                    Color.FromRgb(212, 212, 212)
-                    ));
-            }
+            //// Collect unique identifiers from the text
+            //var matches = Regex.Matches(text, @"[A-Za-z_$][A-Za-z0-9_$]*");
+            //var seen = new HashSet<string>();
+            //var items = new List<CodeEditor.PopupMenu.ToolItem>();
+            //foreach (Match m in matches)
+            //{
+            //    string word = m.Value;
+            //    if (word.Length < 2) continue;
+            //    if (seen.Contains(word)) continue;
+            //    if (!string.IsNullOrEmpty(candidateWord) && !word.StartsWith(candidateWord)) continue;
+            //    seen.Add(word);
+            //    items.Add(new AutocompleteItem(
+            //        word,
+            //        0,
+            //        Color.FromRgb(212, 212, 212)
+            //        ));
+            //}
 
-            return items;
+            //return items;
         }
 
         private static bool IsWordChar(char c)
