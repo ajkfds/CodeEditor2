@@ -403,6 +403,18 @@ namespace CodeEditor2.CodeEditor
                     Global.codeView.UpdateFoldings();
                 }
             }
+            else
+            {
+                // Schedule UpdateFoldings on the UI thread so that fold markers stay in
+                // sync even when CopyColorMarkFrom is invoked from a background parser thread.
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    if (Global.codeView.TextFile != null && Global.codeView.TextFile.CodeDocument == this)
+                    {
+                        Global.codeView.UpdateFoldings();
+                    }
+                });
+            }
         }
         protected void EnterReadLock()
         {

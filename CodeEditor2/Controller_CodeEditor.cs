@@ -248,6 +248,7 @@ namespace CodeEditor2
 
                 Global.codeView.Redraw();
                 Global.codeView.UpdateMarks();
+                Global.codeView.UpdateFoldings();
             }
 
             public static void PostScrollToCaret()

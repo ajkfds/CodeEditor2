@@ -490,6 +490,9 @@ namespace CodeEditor2.Views
 
             if (CodeDocument != null) CodeDocument.Changing += CodeDocument_Changing;
             _foldingManager = FoldingManager.Install(_textEditor.TextArea);
+            // Re-apply existing Foldings onto the newly installed folding manager so
+            // that fold markers are visible immediately after a file switch.
+            UpdateFoldings();
         }
 
         public void ScrollToCaret()
