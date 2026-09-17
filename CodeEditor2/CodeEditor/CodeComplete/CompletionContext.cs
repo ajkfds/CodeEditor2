@@ -10,7 +10,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         public string CandidateWord = "";
         public int CandidateStartIndex;
         public List<PopupMenu.ToolItem> AutoCompleteItems = new List<PopupMenu.ToolItem>();
-        public List<AjkAvaloniaLibs.Controls.ColorLabel> PopupLabels = new List<AjkAvaloniaLibs.Controls.ColorLabel>();
+        public List<CodeEditor2.CodeEditor.PopupHint.PopupItem> PopupItems = new List<CodeEditor2.CodeEditor.PopupHint.PopupItem>();
 
 
     }

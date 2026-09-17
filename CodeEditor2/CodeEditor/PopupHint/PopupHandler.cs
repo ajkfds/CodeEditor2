@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using AvaloniaEdit;
 using CodeEditor2.Views;
+using System.Collections.Generic;
 using System;
 
 namespace CodeEditor2.CodeEditor.PopupHint
@@ -85,6 +86,11 @@ namespace CodeEditor2.CodeEditor.PopupHint
             }
         }
 
+        public void OpenPopup(List<PopupItem> popupItems)
+        {
+            var caretRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
+
+        }
 
     }
 
