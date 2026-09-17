@@ -88,8 +88,53 @@ namespace CodeEditor2.CodeEditor.PopupHint
 
         public void OpenPopup(List<PopupItem> popupItems)
         {
+            if (codeView == null || codeView.Editor == null) return;
+            if (popupItems == null || popupItems.Count == 0) return;
+
+            // Calculate caret rectangle in editor (text area) coordinates.
             var caretRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
 
+            // Combine all popup items into a single PopupItem so that we can
+            // reuse the existing ToolTip-based popup mechanism (PopupTextBlock).
+            PopupItem combined = new PopupItem();
+            foreach (PopupItem? item in popupItems)
+            {
+                if (item == null) continue;
+                List<AjkAvaloniaLibs.Controls.ColorLabel.labelItem> itemLabels = item.GetItems();
+                if (itemLabels == null) continue;
+                foreach (var label in itemLabels)
+                {
+                    combined.GetItems().Add(label);
+                }
+                // Insert a newline between popup items so they appear on separate lines.
+                combined.GetItems().Add(new AjkAvaloniaLibs.Controls.ColorLabel.labelNewLine());
+            }
+            combined.RemoveLastNewLine();
+
+            // Update the ToolTip content (TextBlock shared with TextArea_PointerMoved).
+            if (codeView.PopupTextBlock.Inlines == null) return;
+            codeView.PopupTextBlock.Inlines.Clear();
+            if (combined.ItemCount > 0)
+            {
+                combined.AppendToTextBlock(codeView.PopupTextBlock);
+            }
+
+            if (codeView.PopupTextBlock.Inlines.Count == 0)
+            {
+                ToolTip.SetIsOpen(codeView.Editor, false);
+                return;
+            }
+
+            // Anchor the ToolTip to the caret position. The placement target
+            // is codeView.Editor, so the offset is interpreted relative to it.
+            ToolTip.SetPlacement(codeView.Editor, PlacementMode.BottomEdgeAlignedLeft);
+            ToolTip.SetVerticalOffset(codeView.Editor, caretRect.Height);
+            ToolTip.SetHorizontalOffset(codeView.Editor, 0);
+
+            // Close once so that the popup repositions at the new caret location,
+            // then open it.
+            ToolTip.SetIsOpen(codeView.Editor, false);
+            ToolTip.SetIsOpen(codeView.Editor, true);
         }
 
     }
