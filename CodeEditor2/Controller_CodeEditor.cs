@@ -44,6 +44,10 @@ namespace CodeEditor2
                     return Global.codeView.contextMenu;
                 }
             }
+            public static void OpenPopup(List<CodeEditor2.CodeEditor.PopupHint.PopupItem> popupItems)
+            {
+                Global.codeView.codeViewPopup.OpenPopup(popupItems);
+            }
 
             public static void SetCaretPosition(int index)
             {

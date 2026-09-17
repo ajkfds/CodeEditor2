@@ -107,6 +107,10 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 Close();
                 return;
             }
+            if (completionContext.PopupItems.Count != 0)
+            {
+                Controller.CodeEditor.OpenPopup(completionContext.PopupItems);
+            }
 
             List<PopupMenu.ToolItem>? items = completionContext.AutoCompleteItems;
             if (items == null || completionContext.CandidateWord == null)
