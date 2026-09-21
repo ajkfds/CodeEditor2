@@ -127,13 +127,13 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 Close();
                 return;
             }
-            if (completionContext.PopupItems.Count == 0)
+            if (completionContext.CarletPopupItems.Count == 0)
             {
                 CloseHint();
             }
             else
             {
-                Controller.CodeEditor.OpenPopup(completionContext.PopupItems);
+                Controller.CodeEditor.OpenPopup(completionContext.CarletPopupItems);
             }
 
             List<PopupMenu.ToolItem>? items = completionContext.AutoCompleteItems;
