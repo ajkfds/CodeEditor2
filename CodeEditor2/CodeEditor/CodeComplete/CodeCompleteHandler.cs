@@ -16,17 +16,34 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         //        private AutoCompleteWindow? _completionWindow;
         private PopupMenuView? popupMenuView = null;
         private bool working = false;
-
+        private bool hintWorking = false;
 
         public void Close()
         {
+            CloseHint();
+
             if (popupMenuView == null) return;
             popupMenuView.Cancel();
+
             working = false;
+        }
+
+        public void CloseHint()
+        {
+            hintWorking = false;
+            Controller.CodeEditor.ClosePopup();
         }
 
         public void KeyDown(object? sender, KeyEventArgs e)
         {
+            if (hintWorking)
+            {
+                if(e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Left || e.Key == Key.Right)
+                {
+                    CloseHint();
+                }
+            }
+
             if (!working) return;
             if (codeView.TextFile == null) return;
             if (codeView.CodeDocument == null) return;
@@ -44,12 +61,14 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
             else if (e.Key == Key.OemComma)
             {
+                if (hintWorking) CloseHint();
                 Apply();
                 Close();
                 return;
             }
             else if (e.Key == Key.Enter)
             {
+                if (hintWorking) CloseHint();
                 Apply();
                 Close();
                 e.Handled = true;
@@ -57,6 +76,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
             else if (e.Key == Key.Tab)
             {
+                if (hintWorking) CloseHint();
                 Apply();
                 Close();
                 e.Handled = true;
@@ -64,6 +84,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
             else if (e.Key == Key.Space)
             {
+                if (hintWorking) CloseHint();
                 Apply();
                 Close();
                 return;
@@ -77,6 +98,7 @@ namespace CodeEditor2.CodeEditor.CodeComplete
 
         public void Apply()
         {
+            Controller.CodeEditor.ClosePopup();
             if (codeView.TextFile == null) return;
             if (codeView.CodeDocument == null) return;
             if (popupMenuView == null) return;
@@ -84,12 +106,10 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             PopupMenu.PopupMenuItem? popupMenuItem = popupMenuView.GetSlectedItem();
             if (popupMenuItem == null) return;
             popupMenuItem.OnSelected();
-
         }
 
         public void TextEntered(object? sender, TextInputEventArgs e)
         {
-            System.Diagnostics.Debug.Print("### TextEnteted " + working.ToString());
             if (codeView.TextFile == null) return;
             if (codeView.CodeDocument == null) return;
 
@@ -107,7 +127,11 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 Close();
                 return;
             }
-            if (completionContext.PopupItems.Count != 0)
+            if (completionContext.PopupItems.Count == 0)
+            {
+                CloseHint();
+            }
+            else
             {
                 Controller.CodeEditor.OpenPopup(completionContext.PopupItems);
             }

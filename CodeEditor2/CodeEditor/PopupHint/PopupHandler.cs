@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using AvaloniaEdit;
@@ -59,7 +60,6 @@ namespace CodeEditor2.CodeEditor.PopupHint
             if (codeView.PopupTextBlock.Inlines == null) throw new Exception();
 
             codeView.PopupTextBlock.Inlines.Clear();
-            //            CodeEditor2.CodeEditor.TextBlockMessages messages = new TextBlockMessages(codeView.PopupTextBlock);
             PopupItem? popupItem = codeView.TextFile.GetPopupItem(codeView.CodeDocument.Version, index);
             if (popupItem != null && popupItem.ItemCount > 0)
             {
@@ -67,8 +67,7 @@ namespace CodeEditor2.CodeEditor.PopupHint
                 popupItem.AppendToTextBlock(codeView.PopupTextBlock);
             }
 
-
-            if (codeView.PopupTextBlock.Inlines.Count == 0)//pItem == null || pItem.Inlines == null || pItem.Inlines.Count == 0)
+            if (codeView.PopupTextBlock.Inlines.Count == 0)
             {
                 ToolTip.SetIsOpen(codeView.Editor, false);
                 return;
@@ -81,6 +80,13 @@ namespace CodeEditor2.CodeEditor.PopupHint
             //            ToolTip.SetIsOpen(codeView.Editor, false); // close once to update pop-up window position
             //if (pItem.GetItems().Count != 0)
             {
+                // Mouse hover: anchor the ToolTip to the pointer (default placement).
+                // OpenPopup() may have previously set BottomEdgeAlignedLeft for the
+                // caret, so make sure pointer-driven popups restore the pointer
+                // placement here.
+                ToolTip.SetPlacement(codeView.Editor, PlacementMode.Pointer);
+                ToolTip.SetHorizontalOffset(codeView.Editor, 0);
+                ToolTip.SetVerticalOffset(codeView.Editor, 0);
                 //                ToolTip.SetIsOpen(codeView.Editor, false);
                 ToolTip.SetIsOpen(codeView.Editor, true);
             }
@@ -127,14 +133,29 @@ namespace CodeEditor2.CodeEditor.PopupHint
 
             // Anchor the ToolTip to the caret position. The placement target
             // is codeView.Editor, so the offset is interpreted relative to it.
+            //
+            // caretRect is in TextArea coordinates, so translate it into the
+            // Editor (placement target) coordinate space before applying it
+            // as the ToolTip offset.
+            Avalonia.Point? caretOriginInEditor = codeView._textEditor.TextArea
+                .TranslatePoint(new Avalonia.Point(caretRect.X, caretRect.Y), codeView.Editor);
+            double caretOffsetX = caretOriginInEditor?.X ?? caretRect.X;
+            double caretOffsetY = caretOriginInEditor?.Y ?? caretRect.Y;
+
             ToolTip.SetPlacement(codeView.Editor, PlacementMode.BottomEdgeAlignedLeft);
-            ToolTip.SetVerticalOffset(codeView.Editor, caretRect.Height);
-            ToolTip.SetHorizontalOffset(codeView.Editor, 0);
+            ToolTip.SetHorizontalOffset(codeView.Editor, caretOffsetX);
+            ToolTip.SetVerticalOffset(codeView.Editor, caretOffsetY - caretRect.Height);
 
             // Close once so that the popup repositions at the new caret location,
             // then open it.
             ToolTip.SetIsOpen(codeView.Editor, false);
             ToolTip.SetIsOpen(codeView.Editor, true);
+        }
+
+        public void ClosePopup()
+        {
+            if (codeView == null || codeView.Editor == null) return;
+            ToolTip.SetIsOpen(codeView.Editor, false);
         }
 
     }

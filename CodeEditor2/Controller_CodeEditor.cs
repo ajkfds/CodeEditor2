@@ -49,6 +49,10 @@ namespace CodeEditor2
                 Global.codeView.codeViewPopup.OpenPopup(popupItems);
             }
 
+            public static void ClosePopup()
+            {
+                Global.codeView.codeViewPopup.ClosePopup();
+            }
             public static void SetCaretPosition(int index)
             {
                 if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();

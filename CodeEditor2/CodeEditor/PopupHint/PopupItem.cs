@@ -11,6 +11,11 @@ namespace CodeEditor2.CodeEditor.PopupHint
         {
             AppendText(text, color);
         }
+
+        public PopupItem(AjkAvaloniaLibs.Controls.ColorLabel colorLabel)
+        {
+            AppendLabel(colorLabel);
+        }
     }
 
 }
