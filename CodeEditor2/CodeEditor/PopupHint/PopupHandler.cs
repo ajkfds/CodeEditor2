@@ -21,6 +21,33 @@ namespace CodeEditor2.CodeEditor.PopupHint
         CodeView codeView;
 
         private int popupInex = -1;
+
+        // Combine the given PopupItems into a single PopupItem. Items are joined
+        // by a newline so that each item appears on its own line.
+        // Returns null if the resulting PopupItem would be empty.
+        private static PopupItem? CombinePopupItems(IEnumerable<PopupItem?>? popupItems)
+        {
+            if (popupItems == null) return null;
+            PopupItem combined = new PopupItem();
+            bool any = false;
+            foreach (PopupItem? item in popupItems)
+            {
+                if (item == null) continue;
+                List<AjkAvaloniaLibs.Controls.ColorLabel.labelItem> itemLabels = item.GetItems();
+                if (itemLabels == null) continue;
+                foreach (var label in itemLabels)
+                {
+                    combined.GetItems().Add(label);
+                }
+                // Insert a newline between popup items so they appear on separate lines.
+                combined.GetItems().Add(new AjkAvaloniaLibs.Controls.ColorLabel.labelNewLine());
+                any = true;
+            }
+            if (!any) return null;
+            combined.RemoveLastNewLine();
+            return combined;
+        }
+
         public void TextArea_PointerMoved(object? sender, PointerEventArgs e)
         {
             if (codeView.CodeDocument == null || codeView.TextFile == null)
@@ -60,6 +87,9 @@ namespace CodeEditor2.CodeEditor.PopupHint
             if (codeView.PopupTextBlock.Inlines == null) throw new Exception();
 
             codeView.PopupTextBlock.Inlines.Clear();
+
+            // Mouse-over hint popup: use the lightweight GetPopupItem API so that
+            // we do not trigger heavy parsing on every pointer-move event.
             PopupItem? popupItem = codeView.TextFile.GetPopupItem(codeView.CodeDocument.Version, index);
             if (popupItem != null && popupItem.ItemCount > 0)
             {
@@ -73,23 +103,14 @@ namespace CodeEditor2.CodeEditor.PopupHint
                 return;
             }
 
-
-            //.Inlines.Clear();
-            //codeView.PopupColorLabel.Add(pItem);
-
-            //            ToolTip.SetIsOpen(codeView.Editor, false); // close once to update pop-up window position
-            //if (pItem.GetItems().Count != 0)
-            {
-                // Mouse hover: anchor the ToolTip to the pointer (default placement).
-                // OpenPopup() may have previously set BottomEdgeAlignedLeft for the
-                // caret, so make sure pointer-driven popups restore the pointer
-                // placement here.
-                ToolTip.SetPlacement(codeView.Editor, PlacementMode.Pointer);
-                ToolTip.SetHorizontalOffset(codeView.Editor, 0);
-                ToolTip.SetVerticalOffset(codeView.Editor, 0);
-                //                ToolTip.SetIsOpen(codeView.Editor, false);
-                ToolTip.SetIsOpen(codeView.Editor, true);
-            }
+            // Mouse hover: anchor the ToolTip to the pointer (default placement).
+            // OpenPopup() may have previously set BottomEdgeAlignedLeft for the
+            // caret, so make sure pointer-driven popups restore the pointer
+            // placement here.
+            ToolTip.SetPlacement(codeView.Editor, PlacementMode.Pointer);
+            ToolTip.SetHorizontalOffset(codeView.Editor, 0);
+            ToolTip.SetVerticalOffset(codeView.Editor, 0);
+            ToolTip.SetIsOpen(codeView.Editor, true);
         }
 
         public void OpenPopup(List<PopupItem> popupItems)
@@ -102,20 +123,8 @@ namespace CodeEditor2.CodeEditor.PopupHint
 
             // Combine all popup items into a single PopupItem so that we can
             // reuse the existing ToolTip-based popup mechanism (PopupTextBlock).
-            PopupItem combined = new PopupItem();
-            foreach (PopupItem? item in popupItems)
-            {
-                if (item == null) continue;
-                List<AjkAvaloniaLibs.Controls.ColorLabel.labelItem> itemLabels = item.GetItems();
-                if (itemLabels == null) continue;
-                foreach (var label in itemLabels)
-                {
-                    combined.GetItems().Add(label);
-                }
-                // Insert a newline between popup items so they appear on separate lines.
-                combined.GetItems().Add(new AjkAvaloniaLibs.Controls.ColorLabel.labelNewLine());
-            }
-            combined.RemoveLastNewLine();
+            PopupItem? combined = CombinePopupItems(popupItems);
+            if (combined == null) return;
 
             // Update the ToolTip content (TextBlock shared with TextArea_PointerMoved).
             if (codeView.PopupTextBlock.Inlines == null) return;

@@ -127,13 +127,18 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 Close();
                 return;
             }
+            // Input-time hint popup (anchored to the caret).
+            // Show the carlet popup when there is at least one popup item and the
+            // popup-menu (auto-complete) is not currently working, so that the hint
+            // does not collide with the auto-complete dropdown.
             if (completionContext.CarletPopupItems.Count == 0)
             {
-                CloseHint();
+                if (!working) CloseHint();
             }
             else
             {
                 Controller.CodeEditor.OpenPopup(completionContext.CarletPopupItems);
+                hintWorking = true;
             }
 
             List<PopupMenu.ToolItem>? items = completionContext.AutoCompleteItems;

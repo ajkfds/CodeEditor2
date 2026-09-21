@@ -732,7 +732,10 @@ namespace CodeEditor2.Data
         }
 
         /// <summary>
-        /// Gets a popup item at the specified index.
+        /// Gets a popup item at the specified index. Used by the mouse-over
+        /// hint popup (PopupHandler.TextArea_PointerMoved). The default
+        /// implementation returns null; language plugins override this to
+        /// provide a lightweight lookup that does not trigger heavy parsing.
         /// </summary>
         /// <param name="Version">The document version.</param>
         /// <param name="index">The index in the document.</param>

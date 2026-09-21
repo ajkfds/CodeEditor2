@@ -1,6 +1,7 @@
 using CodeEditor2.CodeEditor;
 using CodeEditor2.CodeEditor.CodeComplete;
 using CodeEditor2.CodeEditor.Parser;
+using CodeEditor2.CodeEditor.PopupHint;
 using CodeEditor2.CodeEditor.PopupMenu;
 using System;
 using System.Collections.Generic;
@@ -62,7 +63,10 @@ namespace CodeEditor2.Data
         //        void BeforeKeyPressed(System.Windows.Forms.KeyPressEventArgs e);
         //        void BeforeKeyDown(System.Windows.Forms.KeyEventArgs e);
 
-        //        PopupItem GetPopupItem(ulong Version, int index);
+        // Returns the PopupItem used for mouse-over hint popup. This is invoked
+        // frequently from the UI thread (pointer-move event), so plugins should
+        // implement a lightweight lookup here (avoid running heavy parsing).
+        PopupItem? GetPopupItem(ulong Version, int index);
         CodeEditor.CodeComplete.CompletionContext? GetAutoCompleteItems(int index);
         List<ToolItem>? GetToolItems(int index);
 
