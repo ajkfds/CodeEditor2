@@ -861,14 +861,22 @@ public partial class ChatControl : UserControl
 
         while (retryCount <= maxRetries)
         {
+            // Timer cleanup state. Finalized in the finally block below on every exit path.
+            // NOTE: Do not use "using var" for the CTS here. On exception exit paths (the catch
+            // clauses below leave the try block without stopping the timer) "using" would dispose
+            // the CTS while the timer task is still running and cause
+            // System.ObjectDisposedException ("The CancellationTokenSource has been disposed")
+            // inside the timer loop.
+            CancellationTokenSource? timerCancellationTokenSource = null;
+            Task displayTimerTask = Task.CompletedTask;
             try
             {
                 // Start progress timer
                 var stopwatch = Stopwatch.StartNew();
 
                 bool timerActivate = true; // timer activate flag, timer will be stopped when first result is returned
-                using var timerCancellationTokenSource = new CancellationTokenSource();
-                var displayTimerTask = Task.Run(async () =>
+                timerCancellationTokenSource = new CancellationTokenSource();
+                displayTimerTask = Task.Run(async () =>
                 {
                     while (!timerCancellationTokenSource.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
                     {
@@ -1022,6 +1030,28 @@ public partial class ChatControl : UserControl
                 {
                     resultItem.TextColor = Avalonia.Media.Colors.IndianRed;
                 });
+            }
+            finally
+            {
+                // Guarantee timer shutdown on every exit path (success / cancel / retry).
+                // The order matters: Cancel() -> await displayTimerTask -> Dispose().
+                // Disposing the CTS before the timer task completes leaves the running task
+                // holding a disposed CTS (System.ObjectDisposedException), and on the retry
+                // path the old timer could keep writing to the same resultItem in parallel
+                // with the newly started timer.
+                if (timerCancellationTokenSource != null)
+                {
+                    timerCancellationTokenSource.Cancel();
+                    try
+                    {
+                        await displayTimerTask;
+                    }
+                    catch
+                    {
+                        // Observe timer task faults so they never mask the original exception.
+                    }
+                    timerCancellationTokenSource.Dispose();
+                }
             }
         }
 
