@@ -889,6 +889,7 @@ public partial class ChatControl : UserControl
 
                 cancellationToken.ThrowIfCancellationRequested();
 
+
                 // Execute chat command
                 // Process streaming response
                 await foreach (string ret in chat.GetAsyncCollectionChatResult(command, tools, cancellationToken))
@@ -900,6 +901,7 @@ public partial class ChatControl : UserControl
                         timerActivate = false;
                         await resultItem.SetText("");
                     }
+
                     // Append result text
                     await resultItem.AppendText(ret);
 

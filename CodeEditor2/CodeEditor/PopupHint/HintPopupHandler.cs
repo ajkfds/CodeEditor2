@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CodeEditor2.Views;
@@ -110,6 +111,16 @@ namespace CodeEditor2.CodeEditor.PopupHint
 
            Popup? hintPopup = codeView.HintPopup;
            if (hintPopup == null) return;
+
+           // The popup is created in the CodeView constructor and is not part
+           // of any visual / logical tree. Avalonia resolves the host TopLevel
+           // (Window) of a Popup from its logical parent, so attach the
+           // logical parent here (same approach as AvaloniaEdit
+           // CompletionWindowBase.AttachEvents). Without this, setting
+           // IsOpen = true shows nothing.
+           TopLevel? topLevel = TopLevel.GetTopLevel(codeView.Editor);
+           if (topLevel == null) return;
+           ((ISetLogicalParent)hintPopup).SetParent(topLevel as ILogical);
 
            // Combine all popup items into a single PopupItem so that they can
            // be rendered as the content of the hint popup.
