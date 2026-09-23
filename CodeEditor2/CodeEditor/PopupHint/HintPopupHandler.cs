@@ -95,7 +95,7 @@ namespace CodeEditor2.CodeEditor.PopupHint
            // that the popup (BottomRight gravity) appears right below the caret.
            offset = new Point(
                caretOriginInEditor.Value.X,
-               caretOriginInEditor.Value.Y + caretRect.Height);
+               caretOriginInEditor.Value.Y - caretRect.Height);
            return true;
        }
 
@@ -135,7 +135,9 @@ namespace CodeEditor2.CodeEditor.PopupHint
            // is codeView.Editor, so the offset is interpreted relative to it.
            if (!GetCaretOffset(out Point caretOffset)) return;
            hintPopup.HorizontalOffset = caretOffset.X;
-           hintPopup.VerticalOffset = caretOffset.Y;
+            hintPopup.VerticalOffset = caretOffset.Y;
+           hintPopup.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
+           hintPopup.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom;
 
            // Close once so that the popup repositions at the new caret
            // location, then open it.
