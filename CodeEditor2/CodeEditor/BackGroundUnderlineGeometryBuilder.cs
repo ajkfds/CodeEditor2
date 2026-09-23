@@ -26,7 +26,7 @@ namespace CodeEditor2.CodeEditor
         /// </summary>
         public double BorderThickness { get; set; }
 
-        public double HorizontalOffset { get; set; } = 2;
+        public double HorizontalOffset { get; set; } = 0;
 
         /// <summary>
         /// Gets/Sets whether to extend the rectangles to full width at line end.

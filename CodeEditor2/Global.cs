@@ -56,7 +56,7 @@ namespace CodeEditor2
         public static string ExploererApplicationOnLinux = "nautilus";
 
 
-        public static bool ReducedRendering = true;
+        public static bool ReducedRendering = false;
         public static string ReducedRenderingCodeFontFamily =
 //            "avares://CodeEditor2/Assets/font/proggyfontsfont/ProggyClean.ttf," +
             "avares://CodeEditor2/Assets/font/tamazen-font/Tamzen6x12r.ttf#Tamzen," +
