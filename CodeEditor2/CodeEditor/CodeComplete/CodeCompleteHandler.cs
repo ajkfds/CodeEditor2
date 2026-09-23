@@ -28,11 +28,19 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             working = false;
         }
 
-        public void CloseHint()
-        {
-            hintWorking = false;
-            Controller.CodeEditor.ClosePopup();
-        }
+       public void CloseHint()
+       {
+           hintWorking = false;
+           Controller.CodeEditor.ClosePopup();
+       }
+
+       // Called when the caret position changes (e.g. mouse click, delete).
+       // The caret-anchored hint popup becomes stale when the caret moves, so
+       // close it (TextEntered re-opens it on the next typed character).
+       public void OnCaretPositionChanged()
+       {
+           if (hintWorking) CloseHint();
+       }
 
         public void KeyDown(object? sender, KeyEventArgs e)
         {

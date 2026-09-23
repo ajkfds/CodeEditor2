@@ -10,9 +10,12 @@ namespace CodeEditor2.CodeEditor.PopupHint
 {
     public class PopupHandler
     {
-        // Popup-Hint Handler
+        // Popup-Hint Handler (mouse-over popup)
         //
-        // show mouse over popup-hinting
+        // Shows the mouse-over popup hint via a ToolTip anchored to the
+        // pointer. The input-time hint popup (caret-anchored) is handled
+        // separately by HintPopupHandler with its own dedicated Popup, so
+        // both popups can be displayed at the same time.
         public PopupHandler(CodeView codeView)
         {
             this.codeView = codeView;
@@ -21,32 +24,6 @@ namespace CodeEditor2.CodeEditor.PopupHint
         CodeView codeView;
 
         private int popupInex = -1;
-
-        // Combine the given PopupItems into a single PopupItem. Items are joined
-        // by a newline so that each item appears on its own line.
-        // Returns null if the resulting PopupItem would be empty.
-        private static PopupItem? CombinePopupItems(IEnumerable<PopupItem?>? popupItems)
-        {
-            if (popupItems == null) return null;
-            PopupItem combined = new PopupItem();
-            bool any = false;
-            foreach (PopupItem? item in popupItems)
-            {
-                if (item == null) continue;
-                List<AjkAvaloniaLibs.Controls.ColorLabel.labelItem> itemLabels = item.GetItems();
-                if (itemLabels == null) continue;
-                foreach (var label in itemLabels)
-                {
-                    combined.GetItems().Add(label);
-                }
-                // Insert a newline between popup items so they appear on separate lines.
-                combined.GetItems().Add(new AjkAvaloniaLibs.Controls.ColorLabel.labelNewLine());
-                any = true;
-            }
-            if (!any) return null;
-            combined.RemoveLastNewLine();
-            return combined;
-        }
 
         public void TextArea_PointerMoved(object? sender, PointerEventArgs e)
         {
@@ -104,67 +81,10 @@ namespace CodeEditor2.CodeEditor.PopupHint
             }
 
             // Mouse hover: anchor the ToolTip to the pointer (default placement).
-            // OpenPopup() may have previously set BottomEdgeAlignedLeft for the
-            // caret, so make sure pointer-driven popups restore the pointer
-            // placement here.
             ToolTip.SetPlacement(codeView.Editor, PlacementMode.Pointer);
             ToolTip.SetHorizontalOffset(codeView.Editor, 0);
             ToolTip.SetVerticalOffset(codeView.Editor, 0);
             ToolTip.SetIsOpen(codeView.Editor, true);
-        }
-
-        public void OpenPopup(List<PopupItem> popupItems)
-        {
-            if (codeView == null || codeView.Editor == null) return;
-            if (popupItems == null || popupItems.Count == 0) return;
-
-            // Calculate caret rectangle in editor (text area) coordinates.
-            var caretRect = codeView._textEditor.TextArea.Caret.CalculateCaretRectangle();
-
-            // Combine all popup items into a single PopupItem so that we can
-            // reuse the existing ToolTip-based popup mechanism (PopupTextBlock).
-            PopupItem? combined = CombinePopupItems(popupItems);
-            if (combined == null) return;
-
-            // Update the ToolTip content (TextBlock shared with TextArea_PointerMoved).
-            if (codeView.PopupTextBlock.Inlines == null) return;
-            codeView.PopupTextBlock.Inlines.Clear();
-            if (combined.ItemCount > 0)
-            {
-                combined.AppendToTextBlock(codeView.PopupTextBlock);
-            }
-
-            if (codeView.PopupTextBlock.Inlines.Count == 0)
-            {
-                ToolTip.SetIsOpen(codeView.Editor, false);
-                return;
-            }
-
-            // Anchor the ToolTip to the caret position. The placement target
-            // is codeView.Editor, so the offset is interpreted relative to it.
-            //
-            // caretRect is in TextArea coordinates, so translate it into the
-            // Editor (placement target) coordinate space before applying it
-            // as the ToolTip offset.
-            Avalonia.Point? caretOriginInEditor = codeView._textEditor.TextArea
-                .TranslatePoint(new Avalonia.Point(caretRect.X, caretRect.Y), codeView.Editor);
-            double caretOffsetX = caretOriginInEditor?.X ?? caretRect.X;
-            double caretOffsetY = caretOriginInEditor?.Y ?? caretRect.Y;
-
-            ToolTip.SetPlacement(codeView.Editor, PlacementMode.BottomEdgeAlignedLeft);
-            ToolTip.SetHorizontalOffset(codeView.Editor, caretOffsetX);
-            ToolTip.SetVerticalOffset(codeView.Editor, caretOffsetY - caretRect.Height);
-
-            // Close once so that the popup repositions at the new caret location,
-            // then open it.
-            ToolTip.SetIsOpen(codeView.Editor, false);
-            ToolTip.SetIsOpen(codeView.Editor, true);
-        }
-
-        public void ClosePopup()
-        {
-            if (codeView == null || codeView.Editor == null) return;
-            ToolTip.SetIsOpen(codeView.Editor, false);
         }
 
     }

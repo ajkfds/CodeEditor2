@@ -44,14 +44,18 @@ namespace CodeEditor2
                     return Global.codeView.contextMenu;
                 }
             }
+            // Open the input-time hint popup (caret-anchored Popup control).
+            // Note: this is independent from the ToolTip-based mouse-over popup
+            // handled by PopupHandler, so both popups can be shown at the same
+            // time.
             public static void OpenPopup(List<CodeEditor2.CodeEditor.PopupHint.PopupItem> popupItems)
             {
-                Global.codeView.codeViewPopup.OpenPopup(popupItems);
+                Global.codeView.codeViewHintPopup.OpenPopup(popupItems);
             }
 
             public static void ClosePopup()
             {
-                Global.codeView.codeViewPopup.ClosePopup();
+                Global.codeView.codeViewHintPopup.ClosePopup();
             }
             public static void SetCaretPosition(int index)
             {

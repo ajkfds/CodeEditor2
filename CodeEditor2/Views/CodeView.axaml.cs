@@ -1,4 +1,6 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -46,6 +48,7 @@ namespace CodeEditor2.Views
 
 
             codeViewPopup = new PopupHandler(this);
+            codeViewHintPopup = new HintPopupHandler(this);
             codeViewParser = new CodeViewParser(this);
             codeViewPopupMenu = new PopupMenuHandler(this);
             codeViewAutoComplete = new CodeCompleteHandler(this);
@@ -162,6 +165,7 @@ namespace CodeEditor2.Views
 
                 PopupTextBlock.FontSize = _textEditor.FontSize;
                 PopupMenu.FontSize = _textEditor.FontSize;
+                hintPopupTextBlock.FontSize = _textEditor.FontSize;
 
 
             }, RoutingStrategies.Bubble, true);
@@ -174,6 +178,34 @@ namespace CodeEditor2.Views
             contextMenu.Padding = new Avalonia.Thickness(10, 0, 10, 0);
             Editor.ContextMenu = contextMenu;
 
+            // Create the dedicated hint popup (input-time hint popup).
+            // The TextEditor does not accept child elements in XAML, so the
+            // popup is created here and anchored to the editor control.
+            hintPopupTextBlock = new TextBlock
+            {
+                FontSize = 10,
+                FontWeight = FontWeight.Normal,
+                FontFamily = new FontFamily("Cascadia Mono,Consolas,Menlo,Monospace"),
+                TextWrapping = TextWrapping.NoWrap
+            };
+            Border hintPopupBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(0xFA, 0x20, 0x20, 0x20)),
+                BorderBrush = new SolidColorBrush(Color.FromArgb(0xFF, 0x40, 0x40, 0x40)),
+                BorderThickness = new Avalonia.Thickness(1),
+                Padding = new Avalonia.Thickness(2),
+                Child = hintPopupTextBlock
+            };
+            hintPopup = new Popup
+            {
+                PlacementTarget = _textEditor,
+                Placement = PlacementMode.AnchorAndGravity,
+PlacementAnchor = Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor.TopLeft,
+PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.BottomRight,
+                IsLightDismissEnabled = true,
+                Child = hintPopupBorder
+            };
+
         }
 
         internal ContextMenu contextMenu = new ContextMenu();
@@ -181,10 +213,23 @@ namespace CodeEditor2.Views
         internal HighlightRenderer _highlightRenderer = null!;
         internal MarkerRenderer _markerRenderer = null!;
         internal FoldingManager _foldingManager = null!;
-        internal PopupHandler codeViewPopup = null!;
-        internal CodeViewParser codeViewParser = null!;
-        internal PopupMenuHandler codeViewPopupMenu = null!;
-        internal CodeCompleteHandler codeViewAutoComplete = null!;
+       internal PopupHandler codeViewPopup = null!;
+       internal HintPopupHandler codeViewHintPopup = null!;
+       internal CodeViewParser codeViewParser = null!;
+       internal PopupMenuHandler codeViewPopupMenu = null!;
+       internal CodeCompleteHandler codeViewAutoComplete = null!;
+
+       // Popup control dedicated to the input-time hint popup
+       // (HintPopupHandler). Created in the constructor because the
+       // TextEditor control does not accept child elements in XAML.
+       internal Popup hintPopup = null!;
+       internal TextBlock hintPopupTextBlock = null!;
+
+       // Popup for the input-time hint popup (caret-anchored).
+       internal Popup HintPopup => hintPopup;
+
+       // TextBlock rendered inside the hint popup.
+       internal TextBlock HintPopupTextBlock => hintPopupTextBlock;
 
         // properties
 
@@ -295,6 +340,7 @@ namespace CodeEditor2.Views
             prevCaretLine = caretLine;
 
             codeViewPopupMenu.Caret_PositionChanged(sender, e);
+            codeViewAutoComplete.OnCaretPositionChanged();
         }
 
 

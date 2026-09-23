@@ -29,7 +29,7 @@
 			>
 			</TextBlock>
 		</ToolTip.Tip>
-		
+
 		<FlyoutBase.AttachedFlyout>
 			<views:PopupMenuFlyout Placement="AnchorAndGravity">
 				<views:PopupMenuView
