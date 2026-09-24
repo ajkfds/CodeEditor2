@@ -20,7 +20,7 @@ namespace CodeEditor2.CodeEditor
         }
         public void AppendBlock(int startIndex, int endIndex, bool defaultClosed)
         {
-            NewFolding folding = new NewFolding(startIndex, endIndex) { DefaultClosed = default };
+            NewFolding folding = new NewFolding(startIndex, endIndex) { DefaultClosed = defaultClosed };
             Foldings.Add(folding);
         }
         public void AppendBlock(int startIndex, int endIndex, string blockName)
@@ -39,6 +39,8 @@ namespace CodeEditor2.CodeEditor
             if (Foldings.Count == 0) return;
 
             int change = e.InsertionLength - e.RemovalLength;
+
+            List<NewFolding> toRemove = new List<NewFolding>();
 
             for (int i = 0; i < Foldings.Count; i++)
             {
@@ -67,11 +69,11 @@ namespace CodeEditor2.CodeEditor
                     else if (e.Offset + e.RemovalLength <= last)
                     { // a1
                         Foldings[i].StartOffset = e.Offset;
-                        Foldings[i].EndOffset = e.Offset + change;
+                        Foldings[i].EndOffset += change;
                     }
                     else
-                    { // a2
-                        Foldings[i].EndOffset += change;
+                    { // a2: fold entire region removed -> remove folding
+                        toRemove.Add(Foldings[i]);
                     }
                 }
                 else if (e.Offset <= Foldings[i].EndOffset + 1) // b0 | b1
@@ -81,8 +83,8 @@ namespace CodeEditor2.CodeEditor
                         Foldings[i].EndOffset += change;
                     }
                     else
-                    { // b1
-                        // none
+                    { // b1: fold entire region removed -> remove folding
+                        toRemove.Add(Foldings[i]);
                     }
                 }
                 else
@@ -91,6 +93,10 @@ namespace CodeEditor2.CodeEditor
                 }
             }
 
+            foreach (NewFolding folding in toRemove)
+            {
+                Foldings.Remove(folding);
+            }
         }
 
     }
