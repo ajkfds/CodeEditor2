@@ -38,7 +38,10 @@ namespace CodeEditor2.CodeEditor
 
         public void RemoveColors()
         {
-            LineInformation.Clear();
+            lock (LineInformation)
+            {
+                LineInformation.Clear();
+            }
         }
 
         public virtual void SetColorAt(int index, byte value)
@@ -154,15 +157,18 @@ namespace CodeEditor2.CodeEditor
 
                     lock (lineInfo.Colors)
                     {
-                        int insertionLength = e.InsertionLength;
+                        // insertion length is applied only when the edit does not span lines (insertLines == 0).
+                        // when insertLines > 0, the insertion is handled later by the "insert" block (split / shift),
+                        // so it must not be applied here.
+                        int insertionLength = (insertLines == 0) ? e.InsertionLength : 0;
                         int removalLength = e.RemovalLength;
                         int offset = e.Offset - codeDocument.getLineStartIndex(startLine.LineNumber);
                         int lineLength = codeDocument.getLineLength(startLine.LineNumber);
                         if (offset + removalLength > lineLength) removalLength = lineLength - offset;
-                        startLineLength = lineLength - removalLength;
+                        startLineLength = lineLength - removalLength + insertionLength;
                         foreach (var color in lineInfo.Colors)
                         {
-                            updateColor(offset, 0, removalLength, color, removeTarget);
+                            updateColor(offset, insertionLength, removalLength, color, removeTarget);
                         }
                         foreach (var removeMark in removeTarget)
                         {
@@ -179,12 +185,11 @@ namespace CodeEditor2.CodeEditor
                         foreach (var color in lineInfo.Colors)
                         {
                             if (color == null) continue;
-                            int insertionLength = e.InsertionLength;
-                            int removalLength = e.RemovalLength;
-                            int lineLength = codeDocument.getLineLength(endLine.LineNumber);
-                            removalLength = e.Offset + e.RemovalLength - codeDocument.getLineStartIndex(endLine.LineNumber);
+                            // insertion length is applied only when insertLines == 0 (same as startline block)
+                            int insertionLength = (insertLines == 0) ? e.InsertionLength : 0;
+                            int removalLength = e.Offset + e.RemovalLength - codeDocument.getLineStartIndex(endLine.LineNumber);
 
-                            updateColor(0, 0, removalLength, color, removeTarget);
+                            updateColor(0, insertionLength, removalLength, color, removeTarget);
 
                             color.Offset += startLineLength;
                         }
@@ -279,10 +284,17 @@ namespace CodeEditor2.CodeEditor
 
                 lock (lineInfo.Colors)
                 {
-                    int lineLength = codeDocument.getLineLength(startLine.LineNumber);
+                    // colors entirely before the insert offset are kept as-is.
+                    // colors starting at/after the insert offset belong to the cloned last line, remove them here.
+                    // a color straddling the insert offset (possible when a preceding multi-line removal merged
+                    // a color longer than the original startLine length) must be truncated at the insert offset.
+                    // note: updateColor with a huge removalLength cannot be used here because
+                    // offset + removalLength would overflow and skip the truncation branch.
                     foreach (var color in lineInfo.Colors)
                     {
-                        updateColor(insertOffsetAtStartline, insertionLengthAtStartline, lineLength, color, removeTarget);
+                        if (color.Offset + color.Length <= insertOffsetAtStartline) continue;
+                        else if (color.Offset >= insertOffsetAtStartline) removeTarget.Add(color);
+                        else color.Length = insertOffsetAtStartline - color.Offset;
                     }
                     foreach (var removeMark in removeTarget)
                     {
