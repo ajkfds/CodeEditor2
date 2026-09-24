@@ -17,20 +17,16 @@ namespace CodeEditor2.CodeEditor
         public Dictionary<int, LineInformation> LineInformation = new Dictionary<int, LineInformation>();
         protected LineInformation GetLineInformation(int lineNumber)
         {
-            LineInformation lineInfo;
-            if (LineInformation.ContainsKey(lineNumber))
+            lock (LineInformation)
             {
-                lineInfo = LineInformation[lineNumber];
-            }
-            else
-            {
-                lineInfo = new LineInformation();
-                lock (LineInformation)
+                LineInformation lineInfo;
+                if (!LineInformation.TryGetValue(lineNumber, out lineInfo))
                 {
+                    lineInfo = new LineInformation();
                     LineInformation.Add(lineNumber, lineInfo);
                 }
+                return lineInfo;
             }
-            return lineInfo;
         }
 
 
