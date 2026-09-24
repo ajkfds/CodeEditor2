@@ -902,6 +902,13 @@ public partial class ChatControl : UserControl
                 // Process streaming response
                 await foreach (string ret in chat.GetAsyncCollectionChatResult(command, tools, cancellationToken))
                 {
+                    // Abort immediately when the user cancelled the operation.
+                    // Without this check the loop keeps running while the underlying
+                    // LLM stream (which may not honor the token) is still alive,
+                    // leaving completeWork awaiting and inputAcceptable == false
+                    // (the Send button appears dead after Abort).
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     // Stop timer on first result received
                     if (timerActivate & ret != "")
                     {
