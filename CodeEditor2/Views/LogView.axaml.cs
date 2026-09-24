@@ -49,16 +49,7 @@ namespace CodeEditor2.Views
 
         public void AppendLog(string message)
         {
-            List<string> messages = message.Replace("\r", "").Split('\n', System.StringSplitOptions.RemoveEmptyEntries).ToList();
-            foreach (string m in messages)
-            {
-                AjkAvaloniaLibs.Controls.ListViewItem item = new AjkAvaloniaLibs.Controls.ListViewItem(m);
-                Dispatcher.UIThread.Post(() => appendLog(item));
-            }
-            Dispatcher.UIThread.Post(() =>
-            {
-                ListView.Scroll(ListView.Items.Last());
-            }, DispatcherPriority.Background);
+            AppendLog(message, Avalonia.Media.Colors.White);
         }
 
         public void AppendLog(string message, Avalonia.Media.Color color)
