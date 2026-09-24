@@ -21,62 +21,32 @@ namespace CodeEditor2.CodeEditor
         {
             if (highlightStarts.Count == 0) return;
 
-            int change = e.InsertionLength - e.RemovalLength;
+            int editStart = e.Offset;
+            int remEnd = e.Offset + e.RemovalLength;
+            int ins = e.InsertionLength;
+            int change = ins - e.RemovalLength;
 
-            for (int i = 0; i < highlightStarts.Count; i++)
+            for (int i = highlightStarts.Count - 1; i >= 0; i--)
             {
-                //     start    last
-                //       +=======+
+                int newStart = adjustOffset(highlightStarts[i], editStart, remEnd, change, ins);
+                int newLast = adjustOffset(highlightLasts[i], editStart, remEnd, change, ins);
 
-                // |---|                 a0
-                // |---------|           a1
-                // |-------------------| a2
-
-                //           |---|       b0
-                //           |---------| b1
-
-                //                  |--| c0
-
-                int start = highlightStarts[i];
-                int last = highlightLasts[i];
-
-                if (e.Offset <= start) // a0 | a1 | a2
+                if (newLast <= newStart)
                 {
-                    if (e.Offset + e.RemovalLength < start)
-                    { // a0
-                        highlightStarts[i] += change;
-                        highlightLasts[i] += change;
-                    }
-                    else if (e.Offset + e.RemovalLength <= last)
-                    { // a1
-                        highlightLasts[i] += change;
-                    }
-                    else
-                    { // a2
-                        highlightLasts[i] += change;
-                    }
-                }
-                else if (e.Offset <= highlightLasts[i]) // b0 | b1
-                {
-                    if (e.Offset + e.RemovalLength <= last)
-                    { // b0
-                        highlightLasts[i] += change;
-                    }
-                    else
-                    { // b1
-                        highlightLasts[i] = e.Offset;
-                    }
+                    // highlight fully covered by the removal (a2) or collapsed -> remove
+                    highlightStarts.RemoveAt(i);
+                    highlightLasts.RemoveAt(i);
                 }
                 else
-                { // c0
-                    // none
+                {
+                    highlightStarts[i] = newStart;
+                    highlightLasts[i] = newLast;
                 }
             }
 
             Global.codeView._highlightRenderer.CurrentResults.Clear();
             for (int i = 0; i < highlightStarts.Count; i++)
             {
-                if (highlightStarts[i] > highlightLasts[i]) continue;
                 AvaloniaEdit.Document.TextSegment segment = new AvaloniaEdit.Document.TextSegment();
                 segment.StartOffset = highlightStarts[i];
                 segment.Length = highlightLasts[i] - highlightStarts[i];
@@ -84,6 +54,25 @@ namespace CodeEditor2.CodeEditor
             }
 
             //            ReDrawHighlight();
+        }
+
+        //     start    last
+        //       +=======+
+
+        // |---|                 a0 : edit before highlight -> shift whole highlight
+        // |---------|           a1 : removal eats start -> clamp start to insert point
+        // |-------------------| a2 : removal covers highlight -> remove highlight
+
+        //           |---|       b0 : edit inside highlight -> keep start, expand / shrink last
+        //           |---------| b1 : removal reaches beyond highlight -> clamp last to insert point
+
+        //                  |--| c0 : edit after highlight -> none
+
+        private int adjustOffset(int offset, int editStart, int remEnd, int change, int ins)
+        {
+            if (offset >= remEnd) return offset + change;  // after removal range -> shift
+            if (offset <= editStart) return offset;        // before removal range -> keep
+            return editStart + ins;                        // inside removal range -> collapse to insert point
         }
         public void MoveToNextHighlight(out bool moved)
         {
