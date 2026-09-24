@@ -96,58 +96,52 @@ namespace CodeEditor2.CodeEditor
         {
             if (marks.Count == 0) return;
 
-            int change = e.InsertionLength - e.RemovalLength;
+            int editStart = e.Offset;
+            int remEnd = e.Offset + e.RemovalLength;
+            int ins = e.InsertionLength;
+            int change = ins - e.RemovalLength;
 
-            for (int i = 0; i < marks.Count; i++)
+            lock (marks)
             {
-                //     start    last
-                //       +=======+
-
-                // |---|                 a0
-                // |---------|           a1
-                // |-------------------| a2
-
-                //           |---|       b0
-                //           |---------| b1
-
-                //                  |--| c0
-
-                int start = marks[i].Offset;
-                int last = marks[i].LastOffset;
-
-                if (e.Offset <= start) // a0 | a1 | a2
+                for (int i = marks.Count - 1; i >= 0; i--)
                 {
-                    if (e.Offset + e.RemovalLength < start)
-                    { // a0
-                        marks[i].Offset += change;
-                        marks[i].LastOffset += change;
-                    }
-                    else if (e.Offset + e.RemovalLength <= last)
-                    { // a1
-                        marks[i].LastOffset += change;
+                    int start = marks[i].Offset;
+                    int last = marks[i].LastOffset;
+
+                    int newStart = adjustOffset(start, editStart, remEnd, change, ins);
+                    int newLast = adjustOffset(last, editStart, remEnd, change, ins);
+
+                    if (newLast <= newStart)
+                    {
+                        // mark fully covered by the removal (a2) or collapsed -> remove
+                        marks.RemoveAt(i);
                     }
                     else
-                    { // a2
-                        marks[i].LastOffset += change;
+                    {
+                        marks[i].Offset = newStart;
+                        marks[i].LastOffset = newLast;
                     }
-                }
-                else if (e.Offset <= marks[i].LastOffset) // b0 | b1
-                {
-                    if (e.Offset + e.RemovalLength <= last)
-                    { // b0
-                        marks[i].LastOffset += change;
-                    }
-                    else
-                    { // b1
-                        marks[i].LastOffset += e.Offset;
-                    }
-                }
-                else
-                { // c0
-                    // none
                 }
             }
+        }
 
+        //     start    last
+        //       +=======+
+
+        // |---|                 a0 : edit before mark -> shift whole mark
+        // |---------|           a1 : removal eats start -> clamp start to insert point
+        // |-------------------| a2 : removal covers mark -> remove mark
+
+        //           |---|       b0 : edit inside mark -> keep start, expand / shrink last
+        //           |---------| b1 : removal reaches beyond mark -> clamp last to insert point
+
+        //                  |--| c0 : edit after mark -> none
+
+        private static int adjustOffset(int offset, int editStart, int remEnd, int change, int ins)
+        {
+            if (offset >= remEnd) return offset + change;  // after removal range -> shift
+            if (offset <= editStart) return offset;        // before removal range -> keep
+            return editStart + ins;                        // inside removal range -> collapse to insert point
         }
 
 
