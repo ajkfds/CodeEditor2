@@ -15,6 +15,10 @@ public partial class App : Application
 
         Controller.NavigatePanel.OpenInExploererClicked += menuItem_OpenInExplorer_Click;
 
+        //this.AttachDeveloperTools(o =>
+        //{
+        //    o.AutoConnectFromDesignMode = true;
+        //});
         AvaloniaXamlLoader.Load(this);
     }
 

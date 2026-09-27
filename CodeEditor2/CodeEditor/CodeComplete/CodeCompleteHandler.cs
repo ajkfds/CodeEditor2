@@ -52,7 +52,11 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 }
             }
 
-            if (!working) return;
+            if (!working)
+            {
+                work(false, true);
+                return;
+            }
             if (codeView.TextFile == null) return;
             if (codeView.CodeDocument == null) return;
             if (popupMenuView == null) return;
@@ -100,8 +104,14 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             else if (e.Key == Key.Escape)
             {
                 Close();
+                if (hintWorking) CloseHint();
                 return;
             }
+        }
+
+        private void handlePopup()
+        {
+
         }
 
         public void Apply()
@@ -117,6 +127,10 @@ namespace CodeEditor2.CodeEditor.CodeComplete
         }
 
         public void TextEntered(object? sender, TextInputEventArgs e)
+        {
+            work(true, true);
+        }
+        public void work(bool activatAutoComplete, bool activatePopUp)
         {
             if (codeView.TextFile == null) return;
             if (codeView.CodeDocument == null) return;
@@ -135,20 +149,27 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 Close();
                 return;
             }
+
+
+
             // Input-time hint popup (anchored to the caret).
             // Show the carlet popup when there is at least one popup item and the
             // popup-menu (auto-complete) is not currently working, so that the hint
             // does not collide with the auto-complete dropdown.
-            if (completionContext.CarletPopupItems.Count == 0)
+            if(activatePopUp)
             {
-                if (!working) CloseHint();
-            }
-            else
-            {
-                Controller.CodeEditor.OpenPopup(completionContext.CarletPopupItems);
-                hintWorking = true;
+                if (completionContext.CarletPopupItems.Count == 0)
+                {
+                    if (!working) CloseHint();
+                }
+                else
+                {
+                    Controller.CodeEditor.OpenPopup(completionContext.CarletPopupItems);
+                    hintWorking = true;
+                }
             }
 
+            if (!activatAutoComplete) return;
             List<PopupMenu.ToolItem>? items = completionContext.AutoCompleteItems;
             if (items == null || completionContext.CandidateWord == null)
             {

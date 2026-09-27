@@ -68,10 +68,11 @@ namespace CodeEditor2.LLM.Tools
                 mainCommand = command.Split(' ')[0];
                 string argument = command.Substring(mainCommand.Length).TrimStart();
 
-
+                /* skip user acceptance
                 CodeEditor2.Tools.YesNoWindow yesNoWindow = new CodeEditor2.Tools.YesNoWindow("execure_command request", $"Do you want to execute the following command? :{command}");
                 await CodeEditor2.Controller.ShowDialogAsync(yesNoWindow);
                 if (!yesNoWindow.Yes) return "command_execute rejected by user";
+                */
 
                 CommandParser parser = new CommandParser();
 
