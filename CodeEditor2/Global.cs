@@ -39,6 +39,7 @@ namespace CodeEditor2
 
         public static bool Abort = false;
 
+        public static bool AutoAcceptLLMCommandExecution = false;
         public static int count = 0;
 
         public static bool StopParse = false;
