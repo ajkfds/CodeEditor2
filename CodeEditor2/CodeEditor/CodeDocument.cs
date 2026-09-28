@@ -495,35 +495,46 @@ namespace CodeEditor2.CodeEditor
             // change is localized, we can still do a partial redraw over that range.
             int markMinOffset = int.MaxValue;
             int markMaxOffset = int.MinValue;
-            bool markCountChanged = false;
 
-            // marks / foldings: elementwise comparison.
-            // If the mark count differs, fall back to full redraw (order may have
-            // shifted, so index-wise diffing is unreliable).
-            if (oldMarks.Count != newMarks.Count)
+            // marks: line-unit (sorted) elementwise diff. Sorting both lists by
+            // offset makes index-wise comparison meaningful even when the counts
+            // differ (added / removed marks shift subsequent entries, which then
+            // report as differences covering the shifted span -> conservative).
+            List<CodeDrawStyle.MarkDetail> sortedOld = new List<CodeDrawStyle.MarkDetail>(oldMarks);
+            List<CodeDrawStyle.MarkDetail> sortedNew = new List<CodeDrawStyle.MarkDetail>(newMarks);
+            sortedOld.Sort((a, b) => { int c = a.Offset - b.Offset; return (c != 0) ? c : a.LastOffset - b.LastOffset; });
+            sortedNew.Sort((a, b) => { int c = a.Offset - b.Offset; return (c != 0) ? c : a.LastOffset - b.LastOffset; });
+
+            int commonCount = Math.Min(sortedOld.Count, sortedNew.Count);
+            for (int i = 0; i < commonCount; i++)
+            {
+                CodeDrawStyle.MarkDetail o = sortedOld[i];
+                CodeDrawStyle.MarkDetail n = sortedNew[i];
+                if (o.Offset != n.Offset || o.LastOffset != n.LastOffset ||
+                    o.Style != n.Style || o.Color != n.Color ||
+                    o.Thickness != n.Thickness || o.ZOrder != n.ZOrder)
+                {
+                    marksChanged = true;
+                    // Record the union of the old and new mark extents so the
+                    // affected area can be partially redrawn.
+                    int min = Math.Min(Math.Min(o.Offset, n.Offset), Math.Min(o.LastOffset, n.LastOffset));
+                    int max = Math.Max(Math.Max(o.Offset, n.Offset), Math.Max(o.LastOffset, n.LastOffset));
+                    if (min < markMinOffset) markMinOffset = min;
+                    if (max > markMaxOffset) markMaxOffset = max;
+                }
+            }
+            // marks present only in one of the lists (added / removed).
+            for (int i = commonCount; i < sortedOld.Count; i++)
             {
                 marksChanged = true;
-                markCountChanged = true;
+                if (sortedOld[i].Offset < markMinOffset) markMinOffset = sortedOld[i].Offset;
+                if (sortedOld[i].LastOffset > markMaxOffset) markMaxOffset = sortedOld[i].LastOffset;
             }
-            else
+            for (int i = commonCount; i < sortedNew.Count; i++)
             {
-                for (int i = 0; i < oldMarks.Count; i++)
-                {
-                    CodeDrawStyle.MarkDetail o = oldMarks[i];
-                    CodeDrawStyle.MarkDetail n = newMarks[i];
-                    if (o.Offset != n.Offset || o.LastOffset != n.LastOffset ||
-                        o.Style != n.Style || o.Color != n.Color ||
-                        o.Thickness != n.Thickness || o.ZOrder != n.ZOrder)
-                    {
-                        marksChanged = true;
-                        // Record the union of the old and new mark extents so the
-                        // affected area can be partially redrawn.
-                        int min = Math.Min(Math.Min(o.Offset, n.Offset), Math.Min(o.LastOffset, n.LastOffset));
-                        int max = Math.Max(Math.Max(o.Offset, n.Offset), Math.Max(o.LastOffset, n.LastOffset));
-                        if (min < markMinOffset) markMinOffset = min;
-                        if (max > markMaxOffset) markMaxOffset = max;
-                    }
-                }
+                marksChanged = true;
+                if (sortedNew[i].Offset < markMinOffset) markMinOffset = sortedNew[i].Offset;
+                if (sortedNew[i].LastOffset > markMaxOffset) markMaxOffset = sortedNew[i].LastOffset;
             }
 
             if (oldFoldings.Count != newFoldings.Count)
@@ -554,9 +565,9 @@ namespace CodeEditor2.CodeEditor
             }
             if (marksChanged)
             {
-                if (markCountChanged || markMinOffset > markMaxOffset)
+                if (markMinOffset > markMaxOffset)
                 {
-                    // count changed (or no usable bounds) -> full redraw
+                    // no usable bounds -> full redraw
                     changedRegionStart = -2;
                     return;
                 }
