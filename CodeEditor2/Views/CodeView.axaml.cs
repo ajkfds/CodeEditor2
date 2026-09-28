@@ -399,9 +399,9 @@ PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.Bo
         public void Redraw()
         {
             // Partial redraw: if the document recorded the minimal changed region
-            // (color changes only, marks / foldings unchanged), rebuild only the
-            // visual lines overlapping that region. If nothing changed, skip the
-            // rebuild entirely.
+            // (colors and/or localized mark changes), rebuild only the visual
+            // lines overlapping that region. If the copy ran and nothing changed,
+            // skip the rebuild entirely.
             CodeDocument? codeDocument = CodeDocument;
             if (codeDocument != null)
             {
@@ -409,14 +409,18 @@ PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.Bo
                 codeDocument.ClearChangedRegion();
                 switch (state)
                 {
+                    case CodeDocument.ChangedRegionState.None:
+                        // CopyColorMarkFrom ran and verified that colors, marks and
+                        // foldings are all unchanged: nothing to repaint.
+                        return;
+
                     case CodeDocument.ChangedRegionState.Partial:
                         _textEditor.TextArea.TextView.Redraw(start, length);
                         return;
                 }
-                // Full or None -> full redraw.
-                // (None still falls back to full redraw because Redraw() is also
-                // invoked in contexts where only the renderer data was replaced,
-                // e.g. mark updates without color changes.)
+                // Unknown or Full -> full redraw.
+                // (Unknown means Redraw() was invoked without a preceding copy,
+                // e.g. renderer data was replaced directly.)
             }
             _textEditor.TextArea.TextView.Redraw();
         }

@@ -224,23 +224,34 @@ namespace CodeEditor2.CodeEditor
 
         // Changed-region tracking for partial redraw.
         // Set by CopyColorMarkFrom: the smallest text-offset range in which the
-        // color / mark / folding information actually changed since the last copy.
-        // -1 = no change recorded (skip redraw), -2 = full redraw required
-        // (marks or foldings changed), >0 = partial redraw region.
+        // color / mark information actually changed since the last copy.
+        // hasChangedRegionInfo == false -> Unknown (no copy ran, full redraw),
+        // start == -2 -> Full (foldings changed / mark count changed),
+        // start > 0 && length > 0 -> Partial, otherwise -> None (skip redraw).
         public enum ChangedRegionState
         {
-            None = 0,
-            Partial = 1,
-            Full = 2,
+            // No changed-region information recorded since the last clear.
+            Unknown = 0,
+            // Copy ran and nothing changed: redraw can be skipped entirely.
+            None = 1,
+            // Copy ran and a localized region changed: partial redraw.
+            Partial = 2,
+            // Copy ran and a document-wide change occurred: full redraw.
+            Full = 3,
         }
 
         private volatile int changedRegionStart = -1;
         private volatile int changedRegionLength = 0;
+        // True once ComputeChangedRegion has run since the last ClearChangedRegion.
+        // Distinguishes "no copy happened yet" (fallback to full redraw) from
+        // "copy happened and nothing changed" (safe to skip redraw).
+        private volatile bool hasChangedRegionInfo = false;
 
         public ChangedRegionState GetChangedRegion(out int start, out int length)
         {
             start = changedRegionStart;
             length = changedRegionLength;
+            if (!hasChangedRegionInfo) return ChangedRegionState.Unknown;
             if (start == -2) return ChangedRegionState.Full;
             if (start > 0 && length > 0) return ChangedRegionState.Partial;
             return ChangedRegionState.None;
@@ -250,6 +261,7 @@ namespace CodeEditor2.CodeEditor
         {
             changedRegionStart = -1;
             changedRegionLength = 0;
+            hasChangedRegionInfo = false;
         }
 
 
@@ -474,12 +486,24 @@ namespace CodeEditor2.CodeEditor
             bool marksChanged = false;
             bool foldingsChanged = false;
 
+            // colors: line-wise comparison, compute the minimal changed line range
+            // (declared early: the localized mark branch merges the color region).
+            int minLine = int.MaxValue;
+            int maxLine = int.MinValue;
+
+            // mark changed-region bounds (text offsets). When marks changed but the
+            // change is localized, we can still do a partial redraw over that range.
+            int markMinOffset = int.MaxValue;
+            int markMaxOffset = int.MinValue;
+            bool markCountChanged = false;
+
             // marks / foldings: elementwise comparison.
-            // If they changed, fall back to full redraw (offset shifts can span
-            // the whole document).
+            // If the mark count differs, fall back to full redraw (order may have
+            // shifted, so index-wise diffing is unreliable).
             if (oldMarks.Count != newMarks.Count)
             {
                 marksChanged = true;
+                markCountChanged = true;
             }
             else
             {
@@ -492,7 +516,12 @@ namespace CodeEditor2.CodeEditor
                         o.Thickness != n.Thickness || o.ZOrder != n.ZOrder)
                     {
                         marksChanged = true;
-                        break;
+                        // Record the union of the old and new mark extents so the
+                        // affected area can be partially redrawn.
+                        int min = Math.Min(Math.Min(o.Offset, n.Offset), Math.Min(o.LastOffset, n.LastOffset));
+                        int max = Math.Max(Math.Max(o.Offset, n.Offset), Math.Max(o.LastOffset, n.LastOffset));
+                        if (min < markMinOffset) markMinOffset = min;
+                        if (max > markMaxOffset) markMaxOffset = max;
                     }
                 }
             }
@@ -515,15 +544,44 @@ namespace CodeEditor2.CodeEditor
                 }
             }
 
-            if (marksChanged || foldingsChanged)
+            hasChangedRegionInfo = true;
+
+            if (foldingsChanged)
             {
+                // Foldings affect the fold margin across the document; keep full redraw.
                 changedRegionStart = -2; // full redraw
                 return;
             }
+            if (marksChanged)
+            {
+                if (markCountChanged || markMinOffset > markMaxOffset)
+                {
+                    // count changed (or no usable bounds) -> full redraw
+                    changedRegionStart = -2;
+                    return;
+                }
+                // Localized mark changes: partial redraw over the mark extent,
+                // expanded to whole lines so visual line rebuilding stays simple.
+                int markStartLine = textDocument.GetLineByOffset(Math.Max(0, markMinOffset)).LineNumber;
+                int markEndLine = textDocument.GetLineByOffset(Math.Min(textDocument.TextLength - 1, markMaxOffset)).LineNumber;
+                int markStartOffset = getLineStartIndex(markStartLine);
+                DocumentLine markLastLine = textDocument.GetLineByNumber(markEndLine);
+                int markEndOffset = markLastLine.EndOffset;
 
-            // colors: line-wise comparison, compute the minimal changed line range
-            int minLine = int.MaxValue;
-            int maxLine = int.MinValue;
+                // Merge with the color changed region (if any) so a single
+                // partial redraw covers both.
+                if (minLine <= maxLine)
+                {
+                    int colorStartOffset = getLineStartIndex(minLine);
+                    DocumentLine colorLastLine = textDocument.GetLineByNumber(maxLine);
+                    int colorEndOffset = colorLastLine.EndOffset;
+                    markStartOffset = Math.Min(markStartOffset, colorStartOffset);
+                    markEndOffset = Math.Max(markEndOffset, colorEndOffset);
+                }
+                changedRegionStart = markStartOffset;
+                changedRegionLength = markEndOffset - markStartOffset;
+                return;
+            }
 
             foreach (var kvp in newLineInformation)
             {
