@@ -398,6 +398,26 @@ PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.Bo
 
         public void Redraw()
         {
+            // Partial redraw: if the document recorded the minimal changed region
+            // (color changes only, marks / foldings unchanged), rebuild only the
+            // visual lines overlapping that region. If nothing changed, skip the
+            // rebuild entirely.
+            CodeDocument? codeDocument = CodeDocument;
+            if (codeDocument != null)
+            {
+                CodeDocument.ChangedRegionState state = codeDocument.GetChangedRegion(out int start, out int length);
+                codeDocument.ClearChangedRegion();
+                switch (state)
+                {
+                    case CodeDocument.ChangedRegionState.Partial:
+                        _textEditor.TextArea.TextView.Redraw(start, length);
+                        return;
+                }
+                // Full or None -> full redraw.
+                // (None still falls back to full redraw because Redraw() is also
+                // invoked in contexts where only the renderer data was replaced,
+                // e.g. mark updates without color changes.)
+            }
             _textEditor.TextArea.TextView.Redraw();
         }
 

@@ -222,6 +222,36 @@ namespace CodeEditor2.CodeEditor
 
         public Action<int, int, byte, string>? Replaced = null;
 
+        // Changed-region tracking for partial redraw.
+        // Set by CopyColorMarkFrom: the smallest text-offset range in which the
+        // color / mark / folding information actually changed since the last copy.
+        // -1 = no change recorded (skip redraw), -2 = full redraw required
+        // (marks or foldings changed), >0 = partial redraw region.
+        public enum ChangedRegionState
+        {
+            None = 0,
+            Partial = 1,
+            Full = 2,
+        }
+
+        private volatile int changedRegionStart = -1;
+        private volatile int changedRegionLength = 0;
+
+        public ChangedRegionState GetChangedRegion(out int start, out int length)
+        {
+            start = changedRegionStart;
+            length = changedRegionLength;
+            if (start == -2) return ChangedRegionState.Full;
+            if (start > 0 && length > 0) return ChangedRegionState.Partial;
+            return ChangedRegionState.None;
+        }
+
+        public void ClearChangedRegion()
+        {
+            changedRegionStart = -1;
+            changedRegionLength = 0;
+        }
+
 
 
         private volatile uint _version = 0;
@@ -382,13 +412,27 @@ namespace CodeEditor2.CodeEditor
                     return;
                 }
                 // Safe to copy - source document is stable
-                TextColors.LineInformation = document.TextColors.LineInformation;
+
+                // capture previous state to compute the changed region
+                Dictionary<int, TextDecollation.LineInformation> oldLineInformation = TextColors.LineInformation;
+                List<CodeDrawStyle.MarkDetail> oldMarks;
                 lock (Marks.marks)
                 {
+                    oldMarks = new List<CodeDrawStyle.MarkDetail>(Marks.marks);
+                }
+                List<NewFolding> oldFoldings = new List<NewFolding>(Foldings.Foldings);
+
+                TextColors.LineInformation = document.TextColors.LineInformation;
+                List<CodeDrawStyle.MarkDetail> newMarks;
+                lock (document.Marks.marks)
+                {
+                    newMarks = new List<CodeDrawStyle.MarkDetail>(document.Marks.marks);
                     Marks.marks = new List<CodeDrawStyle.MarkDetail>(document.Marks.marks);
                 }
                 document.Foldings.Foldings.Sort((x, y) => { return x.StartOffset - y.StartOffset; });
                 Foldings.Foldings = new List<NewFolding>(document.Foldings.Foldings);
+
+                ComputeChangedRegion(oldLineInformation, TextColors.LineInformation, oldMarks, newMarks, oldFoldings, Foldings.Foldings);
             }
             finally
             {
@@ -416,6 +460,116 @@ namespace CodeEditor2.CodeEditor
                 });
             }
         }
+        // Compute the minimal changed text-offset region between previous and new
+        // color / mark / folding data, for partial redraw.
+        // Must be called while the write lock (docLock) is held.
+        private void ComputeChangedRegion(
+            Dictionary<int, TextDecollation.LineInformation> oldLineInformation,
+            Dictionary<int, TextDecollation.LineInformation> newLineInformation,
+            List<CodeDrawStyle.MarkDetail> oldMarks,
+            List<CodeDrawStyle.MarkDetail> newMarks,
+            List<NewFolding> oldFoldings,
+            List<NewFolding> newFoldings)
+        {
+            bool marksChanged = false;
+            bool foldingsChanged = false;
+
+            // marks / foldings: elementwise comparison.
+            // If they changed, fall back to full redraw (offset shifts can span
+            // the whole document).
+            if (oldMarks.Count != newMarks.Count)
+            {
+                marksChanged = true;
+            }
+            else
+            {
+                for (int i = 0; i < oldMarks.Count; i++)
+                {
+                    CodeDrawStyle.MarkDetail o = oldMarks[i];
+                    CodeDrawStyle.MarkDetail n = newMarks[i];
+                    if (o.Offset != n.Offset || o.LastOffset != n.LastOffset ||
+                        o.Style != n.Style || o.Color != n.Color ||
+                        o.Thickness != n.Thickness || o.ZOrder != n.ZOrder)
+                    {
+                        marksChanged = true;
+                        break;
+                    }
+                }
+            }
+
+            if (oldFoldings.Count != newFoldings.Count)
+            {
+                foldingsChanged = true;
+            }
+            else
+            {
+                for (int i = 0; i < oldFoldings.Count; i++)
+                {
+                    if (oldFoldings[i].StartOffset != newFoldings[i].StartOffset ||
+                        oldFoldings[i].EndOffset != newFoldings[i].EndOffset ||
+                        oldFoldings[i].Name != newFoldings[i].Name)
+                    {
+                        foldingsChanged = true;
+                        break;
+                    }
+                }
+            }
+
+            if (marksChanged || foldingsChanged)
+            {
+                changedRegionStart = -2; // full redraw
+                return;
+            }
+
+            // colors: line-wise comparison, compute the minimal changed line range
+            int minLine = int.MaxValue;
+            int maxLine = int.MinValue;
+
+            foreach (var kvp in newLineInformation)
+            {
+                TextDecollation.LineInformation? oldInfo;
+                if (!oldLineInformation.TryGetValue(kvp.Key, out oldInfo) || !LineInformationEquals(oldInfo, kvp.Value))
+                {
+                    if (kvp.Key < minLine) minLine = kvp.Key;
+                    if (kvp.Key > maxLine) maxLine = kvp.Key;
+                }
+            }
+            foreach (var kvp in oldLineInformation)
+            {
+                if (!newLineInformation.ContainsKey(kvp.Key))
+                {
+                    if (kvp.Key < minLine) minLine = kvp.Key;
+                    if (kvp.Key > maxLine) maxLine = kvp.Key;
+                }
+            }
+
+            if (minLine > maxLine)
+            {
+                // nothing changed
+                changedRegionStart = -1;
+                return;
+            }
+
+            int startOffset = getLineStartIndex(minLine);
+            DocumentLine lastLine = textDocument.GetLineByNumber(maxLine);
+            int endOffset = lastLine.EndOffset;
+
+            changedRegionStart = startOffset;
+            changedRegionLength = endOffset - startOffset;
+        }
+
+        private static bool LineInformationEquals(TextDecollation.LineInformation a, TextDecollation.LineInformation b)
+        {
+            if (a.Colors.Count != b.Colors.Count) return false;
+            for (int i = 0; i < a.Colors.Count; i++)
+            {
+                var ca = a.Colors[i];
+                var cb = b.Colors[i];
+                if (ca.Offset != cb.Offset || ca.Length != cb.Length || !ca.DrawColor.Equals(cb.DrawColor)) return false;
+            }
+            return true;
+        }
+
         protected void EnterReadLock()
         {
             docLock.EnterReadLock();

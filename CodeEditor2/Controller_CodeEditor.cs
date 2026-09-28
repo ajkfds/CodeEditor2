@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using CodeEditor2.CodeEditor.PopupMenu;
@@ -250,6 +251,12 @@ namespace CodeEditor2
             {
                 Dispatcher.UIThread.Invoke(Global.codeView.codeViewParser.EntryParse);
             }
+            // Coalescing: parse completion (EditParse) can fire many times in a row
+            // while typing. Coalesce consecutive PostRefresh calls into one actual
+            // refresh per small time window to reduce redraw frequency.
+            private const int RefreshCoalesceMilliseconds = 15;
+            private static bool refreshPending = false;
+
             public static void PostRefresh()
             {
                 if (!Dispatcher.UIThread.CheckAccess())
@@ -258,6 +265,23 @@ namespace CodeEditor2
                     return;
                 }
 
+                if (refreshPending) return;
+                refreshPending = true;
+
+                DispatcherTimer timer = new DispatcherTimer(
+                    TimeSpan.FromMilliseconds(RefreshCoalesceMilliseconds),
+                    DispatcherPriority.Background,
+                    (sender, e) =>
+                    {
+                        ((DispatcherTimer)sender).Stop();
+                        refreshPending = false;
+                        DoRefresh();
+                    });
+                timer.Start();
+            }
+
+            private static void DoRefresh()
+            {
                 Global.codeView.Redraw();
                 Global.codeView.UpdateMarks();
                 Global.codeView.UpdateFoldings();
