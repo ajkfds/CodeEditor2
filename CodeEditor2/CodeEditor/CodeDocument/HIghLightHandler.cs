@@ -44,14 +44,7 @@ namespace CodeEditor2.CodeEditor
                 }
             }
 
-            Global.codeView._highlightRenderer.CurrentResults.Clear();
-            for (int i = 0; i < highlightStarts.Count; i++)
-            {
-                AvaloniaEdit.Document.TextSegment segment = new AvaloniaEdit.Document.TextSegment();
-                segment.StartOffset = highlightStarts[i];
-                segment.Length = highlightLasts[i] - highlightStarts[i];
-                Global.codeView._highlightRenderer.CurrentResults.Add(segment);
-            }
+            RebuildRendererResults();
 
             //            ReDrawHighlight();
         }
@@ -88,7 +81,9 @@ namespace CodeEditor2.CodeEditor
 
         public void GetHighlightPosition(int highlightIndex, out int highlightStart, out int highlightLast)
         {
-            if (highlightIndex > highlightStarts.Count)
+            // index == Count is also invalid (would throw IndexOutOfRange);
+            // use >= instead of >.
+            if (highlightIndex < 0 || highlightIndex >= highlightStarts.Count)
             {
                 highlightStart = -1;
                 highlightLast = -1;
@@ -100,6 +95,7 @@ namespace CodeEditor2.CodeEditor
 
         public void SelectHighlight(int highlightIndex)
         {
+            if (highlightIndex < 0 || highlightIndex >= highlightStarts.Count) return;
             CodeDocument document = codeDocument;
             CodeEditor2.Controller.CodeEditor.SetCaretPosition(highlightStarts[highlightIndex]);
             CodeEditor2.Controller.CodeEditor.SetSelection(highlightStarts[highlightIndex], highlightLasts[highlightIndex]);
@@ -120,29 +116,18 @@ namespace CodeEditor2.CodeEditor
             CodeDocument document = codeDocument;
 
             if (highlightStarts.Count == 0) return;
-            Global.codeView._highlightRenderer.CurrentResults.Clear();
-            //for (int i = 0; i < highlightStarts.Count; i++)
-            //{
-            //    document.RemoveMarkAt(highlightStarts[i], highlighLasts[i] - highlightStarts[i] + 1, 7);
-            //    //for (int index = highlightStarts[i]; index <= highlighLasts[i]; index++)
-            //    //{
-            //    //    if(index < document.Length) document.RemoveMarkAt(index, 7);
-            //    //}
-            //}
             highlightStarts.Clear();
             highlightLasts.Clear();
+            RebuildRendererResults();
 
             Controller.CodeEditor.PostRefresh();
         }
 
         public void AppendHighlight(int highlightStart, int highlightLast)
         {
-            AvaloniaEdit.Document.TextSegment segment = new AvaloniaEdit.Document.TextSegment();
-            segment.StartOffset = highlightStart;
-            segment.Length = highlightLast - highlightStart;
-            Global.codeView._highlightRenderer.CurrentResults.Add(segment);
             highlightStarts.Add(highlightStart);
             highlightLasts.Add(highlightLast);
+            RebuildRendererResults();
 
             Controller.CodeEditor.PostRefresh();
         }
@@ -150,6 +135,33 @@ namespace CodeEditor2.CodeEditor
         public void ReDrawHighlight()
         {
             Controller.CodeEditor.PostRefresh();
+        }
+
+        // Rebuild the renderer's CurrentResults from the highlight lists.
+        // _highlightRenderer belongs to the TextView and must only be touched on
+        // the UI thread; OnTextEdit may run on a background document thread.
+        private void RebuildRendererResults()
+        {
+            if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            {
+                rebuildRendererResults();
+            }
+            else
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(rebuildRendererResults);
+            }
+        }
+
+        private void rebuildRendererResults()
+        {
+            Global.codeView._highlightRenderer.CurrentResults.Clear();
+            for (int i = 0; i < highlightStarts.Count; i++)
+            {
+                AvaloniaEdit.Document.TextSegment segment = new AvaloniaEdit.Document.TextSegment();
+                segment.StartOffset = highlightStarts[i];
+                segment.Length = highlightLasts[i] - highlightStarts[i];
+                Global.codeView._highlightRenderer.CurrentResults.Add(segment);
+            }
         }
     }
 }
