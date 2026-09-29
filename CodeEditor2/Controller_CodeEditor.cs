@@ -254,35 +254,78 @@ namespace CodeEditor2
             // Coalescing: parse completion (EditParse) can fire many times in a row
             // while typing. Coalesce consecutive PostRefresh calls into one actual
             // refresh per small time window to reduce redraw frequency.
-            private const int RefreshCoalesceMilliseconds = 15;
-            private static bool refreshPending = false;
+            //private const int RefreshCoalesceMilliseconds = 15;
+            //private static bool refreshPending = false;
 
+            //public static void PostRefresh()
+            //{
+            //    if (!Dispatcher.UIThread.CheckAccess())
+            //    {
+            //        Dispatcher.UIThread.Post(() => { PostRefresh(); });
+            //        return;
+            //    }
+
+            //    if (refreshPending) return;
+            //    refreshPending = true;
+
+            //    DispatcherTimer timer = new DispatcherTimer(
+            //        TimeSpan.FromMilliseconds(RefreshCoalesceMilliseconds),
+            //        DispatcherPriority.Background,
+            //        (sender, e) =>
+            //        {
+            //            ((DispatcherTimer)sender).Stop();
+            //            refreshPending = false;
+            //            DoRefresh();
+            //        });
+            //    timer.Start();
+            //}
+            private const int RefreshCoalesceMilliseconds = 15;
+            private static readonly object lockObject = new object();
+            private static DispatcherTimer refreshTimer;
             public static void PostRefresh()
             {
+                // UIスレッド以外から呼ばれた場合はUIスレッドへ委譲
                 if (!Dispatcher.UIThread.CheckAccess())
                 {
-                    Dispatcher.UIThread.Post(() => { PostRefresh(); });
+                    Dispatcher.UIThread.Post(PostRefresh);
                     return;
                 }
+                DoRefresh();
+//                return;
+                // --- ここからは常に UI スレッド上で実行されます ---
 
-                if (refreshPending) return;
-                refreshPending = true;
-
-                DispatcherTimer timer = new DispatcherTimer(
-                    TimeSpan.FromMilliseconds(RefreshCoalesceMilliseconds),
-                    DispatcherPriority.Background,
-                    (sender, e) =>
+                // 排他制御（マルチスレッドからの一斉呼び出し時の整合性を担保）
+                lock (lockObject)
+                {
+                    if (refreshTimer == null)
                     {
-                        ((DispatcherTimer)sender).Stop();
-                        refreshPending = false;
-                        DoRefresh();
-                    });
-                timer.Start();
-            }
+                        // 初回呼び出し時にタイマーを生成（インスタンスの再利用）
+                        refreshTimer = new DispatcherTimer(
+                            TimeSpan.FromMilliseconds(RefreshCoalesceMilliseconds),
+                            DispatcherPriority.Background,
+                            (sender, e) =>
+                            {
+                                lock (lockObject)
+                                {
+                                    refreshTimer.Stop();
+                                }
+                                DoRefresh();
+                            });
+                    }
+                    else
+                    {
+                        // すでに動いているタイマーを停止（15msのカウントダウンをリセット）
+                        refreshTimer.Stop();
+                    }
 
+                    // 15ms のカウントダウンを再スタート
+                    refreshTimer.Start();
+                }
+            }
             private static void DoRefresh()
             {
-                Global.codeView.Redraw();
+                Global.codeView._textEditor.TextArea.TextView.Redraw();
+                //Global.codeView.Redraw();
                 Global.codeView.UpdateMarks();
                 Global.codeView.UpdateFoldings();
             }
