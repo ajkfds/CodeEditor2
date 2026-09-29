@@ -88,7 +88,11 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
             else if (e.Key == Key.Tab)
             {
-                if (hintWorking) CloseHint();
+                if (hintWorking)
+                {
+                    CloseHint();
+                    work(false, true);
+                }
                 Apply();
                 Close();
                 e.Handled = true;
@@ -96,7 +100,11 @@ namespace CodeEditor2.CodeEditor.CodeComplete
             }
             else if (e.Key == Key.Space)
             {
-                if (hintWorking) CloseHint();
+                if (hintWorking)
+                {
+                    CloseHint();
+                    work(false, true);
+                }
                 Apply();
                 Close();
                 return;
@@ -106,6 +114,9 @@ namespace CodeEditor2.CodeEditor.CodeComplete
                 Close();
                 if (hintWorking) CloseHint();
                 return;
+            } else if(e.Key == Key.Left || e.Key == Key.Right)
+            {
+                work(false, true);
             }
         }
 
