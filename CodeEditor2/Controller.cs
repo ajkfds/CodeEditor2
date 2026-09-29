@@ -92,8 +92,8 @@ namespace CodeEditor2
             double dialogHeight = dialog.Height > 0 ? dialog.Height : dialog.Bounds.Height;
 
             // それでも0の場合はデフォルト値を設定
-            if (dialogWidth <= 0) dialogWidth = 400;
-            if (dialogHeight <= 0) dialogHeight = 300;
+            if (dialogWidth <= 0) dialogWidth = mainWindow.Bounds.Width * 0.8;
+            if (dialogHeight <= 0) dialogHeight = mainWindow.Bounds.Height * 0.8;
 
             // mainWindowの中央に配置
             int x = (int)(mainWindow.Position.X + (mainWindow.Bounds.Width - dialogWidth) / 2);
