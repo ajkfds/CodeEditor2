@@ -82,7 +82,6 @@ namespace CodeEditor2.LLM
             hamburgerButton.Content = "≡";
             hamburgerButton.Flyout = hamburgerFlyout;
 
-            collapseAndMenuPanel.Children.Add(spinnerImage);
             collapseAndMenuPanel.Children.Add(CollapseExpandButton);
             collapseAndMenuPanel.Children.Add(hamburgerButton);
 
@@ -92,9 +91,18 @@ namespace CodeEditor2.LLM
                 textBox.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
                 textBox.InnerRightContent = collapseAndMenuPanel;
 
+                // spinner is overlaid at the bottom-right of the message text
+                Grid textGrid = new Grid();
+                textGrid.Children.Add(textBox);
+                Grid.SetColumn(spinnerImage, 0);
+                Grid.SetRow(spinnerImage, 0);
+                spinnerImage.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
+                spinnerImage.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom;
+                textGrid.Children.Add(spinnerImage);
+
                 grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-                Grid.SetColumn(textBox, column);
-                grid.Children.Add(textBox);
+                Grid.SetColumn(textGrid, column);
+                grid.Children.Add(textGrid);
                 column++;
             }
 
@@ -260,7 +268,7 @@ namespace CodeEditor2.LLM
         {
             Width = 16,
             Height = 16,
-            Margin = new Thickness(0, 0, 5, 0),
+            Margin = new Thickness(0, 0, 15, 8),
             IsVisible = false
         };
 
