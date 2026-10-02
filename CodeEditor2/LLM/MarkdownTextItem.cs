@@ -86,7 +86,6 @@ namespace CodeEditor2.LLM
             hamburgerButton.Content = "≡";
             hamburgerButton.Flyout = hamburgerFlyout;
 
-            collapseAndMenuPanel.Children.Add(spinnerImage);
             collapseAndMenuPanel.Children.Add(CollapseExpandButton);
             collapseAndMenuPanel.Children.Add(hamburgerButton);
 
@@ -96,12 +95,24 @@ namespace CodeEditor2.LLM
 //                textBox.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
 //                textBox.InnerRightContent = collapseAndMenuPanel;
 
-                grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-                Grid.SetColumn(markdown, column);
-                Grid.SetColumn(collapseAndMenuPanel, column);
+                // spinner is overlaid at the bottom-right of the message text
+                Grid textGrid = new Grid();
+                textGrid.Children.Add(markdown);
+                Grid.SetColumn(spinnerImage, 0);
+                Grid.SetRow(spinnerImage, 0);
+                spinnerImage.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
+                spinnerImage.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom;
+                spinnerImage.Margin = new Thickness(0, 0, 15, 8);
+                textGrid.Children.Add(spinnerImage);
 
-                grid.Children.Add(markdown);
-                grid.Children.Add(collapseAndMenuPanel);
+                Grid.SetColumn(collapseAndMenuPanel, 0);
+                Grid.SetRow(collapseAndMenuPanel, 0);
+                textGrid.Children.Add(collapseAndMenuPanel);
+
+                grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+                Grid.SetColumn(textGrid, column);
+
+                grid.Children.Add(textGrid);
                 column++;
             }
 
