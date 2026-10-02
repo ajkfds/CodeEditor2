@@ -729,6 +729,10 @@ public partial class ChatControl : UserControl
             if (agent != null && agent.UseToolCallId)
             {
                 AdvanceCounterFromToolResults(functioncallCommand);
+
+                // Append a "Previous tool calls:" system-hint (tool name + key param)
+                // extracted from the LLM response that triggered these executions.
+                functioncallCommand = AppendToolCallHintIfNeeded(functioncallCommand, result);
             }
 
             result = await complete(functioncallCommand, tools, cancellationToken, MarkdownTextItem.MessageType.functionCallReturn);
