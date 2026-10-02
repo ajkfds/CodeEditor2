@@ -403,10 +403,22 @@ public partial class ChatControl : UserControl
                 inputItem.ModelItems.Add(model);
             }
 
-            // Register model selection changed handler
+            // Select the current model of the chat frontend if available
+            if (chat.CurrentModel != null)
+            {
+                int index = models.FindIndex(m => m.Id == chat.CurrentModel.Id);
+                if (index >= 0)
+                {
+                    inputItem.ModelSelector.SelectedIndex = index;
+                }
+            }
+
+            // Register model selection changed handler (once)
+            inputItem.ModelSelector.SelectionChanged -= ModelSelector_SelectionChanged;
             inputItem.ModelSelector.SelectionChanged += ModelSelector_SelectionChanged;
 
-            // Register mode selection changed handler
+            // Register mode selection changed handler (once)
+            inputItem.ModeSelector.SelectionChanged -= ModeSelector_SelectionChanged;
             inputItem.ModeSelector.SelectionChanged += ModeSelector_SelectionChanged;
         }
 

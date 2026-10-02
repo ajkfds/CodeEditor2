@@ -22,6 +22,11 @@ namespace CodeEditor2.LLM
 
     public interface ILLMChatFrontEnd
     {
+        /// <summary>
+        /// The currently selected model (null when not yet initialized)
+        /// </summary>
+        ModelItem? CurrentModel { get; }
+
         IAsyncEnumerable<string> GetAsyncCollectionChatResult(string command, IList<AITool>? tools, CancellationToken cancellation);
         Task<string> GetAsyncChatResult(string command, IList<AITool>? tools, CancellationToken cancellationToken);
 
