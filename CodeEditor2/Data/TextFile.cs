@@ -532,6 +532,8 @@ namespace CodeEditor2.Data
                             {
                                 doc.TextDocument.Replace(0, doc.TextDocument.TextLength, text);
                                 doc.Clean();
+                                // undo would remove the whole initial file load (empty file)
+                                doc.ClearHistory();
                             }
                             currentFileHash = GetHash(text);
                             currentFileText = text;
@@ -605,6 +607,8 @@ namespace CodeEditor2.Data
                 {
                     doc.TextDocument.Replace(0, doc.TextDocument.TextLength, text);
                     doc.Clean();
+                    // external reload should not be undoable back to an empty file
+                    doc.ClearHistory();
                     doc.SetSelection(carletPosition, carletPosition);
                 }
                 currentFileHash = newHash;
@@ -620,6 +624,8 @@ namespace CodeEditor2.Data
                     {
                         doc.TextDocument.Replace(0, doc.TextDocument.TextLength, text);
                         doc.Clean();
+                        // external reload should not be undoable back to an empty file
+                        doc.ClearHistory();
                     }
                     currentFileHash = newHash;
                     currentFileText = text;
