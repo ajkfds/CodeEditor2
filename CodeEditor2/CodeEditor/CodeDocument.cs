@@ -773,9 +773,16 @@ namespace CodeEditor2.CodeEditor
 
         internal int getLineStartIndex(int line)
         {
-            if (textDocument == null) return 0;
-            TextLocation location = new TextLocation(line, 0);
-            return textDocument.GetOffset(location);
+            try
+            {
+                if (textDocument == null) return 0;
+                TextLocation location = new TextLocation(line, 0);
+                return textDocument.GetOffset(location);
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         public int GetLineLength(int line)
@@ -797,8 +804,15 @@ namespace CodeEditor2.CodeEditor
         }
         internal int getLineLength(int line)
         {
-            if (textDocument == null) return 0;
-            return textDocument.GetLineByNumber(line).Length;
+            try
+            {
+                if (textDocument == null) return 0;
+                return textDocument.GetLineByNumber(line).Length;
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         public int Lines
@@ -926,7 +940,14 @@ namespace CodeEditor2.CodeEditor
         }
         private string createString()
         {
-            return textDocument.GetText(0, textDocument.TextLength);
+            try
+            {
+                return textDocument.GetText(0, textDocument.TextLength);
+            }
+            catch
+            {
+                return "";
+            }
         }
 
         public string CreateString(int index, int length)
@@ -950,7 +971,14 @@ namespace CodeEditor2.CodeEditor
         {
             if (System.Diagnostics.Debugger.IsAttached && length < 0) System.Diagnostics.Debugger.Break();
             //if (System.Diagnostics.Debugger.IsAttached && index + length > Length) System.Diagnostics.Debugger.Break();
-            return textDocument.GetText(index, length);
+            try
+            {
+                return textDocument.GetText(index, length);
+            }
+            catch
+            {
+                return "";
+            }
         }
 
         public string CreateLineString(int line)
@@ -967,7 +995,14 @@ namespace CodeEditor2.CodeEditor
         }
         private string createLineString(int line)
         {
-            return textDocument.GetText(getLineStartIndex(line), getLineLength(line));
+            try
+            {
+                return textDocument.GetText(getLineStartIndex(line), getLineLength(line));
+            }
+            catch
+            {
+                return "";
+            }
         }
 
         public virtual void GetWord(int index, out int headIndex, out int length)
