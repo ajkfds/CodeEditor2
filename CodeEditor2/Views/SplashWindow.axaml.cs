@@ -44,8 +44,8 @@ public partial class SplashWindow : Window
                 verticalStackPanelConstructor.AppendText("Last Accessed : " + history.LastAccessed.ToString(), 7);
             }
             button.Click += Button_Click;
-            button.ContextMenu = createHistoryContextMenu(button);
             historyTarget.Add(button, history);
+            button.ContextMenu = createHistoryContextMenu(button);
 
             HistoryStackPanel.Children.Add(button);
         }
