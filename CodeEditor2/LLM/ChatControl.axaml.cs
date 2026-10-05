@@ -232,13 +232,6 @@ public partial class ChatControl : UserControl
     private Avalonia.Controls.ItemsRepeater itemsRepeater;
 
     /// <summary>
-    /// Flag indicating whether system is scrolling
-    /// Used for auto-scroll control
-    /// </summary>
-    private bool _isInternalScrolling = false;
-    
-    
-    /// <summary>
     /// Initialization complete flag
     /// Prevents duplicate execution of ResetAsync
     /// </summary>
@@ -257,21 +250,38 @@ public partial class ChatControl : UserControl
         {
             if (autoScroll)
             {
-                _isInternalScrolling = true; // Signal that system is about to scroll
                 // Scroll to bottom
+                // Note: we do NOT set _isInternalScrolling here. The resulting
+                // ScrollChanged lands at the bottom, so the isAtBottom check
+                // below simply keeps autoScroll == true. Relying on a deferred
+                // flag reset caused user scroll events to be swallowed while
+                // the extent changes rapidly (streaming), which locked the
+                // view to the bottom and made manual scrolling impossible.
                 ChatScrollViewer.Offset = new Vector(ChatScrollViewer.Offset.X, double.MaxValue);
-
-                // Reset flag when render cycle completes
-                Dispatcher.UIThread.Post(() => _isInternalScrolling = false, DispatcherPriority.Loaded);
             }
         });
+
+        // Detect user wheel scrolling reliably, even while the extent changes
+        // rapidly (streaming). Tunnel strategy ensures we run before the
+        // ScrollViewer handles the event.
+        ChatScrollViewer.AddHandler(Avalonia.Input.InputElement.PointerWheelChangedEvent, (s, ev) =>
+        {
+            var delta = ev.Delta.Y;
+            if (delta > 0)
+            {
+                // User scrolled up: stop following the bottom immediately
+                autoScroll = false;
+            }
+            else if (delta < 0)
+            {
+                // Scrolling down: let the ScrollChanged isAtBottom check
+                // re-enable auto-scroll when the bottom is reached.
+            }
+        }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
 
         // Handle scroll position change
         ChatScrollViewer.ScrollChanged += (s, ev) =>
         {
-            // Skip manual check if scrolling is caused by system (extent change)
-            if (_isInternalScrolling) return;
-
             // Threshold (in pixels) for determining if near bottom
             const double threshold = 10; // Add some buffer
             bool isAtBottom = ChatScrollViewer.Offset.Y >= (ChatScrollViewer.Extent.Height - ChatScrollViewer.Viewport.Height - threshold);
@@ -946,15 +956,11 @@ public partial class ChatControl : UserControl
                     // If auto-scroll is enabled
                     if (autoScroll)
                     {
-                        // Set flag that system is scrolling
-                        _isInternalScrolling = true;
                         // Immediately finalize layout on render thread
                         Dispatcher.UIThread.Post(() =>
                         {
                             itemsRepeater.UpdateLayout();
                             ChatScrollViewer?.ScrollToEnd();
-                            // Reset flag after scroll completes
-                            _isInternalScrolling = false;
                         }, DispatcherPriority.Render); // Immediate reflection at Render priority
                     }
                 }
