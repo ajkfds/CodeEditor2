@@ -23,7 +23,7 @@ namespace CodeEditor2.LLM
 
             HorizontalGridConstructor hgrid = new HorizontalGridConstructor();
             hgrid.AppendContol(ModelSelector, null);
-            hgrid.AppendContol(ModeSelector, null);
+//            hgrid.AppendContol(ModeSelector, null);
             hgrid.AppendContolFill(ButtonBar);
 
             StackPanel.Children.Add(hgrid.Grid);
