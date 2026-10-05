@@ -24,6 +24,14 @@ public partial class SplashWindow : Window
         Global.Setup.LoadSetup();
         Global.Setup.Historys.Sort((a, b) => b.LastAccessed.CompareTo(a.LastAccessed));
 
+        createHistoryButtons();
+    }
+
+    private void createHistoryButtons()
+    {
+        HistoryStackPanel.Children.Clear();
+        historyTarget.Clear();
+
         foreach (Setups.Setup.History history in Global.Setup.Historys)
         {
             Avalonia.Controls.Button button = new Button() { HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch };
@@ -36,12 +44,51 @@ public partial class SplashWindow : Window
                 verticalStackPanelConstructor.AppendText("Last Accessed : " + history.LastAccessed.ToString(), 7);
             }
             button.Click += Button_Click;
+            button.ContextMenu = createHistoryContextMenu(button);
             historyTarget.Add(button, history);
 
             HistoryStackPanel.Children.Add(button);
         }
     }
     Dictionary<Button, Setups.Setup.History> historyTarget = new Dictionary<Button, Setup.History>();
+
+    private Avalonia.Controls.ContextMenu createHistoryContextMenu(Button button)
+    {
+        Setups.Setup.History history = historyTarget[button];
+        Avalonia.Controls.ContextMenu contextMenu = new Avalonia.Controls.ContextMenu();
+
+        MenuItem renameItem = new MenuItem() { Header = "Rename" };
+        renameItem.Click += async (sender, e) =>
+        {
+            Tools.InputWindow inputWindow = new Tools.InputWindow("Rename History", "New name", history.Name);
+            await inputWindow.ShowDialog(this);
+            if (inputWindow.Cancel) return;
+            string newName = inputWindow.InputText;
+            if (newName == "" || newName == history.Name) return;
+
+            history.Name = newName;
+            Global.Setup.SaveSetup();
+
+            createHistoryButtons();
+        };
+        contextMenu.Items.Add(renameItem);
+
+        MenuItem deleteItem = new MenuItem() { Header = "Delete" };
+        deleteItem.Click += async (sender, e) =>
+        {
+            Tools.YesNoWindow confirmWindow = new Tools.YesNoWindow("Delete History", "Delete \"" + history.Name + "\" from history ?", true, true);
+            await confirmWindow.ShowDialog(this);
+            if (!confirmWindow.Yes) return;
+
+            Global.Setup.Historys.Remove(history);
+            Global.Setup.SaveSetup();
+
+            createHistoryButtons();
+        };
+        contextMenu.Items.Add(deleteItem);
+
+        return contextMenu;
+    }
 
 
     private void Button_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
