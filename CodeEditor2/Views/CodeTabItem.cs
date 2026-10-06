@@ -6,8 +6,14 @@ using System;
 
 namespace CodeEditor2.Views
 {
-    public class CodeTabItem : Avalonia.Controls.TabItem//, IStyleable // IStylable is need to inherit from TabItem (https://github.com/AvaloniaUI/Avalonia/issues/2566)
+    public class CodeTabItem : Avalonia.Controls.TabItem //, IStyleable // IStylable is need to inherit from TabItem (https://github.com/AvaloniaUI/Avalonia/issues/2566)
     {
+        // Avalonia 11+ replacement for IStyleable.StyleKey
+        // (https://github.com/AvaloniaUI/Avalonia/issues/2566):
+        // without this, the TabItem theme is not applied to derived classes
+        // and the tab content may be painted over the tab header area.
+        protected override Type StyleKeyOverride => typeof(TabItem);
+
         public CodeTabItem(string title, string? iconName, Avalonia.Media.Color? iconColor, bool closeButtonEnable)
         {
             if (ActiveCloseButtonBmp == null) ActiveCloseButtonBmp = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap(
