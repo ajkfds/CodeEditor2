@@ -62,6 +62,9 @@ namespace CodeEditor2.CodeEditor
         {
             if (codeDocument.TextDocument == null) return;
             if (codeDocument._textFile == null) return;
+            if (index < 0) return;
+            if (index >= codeDocument.TextDocument.TextLength) return;
+            if (index+length >= codeDocument.TextDocument.TextLength) return;
 
             DocumentLine lineStart = codeDocument.TextDocument.GetLineByOffset(index);
             DocumentLine lineLast = codeDocument.TextDocument.GetLineByOffset(index + length);
