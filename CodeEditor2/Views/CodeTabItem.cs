@@ -6,7 +6,7 @@ using System;
 
 namespace CodeEditor2.Views
 {
-    public class CodeTabItem : Avalonia.Controls.TabItem //, IStyleable // IStylable is need to inherit from TabItem (https://github.com/AvaloniaUI/Avalonia/issues/2566)
+    public class CodeTabItem : Avalonia.Controls.TabItem 
     {
         // Avalonia 11+ replacement for IStyleable.StyleKey
         // (https://github.com/AvaloniaUI/Avalonia/issues/2566):
