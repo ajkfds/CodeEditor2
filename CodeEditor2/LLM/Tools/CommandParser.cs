@@ -78,28 +78,38 @@ namespace CodeEditor2.LLM.Tools
             return chains;
         }
 
+
         private async Task<(string Output, int ExitCode)> ExecutePipeChainAsync(List<string> pipeParts, string rootPath, HashSet<string> allowedCommands)
         {
+            // 事前チェック：起動前にすべてのコマンドが許可されているか検証（途中終了によるリーク防止）
+            var parsedCmds = new List<(string Cmd, string Args)>();
+            foreach (var part in pipeParts)
+            {
+                var tokens = ParseArguments(part);
+                if (tokens.Count == 0) continue;
+
+                var cmd = tokens[0];
+                if (!allowedCommands.Contains(cmd.ToLower()))
+                    return ($"Error: '{cmd}' is not allowed.", -1);
+
+                var args = string.Join(" ", tokens.Skip(1));
+                parsedCmds.Add((cmd, args));
+            }
+
+            if (parsedCmds.Count == 0)
+                return (string.Empty, 0);
+
             var processes = new List<Process>();
-            var outputBuilder = new StringBuilder();
-            int lastExitCode = 0;
+            var backgroundTasks = new List<Task>();
+            // 順序を保つため、ConcurrentQueue を使用
+            var errorLogs = new System.Collections.Concurrent.ConcurrentQueue<string>();
 
             try
             {
-                Stream lastOutputStream = null;
+                Stream previousOutputStream = null;
 
-                for (int i = 0; i < pipeParts.Count; i++)
+                foreach (var (cmd, args) in parsedCmds)
                 {
-                    var tokens = ParseArguments(pipeParts[i]);
-                    if (tokens.Count == 0) continue;
-
-                    var cmd = tokens[0];
-                    var args = string.Join(" ", tokens.Skip(1));
-
-                    // セキュリティ：許可リスト照合
-                    if (!allowedCommands.Contains(cmd.ToLower()))
-                        return ($"Error: '{cmd}' is not allowed.", -1);
-
                     var startInfo = new ProcessStartInfo
                     {
                         FileName = cmd,
@@ -117,35 +127,228 @@ namespace CodeEditor2.LLM.Tools
                     var proc = Process.Start(startInfo);
                     processes.Add(proc);
 
-                    // パイプの接続 (前のプロセスの出力を今のプロセスの入力へ)
-                    if (lastOutputStream != null)
+                    if (previousOutputStream == null)
                     {
-                        _ = CopyStreamAsync(lastOutputStream, proc.StandardInput.BaseStream);
+                        proc.StandardInput.Close();
                     }
 
-                    lastOutputStream = proc.StandardOutput.BaseStream;
+                    // エラー出力収集
+                    backgroundTasks.Add(Task.Run(async () =>
+                    {
+                        using var reader = proc.StandardError;
+                        string line;
+                        while ((line = await reader.ReadLineAsync()) != null)
+                        {
+                            errorLogs.Enqueue(line);
+                        }
+                    }));
+
+                    // パイプ転送
+                    if (previousOutputStream != null)
+                    {
+                        var inputWriter = proc.StandardInput.BaseStream;
+                        var sourceStream = previousOutputStream;
+
+                        backgroundTasks.Add(Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await sourceStream.CopyToAsync(inputWriter);
+                            }
+                            catch
+                            {
+                                // パイプ断絶（前段・後段プロセスの異常終了）時は無視
+                            }
+                            finally
+                            {
+                                inputWriter.Close();
+                            }
+                        }));
+                    }
+
+                    previousOutputStream = proc.StandardOutput.BaseStream;
                 }
 
-                // 最後のプロセスの完了を待ち、出力をキャプチャ
                 var lastProc = processes.Last();
-                var outTask = lastProc.StandardOutput.ReadToEndAsync();
-                var errTask = lastProc.StandardError.ReadToEndAsync();
 
-                await Task.WhenAll(outTask, errTask);
-                await lastProc.WaitForExitAsync();
+                // 最後のプロセスの stdout 読み込みとプロセス終了を並行して実行
+                string finalStdout = await lastProc.StandardOutput.ReadToEndAsync();
 
-                lastExitCode = lastProc.ExitCode;
-                return (outTask.Result + errTask.Result, lastExitCode);
-            }
-            catch (Exception ex)
-            {
-                return ($"Execution Error: {ex.Message}\n", -1);
+                foreach (var proc in processes)
+                {
+                    await proc.WaitForExitAsync();
+                }
+
+                await Task.WhenAll(backgroundTasks);
+
+                var exitCode = lastProc.ExitCode;
+                var combinedError = string.Join("\n", errorLogs);
+                var resultText = string.IsNullOrEmpty(combinedError)
+                    ? finalStdout
+                    : $"{finalStdout}\n{combinedError}";
+
+                return (resultText, exitCode);
             }
             finally
             {
-                foreach (var p in processes) p.Dispose();
+                foreach (var proc in processes)
+                {
+                    try
+                    {
+                        if (!proc.HasExited)
+                        {
+                            proc.Kill(entireProcessTree: true);
+                        }
+                    }
+                    catch
+                    {
+                        // 無視
+                    }
+                    finally
+                    {
+                        proc.Dispose();
+                    }
+                }
             }
         }
+
+        //private async Task<(string Output, int ExitCode)> ExecutePipeChainAsync(List<string> pipeParts, string rootPath, HashSet<string> allowedCommands)
+        //{
+
+
+
+
+
+
+
+
+        //    var processes = new List<Process>();
+        //    var outputBuilder = new StringBuilder();
+        //    int lastExitCode = 0;
+
+
+
+
+
+
+
+
+        //    try
+        //    {
+        //        Stream lastOutputStream = null;
+
+        //        var errorBuffers = new System.Collections.Concurrent.ConcurrentBag<string>();
+        //        var streamCopyTasks = new List<Task>();
+        //        var readTasks = new List<Task>();
+
+        //        for (int i = 0; i < pipeParts.Count; i++)
+        //        {
+        //            var tokens = ParseArguments(pipeParts[i]);
+        //            if (tokens.Count == 0) continue;
+
+        //            var cmd = tokens[0];
+        //            var args = string.Join(" ", tokens.Skip(1));
+
+        //            if (!allowedCommands.Contains(cmd.ToLower()))
+        //                return ($"Error: '{cmd}' is not allowed.", -1);
+
+        //            var startInfo = new ProcessStartInfo
+        //            {
+        //                FileName = cmd,
+        //                Arguments = args,
+        //                WorkingDirectory = rootPath,
+        //                UseShellExecute = false,
+        //                RedirectStandardInput = true,
+        //                RedirectStandardOutput = true,
+        //                RedirectStandardError = true,
+        //                StandardOutputEncoding = Encoding.UTF8,
+        //                StandardErrorEncoding = Encoding.UTF8,
+        //                CreateNoWindow = true
+        //            };
+
+        //            var proc = Process.Start(startInfo);
+        //            processes.Add(proc);
+
+        //            // 1. 各プロセスの StandardError を吸い出す（バッファ詰まり防止）
+        //            readTasks.Add(Task.Run(async () =>
+        //            {
+        //                try
+        //                {
+        //                    var err = await proc.StandardError.ReadToEndAsync();
+        //                    if (!string.IsNullOrEmpty(err))
+        //                    {
+        //                        errorBuffers.Add(err);
+        //                    }
+        //                }
+        //                catch { /* キャンセル・破棄例外の無視 */ }
+        //            }));
+
+        //            // 2. パイプの転送処理（独立して並行実行）
+        //            if (lastOutputStream != null)
+        //            {
+        //                var currentInput = proc.StandardInput.BaseStream;
+        //                var previousOutput = lastOutputStream;
+
+        //                streamCopyTasks.Add(Task.Run(async () =>
+        //                {
+        //                    try
+        //                    {
+        //                        await previousOutput.CopyToAsync(currentInput);
+        //                    }
+        //                    catch
+        //                    {
+        //                        // 先頭コマンドが異常終了してパイプが破棄された場合などの保護
+        //                    }
+        //                    finally
+        //                    {
+        //                        currentInput.Close(); // ★次プロセスへ EOF 送信
+        //                    }
+        //                }));
+        //            }
+
+        //            lastOutputStream = proc.StandardOutput.BaseStream;
+        //        }
+
+        //        var lastProc = processes.Last();
+
+        //        // 3. 最後のプロセスの標準出力を取得
+        //        var outTask = lastProc.StandardOutput.ReadToEndAsync();
+        //        readTasks.Add(outTask);
+
+        //        // 4. まず全プロセスの終了を最優先で待機する
+        //        // (streamCopyTasks はプロセスの進行に伴って自然に完了・解体される)
+        //        await Task.WhenAll(processes.Select(p => p.WaitForExitAsync()));
+
+        //        // 5. ストリーム読み出しタスクとコピー処理の完了を回収
+        //        await Task.WhenAll(readTasks);
+        //        await Task.WhenAll(streamCopyTasks);
+
+        //        lastExitCode = lastProc.ExitCode;
+
+        //        // リソース解放
+        //        foreach (var p in processes)
+        //        {
+        //            p.Dispose();
+        //        }
+
+        //        var allErrors = string.Join("\n", errorBuffers);
+        //        var finalOutput = outTask.Result;
+        //        if (!string.IsNullOrEmpty(allErrors))
+        //        {
+        //            finalOutput += "\n" + allErrors;
+        //        }
+
+        //        return (finalOutput, lastExitCode);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return ($"Execution Error: {ex.Message}\n", -1);
+        //    }
+        //    finally
+        //    {
+        //        foreach (var p in processes) p.Dispose();
+        //    }
+        //}
         /// <summary>
         /// コマンドライン文字列をトークン（プログラム名と引数）に分解します。
         /// ダブルクォーテーション内のスペースを保持し、エスケープ文字にも対応します。
