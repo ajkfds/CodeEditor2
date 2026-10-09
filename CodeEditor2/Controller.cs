@@ -24,6 +24,7 @@ namespace CodeEditor2
         }
         public static void AppendLog(string message, Avalonia.Media.Color color)
         {
+            if (Global.logView == null) return; // headless host (LSP / tests): no log view
             if (!Dispatcher.UIThread.CheckAccess())
             {
                 Dispatcher.UIThread.Post(() =>
