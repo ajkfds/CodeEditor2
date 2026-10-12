@@ -365,6 +365,7 @@ PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.Bo
         {
             if (CodeDocument == null) return;
             if (_textEditor.CaretOffset == index && CodeDocument._caretIndex == index) return;
+            if (_textEditor.CaretOffset > _textEditor.Document.TextLength) return;
             _textEditor.CaretOffset = index;
             CodeDocument._caretIndex = index;
         }
