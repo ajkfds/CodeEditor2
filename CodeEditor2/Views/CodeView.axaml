@@ -9,47 +9,59 @@
 			 FontFamily="Cascadia Mono,Consolas,Menlo,Monospace,FreeMono,LiberationMono-Regular"
 			 FontWeight="Normal"
              x:Class="CodeEditor2.Views.CodeView">
-	<AvalonEdit:TextEditor Name="Editor"
-		HorizontalScrollBarVisibility="Auto"
-		VerticalScrollBarVisibility="Visible"
-		FontFamily="Cascadia Mono,Consolas,Menlo,Monospace,DejaVu Sans Mono,Liberation Mono,Noto Sans Mono,Source Code Pro"
-		FontWeight="Normal"
-		FontSize="10"
-		ToolTip.Tip="AAA"
-		ToolTip.Placement="Pointer"
-		ToolTip.ShowDelay="0"
-	>
+	<Grid ColumnDefinitions="*, 4, 0">
 
-		<ToolTip.Tip>
-			<TextBlock 
-				Name="PopupTextBlock"
-				FontSize="10" 
-				FontWeight="Normal"
-				FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
-			>
-			</TextBlock>
-		</ToolTip.Tip>
+		<AvalonEdit:TextEditor Grid.Column="0" Name="Editor"
+			HorizontalScrollBarVisibility="Auto"
+			VerticalScrollBarVisibility="Visible"
+			FontFamily="Cascadia Mono,Consolas,Menlo,Monospace,DejaVu Sans Mono,Liberation Mono,Noto Sans Mono,Source Code Pro"
+			FontWeight="Normal"
+			FontSize="10"
+			ToolTip.Tip="AAA"
+			ToolTip.Placement="Pointer"
+			ToolTip.ShowDelay="0"
+		>
 
-		<FlyoutBase.AttachedFlyout>
-			<views:PopupMenuFlyout Placement="AnchorAndGravity">
-				<views:PopupMenuView
-					Name="PopupMenu"
-					Margin="0"
-					Padding="0"
+			<ToolTip.Tip>
+				<TextBlock
+					Name="PopupTextBlock"
 					FontSize="10"
 					FontWeight="Normal"
 					FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
-				/>
-			</views:PopupMenuFlyout>
-		</FlyoutBase.AttachedFlyout>
+				>
+				</TextBlock>
+			</ToolTip.Tip>
 
-		<AvalonEdit:TextEditor.Styles>
-			<Style Selector="FlyoutPresenter">
-				<Setter Property="Padding" Value="2"></Setter>
-			</Style>
+			<FlyoutBase.AttachedFlyout>
+				<views:PopupMenuFlyout Placement="AnchorAndGravity">
+					<views:PopupMenuView
+						Name="PopupMenu"
+						Margin="0"
+						Padding="0"
+						FontSize="10"
+						FontWeight="Normal"
+						FontFamily="Cascadia Mono,Consolas,Menlo,Monospace"
+					/>
+				</views:PopupMenuFlyout>
+			</FlyoutBase.AttachedFlyout>
 
-		</AvalonEdit:TextEditor.Styles>
+			<AvalonEdit:TextEditor.Styles>
+				<Style Selector="FlyoutPresenter">
+					<Setter Property="Padding" Value="2"></Setter>
+				</Style>
 
-	</AvalonEdit:TextEditor>
-	
+			</AvalonEdit:TextEditor.Styles>
+
+		</AvalonEdit:TextEditor>
+
+		<!-- splitter for the sub information pane (visible only when the pane is visible) -->
+		<GridSplitter Grid.Column="1" Name="SubPaneSplitter" ResizeDirection="Columns"
+			Background="Transparent" IsVisible="False"/>
+
+		<!-- sub information pane (right side). hidden until a plugin sets content -->
+		<ContentControl Grid.Column="2" Name="SubPaneHost" IsVisible="False"
+			MinWidth="100" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+
+	</Grid>
+
 </UserControl>

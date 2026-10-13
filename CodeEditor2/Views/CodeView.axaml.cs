@@ -231,6 +231,66 @@ PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.Bo
        // TextBlock rendered inside the hint popup.
        internal TextBlock HintPopupTextBlock => hintPopupTextBlock;
 
+       // -----------------------------------------------------------
+       // Sub information pane (right side of the editor)
+       // The pane is shown only while the current TextFile provides
+       // sub pane content (see Data.TextFile.GetSubPaneContent).
+       // Plugins (e.g. live markdown preview) set content for their
+       // own file types; unused files keep the pane hidden.
+
+       /// <summary>
+       /// Sets the content of the sub information pane and shows it.
+       /// Pass null to hide the pane.
+       /// </summary>
+       public void SetSubPaneContent(Control? content)
+       {
+           if (content == null)
+           {
+               HideSubPane();
+               return;
+           }
+           if (SubPaneHost.Content != content)
+           {
+               SubPaneHost.Content = content;
+           }
+           SubPaneHost.IsVisible = true;
+           SubPaneSplitter.IsVisible = true;
+       }
+
+       /// <summary>
+       /// Hides the sub information pane (content is kept for reuse).
+       /// </summary>
+       public void HideSubPane()
+       {
+           SubPaneHost.IsVisible = false;
+           SubPaneSplitter.IsVisible = false;
+       }
+
+       /// <summary>
+       /// Updates the sub pane according to the current TextFile.
+       /// Files that do not provide sub pane content hide the pane.
+       /// </summary>
+       public void UpdateSubPane()
+       {
+           Control? content = null;
+           try
+           {
+               content = TextFile?.GetSubPaneContent();
+           }
+           catch (Exception)
+           {
+               content = null;
+           }
+           if (content == null)
+           {
+               HideSubPane();
+           }
+           else
+           {
+               SetSubPaneContent(content);
+           }
+       }
+
         // properties
 
         private Data.TextFile? textFile;
@@ -513,6 +573,7 @@ PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.Bo
             //    await textFile.AcceptParsedDocumentAsync(textFile.ParsedDocument);
             //}
             skipEvents = false;
+            UpdateSubPane();
             Controller.CodeEditor.PostRefresh();
         }
         private void TextEditor_ContextRequested(object? sender, ContextRequestedEventArgs e)

@@ -787,6 +787,18 @@ namespace CodeEditor2.Data
         public static Action<List<ToolItem>>? CustomizeTooltem;
 
         /// <summary>
+        /// Returns the content control to show in the code view sub
+        /// information pane (right side of the editor) while this file
+        /// is selected, or null when the file does not use the pane.
+        /// Language plugins override this to provide previews etc.
+        /// The returned control should update itself live.
+        /// </summary>
+        public virtual Avalonia.Controls.Control? GetSubPaneContent()
+        {
+            return null;
+        }
+
+        /// <summary>
         /// Called when text is entered in the editor.
         /// </summary>
         /// <param name="e">The text input event args.</param>
