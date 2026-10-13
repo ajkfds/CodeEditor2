@@ -959,7 +959,7 @@ public partial class ChatControl : UserControl
                         // Immediately finalize layout on render thread
                         Dispatcher.UIThread.Post(() =>
                         {
-                            itemsRepeater.UpdateLayout();
+//                            itemsRepeater.UpdateLayout();
                             ChatScrollViewer?.ScrollToEnd();
                         }, DispatcherPriority.Render); // Immediate reflection at Render priority
                     }
