@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using CodeEditor2.NavigatePanel;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CodeEditor2
@@ -74,10 +75,17 @@ namespace CodeEditor2
         /// Linux+X11環境でも正常に位置合わせされます。
         /// </summary>
         /// <param name="dialog">表示するダイアログウィンドウ</param>
+        // 同一時刻に複数のモーダルダイアログが開くことを防ぐ。
+        // 2つ目以降の ShowDialog は最初のモーダルが閉じるまで待機する。
+        // (同時多重時、後発のダイアログが activation 待ちで mainWindow の前面に出ず、
+        //  背後に表示される問題の対策)
+        private static readonly SemaphoreSlim dialogShowSemaphore = new SemaphoreSlim(1, 1);
+
         public static async Task ShowDialogAsync(Window dialog)
         {
             if (!Dispatcher.UIThread.CheckAccess())
             {
+                // InvokeAsync(Func<Task>) オーバーロードは ShowDialog 完了まで await 済み
                 await Dispatcher.UIThread.InvokeAsync(() => ShowDialogAsync(dialog));
                 return;
             }
@@ -88,20 +96,66 @@ namespace CodeEditor2
                 throw new InvalidOperationException("Main window is not available");
             }
 
-            // dialog.Width/Heightが設定されていない場合、ActualWidth/ActualHeightを使用
-            double dialogWidth = dialog.Width > 0 ? dialog.Width : dialog.Bounds.Width;
-            double dialogHeight = dialog.Height > 0 ? dialog.Height : dialog.Bounds.Height;
+            await dialogShowSemaphore.WaitAsync();
+            try
+            {
+                if (mainWindow.WindowState == WindowState.Maximized)
+                {
+                    // 最大化時は Position がフレーム原点や負のオフセットを指すため
+                    // 手動中央配置計算が実表示領域と乖離する。CenterOwner に任せる。
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                }
+                else
+                {
+                    // dialog.Width/Heightが設定されていない場合、ActualWidth/ActualHeightを使用
+                    double dialogWidth = dialog.Width > 0 ? dialog.Width : dialog.Bounds.Width;
+                    double dialogHeight = dialog.Height > 0 ? dialog.Height : dialog.Bounds.Height;
 
-            // それでも0の場合はデフォルト値を設定
-            if (dialogWidth <= 0) dialogWidth = mainWindow.Bounds.Width * 0.8;
-            if (dialogHeight <= 0) dialogHeight = mainWindow.Bounds.Height * 0.8;
+                    // それでも0の場合はデフォルト値を設定
+                    if (dialogWidth <= 0) dialogWidth = mainWindow.Bounds.Width * 0.8;
+                    if (dialogHeight <= 0) dialogHeight = mainWindow.Bounds.Height * 0.8;
 
-            // mainWindowの中央に配置
-            int x = (int)(mainWindow.Position.X + (mainWindow.Bounds.Width - dialogWidth) / 2);
-            int y = (int)(mainWindow.Position.Y + (mainWindow.Bounds.Height - dialogHeight) / 2);
-            dialog.Position = new PixelPoint(x, y);
+                    // mainWindowの中央に配置。
+                    // Position はデバイスピクセル (PixelPoint)、Bounds/Width は DIP のため、
+                    // DPIスケール (RenderScaling) を反映して単位を合わせる。
+                    // (混在計算だと DPI 100% 以外の環境で中央からずれ、画面外に出て
+                    //  OS/WM が強制再配置し「別の場所に出る」原因になる)
+                    double scaling = mainWindow.RenderScaling;
+                    double mainWindowPixelWidth = mainWindow.Bounds.Width * scaling;
+                    double mainWindowPixelHeight = mainWindow.Bounds.Height * scaling;
+                    double dialogPixelWidth = dialogWidth * scaling;
+                    double dialogPixelHeight = dialogHeight * scaling;
+                    int x = (int)(mainWindow.Position.X + (mainWindowPixelWidth - dialogPixelWidth) / 2);
+                    int y = (int)(mainWindow.Position.Y + (mainWindowPixelHeight - dialogPixelHeight) / 2);
+                    dialog.Position = new PixelPoint(x, y);
+                }
 
-            await dialog.ShowDialog(mainWindow);
+                await dialog.ShowDialog(mainWindow);
+            }
+            finally
+            {
+                dialogShowSemaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// YesNoダイアログをmainWindowの中央に表示し、ユーザの回答を取得する。
+        /// UIスレッド以外から呼び出した場合も正しく回答完了まで待機する。
+        /// (TextFile.FileCheckBackgroundAsync 等の background スレッド経路向け。
+        ///  Dispatcher.UIThread.InvokeAsync(async () => { ... await ShowDialogAsync ... })
+        ///  形式は async lambda が Action (async void) に解決され回答待ちが行われないため、
+        ///  その代わりに使用する)
+        /// </summary>
+        public static async Task<bool> ShowDialogYesNoAsync(string title, string caption)
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                return await Dispatcher.UIThread.InvokeAsync(() => ShowDialogYesNoAsync(title, caption));
+            }
+
+            Tools.YesNoWindow dialog = new Tools.YesNoWindow(title, caption);
+            await ShowDialogAsync(dialog);
+            return dialog.Yes;
         }
 
         //public static System.Drawing.Color GetBackColor()

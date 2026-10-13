@@ -583,18 +583,20 @@ namespace CodeEditor2.Data
             if (currentFileVersion != CodeDocument.Version & currentFileHash != "")
             { // dirty & 
                 Controller.AppendLog("Conflict Detected "+RelativePath);
-                await Dispatcher.UIThread.InvokeAsync(async () =>
+                // ShowDialogYesNoAsync を使用: UIスレッドへのディスパッチとダイアログの
+                // 回答完了までの待ち合わせを正しく行う。
+                // (旧実装の Dispatcher.UIThread.InvokeAsync(async () => {...}) は
+                //  async lambda が Action (async void) に解決され、回答を待たずに
+                //  先へ進むため conflict チェックが連打されダイアログが多重発生していた)
+                bool keepCurrent = await CodeEditor2.Controller.ShowDialogYesNoAsync(
+                    "Update Check\n",
+                    RelativePath + " changed externally.\nCan I dispose local change and accept external file?");
+                if (keepCurrent) // keep current file
                 {
-                    Tools.YesNoWindow checkUpdate = new Tools.YesNoWindow("Update Check\n", RelativePath + " changed externally.\nCan I dispose local change and accept external file?");
-                    await CodeEditor2.Controller.ShowDialogAsync(checkUpdate);
-                    if (!checkUpdate.Yes) // keep current file
-                    {
-                        currentFileHash = newHash;
-                        currentFileVersion = CodeDocument.Version;
-                        currentFileText = text;
-                        return;
-                    }
-                });
+                    currentFileHash = newHash;
+                    currentFileVersion = CodeDocument.Version;
+                    currentFileText = text;
+                }
             }
             if (newHash == currentFileHash) return;
 
