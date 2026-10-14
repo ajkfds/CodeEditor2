@@ -728,6 +728,38 @@ public partial class ChatControl : UserControl
         bool loopAlarted = false;
         string loopedHash = "";
 
+        // Reentrant lock for the whole turn (all LLM calls + tool executions).
+        // Previously the lock was taken per-complete() call, which released it
+        // while tools were executing between LLM calls. During that window a
+        // new user turn could start in parallel with the still-running tool
+        // loop (reported as "next operation proceeds before the function call
+        // finishes"). Holding the lock here keeps inputAcceptable == false
+        // until every tool call of this turn has completed.
+        inputAcceptable = false;
+
+        try
+        {
+            await completeWithFunctionCallCore(command, tools, cancellationToken, messageType);
+        }
+        finally
+        {
+            inputAcceptable = true;
+        }
+    }
+
+    /// <summary>
+    /// Core loop of completeWithFunctionCall (called with inputAcceptable == false held).
+    /// </summary>
+    private async Task completeWithFunctionCallCore(
+        string command, IList<AITool>? tools,
+        CancellationToken cancellationToken,
+        MarkdownTextItem.MessageType messageType
+        )
+    {
+        string? result;
+        bool loopAlarted = false;
+        string loopedHash = "";
+
         // Add hash of command
         hashHistory.Add(getHash(command));
         result = await complete(command, tools, cancellationToken, messageType);
@@ -848,17 +880,11 @@ public partial class ChatControl : UserControl
     {
         if (chat == null) return null;
 
-        // Reentrant lock: make input unacceptable
-        inputAcceptable = false;
-
-        try
-        {
-            return await completeWork(command, tools, cancellationToken, messageType);
-        }
-        finally
-        {
-            inputAcceptable = true;
-        }
+        // Lock (inputAcceptable) is held by completeWithFunctionCall for the
+        // whole turn. Do not touch it here: per-call locking released the lock
+        // while tools were executing between LLM calls, allowing a parallel
+        // user turn to start mid-turn.
+        return await completeWork(command, tools, cancellationToken, messageType);
     }
 
     private async Task<string?> completeWork(
