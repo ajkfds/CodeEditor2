@@ -501,9 +501,13 @@ namespace CodeEditor2.Data
             // hierarchy search to get a item
             if (Name == relativePath) return this;
 
-            if (relativePath.Contains(System.IO.Path.DirectorySeparatorChar))
+            // Accept both '/' (VerilogFile.RelativePath normalized form) and the
+            // platform directory separator so lookups work on Windows where the
+            // separator char is '\' but relative paths are stored with '/'.
+            int separatorIndex = relativePath.IndexOfAny(new char[] { '/', System.IO.Path.DirectorySeparatorChar });
+            if (separatorIndex >= 0)
             {
-                string folderName = relativePath.Substring(0, relativePath.IndexOf(System.IO.Path.DirectorySeparatorChar));
+                string folderName = relativePath.Substring(0, separatorIndex);
                 if (items.TryGetValue(folderName, out Item? item))
                 {
                     if (item == null) throw new Exception("item is null");
