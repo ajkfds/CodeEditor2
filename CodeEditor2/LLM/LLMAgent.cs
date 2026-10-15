@@ -25,6 +25,14 @@ namespace CodeEditor2.LLM
         /// </summary>
         public bool PersudoFunctionCallMode = false;
         /// <summary>
+        /// If true, tool calls are requested in the DeepSeek DSML format
+        /// (&lt;｜DSML｜tool_calls&gt; / &lt;｜DSML｜invoke name="..."&gt; / &lt;｜DSML｜parameter name="..."&gt;)
+        /// instead of the plain XML format. The parser accepts both formats
+        /// regardless of this flag; this only changes the format the LLM is
+        /// instructed to emit.
+        /// </summary>
+        public bool UseDSML = false;
+        /// <summary>
         /// If true, tool calls support an optional 'id' attribute and the result
         /// is wrapped in &lt;tool_result id="..."&gt;...&lt;/tool_result&gt; so the
         /// LLM can correlate each result with the originating call.
@@ -378,16 +386,43 @@ namespace CodeEditor2.LLM
                 }
                 sb.AppendLine("Usage:");
                 sb.AppendLine("```xml");
-                if (UseToolCallId)
+                if (UseDSML)
                 {
-                    sb.AppendLine("<" + tool.Name + " id=\"call_abc123\">");
+                    sb.AppendLine("<｜DSML｜tool_calls>");
+                    if (UseToolCallId)
+                    {
+                        sb.AppendLine("<｜DSML｜invoke name=\"" + tool.Name + "\" id=\"call_abc123\">");
+                    }
+                    else
+                    {
+                        sb.AppendLine("<｜DSML｜invoke name=\"" + tool.Name + "\">");
+                    }
+                    foreach (var line in usage.ToString().Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        // "<name>description</name>" -> "<｜DSML｜parameter name="name">description</｜DSML｜parameter>"
+                        var m = Regex.Match(line, @"<\s*(?<key>\w+)\s*>");
+                        if (m.Success)
+                        {
+                            string key = m.Groups["key"].Value;
+                            sb.AppendLine("<｜DSML｜parameter name=\"" + key + "\">" + line.Substring(m.Length).Replace("</" + key + ">", "") + "</｜DSML｜parameter>");
+                        }
+                    }
+                    sb.AppendLine("</｜DSML｜invoke>");
+                    sb.AppendLine("</｜DSML｜tool_calls>");
                 }
                 else
                 {
-                    sb.AppendLine("<" + tool.Name + " >");
+                    if (UseToolCallId)
+                    {
+                        sb.AppendLine("<" + tool.Name + " id=\"call_abc123\">");
+                    }
+                    else
+                    {
+                        sb.AppendLine("<" + tool.Name + " >");
+                    }
+                    sb.Append(usage.ToString());
+                    sb.AppendLine("</" + tool.Name + " >");
                 }
-                sb.Append(usage.ToString());
-                sb.AppendLine("</" + tool.Name + " >");
                 sb.AppendLine("```");
                 sb.AppendLine("");
             }
