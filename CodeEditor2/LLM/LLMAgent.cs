@@ -32,6 +32,81 @@ namespace CodeEditor2.LLM
         /// plain text and no id is read or emitted.
         /// </summary>
         public bool UseToolCallId = false;
+
+        // DSML (DeepSeek) tool call format support ////////////////////////////
+        // DeepSeek models emit tool calls in a DSML dialect:
+        //   &lt;｜DSML｜tool_calls&gt;
+        //   &lt;｜DSML｜invoke name="func_name"&gt;
+        //   &lt;｜DSML｜parameter name="location" string="true"&gt;value&lt;/｜DSML｜parameter&gt;
+        //   &lt;/｜DSML｜invoke&gt;
+        //   &lt;/｜DSML｜tool_calls&gt;
+        // The "string" attribute is optional (the model sometimes omits it) and
+        // a parameter may be unterminated at the end of a truncated response
+        // (trailing-partial); both are handled like vllm's deepseek parser.
+        /// <summary>
+        /// Matches one DSML invoke block: name (required), optional id attribute,
+        /// and the raw parameter list as inner content.
+        /// </summary>
+        private static readonly Regex DSMLInvokeRegex = new Regex(
+            "<｜DSML｜\\s*invoke\\s+name=\"(?<name>[^\"]+)\"(?:\\s+id=\"(?<id>[^\"]*)\")?\\s*>(?<params>.*?)<｜DSML｜\\s*/invoke\\s*>",
+            RegexOptions.Singleline | RegexOptions.Compiled);
+        /// <summary>
+        /// Matches one DSML parameter: name (required), optional string attribute,
+        /// value terminated by the closing tag or by the next parameter start
+        /// (trailing-partial support, same as vllm's _param_patterns).
+        /// </summary>
+        private static readonly Regex DSMLParameterRegex = new Regex(
+            "<｜DSML｜\\s*parameter\\s+name=\"(?<key>[^\"]+)\"(?:\\s+string=\"[^\"]*\")?\\s*>(?<value>.*?)(?:<｜DSML｜\\s*/parameter\\s*>|(?=<｜DSML｜\\s*parameter))",
+            RegexOptions.Singleline | RegexOptions.Compiled);
+        /// <summary>
+        /// Matches the DSML tool_calls wrapper element (removed during conversion).
+        /// </summary>
+        private static readonly Regex DSMLWrapperRegex = new Regex(
+            "</?｜DSML｜\\s*tool_calls\\s*>",
+            RegexOptions.Singleline | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Detect DSML (DeepSeek) tool calls in the response and convert them to
+        /// the standard pseudo function call XML format
+        /// (&lt;toolName id="..."&gt;&lt;param&gt;value&lt;/param&gt;&lt;/toolName&gt;)
+        /// so that the existing parse / execute path can handle them unchanged.
+        /// Responses without DSML blocks are returned unchanged.
+        /// </summary>
+        private static string ConvertDSMLToolCalls(string responce)
+        {
+            if (string.IsNullOrEmpty(responce) || !responce.Contains("<｜DSML｜")) return responce;
+
+            var invokes = DSMLInvokeRegex.Matches(responce);
+            if (invokes.Count == 0) return responce;
+
+            foreach (Match m in invokes.Cast<Match>().ToList())
+            {
+                string toolName = m.Groups["name"].Value;
+                string? id = m.Groups["id"].Success ? m.Groups["id"].Value : null;
+
+                StringBuilder xml = new StringBuilder();
+                xml.Append('<').Append(toolName);
+                if (!string.IsNullOrEmpty(id))
+                {
+                    xml.Append(" id=\"").Append(id).Append('"');
+                }
+                xml.Append('>');
+
+                foreach (Match p in DSMLParameterRegex.Matches(m.Groups["params"].Value))
+                {
+                    xml.Append('<').Append(p.Groups["key"].Value).Append('>')
+                       .Append(p.Groups["value"].Value)
+                       .Append("</").Append(p.Groups["key"].Value).Append('>');
+                }
+
+                xml.Append("</").Append(toolName).Append('>');
+                responce = responce.Replace(m.Value, xml.ToString());
+            }
+
+            // Remove the wrapper element(s); they have no meaning for the parser.
+            responce = DSMLWrapperRegex.Replace(responce, "");
+            return responce;
+        }
         /// <summary>
         ///  base prompt for initial message
         /// </summary>
@@ -76,6 +151,10 @@ namespace CodeEditor2.LLM
         // Function Call
         private async Task<string?> ParseExecutePersudoFunctionCallAsync(string responce, CancellationToken cancellationToken, ChatControl? chatControl = null)
         {
+            // Convert DeepSeek DSML tool calls (<｜DSML｜invoke name="...">...) into
+            // the standard pseudo call XML format first, then parse uniformly.
+            responce = ConvertDSMLToolCalls(responce);
+
             // Optional 'id' attribute on the opening tag (only meaningful when UseToolCallId is enabled).
             var matches = Regex.Matches(responce, @"<\s*(?<tool>\w+)(?:\s+id\s*=\s*""(?<id>[^""]*)"")?\s*>(?<params>.*?)</\s*\k<tool>\s*>", RegexOptions.Singleline);
 
@@ -231,6 +310,18 @@ namespace CodeEditor2.LLM
         {
 
             sb.AppendLine("# Tools");
+            sb.AppendLine("");
+
+            sb.AppendLine("Accepted tool call formats: the XML format shown in each tool's Usage below, or the DeepSeek DSML format:");
+            sb.AppendLine("```xml");
+            sb.AppendLine("<｜DSML｜tool_calls>");
+            sb.AppendLine("<｜DSML｜invoke name=\"func_name\">");
+            sb.AppendLine("<｜DSML｜parameter name=\"param1\" string=\"true\">value</｜DSML｜parameter>");
+            sb.AppendLine("<｜DSML｜parameter name=\"param2\" string=\"false\">42</｜DSML｜parameter>");
+            sb.AppendLine("</｜DSML｜invoke>");
+            sb.AppendLine("</｜DSML｜tool_calls>");
+            sb.AppendLine("```");
+            sb.AppendLine("The `string` attribute of a DSML parameter is optional. When using the DSML format you may still attach an `id` attribute to the invoke element (`<｜DSML｜invoke name=\"func_name\" id=\"call_001\">`).");
             sb.AppendLine("");
 
             if (UseToolCallId)
