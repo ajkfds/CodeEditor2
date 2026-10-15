@@ -56,7 +56,7 @@ namespace CodeEditor2.LLM
         /// and the raw parameter list as inner content.
         /// </summary>
         private static readonly Regex DSMLInvokeRegex = new Regex(
-            "<｜DSML｜\\s*invoke\\s+name=\"(?<name>[^\"]+)\"(?:\\s+id=\"(?<id>[^\"]*)\")?\\s*>(?<params>.*?)<｜DSML｜\\s*/invoke\\s*>",
+            "<｜DSML｜\\s*invoke\\s+name=\"(?<name>[^\"]+)\"(?:\\s+id=\"(?<id>[^\"]*)\")?\\s*>(?<params>.*?)(?:<｜DSML｜\\s*/\\s*invoke\\s*>|</｜DSML｜\\s*invoke\\s*>)",
             RegexOptions.Singleline | RegexOptions.Compiled);
         /// <summary>
         /// Matches one DSML parameter: name (required), optional string attribute,
@@ -64,13 +64,13 @@ namespace CodeEditor2.LLM
         /// (trailing-partial support, same as vllm's _param_patterns).
         /// </summary>
         private static readonly Regex DSMLParameterRegex = new Regex(
-            "<｜DSML｜\\s*parameter\\s+name=\"(?<key>[^\"]+)\"(?:\\s+string=\"[^\"]*\")?\\s*>(?<value>.*?)(?:<｜DSML｜\\s*/parameter\\s*>|(?=<｜DSML｜\\s*parameter))",
+            "<｜DSML｜\\s*parameter\\s+name=\"(?<key>[^\"]+)\"(?:\\s+string=\"[^\"]*\")?\\s*>(?<value>.*?)(?:<｜DSML｜\\s*/\\s*parameter\\s*>|</｜DSML｜\\s*parameter\\s*>|(?=<｜DSML｜\\s*parameter))",
             RegexOptions.Singleline | RegexOptions.Compiled);
         /// <summary>
         /// Matches the DSML tool_calls wrapper element (removed during conversion).
         /// </summary>
         private static readonly Regex DSMLWrapperRegex = new Regex(
-            "</?｜DSML｜\\s*tool_calls\\s*>",
+            "</?｜DSML｜\\s*/?\\s*(?:tool_)?calls\\s*>",
             RegexOptions.Singleline | RegexOptions.Compiled);
 
         /// <summary>
