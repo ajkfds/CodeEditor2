@@ -238,11 +238,17 @@ PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.Bo
        // Plugins (e.g. live markdown preview) set content for their
        // own file types; unused files keep the pane hidden.
 
-       /// <summary>
-       /// Sets the content of the sub information pane and shows it.
-       /// Pass null to hide the pane.
-       /// </summary>
-       public void SetSubPaneContent(Control? content)
+       // Saved width of the sub pane column so it can be restored when the
+        // pane becomes visible again. Default = 1* (about half of the code
+        // view, matching the star-sized editor column).
+        private GridLength subPaneWidth = new GridLength(1, GridUnitType.Star);
+        private bool subPaneVisible = false;
+
+        /// <summary>
+        /// Sets the content of the sub information pane and shows it.
+        /// Pass null to hide the pane.
+        /// </summary>
+        public void SetSubPaneContent(Control? content)
        {
            if (content == null)
            {
@@ -253,7 +259,12 @@ PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.Bo
            {
                SubPaneHost.Content = content;
            }
-           SubPaneHost.IsVisible = true;
+           if (!subPaneVisible)
+            {
+                RootGrid.ColumnDefinitions[2].Width = subPaneWidth;
+                subPaneVisible = true;
+            }
+            SubPaneHost.IsVisible = true;
            SubPaneSplitter.IsVisible = true;
        }
 
@@ -262,8 +273,15 @@ PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.Bo
        /// </summary>
        public void HideSubPane()
        {
-           SubPaneHost.IsVisible = false;
-           SubPaneSplitter.IsVisible = false;
+           if (subPaneVisible)
+            {
+                // Remember the current (possibly user-resized) width.
+                subPaneWidth = RootGrid.ColumnDefinitions[2].Width;
+                subPaneVisible = false;
+            }
+            RootGrid.ColumnDefinitions[2].Width = new GridLength(0);
+            SubPaneHost.IsVisible = false;
+            SubPaneSplitter.IsVisible = false;
        }
 
        /// <summary>

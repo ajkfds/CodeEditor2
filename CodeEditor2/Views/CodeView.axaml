@@ -9,7 +9,7 @@
 			 FontFamily="Cascadia Mono,Consolas,Menlo,Monospace,FreeMono,LiberationMono-Regular"
 			 FontWeight="Normal"
              x:Class="CodeEditor2.Views.CodeView">
-	<Grid ColumnDefinitions="*, 4, 0">
+	<Grid Name="RootGrid" ColumnDefinitions="*, 4, 0">
 
 		<AvalonEdit:TextEditor Grid.Column="0" Name="Editor"
 			HorizontalScrollBarVisibility="Auto"
