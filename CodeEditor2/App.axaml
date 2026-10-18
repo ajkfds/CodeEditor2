@@ -13,6 +13,7 @@
 			<Setter Property="Padding" Value="8 2 8 2"/>
 		</Style>
         <StyleInclude Source="avares://LiveMarkdown.Avalonia/Styles.axaml"/>
+        <StyleInclude Source="avares://LiveMarkdown.Avalonia.Mermaid/Styles.axaml"/>
 		
 		<!--kill all animations-->
 		<Style Selector="Control">
