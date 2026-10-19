@@ -175,6 +175,9 @@ namespace CodeEditor2.LLM
                     string? toolCallId = null;
                     CancellationTokenSource? spinner_cts = null;
                     Task? spinnerTask = null;
+                    // Result text handed to the chat control so it can fill the
+                    // tool-result item created when the tool call started.
+                    string? toolResultForDisplay = null;
                     try
                     {
                         string toolName = match.Groups["tool"].Value;
@@ -193,8 +196,9 @@ namespace CodeEditor2.LLM
                             continue;
                         }
 
-                        // Notify tool call start
-                        chatControl?.ToolCallStarted();
+                        // Notify tool call start (creates the tool-result item
+                        // and shows a spinner while the tool executes)
+                        chatControl?.ToolCallStarted(toolName);
 
 
                         AIFunctionArguments args = new AIFunctionArguments();
@@ -246,11 +250,14 @@ namespace CodeEditor2.LLM
                         if (s_ret != null)
                         {
                             AppendToolResult(sb, toolCallId, s_ret);
+                            toolResultForDisplay = s_ret;
                         }
                     }
                     catch (Exception ex)
                     {
-                        AppendToolResult(sb, toolCallId, $"Error: failed to parse or execute function call '{match.Groups["tool"].Value}': {ex.GetType().Name}: {ex.Message}\n--- matched block ---\n{match.Value}");
+                        string errorText = $"Error: failed to parse or execute function call '{match.Groups["tool"].Value}': {ex.GetType().Name}: {ex.Message}\n--- matched block ---\n{match.Value}";
+                        AppendToolResult(sb, toolCallId, errorText);
+                        toolResultForDisplay = errorText;
                     }
                     finally
                     {
@@ -265,7 +272,14 @@ namespace CodeEditor2.LLM
                             spinnerTask.Dispose();
                         }
                         spinner_cts?.Dispose();
-                        chatControl?.ToolCallEnded();
+
+                        // Pass the result text so the tool-result item created at
+                        // start becomes the tool-call result message. ToolCallEnded
+                        // marshals to the UI thread internally.
+                        chatControl?.ToolCallEnded(toolResultForDisplay);
+                        // Clear the pending reference so the next tool call in this
+                        // response starts a fresh item.
+                        chatControl?.ClearToolResultItem();
                     }
                 }
                 if (sb.Length == 0) return null;

@@ -367,6 +367,15 @@ public partial class ChatControl : UserControl
     MarkdownTextItem? lastResultItem = null;
 
     /// <summary>
+    /// Reference to the tool-result item currently waiting for its tool to
+    /// finish. A dedicated item is inserted into the chat the moment a tool
+    /// call starts (see <see cref="ToolCallStarted"/>) so the user can see that
+    /// execution is in progress (spinner) before the next LLM turn arrives.
+    /// Null while no tool call is pending.
+    /// </summary>
+    MarkdownTextItem? lastToolResultItem = null;
+
+    /// <summary>
     /// Display color for command (user input)
     /// Light blue
     /// </summary>
@@ -475,38 +484,106 @@ public partial class ChatControl : UserControl
     }
 
     /// <summary>
-    /// Called when a tool call starts executing
-    /// Shows spinner in the result item and logs the start
+    /// Called when a tool call starts executing.
+    /// Inserts a dedicated tool-result item into the chat immediately and shows
+    /// the spinner on it, so the user sees that a tool is running before the
+    /// next LLM turn arrives.
+    /// This method may be called repeatedly (the spinner progress timer calls it
+    /// every ~100ms), so the item is only created on the first call of a pending
+    /// tool call.
     /// </summary>
-    /// <param name="toolName">Name of the tool being executed</param>
-    public void ToolCallStarted()
+    /// <param name="toolName">Name of the tool being executed (optional)</param>
+    public void ToolCallStarted(string? toolName = null)
     {
         isToolCallInProgress = true;
         Dispatcher.UIThread.Post(() =>
         {
-            if (lastResultItem != null)
+            if (lastToolResultItem == null)
             {
-                lastResultItem.ShowSpinner(true);
+                // Create and insert the tool-result item right away so a spinner
+                // is visible while the tool executes.
+                string header = string.IsNullOrEmpty(toolName)
+                    ? ""
+                    : "**Tool call: " + toolName + "**\n\n";
+                MarkdownTextItem toolResultItem = new MarkdownTextItem(header, MarkdownTextItem.MessageType.functionCallReturn);
+                toolResultItem.TextColor = completeColor;
+                Items.Insert(Items.Count - 1, toolResultItem);
+                lastToolResultItem = toolResultItem;
+
+                if (autoScroll)
+                {
+                    ChatScrollViewer?.ScrollToEnd();
+                }
+            }
+
+            lastToolResultItem?.ShowSpinner(true);
+        });
+    }
+
+    /// <summary>
+    /// Called when a tool call finishes executing.
+    /// Hides the spinner on the pending tool-result item and (when a result is
+    /// supplied) appends the tool result text to that item, so the item that was
+    /// inserted when the tool call started becomes the tool-call result message.
+    /// </summary>
+    /// <param name="result">Result text of the tool execution (optional)</param>
+    public void ToolCallEnded(string? result = null)
+    {
+        isToolCallInProgress = false;
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            if (lastToolResultItem != null)
+            {
+                lastToolResultItem.ShowSpinner(false);
+                if (!string.IsNullOrEmpty(result))
+                {
+                    _ = lastToolResultItem.AppendText((lastToolResultItem.Text.Length == 0 ? "" : "\n\n")
+                        + "```\n" + result + "\n```\n");
+                }
             }
         });
     }
 
     /// <summary>
-    /// Called when a tool call finishes executing
-    /// Hides spinner in the result item and logs the result
+    /// The chat item inserted for the currently pending tool call
+    /// (null while no tool call is pending). Callers may append the tool result
+    /// text / set the informational footer line on this item.
     /// </summary>
-    /// <param name="toolName">Name of the tool that finished</param>
-    /// <param name="result">Result of the tool execution</param>
-    public void ToolCallEnded()
+    public MarkdownTextItem? ToolResultItem => lastToolResultItem;
+
+    /// <summary>
+    /// Clear the reference to the pending tool-result item.
+    /// Called when the tool loop advances to the next LLM turn so the next tool
+    /// call starts a fresh item.
+    /// </summary>
+    public void ClearToolResultItem()
     {
-        isToolCallInProgress = false;
-        Dispatcher.UIThread.Invoke(() =>
-        {
-            if (lastResultItem != null)
-            {
-                lastResultItem.ShowSpinner(false);
-            }
-        });
+        lastToolResultItem = null;
+    }
+
+    /// <summary>
+    /// Build the informational footer line shown at the end of a message
+    /// (elapsed time of the turn + token usage of the response).
+    /// Returns null when nothing to show.
+    /// </summary>
+    private static string? BuildTurnInfoLine(TimeSpan elapsed, string? usageInfo)
+    {
+        List<string> parts = new List<string>();
+        if (!string.IsNullOrEmpty(usageInfo)) parts.Add(usageInfo);
+        parts.Add($"{(elapsed.TotalSeconds):F1}s");
+        if (parts.Count == 0) return null;
+        return string.Join(" / ", parts);
+    }
+
+    /// <summary>
+    /// Apply an informational footer line to a chat item. Must run on the UI
+    /// thread. The footer is displayed outside the message body and is never
+    /// part of the message content.
+    /// </summary>
+    private static void ApplyInfoMessage(MarkdownTextItem item, string? infoLine)
+    {
+        if (string.IsNullOrEmpty(infoLine)) return;
+        item.InfoMessage = infoLine;
     }
 
     /// <summary>
@@ -760,6 +837,9 @@ public partial class ChatControl : UserControl
         bool loopAlarted = false;
         string loopedHash = "";
 
+        // Start a new turn: no tool result item is pending yet.
+        ClearToolResultItem();
+
         // Add hash of command
         hashHistory.Add(getHash(command));
         result = await complete(command, tools, cancellationToken, messageType);
@@ -788,6 +868,11 @@ public partial class ChatControl : UserControl
                 // extracted from the LLM response that triggered these executions.
                 functioncallCommand = AppendToolCallHintIfNeeded(functioncallCommand, result);
             }
+
+            // The tool call(s) of the previous response have finished, so the
+            // next response may trigger new tool calls: start a fresh
+            // tool-result item for them.
+            ClearToolResultItem();
 
             result = await complete(functioncallCommand, tools, cancellationToken, MarkdownTextItem.MessageType.functionCallReturn);
             if (result == null) return;
@@ -1001,12 +1086,25 @@ public partial class ChatControl : UserControl
                 await displayTimerTask;
                 stopwatch.Stop();
 
+                // Record how long this turn took, then append the informational
+                // footer line (token usage + elapsed time). The footer lives
+                // outside the message body and is never sent to the LLM.
+                string infoLine = BuildTurnInfoLine(stopwatch.Elapsed, chat.LastUsageInfo);
+
                 // Change color to completion color and save messages
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
                     resultItem.TextColor = completeColor;
+                    ApplyInfoMessage(resultItem, infoLine);
                     await SaveMessagesAsync();
                 });
+
+                // Attach the same footer to the pending tool-result item (if any),
+                // so a tool-call turn shows its usage/time as well.
+                if (lastToolResultItem != null)
+                {
+                    ApplyInfoMessage(lastToolResultItem, infoLine);
+                }
 
                 string result = resultItem.Text;
                 return result;
@@ -1244,6 +1342,21 @@ public partial class ChatControl : UserControl
             {
                 resultItem.TextColor = completeColor;
             }
+
+            // Restore the informational footer line (token usage / elapsed time)
+            // persisted with the message, if any. It is display-only and never
+            // part of the message content.
+            if (chatmessage.InfoMessage != null)
+            {
+                resultItem.InfoMessage = chatmessage.InfoMessage;
+            }
+            else if (chatmessage.AdditionalProperties != null &&
+                     chatmessage.AdditionalProperties.TryGetValue("infoMessage", out object? infoValue) &&
+                     infoValue is string infoString)
+            {
+                resultItem.InfoMessage = infoString;
+            }
+
             Items.Insert(Items.Count - 1, resultItem);
             lastResultItem = resultItem;
         }

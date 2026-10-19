@@ -27,6 +27,15 @@ namespace CodeEditor2.LLM
         /// </summary>
         ModelItem? CurrentModel { get; }
 
+        /// <summary>
+        /// Human-readable summary of the token usage of the most recent LLM
+        /// response (e.g. "tokens: 1234 in / 567 out / 1801 total").
+        /// null when the provider did not report usage.
+        /// This is display-only metadata and is never part of the message
+        /// content sent to the LLM.
+        /// </summary>
+        string? LastUsageInfo { get; }
+
         IAsyncEnumerable<string> GetAsyncCollectionChatResult(string command, IList<AITool>? tools, CancellationToken cancellation);
         Task<string> GetAsyncChatResult(string command, IList<AITool>? tools, CancellationToken cancellationToken);
 

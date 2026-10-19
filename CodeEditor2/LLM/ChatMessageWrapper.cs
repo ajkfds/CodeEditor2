@@ -21,5 +21,15 @@ namespace CodeEditor2.LLM
             RawRepresentation = chatMessage.RawRepresentation;
             AdditionalProperties = chatMessage.AdditionalProperties;
         }
+
+        /// <summary>
+        /// Optional informational line shown at the end of the message
+        /// (e.g. the token usage of the response that produced it).
+        /// It is displayed to the user as a footer line, outside of the message
+        /// body, so it is never part of the message content sent to the LLM and
+        /// never included in <see cref="ChatMessage.Text"/>.
+        /// null or an empty string hides the line.
+        /// </summary>
+        public string? InfoMessage { get; set; }
     }
 }

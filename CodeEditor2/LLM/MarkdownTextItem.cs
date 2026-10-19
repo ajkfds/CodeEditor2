@@ -97,7 +97,17 @@ namespace CodeEditor2.LLM
 
                 // spinner is overlaid at the bottom-right of the message text
                 Grid textGrid = new Grid();
+                // Row 0: the message body (markdown) with spinner / menu overlays.
+                // Row 1: optional informational footer line (e.g. token usage).
+                // The footer is kept OUTSIDE of the markdown text so it is never
+                // part of the message content itself.
+                textGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                textGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+
                 textGrid.Children.Add(markdown);
+                Grid.SetColumn(markdown, 0);
+                Grid.SetRow(markdown, 0);
+
                 Grid.SetColumn(spinnerImage, 0);
                 Grid.SetRow(spinnerImage, 0);
                 spinnerImage.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
@@ -108,6 +118,10 @@ namespace CodeEditor2.LLM
                 Grid.SetColumn(collapseAndMenuPanel, 0);
                 Grid.SetRow(collapseAndMenuPanel, 0);
                 textGrid.Children.Add(collapseAndMenuPanel);
+
+                Grid.SetColumn(infoTextBlock, 0);
+                Grid.SetRow(infoTextBlock, 1);
+                textGrid.Children.Add(infoTextBlock);
 
                 grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
                 Grid.SetColumn(textGrid, column);
@@ -275,6 +289,36 @@ namespace CodeEditor2.LLM
             Margin = new Thickness(0, 0, 5, 0),
             IsVisible = false
         };
+
+        /// <summary>
+        /// Informational footer line shown below the message body (e.g. token
+        /// usage). Kept outside the markdown text so it is not part of the
+        /// message content. Hidden while empty.
+        /// </summary>
+        private TextBlock infoTextBlock = new TextBlock()
+        {
+            Margin = new Thickness(10, 0, 10, 5),
+            FontSize = 11,
+            Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Colors.Gray),
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            IsVisible = false
+        };
+
+        /// <summary>
+        /// Optional informational line displayed at the end of the message, as a
+        /// footer outside of the message body. The value is not included in
+        /// <see cref="Text"/> and therefore never sent to the LLM.
+        /// Setting null or an empty string hides the line.
+        /// </summary>
+        public string? InfoMessage
+        {
+            get => infoTextBlock.Text;
+            set
+            {
+                infoTextBlock.Text = value;
+                infoTextBlock.IsVisible = !string.IsNullOrEmpty(value);
+            }
+        }
 
 
         private int spinnerCount = 0;
