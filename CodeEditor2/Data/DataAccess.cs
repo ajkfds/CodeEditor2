@@ -46,7 +46,7 @@ namespace CodeEditor2.Data
                 catch (Exception ex)
                 {
                     Controller.AppendLog(ex);
-                    if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
+//                    if (System.Diagnostics.Debugger.IsAttached) System.Diagnostics.Debugger.Break();
                 }
             }
             else if (!await PasswordManager.CheckPassWord())
