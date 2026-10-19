@@ -142,59 +142,68 @@ namespace CodeEditor2.LLM
 
             ContextMenu contextMenu = new ContextMenu();
             {
+                // Copy text: copies the current selection if any, otherwise the
+                // whole message. The previous separate "Copy All" / "Copy"
+                // entries are unified into this single item.
+                MenuItem copyTextMenuItem = new MenuItem()
                 {
-                    MenuItem menuItem = new MenuItem()
+                    Header = "Copy text"
+                };
+                copyTextMenuItem.Click += async (sender, e) =>
+                {
+                    try
                     {
-                        Header = "Copy All"
-                    };
-                    menuItem.Click += async (sender, e) =>
-                    {
-                        try
+                        var top = TopLevel.GetTopLevel(this);
+                        if (top?.Clipboard is { } clipboard)
                         {
-                            var top = TopLevel.GetTopLevel(this);
-                            if (top?.Clipboard is { } clipboard)
-                            {
-                                await clipboard.SetTextAsync(markdown.Text);
-                            }
+                            string text = markdown.SelectedText;
+                            if (string.IsNullOrEmpty(text)) text = markdown.Text;
+                            await clipboard.SetTextAsync(text);
                         }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.Print($"clipboard error: {ex.Message}");
-                        }
-                    };
-                    contextMenu.Items.Add(menuItem);
-                }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.Print($"clipboard error: {ex.Message}");
+                    }
+                };
+                contextMenu.Items.Add(copyTextMenuItem);
+            }
+            {
+                // Context menu item to toggle vertical size collapse / expand
+                MenuItem collapseExpandMenuItem = new MenuItem()
                 {
-                    MenuItem menuItem = new MenuItem()
-                    {
-                        Header = "Copy"
-                    };
-                    menuItem.Click += (sender, e) =>
-                    {
-                        _ = CopySelectedTextAsync();
-                    };
-                    contextMenu.Items.Add(menuItem);
-                }
+                    Header = collapsed ? "Expand" : "Collapse"
+                };
+                collapseExpandMenuItem.Click += (sender, e) =>
                 {
-                    // Context menu item to toggle vertical size collapse / expand
-                    MenuItem collapseExpandMenuItem = new MenuItem()
-                    {
-                        Header = collapsed ? "Expand" : "Collapse"
-                    };
-                    collapseExpandMenuItem.Click += (sender, e) =>
-                    {
-                        Collapsed = !Collapsed;
-                    };
-                    contextMenu.Items.Add(collapseExpandMenuItem);
-                    // Keep the menu label in sync with the current collapse state
-                    contextMenu.Opening += (sender, e) =>
-                    {
-                        collapseExpandMenuItem.Header = collapsed ? "Expand" : "Collapse";
-                    };
-                }
+                    Collapsed = !Collapsed;
+                };
+                contextMenu.Items.Add(collapseExpandMenuItem);
+                // Keep the menu label in sync with the current collapse state
+                contextMenu.Opening += (sender, e) =>
+                {
+                    collapseExpandMenuItem.Header = collapsed ? "Expand" : "Collapse";
+                };
             }
 
-            markdown.ContextMenu = contextMenu;
+            // Open the context menu from a tunneled ContextRequested handler on
+            // this item as a whole (not only the inner markdown control). The
+            // inner LiveMarkdown renderer handles right-clicks internally, so a
+            // context menu set on it never opens; opening the menu here and
+            // marking the event handled guarantees it shows on right-click
+            // anywhere over the message.
+            //
+            // The ContextMenu property is intentionally NOT set (that would add
+            // a second default opener and could show the menu twice).
+            this.AddHandler(
+                ContextRequestedEvent,
+                (sender, e) =>
+                {
+                    contextMenu.Open(this);
+                    e.Handled = true;
+                },
+                Avalonia.Interactivity.RoutingStrategies.Tunnel);
+
             markdown.BorderBrush = new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 10, 10, 10));
 
             CollapseExpandButton.Click += CollapseExpandButton_Click;
