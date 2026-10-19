@@ -376,6 +376,16 @@ public partial class ChatControl : UserControl
     MarkdownTextItem? lastToolResultItem = null;
 
     /// <summary>
+    /// True when the current response has executed at least one tool call and a
+    /// tool-result item was inserted for it (see <see cref="ToolCallStarted"/>).
+    /// completeWork uses this to avoid inserting a second, duplicate command
+    /// item for the same tool result: the tool-result item already displays the
+    /// result, so the collapsed command item would display it twice.
+    /// Reset when a new turn starts and after it has been applied.
+    /// </summary>
+    private bool toolResultItemCreated = false;
+
+    /// <summary>
     /// Display color for command (user input)
     /// Light blue
     /// </summary>
@@ -506,9 +516,16 @@ public partial class ChatControl : UserControl
                     ? ""
                     : "**Tool call: " + toolName + "**\n\n";
                 MarkdownTextItem toolResultItem = new MarkdownTextItem(header, MarkdownTextItem.MessageType.functionCallReturn);
-                toolResultItem.TextColor = completeColor;
+                // Style this item like the other tool-call entries (collapsed,
+                // tool-call color). This is the single display of the tool result:
+                // completeWork must not also insert a command item for the same
+                // functionCallReturn response, otherwise the tool result shows
+                // twice (see toolResultItemCreated).
+                toolResultItem.TextColor = commandColor;
+                toolResultItem.Collapsed = true;
                 Items.Insert(Items.Count - 1, toolResultItem);
                 lastToolResultItem = toolResultItem;
+                toolResultItemCreated = true;
 
                 if (autoScroll)
                 {
@@ -839,6 +856,7 @@ public partial class ChatControl : UserControl
 
         // Start a new turn: no tool result item is pending yet.
         ClearToolResultItem();
+        toolResultItemCreated = false;
 
         // Add hash of command
         hashHistory.Add(getHash(command));
@@ -871,7 +889,10 @@ public partial class ChatControl : UserControl
 
             // The tool call(s) of the previous response have finished, so the
             // next response may trigger new tool calls: start a fresh
-            // tool-result item for them.
+            // tool-result item for them. toolResultItemCreated is intentionally
+            // NOT reset here: it was set by ToolCallStarted while parsing the
+            // response above, and complete() below consumes it to avoid
+            // inserting a duplicate command item for the same tool result.
             ClearToolResultItem();
 
             result = await complete(functioncallCommand, tools, cancellationToken, MarkdownTextItem.MessageType.functionCallReturn);
@@ -980,12 +1001,25 @@ public partial class ChatControl : UserControl
     {
         if (chat == null) return null;
 
-        // Create and display command item
-        MarkdownTextItem commandItem = new MarkdownTextItem(command, messageType);
+        // Create and display command item.
+        // For a tool-call turn (functionCallReturn) the tool result is already
+        // displayed by the item inserted in ToolCallStarted (see
+        // toolResultItemCreated). Inserting the command item here as well would
+        // show the same tool result twice, so it is skipped in that case.
         inputItem.TextEditor.Text = "";
-        commandItem.TextColor = commandColor;
-        Items.Insert(Items.Count - 1, commandItem);
-        if (messageType == MarkdownTextItem.MessageType.functionCallReturn) commandItem.Collapsed = true;
+        if (messageType == MarkdownTextItem.MessageType.functionCallReturn && toolResultItemCreated)
+        {
+            // The tool-result item already displays this tool result: consume the
+            // flag and do not insert a duplicate command item.
+            toolResultItemCreated = false;
+        }
+        else
+        {
+            MarkdownTextItem commandItem = new MarkdownTextItem(command, messageType);
+            commandItem.TextColor = commandColor;
+            Items.Insert(Items.Count - 1, commandItem);
+            if (messageType == MarkdownTextItem.MessageType.functionCallReturn) commandItem.Collapsed = true;
+        }
 
         // Create result item
         MarkdownTextItem resultItem = new MarkdownTextItem("", MarkdownTextItem.MessageType.responce);
