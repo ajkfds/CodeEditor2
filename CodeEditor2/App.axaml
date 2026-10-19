@@ -14,7 +14,8 @@
 		</Style>
         <StyleInclude Source="avares://LiveMarkdown.Avalonia/Styles.axaml"/>
         <StyleInclude Source="avares://LiveMarkdown.Avalonia.Mermaid/Styles.axaml"/>
-		
+		<StyleInclude Source="avares://LiveMarkdown.Avalonia.DrawIo/Styles.axaml"/>
+
 		<!--kill all animations-->
 		<Style Selector="Control">
 			<Setter Property="Transitions">
