@@ -396,6 +396,16 @@ namespace CodeEditor2.Data
         protected string currentFileHash = "";
         protected string currentFileText = "";
         protected ulong currentFileVersion = 0;
+
+        // Tick (Environment.TickCount64) recorded when SaveAsync finished the
+        // physical write. Used to suppress a spurious reload / conflict prompt
+        // from the next file check if it races with the OS end-of-write
+        // timestamp update: the hash comparison can transiently differ from
+        // currentFileHash even though the file on disk will end up matching our
+        // in-memory content. Reloading here would overwrite the editor with a
+        // stale snapshot and move the caret.
+        private const int ReloadSuppressionMilliseconds = 500;
+        private long _lastSaveCompletedTick = 0;
         /// <summary>
         /// Saves the text file to disk asynchronously.
         /// </summary>
@@ -447,7 +457,14 @@ namespace CodeEditor2.Data
                     }
                 );
 
-                if(!failed) if (currentFileVersion == doc.Version) doc.Clean();
+                if(!failed)
+                {
+                    // Record the successful save so the next FileCheck can
+                    // suppress a spurious reload / conflict prompt
+                    // (see ReloadSuppressionMilliseconds).
+                    _lastSaveCompletedTick = Environment.TickCount64;
+                    if (currentFileVersion == doc.Version) doc.Clean();
+                }
             }
             finally
             {
@@ -580,6 +597,15 @@ namespace CodeEditor2.Data
             string newHash = GetHash(text);
             if (newHash == currentFileHash) return;
 
+            // Suppress a spurious reload / conflict prompt right after our own
+            // save: the OS may still be catching up on the end-of-write
+            // timestamp, so the freshly written file can transiently differ
+            // from the content we last saved. Reloading here would overwrite
+            // the editor with a stale snapshot and move the caret. This check
+            // returns without updating currentFileHash, so the next check
+            // re-reads the file once the write has settled.
+            if (Environment.TickCount64 - _lastSaveCompletedTick < ReloadSuppressionMilliseconds) return;
+
             if (currentFileVersion != CodeDocument.Version & currentFileHash != "")
             { // dirty & 
                 Controller.AppendLog("Conflict Detected "+RelativePath);
@@ -624,10 +650,15 @@ namespace CodeEditor2.Data
                     var doc = CodeDocument;
                     if (doc != null)
                     {
+                        // Mirror the UI-thread branch above: preserve the caret
+                        // position so an external reload does not move it.
+                        int carletPosition = doc.CaretIndex;
                         doc.TextDocument.Replace(0, doc.TextDocument.TextLength, text);
                         doc.Clean();
                         // external reload should not be undoable back to an empty file
                         doc.ClearHistory();
+                        if (carletPosition > doc.TextDocument.TextLength) carletPosition = doc.TextDocument.TextLength;
+                        doc.SetSelection(carletPosition, carletPosition);
                     }
                     currentFileHash = newHash;
                     currentFileText = text;
@@ -677,7 +708,13 @@ namespace CodeEditor2.Data
             string normalizedText = currentText.Replace("\r\n", "\n").Replace("\r", "\n");
             if (currentText != normalizedText)
             {
+                // Replacing the whole document (CRLF -> LF) may reset / clamp
+                // the caret; preserve it so a self-save with CRLF conversion
+                // does not move the user's caret position.
+                int carletPosition = doc.CaretIndex;
                 doc.TextDocument.Replace(0, doc.TextDocument.TextLength, normalizedText);
+                if (carletPosition > normalizedText.Length) carletPosition = normalizedText.Length;
+                doc.SetSelection(carletPosition, carletPosition);
             }
         }
 
