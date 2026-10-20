@@ -506,35 +506,64 @@ public partial class ChatControl : UserControl
     public void ToolCallStarted(string? toolName = null)
     {
         isToolCallInProgress = true;
-        Dispatcher.UIThread.Post(() =>
+
+        // The insertion of the tool-result item MUST happen synchronously with
+        // respect to the caller. The caller (LLMAgent) returns from
+        // ParseResponceAsync right after ToolCallEnded/ClearToolResultItem, and
+        // completeWithFunctionCallCore immediately calls complete() for the next
+        // LLM turn - which inserts the completion items via completeWork.
+        //
+        // Previously this method used Dispatcher.UIThread.Post (a deferred,
+        // fire-and-forget enqueue). When the UI thread was busy, the enqueue
+        // could be processed AFTER completeWork had already inserted the next
+        // completion's items, making the tool result (and its spinner) appear
+        // *below* the next LLM response - the "reversed order" symptom.
+        //
+        // Using CheckAccess + Invoke guarantees the item is in Items before this
+        // method returns, no matter which thread called it.
+        if (Dispatcher.UIThread.CheckAccess())
         {
-            if (lastToolResultItem == null)
+            ApplyToolCallStarted(toolName);
+        }
+        else
+        {
+            Dispatcher.UIThread.Invoke(() => ApplyToolCallStarted(toolName));
+        }
+    }
+
+    /// <summary>
+    /// UI-thread body of <see cref="ToolCallStarted"/>.
+    /// Creates the pending tool-result item on first call and refreshes the
+    /// spinner on subsequent (progress / timer) calls.
+    /// </summary>
+    private void ApplyToolCallStarted(string? toolName)
+    {
+        if (lastToolResultItem == null)
+        {
+            // Create and insert the tool-result item right away so a spinner
+            // is visible while the tool executes.
+            string header = string.IsNullOrEmpty(toolName)
+                ? ""
+                : "**Tool call: " + toolName + "**\n\n";
+            MarkdownTextItem toolResultItem = new MarkdownTextItem(header, MarkdownTextItem.MessageType.functionCallReturn);
+            // Style this item like the other tool-call entries (collapsed,
+            // tool-call color). This is the single display of the tool result:
+            // completeWork must not also insert a command item for the same
+            // functionCallReturn response, otherwise the tool result shows
+            // twice (see toolResultItemCreated).
+            toolResultItem.TextColor = commandColor;
+            toolResultItem.Collapsed = true;
+            Items.Insert(Items.Count - 1, toolResultItem);
+            lastToolResultItem = toolResultItem;
+            toolResultItemCreated = true;
+
+            if (autoScroll)
             {
-                // Create and insert the tool-result item right away so a spinner
-                // is visible while the tool executes.
-                string header = string.IsNullOrEmpty(toolName)
-                    ? ""
-                    : "**Tool call: " + toolName + "**\n\n";
-                MarkdownTextItem toolResultItem = new MarkdownTextItem(header, MarkdownTextItem.MessageType.functionCallReturn);
-                // Style this item like the other tool-call entries (collapsed,
-                // tool-call color). This is the single display of the tool result:
-                // completeWork must not also insert a command item for the same
-                // functionCallReturn response, otherwise the tool result shows
-                // twice (see toolResultItemCreated).
-                toolResultItem.TextColor = commandColor;
-                toolResultItem.Collapsed = true;
-                Items.Insert(Items.Count - 1, toolResultItem);
-                lastToolResultItem = toolResultItem;
-                toolResultItemCreated = true;
-
-                if (autoScroll)
-                {
-                    ChatScrollViewer?.ScrollToEnd();
-                }
+                ChatScrollViewer?.ScrollToEnd();
             }
+        }
 
-            lastToolResultItem?.ShowSpinner(true);
-        });
+        lastToolResultItem?.ShowSpinner(true);
     }
 
     /// <summary>
@@ -547,18 +576,36 @@ public partial class ChatControl : UserControl
     public void ToolCallEnded(string? result = null)
     {
         isToolCallInProgress = false;
-        Dispatcher.UIThread.Invoke(() =>
+
+        // Run synchronously on the UI thread so the append is committed before
+        // the caller proceeds to the next LLM turn. The previous implementation
+        // used Dispatcher.UIThread.Invoke (blocking) but the actual text append
+        // went through MarkdownTextItem.AppendText, which internally uses
+        // Dispatcher.UIThread.InvokeAsync (fire-and-forget). That could leave
+        // the append pending while the next turn's items were already being
+        // inserted, contributing to the "reversed order" symptom. Apply the
+        // text directly here since we are already on the UI thread.
+        void Apply()
         {
             if (lastToolResultItem != null)
             {
                 lastToolResultItem.ShowSpinner(false);
                 if (!string.IsNullOrEmpty(result))
                 {
-                    _ = lastToolResultItem.AppendText((lastToolResultItem.Text.Length == 0 ? "" : "\n\n")
+                    lastToolResultItem.AppendTextDirect((lastToolResultItem.Text.Length == 0 ? "" : "\n\n")
                         + "```\n" + result + "\n```\n");
                 }
             }
-        });
+        }
+
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            Apply();
+        }
+        else
+        {
+            Dispatcher.UIThread.Invoke(Apply);
+        }
     }
 
     /// <summary>

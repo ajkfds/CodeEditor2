@@ -338,17 +338,31 @@ namespace CodeEditor2.LLM
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                if (show)
-                {
-                    spinnerImage.IsVisible = true;
-                    spinnerImage.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/spinner"+ spinnerCount.ToString() + ".svg", Avalonia.Media.Colors.Cyan);
-                    spinnerCount = (spinnerCount + 1) % 3; // Cycle through 8 spinner images
-                }
-                else
-                {
-                    spinnerImage.IsVisible = false;
-                }
+                ShowSpinnerDirect(show);
             });
+        }
+
+        /// <summary>
+        /// Synchronously show or hide the spinner. Must be called on the UI thread.
+        /// Unlike <see cref="ShowSpinner"/>, this does not enqueue work on the
+        /// dispatcher, so the visual update is committed before the caller
+        /// returns. This matters for ordering: a deferred spinner update on a
+        /// tool-result item could otherwise be flushed after the next LLM turn's
+        /// items had already been inserted, making the spinner appear out of
+        /// order.
+        /// </summary>
+        public void ShowSpinnerDirect(bool show)
+        {
+            if (show)
+            {
+                spinnerImage.IsVisible = true;
+                spinnerImage.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/spinner" + spinnerCount.ToString() + ".svg", Avalonia.Media.Colors.Cyan);
+                spinnerCount = (spinnerCount + 1) % 3; // Cycle through spinner images
+            }
+            else
+            {
+                spinnerImage.IsVisible = false;
+            }
         }
 
         public Avalonia.Media.Color TextColor
@@ -380,6 +394,19 @@ namespace CodeEditor2.LLM
             {
                 markdown.Text += text;
             });
+        }
+
+        /// <summary>
+        /// Synchronously append text to the message body. Must be called on the
+        /// UI thread. Unlike <see cref="AppendText"/>, this does not enqueue work
+        /// on the dispatcher, so the text is committed before the caller
+        /// returns. Used when the append must be ordered before subsequent chat
+        /// items are inserted (e.g. the tool result must appear above the next
+        /// LLM response).
+        /// </summary>
+        public void AppendTextDirect(string text)
+        {
+            markdown.Text += text;
         }
 
         private async Task CopyAllTextAsync()
