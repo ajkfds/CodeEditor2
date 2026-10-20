@@ -568,8 +568,27 @@ PlacementGravity = Avalonia.Controls.Primitives.PopupPositioning.PopupGravity.Bo
                 //                editorCodeDocument = textFile.CodeDocument.Clone();
                 //                _textEditor.Document = editorCodeDocument.TextDocument;
 
-                // restore caret position
-                //                _textEditor.CaretOffset = editorCodeDocument.CaretIndex;
+                // Restore caret and vertical scroll positions.
+                //
+                // The TextFile setter above reassigns _textEditor.Document to
+                // the new CodeDocument's TextDocument, which resets both the
+                // caret offset and the vertical scroll offset to 0. We must
+                // restore them from the per-file saved values:
+                //   - caret  : CodeDocument.CaretIndex (kept in sync by the
+                //     Caret_PositionChanged handler so every CodeDocument
+                //     remembers its own caret position)
+                //   - scroll : TextFile.StoredVerticalScrollPosition (saved at
+                //     the top of this method when the previous file is
+                //     detached)
+                //
+                // NOTE: the caret restore line had been commented out since the
+                // old editorCodeDocument field was removed (commit 11b37db);
+                // the CodeDocument that is now used directly carries the same
+                // CaretIndex value.
+                if (TextFile.CodeDocument != null)
+                {
+                    _textEditor.CaretOffset = TextFile.CodeDocument.CaretIndex;
+                }
                 _textEditor.ScrollToVerticalOffset(TextFile.StoredVerticalScrollPosition);
 
                 if (parseEntry && !Global.StopParse) codeViewParser.EntryParse();
