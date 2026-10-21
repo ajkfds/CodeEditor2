@@ -376,6 +376,25 @@ public partial class ChatControl : UserControl
     MarkdownTextItem? lastToolResultItem = null;
 
     /// <summary>
+    /// The response item currently receiving streamed text of the in-progress
+    /// LLM call. Normally this is the item created by <see cref="completeWork"/>,
+    /// but a native (API) tool call replaces it (see
+    /// <see cref="SplitStreamedResponseBeforeToolCall"/>): the text streamed
+    /// before the tool call stays in its own item, and the answer that follows
+    /// the tool call streams into a new one. Null while no LLM call is running.
+    /// </summary>
+    private MarkdownTextItem? streamingResultItem = null;
+
+    /// <summary>
+    /// Response items finalized by a native (API) tool call during the current
+    /// LLM call (see <see cref="SplitStreamedResponseBeforeToolCall"/>). Each of
+    /// them is an independent chat message, so completeWork applies the
+    /// informational footer to every one of them. Cleared once the footer is
+    /// applied.
+    /// </summary>
+    private readonly List<MarkdownTextItem> splitResponseItems = new List<MarkdownTextItem>();
+
+    /// <summary>
     /// Tool-result items created for native (API) tool calls during the current
     /// LLM turn. completeWork applies the informational footer (token usage /
     /// elapsed time) to each of them at the end of the turn, matching the
@@ -678,19 +697,111 @@ public partial class ChatControl : UserControl
     }
 
     /// <summary>
+    /// Finalizes the response item that is currently receiving streamed text and
+    /// starts a new one for the rest of the LLM turn.
+    /// <para>
+    /// A single native (API) LLM turn streams both the text that precedes a tool
+    /// call and the answer that follows it. Without splitting, that text keeps
+    /// growing in one item while the tool-call items are stacked above it, so the
+    /// user sees the whole accumulated turn in one message with the tool results
+    /// piled on top. Splitting on every tool call makes each streamed segment an
+    /// independent chat message (response / tool call / response / tool call /
+    /// answer), matching how the conversation actually progressed.
+    /// </para>
+    /// The current item is finalized (completion color, registered for the
+    /// informational footer) and a fresh empty response item is inserted directly
+    /// below it, which becomes <see cref="streamingResultItem"/> and
+    /// <see cref="lastResultItem"/> so the tool-result item of this call is
+    /// inserted between them (see <see cref="ApplyToolCallStarted"/> with
+    /// insertAboveResult).
+    /// <para>
+    /// When nothing but the progress placeholder ("waiting ...") has been shown,
+    /// no message is emitted: the placeholder is simply dropped so the turn does
+    /// not gain an empty response message before the tool call.
+    /// </para>
+    /// </summary>
+    /// <param name="toolName">Name of the tool call that triggered the split (informational)</param>
+    private void SplitStreamedResponseBeforeToolCall(string? toolName)
+    {
+        // The notification is raised from the streaming (background) thread, but
+        // the split must be committed before the tool-result item is inserted, so
+        // marshal synchronously exactly like ToolCallStarted does.
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            ApplySplit();
+        }
+        else
+        {
+            Dispatcher.UIThread.Invoke(ApplySplit);
+        }
+
+        void ApplySplit()
+        {
+            MarkdownTextItem? currentItem = streamingResultItem;
+            if (currentItem == null) return;
+
+            // The progress timer placeholder is not message content. Ignoring it
+            // avoids emitting an empty "waiting ... 0.5s" message when a tool call
+            // arrives before the LLM streamed any text of its own.
+            string body = currentItem.IsShowingPlaceholder ? "" : currentItem.Text;
+
+            if (body.Length == 0)
+            {
+                // Nothing to finalize: keep the same item for the rest of the
+                // turn. Just drop the placeholder text.
+                currentItem.SetTextDirect("");
+                return;
+            }
+
+            // Finalize the segment streamed so far as its own chat message.
+            currentItem.TextColor = completeColor;
+            if (!splitResponseItems.Contains(currentItem))
+            {
+                splitResponseItems.Add(currentItem);
+            }
+
+            // Continue streaming into a new item inserted right below it. The
+            // tool-result item of this call is inserted above lastResultItem, so
+            // the resulting order is: response / tool call / response.
+            MarkdownTextItem nextItem = new MarkdownTextItem("", MarkdownTextItem.MessageType.responce);
+            int currentIndex = Items.IndexOf(currentItem);
+            int insertIndex = currentIndex >= 0 ? currentIndex + 1 : Items.Count - 1;
+            Items.Insert(insertIndex, nextItem);
+
+            streamingResultItem = nextItem;
+            lastResultItem = nextItem;
+
+            if (autoScroll)
+            {
+                ChatScrollViewer?.ScrollToEnd();
+            }
+        }
+    }
+
+    /// <summary>
     /// Handles native (API) tool-call lifecycle notifications raised by the chat
     /// frontend during a function-calling turn. Renders them exactly like the
     /// message-based (pseudo) tool calls that LLMAgent signals directly:
     /// a dedicated tool-result item with a spinner is inserted when the tool
     /// starts, and the tool result text is appended to it when the tool
-    /// finishes. Because a single native turn streams both the tool call and the
-    /// final answer into one result item, the tool item is inserted above the
-    /// result item so the order stays chronological.
+    /// finishes. Before the tool item is inserted, the item currently receiving
+    /// the streamed text is finalized as its own chat message and a fresh one is
+    /// started for the rest of the turn
+    /// (see <see cref="SplitStreamedResponseBeforeToolCall"/>), so the tool item
+    /// is inserted above that new item and the order stays chronological.
     /// </summary>
     private void Chat_ToolCallNotification(object? sender, ToolCallNotificationEventArgs e)
     {
         if (e.IsStarting)
         {
+            // A native (API) tool call interrupts the stream of the current LLM
+            // turn: everything streamed before the tool call belongs to its own
+            // chat message and must not keep growing above the tool call. Split
+            // the streaming item here (on the UI thread, before the tool-result
+            // item is inserted) so the tool call starts a fresh response item
+            // for the answer that follows it.
+            SplitStreamedResponseBeforeToolCall(e.ToolName);
+
             // Start a fresh tool-result item for each tool call.
             lastToolResultItem = null;
             ToolCallStarted(e.ToolName, insertAboveResult: true);
@@ -758,6 +869,14 @@ public partial class ChatControl : UserControl
         // Reset the per-turn tool-call id counter whenever the chat is reset,
         // so the very next user turn starts fresh from call_000.
         nextToolCallIdCounter = 0;
+
+        // Drop references to the items removed above so a later tool-call
+        // notification cannot split (or append to) a detached item.
+        streamingResultItem = null;
+        splitResponseItems.Clear();
+        lastToolResultItem = null;
+        nativeToolResultItems.Clear();
+        lastResultItem = null;
 
         // Start from base prompt if agent is set
         if (agent != null)
@@ -1157,6 +1276,24 @@ public partial class ChatControl : UserControl
         Items.Insert(Items.Count - 1, resultItem);
         lastResultItem = resultItem;
 
+        // The item receiving the streamed text of this LLM call. A native (API)
+        // tool call swaps it for a new item (see
+        // SplitStreamedResponseBeforeToolCall), so the streaming code below and
+        // the progress timer always append to the current one.
+        streamingResultItem = resultItem;
+
+        // Response items finalized by a tool call during this LLM call.
+        splitResponseItems.Clear();
+
+        // Accumulates everything this LLM call streamed, independently of the
+        // chat item(s) that display it. A native (API) tool call splits the
+        // streamed body into separate chat messages as it arrives (see
+        // SplitStreamedResponseBeforeToolCall), so the visible resultItem.Text
+        // only holds the part streamed since the last split. The response value
+        // returned to the caller (tool-call parsing / loop detection / history)
+        // must still be the whole text of this LLM call.
+        StringBuilder responseTextBuilder = new StringBuilder();
+
         const int maxRetries = 3;
         int retryCount = 0;
         Exception? lastException = null;
@@ -1186,7 +1323,12 @@ public partial class ChatControl : UserControl
                         {
                             if (timerActivate)
                             {
-                                await resultItem.SetText("waiting ... " + (stopwatch.ElapsedMilliseconds / 1000f).ToString("F1") + "s");
+                                // A native (API) tool call may have swapped the
+                                // streaming item while the timer is running: the
+                                // placeholder belongs to the item that receives
+                                // the next streamed text.
+                                MarkdownTextItem placeholderTarget = streamingResultItem ?? resultItem;
+                                await placeholderTarget.SetPlaceholderText("waiting ... " + (stopwatch.ElapsedMilliseconds / 1000f).ToString("F1") + "s");
                             }
                             await Task.Delay(100, timerCancellationTokenSource.Token);
                         }
@@ -1216,16 +1358,28 @@ public partial class ChatControl : UserControl
                     {
                         timerCancellationTokenSource.Cancel();
                         timerActivate = false;
-                        await resultItem.SetText("");
+                        await (streamingResultItem ?? resultItem).SetText("");
                     }
 
-                    // Append result text
-                    await resultItem.AppendText(ret);
+                    // Append result text to the accumulated response and display.
+                    // Native (API) tool calls may have swapped the streaming item
+                    // in the meantime, so resolve it on every chunk.
+                    responseTextBuilder.Append(ret);
+                    // AppendText marshals to the UI thread (this loop runs on the
+                    // provider's streaming thread). The target is re-resolved on
+                    // every chunk because a native (API) tool call may have
+                    // swapped in a new item for the rest of the turn.
+                    await (streamingResultItem ?? resultItem).AppendText(ret);
+                    // Keep lastResultItem in sync for callers that read it
+                    // (e.g. GetAsyncCollectionChatResult / LoadMessagesAsync).
+                    lastResultItem = streamingResultItem ?? resultItem;
 
-                    // Check for loop on each token
-                    if (IsStreamingLoopDetected(resultItem.Text))
+                    // Check for loop on each token. Use the accumulated text:
+                    // after a tool-call split, resultItem only holds the part
+                    // streamed since the split.
+                    if (IsStreamingLoopDetected(responseTextBuilder.ToString()))
                     {
-                        await resultItem.AppendText("\n[Loop detected: Generation stopped.]");
+                        await (streamingResultItem ?? resultItem).AppendText("\n[Loop detected: Generation stopped.]");
                         break; // Exit foreach to stop generation
                     }
 
@@ -1244,7 +1398,7 @@ public partial class ChatControl : UserControl
                 {
                     timerCancellationTokenSource.Cancel();
                     timerActivate = false;
-                    await resultItem.SetText("blank");
+                    await (streamingResultItem ?? resultItem).SetText("blank");
                 }
 
                 // Wait for timer task to complete
@@ -1259,8 +1413,12 @@ public partial class ChatControl : UserControl
                 // Change color to completion color and save messages
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    resultItem.TextColor = completeColor;
-                    ApplyInfoMessage(resultItem, infoLine);
+                    // The item that received the last streamed text is the one
+                    // finalized as the last message of this LLM call.
+                    MarkdownTextItem finalItem = streamingResultItem ?? resultItem;
+                    finalItem.TextColor = completeColor;
+                    ApplyInfoMessage(finalItem, infoLine);
+                    lastResultItem = finalItem;
                     await SaveMessagesAsync();
                 });
 
@@ -1271,6 +1429,16 @@ public partial class ChatControl : UserControl
                     ApplyInfoMessage(lastToolResultItem, infoLine);
                 }
 
+                // Native (API) tool calls split the streamed turn into several
+                // chat messages (see SplitStreamedResponseBeforeToolCall).
+                // Apply the same informational footer to every message that was
+                // finalized by a tool call of this turn.
+                foreach (MarkdownTextItem splitItem in splitResponseItems)
+                {
+                    ApplyInfoMessage(splitItem, infoLine);
+                }
+                splitResponseItems.Clear();
+
                 // Native (API) tool calls: apply the same footer to every
                 // tool-result item created during this turn (message-based tool
                 // calls only ever have a single pending item here).
@@ -1280,7 +1448,10 @@ public partial class ChatControl : UserControl
                 }
                 nativeToolResultItems.Clear();
 
-                string result = resultItem.Text;
+                // Return everything this LLM call streamed. resultItem.Text only
+                // holds the part streamed since the last tool-call split, so the
+                // accumulated builder is used instead.
+                string result = responseTextBuilder.ToString();
                 return result;
             }
             // Do nothing if cancelled
@@ -1325,6 +1496,24 @@ public partial class ChatControl : UserControl
                     {
                         CodeEditor2.Controller.AppendLog("Reconnected successfully. Retrying...", Avalonia.Media.Colors.Green);
 
+                        // The retry re-streams the whole LLM call, so undo the
+                        // tool-call splits of the aborted attempt: remove the
+                        // continuation items that were created for it and stream
+                        // into the original result item again. Without this the
+                        // retried text would be appended to an item other than the
+                        // one already containing the first segment.
+                        foreach (MarkdownTextItem splitItem in splitResponseItems)
+                        {
+                            Items.Remove(splitItem);
+                        }
+                        splitResponseItems.Clear();
+                        if (streamingResultItem != null && streamingResultItem != resultItem)
+                        {
+                            Items.Remove(streamingResultItem);
+                        }
+                        streamingResultItem = resultItem;
+                        lastResultItem = resultItem;
+
                         // Clear the result item text for retry
                         await resultItem.SetText("[Reconnecting...]\n");
 
@@ -1345,17 +1534,20 @@ public partial class ChatControl : UserControl
                 // If we've exhausted retries or it's not retriable, log error and return error message
                 if (retryCount > maxRetries)
                 {
-                    await resultItem.AppendText($"\n\n[Error: Max retries ({maxRetries}) exceeded. Please try again later.]\n");
+                    await (streamingResultItem ?? resultItem).AppendText($"\n\n[Error: Max retries ({maxRetries}) exceeded. Please try again later.]\n");
                     CodeEditor2.Controller.AppendLog($"Max retries exceeded after {maxRetries} attempts", Avalonia.Media.Colors.Red);
                 }
                 else
                 {
-                    await resultItem.AppendText($"\n\n[Error: {errorType}]\n");
+                    await (streamingResultItem ?? resultItem).AppendText($"\n\n[Error: {errorType}]\n");
                 }
 
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    resultItem.TextColor = Avalonia.Media.Colors.IndianRed;
+                    // The error is shown on the item that is actually streaming
+                    // (a native tool call may have split the turn into several
+                    // items; the error belongs to the last one).
+                    (streamingResultItem ?? resultItem).TextColor = Avalonia.Media.Colors.IndianRed;
                 });
             }
             finally

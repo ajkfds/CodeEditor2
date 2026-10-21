@@ -377,6 +377,43 @@ namespace CodeEditor2.LLM
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 markdown.Text = text;
+                IsShowingPlaceholder = false;
+            });
+        }
+
+        /// <summary>
+        /// Synchronously set the message body. Must be called on the UI thread.
+        /// Unlike <see cref="SetText"/>, this does not enqueue work on the
+        /// dispatcher, so the new text is committed before the caller returns.
+        /// Used when the accumulated body must be cleared before the next chat
+        /// items are inserted (see ChatControl.SplitPendingResponse).
+        /// </summary>
+        public void SetTextDirect(string text)
+        {
+            markdown.Text = text;
+            IsShowingPlaceholder = false;
+        }
+
+        /// <summary>
+        /// True while the body still displays the progress placeholder text
+        /// (e.g. "waiting ... 0.5s") written by the progress timer. The
+        /// placeholder is not real message content: it must not be treated as a
+        /// part of the response when the response is split by a tool call, and
+        /// it is cleared as soon as real content is appended.
+        /// </summary>
+        public bool IsShowingPlaceholder { get; private set; }
+
+        /// <summary>
+        /// Show the progress placeholder text ("waiting ... 0.5s").
+        /// Unlike <see cref="SetText"/> this marks the body as a placeholder so
+        /// callers can distinguish it from real message content.
+        /// </summary>
+        public async Task SetPlaceholderText(string text)
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                markdown.Text = text;
+                IsShowingPlaceholder = true;
             });
         }
 
@@ -393,6 +430,7 @@ namespace CodeEditor2.LLM
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 markdown.Text += text;
+                IsShowingPlaceholder = false;
             });
         }
 
@@ -407,6 +445,7 @@ namespace CodeEditor2.LLM
         public void AppendTextDirect(string text)
         {
             markdown.Text += text;
+            IsShowingPlaceholder = false;
         }
 
         private async Task CopyAllTextAsync()
