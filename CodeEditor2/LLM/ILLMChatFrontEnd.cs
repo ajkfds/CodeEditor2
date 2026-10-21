@@ -20,8 +20,56 @@ namespace CodeEditor2.LLM
     */
 
 
+    /// <summary>
+    /// Notification describing one native (API) tool call lifecycle event
+    /// (start or finish) raised by the chat frontend while a function-calling
+    /// model turn streams. The chat UI consumes these to render tool calls
+    /// exactly like the pseudo (message-based) tool calls, which are signalled
+    /// directly by <see cref="LLMAgent"/> instead:
+    /// a spinner is shown while the tool runs and the result text is appended
+    /// (and kept in the history) when it finishes.
+    /// </summary>
+    public class ToolCallNotificationEventArgs : System.EventArgs
+    {
+        /// <summary>
+        /// Provider-assigned id of the tool call. Used to pair the start and the
+        /// finish notification of the same call. When the provider does not
+        /// supply one, the frontend synthesises an id so pairing still works.
+        /// </summary>
+        public string CallId { get; }
+
+        /// <summary>Name of the function being invoked (empty for a finish event).</summary>
+        public string ToolName { get; }
+
+        /// <summary>True for a "tool started" event, false for a "tool finished" event.</summary>
+        public bool IsStarting { get; }
+
+        /// <summary>Result text of the tool execution. Only set for a finish event.</summary>
+        public string? Result { get; }
+
+        public ToolCallNotificationEventArgs(string callId, string toolName, bool isStarting, string? result = null)
+        {
+            CallId = callId ?? "";
+            ToolName = toolName ?? "";
+            IsStarting = isStarting;
+            Result = result;
+        }
+    }
+
     public interface ILLMChatFrontEnd
     {
+        /// <summary>
+        /// Raised by the chat frontend while a native (API) function-calling turn
+        /// streams: once when each tool call starts and once when it finishes.
+        /// This lets the chat UI display tool calls (spinner while running, result
+        /// text + history entry when finished) even though the tool loop runs
+        /// inside the frontend (MEAI function-invocation middleware) rather than
+        /// in the agent's message parser.
+        /// Implementers that never perform native tool calls may leave the event
+        /// unused (never raised). The chat UI subscribes defensively.
+        /// </summary>
+        event System.EventHandler<ToolCallNotificationEventArgs>? ToolCallNotification;
+
         /// <summary>
         /// The currently selected model (null when not yet initialized)
         /// </summary>

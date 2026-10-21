@@ -376,6 +376,14 @@ public partial class ChatControl : UserControl
     MarkdownTextItem? lastToolResultItem = null;
 
     /// <summary>
+    /// Tool-result items created for native (API) tool calls during the current
+    /// LLM turn. completeWork applies the informational footer (token usage /
+    /// elapsed time) to each of them at the end of the turn, matching the
+    /// message-based tool-call display. Cleared once the footer is applied.
+    /// </summary>
+    private readonly List<MarkdownTextItem> nativeToolResultItems = new List<MarkdownTextItem>();
+
+    /// <summary>
     /// True when the current response has executed at least one tool call and a
     /// tool-result item was inserted for it (see <see cref="ToolCallStarted"/>).
     /// completeWork uses this to avoid inserting a second, duplicate command
@@ -419,8 +427,25 @@ public partial class ChatControl : UserControl
     /// <param name="agent">LLM agent (optional)</param>
     public void SetModel(ILLMChatFrontEnd chatModel, LLMAgent? agent)
     {
+        // Detach from a previous frontend so native tool-call notifications are
+        // never delivered twice after a model switch.
+        if (this.chat != null)
+        {
+            this.chat.ToolCallNotification -= Chat_ToolCallNotification;
+        }
+
         this.chat = chatModel;
         this.agent = agent;
+
+        // Subscribe to native (API) tool-call lifecycle notifications. These let
+        // the UI render API tool calls (spinner while running + result text +
+        // history) exactly like the message-based (pseudo) tool calls, which are
+        // signalled from LLMAgent instead.
+        if (this.chat != null)
+        {
+            this.chat.ToolCallNotification -= Chat_ToolCallNotification;
+            this.chat.ToolCallNotification += Chat_ToolCallNotification;
+        }
 
         // Populate model selector with available models
         if (chat != null)
@@ -503,7 +528,15 @@ public partial class ChatControl : UserControl
     /// tool call.
     /// </summary>
     /// <param name="toolName">Name of the tool being executed (optional)</param>
-    public void ToolCallStarted(string? toolName = null)
+    /// <param name="insertAboveResult">
+    /// When true, the tool-result item is inserted ABOVE the currently streaming
+    /// result item instead of at the end of the list. This is used for native
+    /// (API) tool calls, where a single LLM turn streams the tool call first and
+    /// the final answer afterwards into the same result item: placing the tool
+    /// item above that result item keeps the chronological order (tool call above
+    /// the answer) identical to the message-based (pseudo) tool call layout.
+    /// </param>
+    public void ToolCallStarted(string? toolName = null, bool insertAboveResult = false)
     {
         isToolCallInProgress = true;
 
@@ -523,11 +556,11 @@ public partial class ChatControl : UserControl
         // method returns, no matter which thread called it.
         if (Dispatcher.UIThread.CheckAccess())
         {
-            ApplyToolCallStarted(toolName);
+            ApplyToolCallStarted(toolName, insertAboveResult);
         }
         else
         {
-            Dispatcher.UIThread.Invoke(() => ApplyToolCallStarted(toolName));
+            Dispatcher.UIThread.Invoke(() => ApplyToolCallStarted(toolName, insertAboveResult));
         }
     }
 
@@ -536,7 +569,7 @@ public partial class ChatControl : UserControl
     /// Creates the pending tool-result item on first call and refreshes the
     /// spinner on subsequent (progress / timer) calls.
     /// </summary>
-    private void ApplyToolCallStarted(string? toolName)
+    private void ApplyToolCallStarted(string? toolName, bool insertAboveResult)
     {
         if (lastToolResultItem == null)
         {
@@ -553,7 +586,26 @@ public partial class ChatControl : UserControl
             // twice (see toolResultItemCreated).
             toolResultItem.TextColor = commandColor;
             toolResultItem.Collapsed = true;
-            Items.Insert(Items.Count - 1, toolResultItem);
+
+            // Insert the tool-result item at the end of the message list
+            // (Items.Count - 1 keeps the input item last).
+            int insertIndex = Items.Count - 1;
+
+            if (insertAboveResult && lastResultItem != null)
+            {
+                // Native (API) tool call: the tool call and the final answer of
+                // the same LLM turn stream into one result item. Insert the
+                // tool-result item directly ABOVE that result item so the tool
+                // call appears above the answer (chronological order), matching
+                // the message-based tool-call layout.
+                int resultIndex = Items.IndexOf(lastResultItem);
+                if (resultIndex >= 0)
+                {
+                    insertIndex = resultIndex;
+                }
+            }
+
+            Items.Insert(insertIndex, toolResultItem);
             lastToolResultItem = toolResultItem;
             toolResultItemCreated = true;
 
@@ -623,6 +675,37 @@ public partial class ChatControl : UserControl
     public void ClearToolResultItem()
     {
         lastToolResultItem = null;
+    }
+
+    /// <summary>
+    /// Handles native (API) tool-call lifecycle notifications raised by the chat
+    /// frontend during a function-calling turn. Renders them exactly like the
+    /// message-based (pseudo) tool calls that LLMAgent signals directly:
+    /// a dedicated tool-result item with a spinner is inserted when the tool
+    /// starts, and the tool result text is appended to it when the tool
+    /// finishes. Because a single native turn streams both the tool call and the
+    /// final answer into one result item, the tool item is inserted above the
+    /// result item so the order stays chronological.
+    /// </summary>
+    private void Chat_ToolCallNotification(object? sender, ToolCallNotificationEventArgs e)
+    {
+        if (e.IsStarting)
+        {
+            // Start a fresh tool-result item for each tool call.
+            lastToolResultItem = null;
+            ToolCallStarted(e.ToolName, insertAboveResult: true);
+            if (lastToolResultItem != null && !nativeToolResultItems.Contains(lastToolResultItem))
+            {
+                nativeToolResultItems.Add(lastToolResultItem);
+            }
+        }
+        else
+        {
+            // Append the result text and hide the spinner, then drop the
+            // reference so the next tool call starts a new item.
+            ToolCallEnded(e.Result);
+            lastToolResultItem = null;
+        }
     }
 
     /// <summary>
@@ -904,6 +987,7 @@ public partial class ChatControl : UserControl
         // Start a new turn: no tool result item is pending yet.
         ClearToolResultItem();
         toolResultItemCreated = false;
+        nativeToolResultItems.Clear();
 
         // Add hash of command
         hashHistory.Add(getHash(command));
@@ -1186,6 +1270,15 @@ public partial class ChatControl : UserControl
                 {
                     ApplyInfoMessage(lastToolResultItem, infoLine);
                 }
+
+                // Native (API) tool calls: apply the same footer to every
+                // tool-result item created during this turn (message-based tool
+                // calls only ever have a single pending item here).
+                foreach (MarkdownTextItem nativeToolItem in nativeToolResultItems)
+                {
+                    ApplyInfoMessage(nativeToolItem, infoLine);
+                }
+                nativeToolResultItems.Clear();
 
                 string result = resultItem.Text;
                 return result;
