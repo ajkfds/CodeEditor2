@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.LLM.Tools
@@ -42,7 +43,8 @@ namespace CodeEditor2.LLM.Tools
             
             """)]
             //            一度に単一のコマンドの実行しか許可されません。&&やパイプ等を使って複数のコマンドを同時に実行しないでください。
-            string command
+            string command,
+            CancellationToken cancellationToken
             )
         {
             try
@@ -78,7 +80,7 @@ namespace CodeEditor2.LLM.Tools
 
                 CommandParser parser = new CommandParser();
 
-                string result = await parser.RunCommandAsync(command, project.RootPath, AllowedCommands);
+                string result = await parser.RunCommandAsync(command, project.RootPath, AllowedCommands,cancellationToken);
 
                 return result;
             }

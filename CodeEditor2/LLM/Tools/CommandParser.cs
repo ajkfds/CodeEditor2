@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.LLM.Tools
@@ -18,7 +19,11 @@ namespace CodeEditor2.LLM.Tools
             public List<string> PipeCommands { get; set; } = new(); // ["ls -la", "grep .txt"]
             public SeparatorType NextSeparator { get; set; } = SeparatorType.None;
         }
-        public async Task<string> RunCommandAsync(string fullCommand, string rootPath, HashSet<string> allowedCommands)
+        public async Task<string> RunCommandAsync(
+            string fullCommand, 
+            string rootPath, 
+            HashSet<string> allowedCommands,
+            CancellationToken cancellationToken)
         {
             // 1. コマンドをパースして構造化する
             var chains = ParseFullCommandLine(fullCommand);
@@ -32,9 +37,11 @@ namespace CodeEditor2.LLM.Tools
                 // (必要に応じて SeparatorType.Or の実装も可能)
 
                 // パイプラインを実行
-                var (output, exitCode) = await ExecutePipeChainAsync(chain.PipeCommands, rootPath, allowedCommands);
+                var (output, exitCode) = await ExecutePipeChainAsync(chain.PipeCommands, rootPath, allowedCommands,cancellationToken);
                 finalOutput.Append(output);
                 lastExitCode = exitCode;
+
+                if (cancellationToken.IsCancellationRequested) return "Canceled";
 
                 if (chain.NextSeparator == SeparatorType.None) break;
             }
@@ -79,7 +86,11 @@ namespace CodeEditor2.LLM.Tools
         }
 
 
-        private async Task<(string Output, int ExitCode)> ExecutePipeChainAsync(List<string> pipeParts, string rootPath, HashSet<string> allowedCommands)
+        private async Task<(string Output, int ExitCode)> ExecutePipeChainAsync(
+            List<string> pipeParts, 
+            string rootPath, 
+            HashSet<string> allowedCommands,
+            CancellationToken cancellationToken)
         {
             // 事前チェック：起動前にすべてのコマンドが許可されているか検証（途中終了によるリーク防止）
             var parsedCmds = new List<(string Cmd, string Args)>();
