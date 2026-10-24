@@ -182,11 +182,11 @@ namespace CodeEditor2.Data
             }
             catch (FileNotFoundException)
             {
-                removeItemAsync(project, item);
+                RemoveItemAsync(project, item);
             }
             catch (DirectoryNotFoundException)
             {
-                removeItemAsync(project, item);
+                RemoveItemAsync(project, item);
             }
             catch (Exception)
             {
@@ -217,7 +217,7 @@ namespace CodeEditor2.Data
             }
         }
 
-        private static void removeItemAsync(Project project, Item item)
+        private static void RemoveItemAsync(Project project, Item item)
         {
             item.FileSystemInfo = null;
             item.IsDeleted = true;
@@ -232,7 +232,7 @@ namespace CodeEditor2.Data
                 // フォルダの場合は、子アイテムも削除されたとみなす
                 foreach (var child in folder.Items)
                 {
-                    removeItemAsync(project, child);
+                    RemoveItemAsync(project, child);
                 }
             }
             else if (item is File file)
