@@ -4,6 +4,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.LLM
@@ -404,18 +405,55 @@ namespace CodeEditor2.LLM
         public bool IsShowingPlaceholder { get; private set; }
 
         /// <summary>
-        /// Show the progress placeholder text ("waiting ... 0.5s").
-        /// Unlike <see cref="SetText"/> this marks the body as a placeholder so
-        /// callers can distinguish it from real message content.
+        /// Measures how long this chat item has been displayed. The progress
+        /// placeholder shows this value ("waiting ... 1.2s") so every message
+        /// reports the wait time from the moment IT was inserted.
+        /// <para>
+        /// Measuring per item (instead of one stopwatch per LLM call) is what
+        /// makes the response that follows a native (API) tool call show its own
+        /// elapsed time: the tool call moves the stream into a new item
+        /// (see ChatControl.SplitStreamedResponseBeforeToolCall), which is
+        /// inserted later than the first response of the same turn and must
+        /// therefore restart the count from its own display time.
+        /// </para>
         /// </summary>
-        public async Task SetPlaceholderText(string text)
+        private readonly Stopwatch displayStopwatch = Stopwatch.StartNew();
+
+        /// <summary>
+        /// Refresh the progress placeholder with the elapsed time since this item
+        /// was inserted ("waiting ... 1.2s").
+        /// <para>
+        /// Does nothing once real message content has arrived, so a late timer
+        /// tick can never overwrite streamed text. Safe to call from any thread
+        /// (marshals to the UI thread).
+        /// </para>
+        /// </summary>
+        /// <param name="prefix">Text placed before the elapsed time.</param>
+        public async Task ShowProgressPlaceholder(string prefix)
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                markdown.Text = text;
-                IsShowingPlaceholder = true;
+                ShowProgressPlaceholderDirect(prefix);
             });
         }
+
+        /// <summary>
+        /// <see cref="ShowProgressPlaceholder"/> without dispatching. Must be
+        /// called on the UI thread; used when the placeholder has to be committed
+        /// before the next chat items are inserted (a response item inserted by a
+        /// tool-call split shows its wait time right away instead of on the next
+        /// timer tick).
+        /// </summary>
+        public void ShowProgressPlaceholderDirect(string prefix)
+        {
+            // Real content already arrived: keep it.
+            if (!IsShowingPlaceholder && Text.Length > 0) return;
+
+            markdown.Text = prefix + (displayStopwatch.ElapsedMilliseconds / 1000f).ToString("F1") + "s";
+            IsShowingPlaceholder = true;
+        }
+
+
 
         public string Text
         {
@@ -429,8 +467,7 @@ namespace CodeEditor2.LLM
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                markdown.Text += text;
-                IsShowingPlaceholder = false;
+                appendDirect(text);
             });
         }
 
@@ -444,7 +481,20 @@ namespace CodeEditor2.LLM
         /// </summary>
         public void AppendTextDirect(string text)
         {
-            markdown.Text += text;
+            appendDirect(text);
+        }
+
+        /// <summary>
+        /// Append streamed text to the body, discarding the progress placeholder
+        /// first so "waiting ... 1.2s" never becomes a part of the message.
+        /// Must run on the UI thread.
+        /// </summary>
+        private void appendDirect(string text)
+        {
+            // The placeholder reported the wait time of this item while nothing
+            // had arrived yet. The first real chunk replaces it entirely.
+            string body = IsShowingPlaceholder ? "" : markdown.Text ?? "";
+            markdown.Text = body + text;
             IsShowingPlaceholder = false;
         }
 

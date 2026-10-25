@@ -1002,6 +1002,11 @@ public partial class ChatControl : UserControl
             // tool-result item of this call is inserted above lastResultItem, so
             // the resulting order is: response / tool call / response.
             MarkdownTextItem nextItem = new MarkdownTextItem("", MarkdownTextItem.MessageType.responce);
+            // Show the wait time of the new item immediately, exactly like the
+            // first response of the turn did: the tool call has to finish before
+            // the answer can stream, and the user should see that this message is
+            // the one currently waiting. The value counts from this insertion.
+            nextItem.ShowProgressPlaceholderDirect(WaitPlaceholderPrefix);
             int currentIndex = Items.IndexOf(currentItem);
             int insertIndex = currentIndex >= 0 ? currentIndex + 1 : Items.Count - 1;
             Items.Insert(insertIndex, nextItem);
@@ -1071,6 +1076,12 @@ public partial class ChatControl : UserControl
             }
         }
     }
+
+    /// <summary>
+    /// Prefix of the progress placeholder shown in a response item while it
+    /// waits for its first streamed chunk ("waiting ... 1.2s").
+    /// </summary>
+    private const string WaitPlaceholderPrefix = "waiting ... ";
 
     /// <summary>
     /// Build the informational footer line shown at the end of a message
@@ -1581,7 +1592,12 @@ public partial class ChatControl : UserControl
                 // Start progress timer
                 var stopwatch = Stopwatch.StartNew();
 
-                bool timerActivate = true; // timer activate flag, timer will be stopped when first result is returned
+                // True until the first streamed chunk of this LLM call arrives.
+                // It only decides whether the turn ended without any content
+                // ("blank"): the progress timer itself runs for the whole call so
+                // every response item can show the elapsed time since it was
+                // inserted (see ShowProgressPlaceholder).
+                bool timerActivate = true;
                 timerCancellationTokenSource = new CancellationTokenSource();
                 displayTimerTask = Task.Run(async () =>
                 {
@@ -1589,15 +1605,21 @@ public partial class ChatControl : UserControl
                     {
                         try
                         {
-                            if (timerActivate)
-                            {
-                                // A native (API) tool call may have swapped the
-                                // streaming item while the timer is running: the
-                                // placeholder belongs to the item that receives
-                                // the next streamed text.
-                                MarkdownTextItem placeholderTarget = streamingResultItem ?? resultItem;
-                                await placeholderTarget.SetPlaceholderText("waiting ... " + (stopwatch.ElapsedMilliseconds / 1000f).ToString("F1") + "s");
-                            }
+                            // A native (API) tool call may have swapped the
+                            // streaming item while the timer is running: the
+                            // placeholder belongs to the item that receives the
+                            // next streamed text.
+                            //
+                            // The timer now keeps running for the whole LLM call
+                            // (it is no longer cancelled by the first streamed
+                            // chunk) so the response that follows a tool call
+                            // also reports its elapsed time until its first text
+                            // arrives. Each item measures the time since IT was
+                            // inserted, so the value restarts at 0 for a newly
+                            // split item, and ShowProgressPlaceholder never
+                            // overwrites text that already arrived.
+                            MarkdownTextItem placeholderTarget = streamingResultItem ?? resultItem;
+                            await placeholderTarget.ShowProgressPlaceholder(WaitPlaceholderPrefix);
                             await Task.Delay(100, timerCancellationTokenSource.Token);
                         }
                         catch (TaskCanceledException)
@@ -1621,10 +1643,13 @@ public partial class ChatControl : UserControl
                     // (the Send button appears dead after Abort).
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    // Stop timer on first result received
+                    // First result of this LLM call: drop the progress
+                    // placeholder. The timer itself keeps running so the item
+                    // that receives the rest of the turn (a native tool call may
+                    // split the stream into a new item) can still show its own
+                    // elapsed time until its first text arrives.
                     if (timerActivate & ret != "")
                     {
-                        timerCancellationTokenSource.Cancel();
                         timerActivate = false;
                         await (streamingResultItem ?? resultItem).SetText("");
                     }
@@ -1664,12 +1689,17 @@ public partial class ChatControl : UserControl
                 }
                 if (timerActivate)
                 {
-                    timerCancellationTokenSource.Cancel();
                     timerActivate = false;
                     await (streamingResultItem ?? resultItem).SetText("blank");
                 }
 
-                // Wait for timer task to complete
+                // Stop the progress timer only now: it kept refreshing the
+                // per-item elapsed time until the stream ended, so the item that
+                // received the answer after a tool call showed its own wait time
+                // as well. Waiting for the task before touching the items also
+                // guarantees a timer tick cannot overwrite the footer applied
+                // below.
+                timerCancellationTokenSource.Cancel();
                 await displayTimerTask;
                 stopwatch.Stop();
 
