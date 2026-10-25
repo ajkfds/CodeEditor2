@@ -196,11 +196,6 @@ namespace CodeEditor2.LLM
                             continue;
                         }
 
-                        // Notify tool call start (creates the tool-result item
-                        // and shows a spinner while the tool executes)
-                        chatControl?.ToolCallStarted(toolName);
-
-
                         AIFunctionArguments args = new AIFunctionArguments();
 
                         string innerContent = match.Groups["params"].Value;
@@ -217,7 +212,16 @@ namespace CodeEditor2.LLM
                                 args.Add(p.Groups["key"].Value, p.Groups["value"].Value);
                             }
                         }
-                        Progress<string> progress = new Progress<string>((message) => { chatControl?.ToolCallStarted(); });
+
+                        // Notify tool call start (creates the tool-result item
+                        // and shows a spinner while the tool executes). The
+                        // invocation text shows what is being called (the call
+                        // itself, not only its result), and the call id pairs
+                        // this start with its finish notification so parallel
+                        // calls each stop their own spinner.
+                        chatControl?.ToolCallStarted(toolName, callId: toolCallId, invocation: FormatInvocation(args));
+
+                        Progress<string> progress = new Progress<string>((message) => { chatControl?.ToolCallStarted(callId: toolCallId); });
                         args["progress"] = progress;
 
                         AIFunction? aIFunction = selectedTool as AIFunction;
@@ -235,7 +239,7 @@ namespace CodeEditor2.LLM
                                 while (!spinner_cancel.IsCancellationRequested)
                                 {
                                     await Task.Delay(100, spinner_cancel); // 100ms待機を非同期で行う
-                                    chatControl?.ToolCallStarted();
+                                    chatControl?.ToolCallStarted(callId: toolCallId);
                                 }
                             }
                             catch (OperationCanceledException)
@@ -276,16 +280,53 @@ namespace CodeEditor2.LLM
                         // Pass the result text so the tool-result item created at
                         // start becomes the tool-call result message. ToolCallEnded
                         // marshals to the UI thread internally.
-                        chatControl?.ToolCallEnded(toolResultForDisplay);
-                        // Clear the pending reference so the next tool call in this
-                        // response starts a fresh item.
-                        chatControl?.ClearToolResultItem();
+                        chatControl?.ToolCallEnded(toolResultForDisplay, toolCallId);
                     }
                 }
                 if (sb.Length == 0) return null;
                 return "```xml\n"+sb.ToString()+"\n```\n";
             }
             return null;
+        }
+
+        /// <summary>
+        /// Format the arguments of a message-based (pseudo) tool call for display
+        /// in the chat, so the invocation itself is visible next to the tool name
+        /// (not only its result). Values are quoted as JSON strings, which keeps
+        /// long code blocks readable while staying a valid JSON object.
+        /// </summary>
+        private static string? FormatInvocation(AIFunctionArguments args)
+        {
+            if (args == null || args.Count == 0) return null;
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append('{');
+            bool first = true;
+            foreach (KeyValuePair<string, object?> pair in args)
+            {
+                if (pair.Key == "progress") continue; // internal spinner callback
+
+                if (!first) sb.Append(',');
+                first = false;
+                sb.Append('"').Append(pair.Key).Append("\": ");
+
+                string? value = pair.Value?.ToString();
+                if (value == null)
+                {
+                    sb.Append("null");
+                }
+                else
+                {
+                    sb.Append('"')
+                      .Append(value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", ""))
+                      .Append('"');
+                }
+            }
+            sb.Append('}');
+
+            // Nothing but the internal progress callback: do not show an empty object.
+            if (first) return null;
+            return sb.ToString();
         }
 
         /// <summary>

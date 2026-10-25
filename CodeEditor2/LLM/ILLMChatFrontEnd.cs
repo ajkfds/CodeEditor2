@@ -47,12 +47,21 @@ namespace CodeEditor2.LLM
         /// <summary>Result text of the tool execution. Only set for a finish event.</summary>
         public string? Result { get; }
 
-        public ToolCallNotificationEventArgs(string callId, string toolName, bool isStarting, string? result = null)
+        /// <summary>
+        /// Arguments of the tool call, formatted for display (e.g. pretty-printed
+        /// JSON). The chat UI renders this so the *invocation itself* is visible,
+        /// not only the tool result. Empty when the provider has not streamed any
+        /// argument yet.
+        /// </summary>
+        public string? Invocation { get; }
+
+        public ToolCallNotificationEventArgs(string callId, string toolName, bool isStarting, string? result = null, string? invocation = null)
         {
             CallId = callId ?? "";
             ToolName = toolName ?? "";
             IsStarting = isStarting;
             Result = result;
+            Invocation = invocation;
         }
     }
 

@@ -403,6 +403,49 @@ public partial class ChatControl : UserControl
     private readonly List<MarkdownTextItem> nativeToolResultItems = new List<MarkdownTextItem>();
 
     /// <summary>
+    /// Tool-result items that currently display the "running" spinner.
+    /// <para>
+    /// Tracking them all (instead of only <see cref="lastToolResultItem"/>) makes
+    /// it possible to reliably stop every spinner when a tool call is aborted or
+    /// the turn ends: with parallel native tool calls several items are created
+    /// at once, and an interrupted call may never receive its "finished"
+    /// notification. Both cases used to leave an item spinning forever.
+    /// </para>
+    /// </summary>
+    private readonly List<MarkdownTextItem> toolResultItemsWithSpinner = new List<MarkdownTextItem>();
+
+    /// <summary>
+    /// Tool-result items keyed by the provider tool call id. A finish
+    /// notification is routed to the item of *its own* call, so parallel tool
+    /// calls stop their own spinner instead of always the most recent one.
+    /// </summary>
+    private readonly Dictionary<string, MarkdownTextItem> pendingToolCallItems =
+        new Dictionary<string, MarkdownTextItem>();
+
+    /// <summary>
+    /// Header text (tool name + invocation arguments) currently displayed by each
+    /// tool-result item. Kept separately so the body can be recomposed when the
+    /// streamed arguments arrive after the item was created, or when the tool
+    /// result is appended.
+    /// </summary>
+    private readonly Dictionary<MarkdownTextItem, string> toolCallHeaders =
+        new Dictionary<MarkdownTextItem, string>();
+
+    /// <summary>
+    /// Result text of the tool execution currently displayed by each tool-result
+    /// item (null / missing while the tool is still running).
+    /// </summary>
+    private readonly Dictionary<MarkdownTextItem, string> toolCallResults =
+        new Dictionary<MarkdownTextItem, string>();
+
+    /// <summary>
+    /// Name of the tool displayed by each tool-result item (used to rebuild the
+    /// header when only the arguments change).
+    /// </summary>
+    private readonly Dictionary<MarkdownTextItem, string> toolCallNames =
+        new Dictionary<MarkdownTextItem, string>();
+
+    /// <summary>
     /// True when the current response has executed at least one tool call and a
     /// tool-result item was inserted for it (see <see cref="ToolCallStarted"/>).
     /// completeWork uses this to avoid inserting a second, duplicate command
@@ -541,10 +584,12 @@ public partial class ChatControl : UserControl
     /// Called when a tool call starts executing.
     /// Inserts a dedicated tool-result item into the chat immediately and shows
     /// the spinner on it, so the user sees that a tool is running before the
-    /// next LLM turn arrives.
+    /// next LLM turn arrives. The item also displays the invocation (tool name +
+    /// arguments), so the tool call itself is visible and not only its result.
     /// This method may be called repeatedly (the spinner progress timer calls it
-    /// every ~100ms), so the item is only created on the first call of a pending
-    /// tool call.
+    /// every ~100ms, and native providers re-raise it while the arguments
+    /// stream), so the item is resolved by <paramref name="callId"/> and only
+    /// created on the first notification of a tool call.
     /// </summary>
     /// <param name="toolName">Name of the tool being executed (optional)</param>
     /// <param name="insertAboveResult">
@@ -555,7 +600,18 @@ public partial class ChatControl : UserControl
     /// item above that result item keeps the chronological order (tool call above
     /// the answer) identical to the message-based (pseudo) tool call layout.
     /// </param>
-    public void ToolCallStarted(string? toolName = null, bool insertAboveResult = false)
+    /// <param name="invocation">
+    /// Arguments of the tool call, formatted for display (e.g. pretty-printed
+    /// JSON). Shown under the tool name so the invocation itself is visible in
+    /// the chat, not only its result. Providers that stream the arguments in
+    /// several updates raise the start notification repeatedly for the same
+    /// <paramref name="callId"/>; the item is then updated in place.
+    /// </param>
+    /// <param name="callId">
+    /// Provider tool call id used to pair the start with its finish notification
+    /// so parallel tool calls each stop their own spinner.
+    /// </param>
+    public void ToolCallStarted(string? toolName = null, bool insertAboveResult = false, string? invocation = null, string? callId = null)
     {
         isToolCallInProgress = true;
 
@@ -575,11 +631,11 @@ public partial class ChatControl : UserControl
         // method returns, no matter which thread called it.
         if (Dispatcher.UIThread.CheckAccess())
         {
-            ApplyToolCallStarted(toolName, insertAboveResult);
+            ApplyToolCallStarted(toolName, insertAboveResult, invocation, callId);
         }
         else
         {
-            Dispatcher.UIThread.Invoke(() => ApplyToolCallStarted(toolName, insertAboveResult));
+            Dispatcher.UIThread.Invoke(() => ApplyToolCallStarted(toolName, insertAboveResult, invocation, callId));
         }
     }
 
@@ -588,53 +644,185 @@ public partial class ChatControl : UserControl
     /// Creates the pending tool-result item on first call and refreshes the
     /// spinner on subsequent (progress / timer) calls.
     /// </summary>
-    private void ApplyToolCallStarted(string? toolName, bool insertAboveResult)
+    private void ApplyToolCallStarted(string? toolName, bool insertAboveResult, string? invocation, string? callId)
     {
-        if (lastToolResultItem == null)
+        // A provider streams the arguments of one tool call over several updates
+        // and therefore raises the start notification repeatedly for the same
+        // call id. Resolving by id (instead of "last item") keeps parallel tool
+        // calls separate: each call refreshes only its own item, and a second,
+        // distinct call creates its own item.
+        string newCallId = callId ?? "";
+        MarkdownTextItem? existing = null;
+        if (newCallId.Length > 0)
         {
-            // Create and insert the tool-result item right away so a spinner
-            // is visible while the tool executes.
-            string header = string.IsNullOrEmpty(toolName)
-                ? ""
-                : "**Tool call: " + toolName + "**\n\n";
-            MarkdownTextItem toolResultItem = new MarkdownTextItem(header, MarkdownTextItem.MessageType.functionCallReturn);
-            // Style this item like the other tool-call entries (collapsed,
-            // tool-call color). This is the single display of the tool result:
-            // completeWork must not also insert a command item for the same
-            // functionCallReturn response, otherwise the tool result shows
-            // twice (see toolResultItemCreated).
-            toolResultItem.TextColor = commandColor;
-            toolResultItem.Collapsed = true;
+            pendingToolCallItems.TryGetValue(newCallId, out existing);
+        }
+        else if (lastToolResultItem != null && isToolCallInProgress)
+        {
+            // Providers without call ids (e.g. the message-based pseudo tool
+            // calls) always have a single pending item; refresh it in place.
+            existing = lastToolResultItem;
+        }
 
-            // Insert the tool-result item at the end of the message list
-            // (Items.Count - 1 keeps the input item last).
-            int insertIndex = Items.Count - 1;
-
-            if (insertAboveResult && lastResultItem != null)
+        if (existing != null)
+        {
+            if (!string.IsNullOrEmpty(toolName))
             {
-                // Native (API) tool call: the tool call and the final answer of
-                // the same LLM turn stream into one result item. Insert the
-                // tool-result item directly ABOVE that result item so the tool
-                // call appears above the answer (chronological order), matching
-                // the message-based tool-call layout.
-                int resultIndex = Items.IndexOf(lastResultItem);
-                if (resultIndex >= 0)
-                {
-                    insertIndex = resultIndex;
-                }
+                toolCallNames[existing] = toolName;
             }
-
-            Items.Insert(insertIndex, toolResultItem);
-            lastToolResultItem = toolResultItem;
-            toolResultItemCreated = true;
-
-            if (autoScroll)
+            if (!string.IsNullOrEmpty(invocation))
             {
-                ChatScrollViewer?.ScrollToEnd();
+                SetToolCallInvocation(existing, existing == lastToolResultItem ? toolName : null, invocation);
+            }
+            existing.ShowSpinnerDirect(true);
+            MarkSpinnerRunning(existing);
+            lastToolResultItem = existing;
+            return;
+        }
+
+        // Create and insert the tool-result item right away so a spinner
+        // is visible while the tool executes.
+        string header = BuildToolCallHeader(toolName, invocation);
+        MarkdownTextItem toolResultItem = new MarkdownTextItem(header, MarkdownTextItem.MessageType.functionCallReturn);
+        // Style this item like the other tool-call entries (collapsed,
+        // tool-call color). This is the single display of the tool result:
+        // completeWork must not also insert a command item for the same
+        // functionCallReturn response, otherwise the tool result shows
+        // twice (see toolResultItemCreated).
+        toolResultItem.TextColor = commandColor;
+        toolResultItem.Collapsed = true;
+
+        // Insert the tool-result item at the end of the message list
+        // (Items.Count - 1 keeps the input item last).
+        int insertIndex = Items.Count - 1;
+
+        if (insertAboveResult && lastResultItem != null)
+        {
+            // Native (API) tool call: the tool call and the final answer of
+            // the same LLM turn stream into one result item. Insert the
+            // tool-result item directly ABOVE that result item so the tool
+            // call appears above the answer (chronological order), matching
+            // the message-based tool-call layout.
+            int resultIndex = Items.IndexOf(lastResultItem);
+            if (resultIndex >= 0)
+            {
+                insertIndex = resultIndex;
             }
         }
 
-        lastToolResultItem?.ShowSpinner(true);
+        Items.Insert(insertIndex, toolResultItem);
+        lastToolResultItem = toolResultItem;
+        toolResultItemCreated = true;
+
+        toolCallHeaders[toolResultItem] = header;
+        if (!string.IsNullOrEmpty(toolName))
+        {
+            toolCallNames[toolResultItem] = toolName;
+        }
+        if (newCallId.Length > 0)
+        {
+            pendingToolCallItems[newCallId] = toolResultItem;
+        }
+
+        if (autoScroll)
+        {
+            ChatScrollViewer?.ScrollToEnd();
+        }
+
+        toolResultItem.ShowSpinnerDirect(true);
+        MarkSpinnerRunning(toolResultItem);
+    }
+
+    /// <summary>
+    /// Build the header line of a tool-result item: the tool name followed by
+    /// the invocation arguments (when known). The arguments are shown in a fenced
+    /// block so the call itself is readable in the chat.
+    /// </summary>
+    private static string BuildToolCallHeader(string? toolName, string? invocation)
+    {
+        if (string.IsNullOrEmpty(toolName) && string.IsNullOrEmpty(invocation))
+        {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        if (!string.IsNullOrEmpty(toolName))
+        {
+            sb.Append("**Tool call: ").Append(toolName).Append("**");
+        }
+        if (!string.IsNullOrEmpty(invocation))
+        {
+            sb.Append("\n\n```json\n").Append(invocation).Append("\n```");
+        }
+        sb.Append("\n\n");
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Update the displayed invocation (arguments) of a running tool-result item
+    /// while keeping the result text that may already be shown. Must run on the
+    /// UI thread.
+    /// </summary>
+    private void SetToolCallInvocation(MarkdownTextItem item, string? toolName, string invocation)
+    {
+        string? name = toolName;
+        if (string.IsNullOrEmpty(name) && !toolCallNames.TryGetValue(item, out name))
+        {
+            name = null;
+        }
+        string header = BuildToolCallHeader(name, invocation);
+        toolCallHeaders[item] = header;
+
+        string? result = toolCallResults.TryGetValue(item, out string? r) ? r : null;
+        item.SetTextDirect(header + (string.IsNullOrEmpty(result) ? "" : "```\n" + result + "\n```\n"));
+    }
+
+    /// <summary>
+    /// Remember that <paramref name="item"/> currently shows the running
+    /// spinner so it can be stopped later even when its finish notification
+    /// never arrives (abort / turn end).
+    /// </summary>
+    private void MarkSpinnerRunning(MarkdownTextItem item)
+    {
+        if (!toolResultItemsWithSpinner.Contains(item))
+        {
+            toolResultItemsWithSpinner.Add(item);
+        }
+    }
+
+    /// <summary>
+    /// Stop the spinner of every tool-result item that is still running and drop
+    /// the pending bookkeeping. Called when a tool call is aborted, when a turn
+    /// ends and on chat reset: an interrupted native tool call never raises its
+    /// finish notification, which previously left the spinner spinning forever.
+    /// Must run on the UI thread.
+    /// </summary>
+    private void StopAllToolCallSpinners()
+    {
+        foreach (MarkdownTextItem item in toolResultItemsWithSpinner)
+        {
+            item.ShowSpinnerDirect(false);
+        }
+        toolResultItemsWithSpinner.Clear();
+
+        isToolCallInProgress = false;
+        pendingToolCallItems.Clear();
+    }
+
+    /// <summary>
+    /// <see cref="StopAllToolCallSpinners"/> for callers that are not necessarily
+    /// on the UI thread (turn completion, abort, retry paths).
+    /// </summary>
+    private void StopAllToolCallSpinnersSafe()
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            StopAllToolCallSpinners();
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(StopAllToolCallSpinners);
+        }
     }
 
     /// <summary>
@@ -644,7 +832,12 @@ public partial class ChatControl : UserControl
     /// inserted when the tool call started becomes the tool-call result message.
     /// </summary>
     /// <param name="result">Result text of the tool execution (optional)</param>
-    public void ToolCallEnded(string? result = null)
+    /// <param name="callId">
+    /// Provider tool call id of the finished call. When supplied, the result is
+    /// applied to the item of that call (parallel tool calls each stop their own
+    /// spinner); otherwise the currently pending item is used.
+    /// </param>
+    public void ToolCallEnded(string? result = null, string? callId = null)
     {
         isToolCallInProgress = false;
 
@@ -658,14 +851,47 @@ public partial class ChatControl : UserControl
         // text directly here since we are already on the UI thread.
         void Apply()
         {
-            if (lastToolResultItem != null)
+            // Resolve the item belonging to this call id first so parallel tool
+            // calls finish their own item instead of the most recent one.
+            MarkdownTextItem? target = null;
+            string key = callId ?? "";
+            if (key.Length > 0)
             {
-                lastToolResultItem.ShowSpinner(false);
-                if (!string.IsNullOrEmpty(result))
+                if (pendingToolCallItems.TryGetValue(key, out MarkdownTextItem? byId))
                 {
-                    lastToolResultItem.AppendTextDirect((lastToolResultItem.Text.Length == 0 ? "" : "\n\n")
-                        + "```\n" + result + "\n```\n");
+                    target = byId;
                 }
+                pendingToolCallItems.Remove(key);
+            }
+            if (target == null)
+            {
+                target = lastToolResultItem;
+            }
+            if (target == null)
+            {
+                // Nothing to finish (e.g. the item was already released by an
+                // abort). Make sure no spinner is left behind anyway.
+                StopAllToolCallSpinners();
+                return;
+            }
+
+            // Always hide the spinner: this is the one place that guarantees the
+            // running state is cleared when a tool call finishes.
+            target.ShowSpinnerDirect(false);
+            toolResultItemsWithSpinner.Remove(target);
+
+            if (!string.IsNullOrEmpty(result))
+            {
+                toolCallResults[target] = result;
+                string header = toolCallHeaders.TryGetValue(target, out string? h) ? h : "";
+                // Recompose so the invocation stays above the result instead of
+                // being appended after it.
+                target.SetTextDirect(header + "```\n" + result + "\n```\n");
+            }
+
+            if (isToolCallInProgress && toolResultItemsWithSpinner.Count == 0)
+            {
+                isToolCallInProgress = false;
             }
         }
 
@@ -694,6 +920,18 @@ public partial class ChatControl : UserControl
     public void ClearToolResultItem()
     {
         lastToolResultItem = null;
+    }
+
+    /// <summary>
+    /// Stop the spinner of every tool-result item that is still running. Called
+    /// at the end of a tool loop iteration: the notification of a native tool
+    /// call may be lost (abort, provider error) and the spinner would otherwise
+    /// stay visible forever.
+    /// </summary>
+    public void FinishPendingToolCalls()
+    {
+        StopAllToolCallSpinnersSafe();
+        ClearToolResultItem();
     }
 
     /// <summary>
@@ -794,17 +1032,27 @@ public partial class ChatControl : UserControl
     {
         if (e.IsStarting)
         {
-            // A native (API) tool call interrupts the stream of the current LLM
-            // turn: everything streamed before the tool call belongs to its own
-            // chat message and must not keep growing above the tool call. Split
-            // the streaming item here (on the UI thread, before the tool-result
-            // item is inserted) so the tool call starts a fresh response item
-            // for the answer that follows it.
-            SplitStreamedResponseBeforeToolCall(e.ToolName);
+            // Native providers stream the arguments of one call over several
+            // updates, so the same call id raises the start notification more
+            // than once. Only the first one creates a chat item; the others just
+            // refresh the displayed invocation (handled inside ToolCallStarted).
+            bool sameCall = pendingToolCallItems.ContainsKey(e.CallId);
 
-            // Start a fresh tool-result item for each tool call.
-            lastToolResultItem = null;
-            ToolCallStarted(e.ToolName, insertAboveResult: true);
+            if (!sameCall)
+            {
+                // A native (API) tool call interrupts the stream of the current
+                // LLM turn: everything streamed before the tool call belongs to
+                // its own chat message and must not keep growing above the tool
+                // call. Split the streaming item here (on the UI thread, before
+                // the tool-result item is inserted) so the tool call starts a
+                // fresh response item for the answer that follows it.
+                SplitStreamedResponseBeforeToolCall(e.ToolName);
+
+                // Start a fresh tool-result item for each tool call.
+                lastToolResultItem = null;
+            }
+
+            ToolCallStarted(e.ToolName, insertAboveResult: true, invocation: e.Invocation, callId: e.CallId);
             if (lastToolResultItem != null && !nativeToolResultItems.Contains(lastToolResultItem))
             {
                 nativeToolResultItems.Add(lastToolResultItem);
@@ -812,10 +1060,15 @@ public partial class ChatControl : UserControl
         }
         else
         {
-            // Append the result text and hide the spinner, then drop the
-            // reference so the next tool call starts a new item.
-            ToolCallEnded(e.Result);
-            lastToolResultItem = null;
+            // Append the result text and hide the spinner. The item of this call
+            // is resolved by its id, so parallel tool calls each finish their own
+            // item. The pending reference is dropped only when it belonged to
+            // this call, letting the next call start a fresh item.
+            ToolCallEnded(e.Result, e.CallId);
+            if (pendingToolCallItems.Count == 0)
+            {
+                lastToolResultItem = null;
+            }
         }
     }
 
@@ -877,6 +1130,15 @@ public partial class ChatControl : UserControl
         lastToolResultItem = null;
         nativeToolResultItems.Clear();
         lastResultItem = null;
+
+        // The items above were removed: drop the pending tool-call bookkeeping so
+        // no spinner reference is kept on a detached item.
+        toolResultItemsWithSpinner.Clear();
+        pendingToolCallItems.Clear();
+        toolCallHeaders.Clear();
+        toolCallResults.Clear();
+        toolCallNames.Clear();
+        isToolCallInProgress = false;
 
         // Start from base prompt if agent is set
         if (agent != null)
@@ -1086,6 +1348,12 @@ public partial class ChatControl : UserControl
         }
         finally
         {
+            // Safety net for the reported "spinner never disappears" symptom:
+            // whatever path ends the turn (normal completion, abort, exception,
+            // retry) no tool-result item may keep spinning. A native tool call
+            // interrupted by a cancellation never raises its finish notification,
+            // so the spinner is cleared here unconditionally.
+            StopAllToolCallSpinnersSafe();
             inputAcceptable = true;
         }
     }
@@ -1448,6 +1716,20 @@ public partial class ChatControl : UserControl
                 }
                 nativeToolResultItems.Clear();
 
+                // Every tool call of this LLM call has finished by now (the
+                // function-invocation middleware executes the tools before it
+                // streams the rest of the answer). Stop any spinner that is still
+                // running so a lost / never delivered finish notification cannot
+                // leave the item spinning for the rest of the session.
+                if (Dispatcher.UIThread.CheckAccess())
+                {
+                    StopAllToolCallSpinners();
+                }
+                else
+                {
+                    await Dispatcher.UIThread.InvokeAsync(StopAllToolCallSpinners);
+                }
+
                 // Return everything this LLM call streamed. resultItem.Text only
                 // holds the part streamed since the last tool-call split, so the
                 // accumulated builder is used instead.
@@ -1762,6 +2044,23 @@ public partial class ChatControl : UserControl
     private void AbortButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         cancellationTokenSource.Cancel();
+
+        // A native (API) tool call that is interrupted by the abort never raises
+        // its "finished" notification, which left its spinner spinning forever
+        // (the reported symptom). Stop every running spinner here as well.
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            StopAllToolCallSpinners();
+            ClearToolResultItem();
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                StopAllToolCallSpinners();
+                ClearToolResultItem();
+            });
+        }
     }
 
     /// <summary>
