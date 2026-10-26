@@ -76,7 +76,7 @@ namespace CodeEditor2.Views
                 {
 
                     double scale = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
-                    _textEditor.FontSize = Math.Ceiling((float)Global.ReducedRenderingFontSize / scale);
+                    _textEditor.FontSize = Math.Truncate((float)Global.ReducedRenderingFontSize / scale);
                 }
             };
 
