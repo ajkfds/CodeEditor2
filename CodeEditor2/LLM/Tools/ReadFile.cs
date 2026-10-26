@@ -41,14 +41,32 @@ namespace CodeEditor2.LLM.Tools
             """;
 
         // Cline 互換: 出力は全行に "<行番号> | <内容>" の形式でプレフィックスを付与する。
-        // 全体読み込み時のみ適用するサイズ上限 (範囲指定がある場合は緩和)。
-        private const int MaxFileBytes = 10 * 1024 * 1024; // 10MB hard limit (full read only)
+
+        // 読み込みサイズ上限の既定値 (10MB)
+        public const int DefaultMaxFileBytes = 10 * 1024 * 1024;
+
+        private int maxFileBytes = DefaultMaxFileBytes;
+
+        /// <summary>
+        /// 1 回の read_file で返す内容のサイズ上限 (バイト、UTF-8 換算)。
+        /// 上限を超える場合はファイルの内容を返さず、アラート (警告メッセージ) のみを返す。
+        /// 全体読み込み時はファイルサイズ、範囲指定時は実際に返す範囲のサイズで判定する。
+        /// 0 以下を設定した場合は既定値 (<see cref="DefaultMaxFileBytes"/> = 10MB) に戻す。
+        /// </summary>
+        public int MaxFileBytes
+        {
+            get => maxFileBytes;
+            set => maxFileBytes = value > 0 ? value : DefaultMaxFileBytes;
+        }
 
         [Description("""
             Request to read the contents of a file at the specified path.
             Use this when you need to examine the contents of an existing file you do not know the contents of,
             for example to analyze code, review text files, or extract information from configuration files.
             May not be suitable for other types of binary files, as it returns the raw content as a string.
+            Note: there is a size limit on the returned content. If the file (or the requested range) is larger
+            than the limit, only a warning is returned and no content is given. In that case, narrow the range
+            with start_line / end_line, or use search_files to locate the relevant part before reading.
             """)]
         public string Run(
             [Description("The path of the file to read (relative to the project root directory)")] string path,
@@ -90,11 +108,11 @@ namespace CodeEditor2.LLM.Tools
                 // 3. ファイル内容の読み込み (UTF-8, BOM 自動判別)
                 var fileInfo = new FileInfo(fullPath);
 
-                // 全体読み込み時のサイズ上限 (範囲指定があれば緩和する)
+                // 全体読み込み時は、読む前にファイルサイズで上限判定する
+                // (巨大ファイルを読み込んでから捨てる無駄を避ける)
                 bool hasRange = startLineNum.HasValue || endLineNum.HasValue;
                 if (!hasRange && fileInfo.Length > MaxFileBytes)
-                    return $"Error: File is too large to read in full (limit: {MaxFileBytes} bytes). " +
-                           "Please specify start_line and/or end_line to read a portion of the file.";
+                    return BuildTooLargeAlert(path, fileInfo.Length, hasRange);
 
                 string originalText;
                 using (var reader = new System.IO.StreamReader(fullPath, System.Text.Encoding.UTF8, true))
@@ -120,7 +138,18 @@ namespace CodeEditor2.LLM.Tools
                 if (effectiveStart > totalLines)
                     return $"Error: start_line ({effectiveStart}) exceeds the total number of lines in the file ({totalLines}).";
 
-                // 6. 行番号付きで出力 (Cline 互換: "<n> | <content>")
+                // 6. 返却する範囲のサイズ上限チェック
+                // 範囲指定で一部のみ読むことは許容しつつ、LLM に返る内容が上限を超えないようにする。
+                long rangeBytes = 0;
+                for (int i = effectiveStart; i <= effectiveEnd; i++)
+                {
+                    rangeBytes += System.Text.Encoding.UTF8.GetByteCount(lines[i - 1]) + 1; // +1 は改行
+                    if (rangeBytes > MaxFileBytes) break;
+                }
+                if (rangeBytes > MaxFileBytes)
+                    return BuildTooLargeAlert(path, rangeBytes, hasRange);
+
+                // 7. 行番号付きで出力 (Cline 互換: "<n> | <content>")
                 var sb = new StringBuilder();
                 sb.Append("```\n");
                 for (int i = effectiveStart; i <= effectiveEnd; i++)
@@ -143,6 +172,37 @@ namespace CodeEditor2.LLM.Tools
             {
                 return $"Error: An unexpected error occurred: {ex.Message}";
             }
+        }
+
+        /// <summary>
+        /// サイズ上限超過時のアラート (警告) メッセージを組み立てる。
+        /// ファイルの内容は返さない (LLM のコンテキスト消費を防ぐため)。
+        /// </summary>
+        private string BuildTooLargeAlert(string path, long actualBytes, bool hasRange)
+        {
+            string sizeText = FormatBytes(actualBytes);
+            string limitText = FormatBytes(MaxFileBytes);
+
+            if (hasRange)
+            {
+                return $"[WARNING] read_file: the requested range is too large and the content was NOT returned. " +
+                       $"path='{path}', range={sizeText}, limit={limitText} ({MaxFileBytes} bytes). " +
+                       "Narrow the range by specifying a smaller start_line / end_line, " +
+                       "or use search_files to locate the relevant part before reading.";
+            }
+
+            return $"[WARNING] read_file: the file is too large and the content was NOT returned. " +
+                   $"path='{path}', size={sizeText}, limit={limitText} ({MaxFileBytes} bytes). " +
+                   "Specify start_line and/or end_line to read a portion of the file, " +
+                   "or use search_files to locate the relevant part before reading.";
+        }
+
+        private static string FormatBytes(long bytes)
+        {
+            if (bytes < 1024) return $"{bytes} bytes";
+            if (bytes < 1024L * 1024L) return $"{bytes / 1024.0:0.#} KB";
+            if (bytes < 1024L * 1024L * 1024L) return $"{bytes / (1024.0 * 1024.0):0.#} MB";
+            return $"{bytes / (1024.0 * 1024.0 * 1024.0):0.#} GB";
         }
 
         // null/空文字なら null を返す。
