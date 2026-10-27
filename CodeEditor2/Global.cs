@@ -35,8 +35,6 @@ namespace CodeEditor2
 
         public static CodeDrawStyle DefaultDrawStyle = new CodeDrawStyle();
 
-        public static System.Threading.Thread? UIThread = null;
-
         public static bool Abort = false;
 
         public static bool AutoAcceptLLMCommandExecution = false;

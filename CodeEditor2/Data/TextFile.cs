@@ -457,6 +457,9 @@ namespace CodeEditor2.Data
                         }
                     }
                 );
+                if(CodeDocument != null) CodeDocument.Clean();
+
+                NavigatePanelNode.UpdateVisual();
 
                 if(!failed)
                 {
