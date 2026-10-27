@@ -48,6 +48,13 @@ namespace CodeEditor2
                 return;
             }
             AppendLog("Exception : " + exception.Message, Avalonia.Media.Colors.Red);
+            if (exception is System.OperationCanceledException) return;
+
+            Tools.ExceptionWindow exceptionWindow = new Tools.ExceptionWindow(exception);
+            Dispatcher.UIThread.Post(async () =>
+            {
+                await ShowDialogAsync(exceptionWindow);
+            }, DispatcherPriority.Background);
         }
 
         public static async Task<WeakReference<ListViewItem>> AppendLogAndGetItemAsync(string message, Avalonia.Media.Color color)
@@ -65,10 +72,58 @@ namespace CodeEditor2
             return Global.logView.AppendLogAndGetLastItem(message, color);
         }
 
-        //public static Window GetMainWindow()
-        //{
-        //    return Global.mainWindow;
-        //}
+
+        public static async Task ShowDialogAsync(Window dialog,Window rootWindow)
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                // InvokeAsync(Func<Task>) オーバーロードは ShowDialog 完了まで await 済み
+                await Dispatcher.UIThread.InvokeAsync(() => ShowDialogAsync(dialog));
+                return;
+            }
+
+            await dialogShowSemaphore.WaitAsync();
+            try
+            {
+                if (rootWindow.WindowState == WindowState.Maximized)
+                {
+                    // 最大化時は Position がフレーム原点や負のオフセットを指すため
+                    // 手動中央配置計算が実表示領域と乖離する。CenterOwner に任せる。
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                }
+                else
+                {
+                    // dialog.Width/Heightが設定されていない場合、ActualWidth/ActualHeightを使用
+                    double dialogWidth = dialog.Width > 0 ? dialog.Width : dialog.Bounds.Width;
+                    double dialogHeight = dialog.Height > 0 ? dialog.Height : dialog.Bounds.Height;
+
+                    // それでも0の場合はデフォルト値を設定
+                    if (dialogWidth <= 0) dialogWidth = rootWindow.Bounds.Width * 0.8;
+                    if (dialogHeight <= 0) dialogHeight = rootWindow.Bounds.Height * 0.8;
+
+                    // mainWindowの中央に配置。
+                    // Position はデバイスピクセル (PixelPoint)、Bounds/Width は DIP のため、
+                    // DPIスケール (RenderScaling) を反映して単位を合わせる。
+                    // (混在計算だと DPI 100% 以外の環境で中央からずれ、画面外に出て
+                    //  OS/WM が強制再配置し「別の場所に出る」原因になる)
+                    double scaling = rootWindow.RenderScaling;
+                    double mainWindowPixelWidth = rootWindow.Bounds.Width * scaling;
+                    double mainWindowPixelHeight = rootWindow.Bounds.Height * scaling;
+                    double dialogPixelWidth = dialogWidth * scaling;
+                    double dialogPixelHeight = dialogHeight * scaling;
+                    int x = (int)(rootWindow.Position.X + (mainWindowPixelWidth - dialogPixelWidth) / 2);
+                    int y = (int)(rootWindow.Position.Y + (mainWindowPixelHeight - dialogPixelHeight) / 2);
+                    dialog.Position = new PixelPoint(x, y);
+                }
+
+                await dialog.ShowDialog(rootWindow);
+            }
+            finally
+            {
+                dialogShowSemaphore.Release();
+            }
+        }
+
 
         /// <summary>
         /// 指定したダイアログをmainWindowの中央に表示します。
@@ -83,59 +138,8 @@ namespace CodeEditor2
 
         public static async Task ShowDialogAsync(Window dialog)
         {
-            if (!Dispatcher.UIThread.CheckAccess())
-            {
-                // InvokeAsync(Func<Task>) オーバーロードは ShowDialog 完了まで await 済み
-                await Dispatcher.UIThread.InvokeAsync(() => ShowDialogAsync(dialog));
-                return;
-            }
-
-            var mainWindow = Global.mainWindow;
-            if (mainWindow == null)
-            {
-                throw new InvalidOperationException("Main window is not available");
-            }
-
-            await dialogShowSemaphore.WaitAsync();
-            try
-            {
-                if (mainWindow.WindowState == WindowState.Maximized)
-                {
-                    // 最大化時は Position がフレーム原点や負のオフセットを指すため
-                    // 手動中央配置計算が実表示領域と乖離する。CenterOwner に任せる。
-                    dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                }
-                else
-                {
-                    // dialog.Width/Heightが設定されていない場合、ActualWidth/ActualHeightを使用
-                    double dialogWidth = dialog.Width > 0 ? dialog.Width : dialog.Bounds.Width;
-                    double dialogHeight = dialog.Height > 0 ? dialog.Height : dialog.Bounds.Height;
-
-                    // それでも0の場合はデフォルト値を設定
-                    if (dialogWidth <= 0) dialogWidth = mainWindow.Bounds.Width * 0.8;
-                    if (dialogHeight <= 0) dialogHeight = mainWindow.Bounds.Height * 0.8;
-
-                    // mainWindowの中央に配置。
-                    // Position はデバイスピクセル (PixelPoint)、Bounds/Width は DIP のため、
-                    // DPIスケール (RenderScaling) を反映して単位を合わせる。
-                    // (混在計算だと DPI 100% 以外の環境で中央からずれ、画面外に出て
-                    //  OS/WM が強制再配置し「別の場所に出る」原因になる)
-                    double scaling = mainWindow.RenderScaling;
-                    double mainWindowPixelWidth = mainWindow.Bounds.Width * scaling;
-                    double mainWindowPixelHeight = mainWindow.Bounds.Height * scaling;
-                    double dialogPixelWidth = dialogWidth * scaling;
-                    double dialogPixelHeight = dialogHeight * scaling;
-                    int x = (int)(mainWindow.Position.X + (mainWindowPixelWidth - dialogPixelWidth) / 2);
-                    int y = (int)(mainWindow.Position.Y + (mainWindowPixelHeight - dialogPixelHeight) / 2);
-                    dialog.Position = new PixelPoint(x, y);
-                }
-
-                await dialog.ShowDialog(mainWindow);
-            }
-            finally
-            {
-                dialogShowSemaphore.Release();
-            }
+            if (Global.mainWindow == null) return;
+            await ShowDialogAsync(dialog, Global.mainWindow);
         }
 
         /// <summary>
@@ -163,6 +167,53 @@ namespace CodeEditor2
         //    return Global.mainForm.BackColor;
         //}
 
+        public static void ShowWindow(Window window)
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Dispatcher.UIThread.Invoke(() => ShowWindow(window));
+                return;
+            }
+
+            var mainWindow = Global.mainWindow;
+            if (mainWindow == null)
+            {
+                throw new InvalidOperationException("Main window is not available");
+            }
+
+            if (mainWindow.WindowState == WindowState.Maximized)
+            {
+                // 最大化時は Position がフレーム原点や負のオフセットを指すため
+                // 手動中央配置計算が実表示領域と乖離する。CenterOwner に任せる。
+                window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            }
+            else
+            {
+                // dialog.Width/Heightが設定されていない場合、ActualWidth/ActualHeightを使用
+                double dialogWidth = window.Width > 0 ? window.Width : window.Bounds.Width;
+                double dialogHeight = window.Height > 0 ? window.Height : window.Bounds.Height;
+
+                // それでも0の場合はデフォルト値を設定
+                if (dialogWidth <= 0) dialogWidth = mainWindow.Bounds.Width * 0.8;
+                if (dialogHeight <= 0) dialogHeight = mainWindow.Bounds.Height * 0.8;
+
+                // mainWindowの中央に配置。
+                // Position はデバイスピクセル (PixelPoint)、Bounds/Width は DIP のため、
+                // DPIスケール (RenderScaling) を反映して単位を合わせる。
+                // (混在計算だと DPI 100% 以外の環境で中央からずれ、画面外に出て
+                //  OS/WM が強制再配置し「別の場所に出る」原因になる)
+                double scaling = mainWindow.RenderScaling;
+                double mainWindowPixelWidth = mainWindow.Bounds.Width * scaling;
+                double mainWindowPixelHeight = mainWindow.Bounds.Height * scaling;
+                double dialogPixelWidth = dialogWidth * scaling;
+                double dialogPixelHeight = dialogHeight * scaling;
+                int x = (int)(mainWindow.Position.X + (mainWindowPixelWidth - dialogPixelWidth) / 2);
+                int y = (int)(mainWindow.Position.Y + (mainWindowPixelHeight - dialogPixelHeight) / 2);
+                window.Position = new PixelPoint(x, y);
+            }
+
+            window.Show();
+        }
 
         public static bool SelectText(Data.ITextFile textFile, int index, int length)
         {
