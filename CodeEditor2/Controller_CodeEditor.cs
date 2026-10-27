@@ -93,7 +93,22 @@ namespace CodeEditor2
             {
                 if (!Dispatcher.UIThread.CheckAccess()) System.Diagnostics.Debugger.Break();
                 if (Global.codeView.CodeDocument == null) return;
-                Data.TextFile? textFile = Global.codeView.CodeDocument.TextFile;
+
+                // Save the file currently being edited.
+                //
+                // CodeDocument.TextFile is a weak reference to the TextFile that
+                // *created* the CodeDocument. Instance files (e.g. a Verilog module
+                // instance shown in the NavigatePanel) share the source file's
+                // CodeDocument, so that reference points at the source file, not at
+                // the instance the user is editing. Saving through the source file
+                // then refreshes only the source file's own navigate node, which
+                // left the instance node's dirty badge (shine) stale until the node
+                // was re-selected.
+                //
+                // Prefer codeView.TextFile (the item actually being edited, instance
+                // or not) and fall back to the CodeDocument owner.
+                Data.TextFile? textFile = Global.codeView.TextFile;
+                if (textFile == null) textFile = Global.codeView.CodeDocument.TextFile;
                 if (textFile == null) return;
                 await textFile.SaveAsync();
             }
