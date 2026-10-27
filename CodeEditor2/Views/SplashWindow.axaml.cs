@@ -22,9 +22,95 @@ public partial class SplashWindow : Window
         OpenSolutionButton.Click += OpenSolutionButton_Click;
 
         Global.Setup.LoadSetup();
-        Global.Setup.Historys.Sort((a, b) => b.LastAccessed.CompareTo(a.LastAccessed));
+        // Remove history entries that lost their name. Older builds could add a
+        // nameless entry (see openMainWindow) for the very same solution file, so
+        // the list showed a blank/counterpart row and the renaming effort appeared
+        // to be "lost".
+        MergeHistories();
+        SortHistories();
 
         createHistoryButtons();
+    }
+
+    /// <summary>
+    /// Merges history entries that point to the same solution file and drops
+    /// entries without a name, keeping the most recently accessed information.
+    /// </summary>
+    /// <remarks>
+    /// History entries used to be identified by (AbsolutePath AND Name). Opening a
+    /// solution through "Open Solution" left <see cref="Solution.Name"/> empty, so
+    /// that path added a *second* entry for a file that already had a named entry:
+    /// the same solution showed up twice, once with its name and once without, and
+    /// the nameless duplicate was the one that got the newest LastAccessed.
+    /// Merging by AbsolutePath keeps a single, named row per solution file.
+    /// </remarks>
+    private void MergeHistories()
+    {
+        Dictionary<string, Setups.Setup.History> merged =
+            new Dictionary<string, Setups.Setup.History>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (Setups.Setup.History history in Global.Setup.Historys)
+        {
+            if (history == null) continue;
+            if (history.AbsolutePath == "") continue;
+
+            if (!merged.TryGetValue(history.AbsolutePath, out Setups.Setup.History? existing))
+            {
+                merged.Add(history.AbsolutePath, history);
+                continue;
+            }
+
+            // Same solution file: keep the most recent access time and the first
+            // non-empty name / pinned order.
+            if (history.LastAccessed > existing.LastAccessed) existing.LastAccessed = history.LastAccessed;
+            if (existing.Name == "" && history.Name != "") existing.Name = history.Name;
+            if (existing.PinnedOrder == null) existing.PinnedOrder = history.PinnedOrder;
+        }
+
+        List<Setups.Setup.History> result = new List<Setups.Setup.History>();
+        foreach (Setups.Setup.History history in merged.Values)
+        {
+            // A nameless entry cannot be displayed meaningfully; fall back to the
+            // solution file name instead of dropping the entry entirely.
+            if (history.Name == "") history.Name = GetDefaultHistoryName(history);
+            result.Add(history);
+        }
+
+        Global.Setup.Historys = result;
+    }
+
+    /// <summary>
+    /// Derives a display name from the solution file name ("foo.sln.json" -> "foo").
+    /// </summary>
+    private static string GetDefaultHistoryName(Setups.Setup.History history)
+    {
+        string name = System.IO.Path.GetFileName(history.AbsolutePath);
+        if (name.EndsWith(Solution.FileExtention))
+        {
+            name = name.Substring(0, name.Length - Solution.FileExtention.Length);
+        }
+        if (name == "") name = history.AbsolutePath;
+        return name;
+    }
+
+    /// <summary>
+    /// Sorts the history list: pinned entries first (by PinnedOrder), then by the
+    /// most recent access time.
+    /// </summary>
+    private void SortHistories()
+    {
+        Global.Setup.Historys.Sort((a, b) =>
+        {
+            bool aPinned = a.PinnedOrder != null;
+            bool bPinned = b.PinnedOrder != null;
+            if (aPinned != bPinned) return aPinned ? -1 : 1;
+            if (aPinned && bPinned)
+            {
+                int order = a.PinnedOrder!.Value.CompareTo(b.PinnedOrder!.Value);
+                if (order != 0) return order;
+            }
+            return b.LastAccessed.CompareTo(a.LastAccessed);
+        });
     }
 
     private void createHistoryButtons()
@@ -39,7 +125,11 @@ public partial class SplashWindow : Window
                 Tools.VerticalStackPanelConstructor verticalStackPanelConstructor = new Tools.VerticalStackPanelConstructor();
                 button.Content = verticalStackPanelConstructor.StackPanel;
 
-                verticalStackPanelConstructor.AppendText(history.Name, 18, Tools.VerticalStackPanelConstructor.Style.Bold);
+                // Never render an empty title: a nameless entry looked like the
+                // stored name had disappeared. Derive a fallback from the path.
+                string displayName = history.Name;
+                if (displayName == "") displayName = GetDefaultHistoryName(history);
+                verticalStackPanelConstructor.AppendText(displayName, 18, Tools.VerticalStackPanelConstructor.Style.Bold);
                 verticalStackPanelConstructor.AppendText(history.AbsolutePath);
                 verticalStackPanelConstructor.AppendText("Last Accessed : " + history.LastAccessed.ToString(), 7);
             }
@@ -67,6 +157,13 @@ public partial class SplashWindow : Window
             if (newName == "" || newName == history.Name) return;
 
             history.Name = newName;
+            // Keep the in-memory Solution name in sync: the entry is looked up by
+            // AbsolutePath afterwards, and an older build matched on (path + name),
+            // which made a renamed entry look like it had been dropped.
+            if (string.Equals(history.AbsolutePath, Global.Solution.AbsolutePath, StringComparison.OrdinalIgnoreCase))
+            {
+                Global.Solution.Name = newName;
+            }
             Global.Setup.SaveSetup();
 
             createHistoryButtons();
@@ -129,6 +226,12 @@ public partial class SplashWindow : Window
             System.Uri uri = files[0].Path;
 
             Global.Solution.AbsolutePath = uri.LocalPath + Uri.UnescapeDataString(uri.Fragment);
+            // "Open Solution" does not know the name stored in the history entry.
+            // Without this the opened solution carried an empty name, which used to
+            // create a nameless duplicate history entry for an already named file.
+            // openMainWindow() replaces it with the stored name when the file is
+            // already in the history.
+            Global.Solution.Name = GetDefaultSolutionName(Global.Solution.AbsolutePath);
             openMainWindow();
 
             this.Close();
@@ -163,12 +266,7 @@ public partial class SplashWindow : Window
 
             Global.Solution.AbsolutePath = uri.LocalPath + Uri.UnescapeDataString(uri.Fragment);
 
-            string name = "";
-            name = System.IO.Path.GetFileName(Global.Solution.AbsolutePath);
-            if (name.EndsWith(Solution.FileExtention))
-            {
-                name = name.Substring(0, name.Length - Solution.FileExtention.Length);
-            }
+            string name = GetDefaultSolutionName(Global.Solution.AbsolutePath);
             if (name == "") return;
 
             Global.Solution.Name = name;
@@ -196,16 +294,20 @@ public partial class SplashWindow : Window
         try
         {
             // update opened Solution history file
+            //
+            // Identify the entry by AbsolutePath only. Matching on (AbsolutePath AND
+            // Name) used to add a second, nameless entry for a solution that was
+            // already in the history: "Open Solution" does not know the stored name,
+            // and after a rename Solution.Name no longer matched either. The rename
+            // then appeared to be forgotten because the nameless duplicate received
+            // the newest LastAccessed and was listed first.
+            if (Global.Solution.Name == "")
+            {
+                Global.Solution.Name = GetDefaultSolutionName(Global.Solution.AbsolutePath);
+            }
 
             Setups.Setup.History? history = Global.Setup.Historys
-                .Find((x) =>
-                {
-                    if (x.AbsolutePath == Global.Solution.AbsolutePath && x.Name == Global.Solution.Name)
-                    {
-                        return true;
-                    }
-                    return false;
-                });
+                .Find((x) => string.Equals(x.AbsolutePath, Global.Solution.AbsolutePath, StringComparison.OrdinalIgnoreCase));
             if (history == null)
             {
                 Global.Setup.Historys.Add(
@@ -219,6 +321,8 @@ public partial class SplashWindow : Window
             else
             {
                 history.LastAccessed = DateTime.Now;
+                // Keep the previously stored (possibly renamed) display name.
+                if (history.Name != "") Global.Solution.Name = history.Name;
             }
             Global.Setup.SaveSetup();
 
@@ -237,6 +341,20 @@ public partial class SplashWindow : Window
             Tools.YesNoWindow alartWindow = new Tools.YesNoWindow("Error", "Failed to create solution file.\n" + ex.Message, true, false);
             await alartWindow.ShowDialog(this);
         }
+    }
+
+    /// <summary>
+    /// Derives a solution display name from its file path
+    /// ("foo.sln.json" -> "foo").
+    /// </summary>
+    private static string GetDefaultSolutionName(string absolutePath)
+    {
+        string name = System.IO.Path.GetFileName(absolutePath);
+        if (name.EndsWith(Solution.FileExtention))
+        {
+            name = name.Substring(0, name.Length - Solution.FileExtention.Length);
+        }
+        return name;
     }
 
     private void initialize()

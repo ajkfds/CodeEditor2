@@ -39,7 +39,10 @@ namespace CodeEditor2.Setups
             public DateTime LastAccessed { set; get; }
             public string AbsolutePath { get; set; } = "";
 
-            public int? PinnedOrder = null;
+            // Must be a property: System.Text.Json does not serialize public
+            // fields by default, so a field would silently reset to null on
+            // every restart.
+            public int? PinnedOrder { get; set; } = null;
         }
 
         public void SaveSetup()

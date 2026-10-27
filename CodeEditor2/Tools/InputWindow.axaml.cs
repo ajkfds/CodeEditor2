@@ -46,6 +46,12 @@ namespace CodeEditor2.Tools
             this.Title = title;
 
             TextBlock0.Text = caption;
+            // The caller supplies the current value as the default text (e.g. the
+            // current name on "Rename"). It must be assigned BEFORE SelectAll,
+            // otherwise the box stays empty and the user has to retype the value
+            // from scratch (and an accidental OK would look like the value was
+            // cleared).
+            if (defaultText != null) TextBox1.Text = defaultText;
             TextBox1.SelectAll();
 
             TextBox1.KeyDown += TextBox1_KeyDown;
