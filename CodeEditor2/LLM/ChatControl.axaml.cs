@@ -878,9 +878,11 @@ public partial class ChatControl : UserControl
             MarkdownTextItem resultItem =
                 new MarkdownTextItem(resultBody, MarkdownTextItem.MessageType.functionCallReturn);
             resultItem.TextColor = commandColor;
-            // Tool results can be long: keep the tool-result item collapsible
-            // (default expanded) so the user can fold a huge log.
-            resultItem.Collapsed = false;
+            // Tool results can be very long (build logs, file contents, ...).
+            // Only the tool result is collapsed by default so the chat stays
+            // readable; the tool call itself (A) remains expanded and the user
+            // can expand the result by clicking the collapse button / menu.
+            resultItem.Collapsed = true;
 
             Items.Insert(insertIndex, resultItem);
             lastToolResultItem = resultItem;
