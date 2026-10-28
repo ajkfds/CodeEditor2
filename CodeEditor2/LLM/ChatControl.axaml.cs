@@ -367,11 +367,23 @@ public partial class ChatControl : UserControl
     MarkdownTextItem? lastResultItem = null;
 
     /// <summary>
-    /// Reference to the tool-result item currently waiting for its tool to
-    /// finish. A dedicated item is inserted into the chat the moment a tool
-    /// call starts (see <see cref="ToolCallStarted"/>) so the user can see that
-    /// execution is in progress (spinner) before the next LLM turn arrives.
+    /// Reference to the tool *call* item (A) currently waiting for its tool to
+    /// finish. The tool call and the tool result are displayed as two separate
+    /// chat items:
+    /// <list type="bullet">
+    /// <item>A: the tool call itself (LLM icon, tool name + arguments), not
+    /// collapsed, with the spinner while the tool executes.</item>
+    /// <item>B: the tool result (created when the call finishes, see
+    /// <see cref="ToolCallEnded"/>).</item>
+    /// </list>
     /// Null while no tool call is pending.
+    /// </summary>
+    MarkdownTextItem? lastToolCallItem = null;
+
+    /// <summary>
+    /// Reference to the tool-result item (B) of the most recently finished tool
+    /// call. completeWork / the footer code use it, and <see cref="ToolResultItem"/>
+    /// exposes it. Null while no tool result is pending.
     /// </summary>
     MarkdownTextItem? lastToolResultItem = null;
 
@@ -423,26 +435,19 @@ public partial class ChatControl : UserControl
         new Dictionary<string, MarkdownTextItem>();
 
     /// <summary>
+    /// Tool-result items (B) created when a tool call finished, keyed by the
+    /// provider tool call id (only used while the finish notification of the
+    /// same call is being processed; kept to avoid duplicates).
+    /// </summary>
+    private readonly Dictionary<string, MarkdownTextItem> pendingToolResultItems =
+        new Dictionary<string, MarkdownTextItem>();
+
+    /// <summary>
     /// Header text (tool name + invocation arguments) currently displayed by each
-    /// tool-result item. Kept separately so the body can be recomposed when the
-    /// streamed arguments arrive after the item was created, or when the tool
-    /// result is appended.
+    /// tool-call item (A). Kept separately so the body can be recomposed when the
+    /// streamed arguments arrive after the item was created.
     /// </summary>
     private readonly Dictionary<MarkdownTextItem, string> toolCallHeaders =
-        new Dictionary<MarkdownTextItem, string>();
-
-    /// <summary>
-    /// Result text of the tool execution currently displayed by each tool-result
-    /// item (null / missing while the tool is still running).
-    /// </summary>
-    private readonly Dictionary<MarkdownTextItem, string> toolCallResults =
-        new Dictionary<MarkdownTextItem, string>();
-
-    /// <summary>
-    /// Name of the tool displayed by each tool-result item (used to rebuild the
-    /// header when only the arguments change).
-    /// </summary>
-    private readonly Dictionary<MarkdownTextItem, string> toolCallNames =
         new Dictionary<MarkdownTextItem, string>();
 
     /// <summary>
@@ -657,52 +662,45 @@ public partial class ChatControl : UserControl
         {
             pendingToolCallItems.TryGetValue(newCallId, out existing);
         }
-        else if (lastToolResultItem != null && isToolCallInProgress)
+        else if (lastToolCallItem != null && isToolCallInProgress)
         {
             // Providers without call ids (e.g. the message-based pseudo tool
             // calls) always have a single pending item; refresh it in place.
-            existing = lastToolResultItem;
+            existing = lastToolCallItem;
         }
 
         if (existing != null)
         {
-            if (!string.IsNullOrEmpty(toolName))
-            {
-                toolCallNames[existing] = toolName;
-            }
             if (!string.IsNullOrEmpty(invocation))
             {
-                SetToolCallInvocation(existing, existing == lastToolResultItem ? toolName : null, invocation);
+                SetToolCallInvocation(existing, toolName, invocation);
             }
             existing.ShowSpinnerDirect(true);
             MarkSpinnerRunning(existing);
-            lastToolResultItem = existing;
+            lastToolCallItem = existing;
             return;
         }
 
-        // Create and insert the tool-result item right away so a spinner
-        // is visible while the tool executes.
+        // Create and insert the tool-call item (A) right away so the call
+        // itself is visible (LLM icon, tool name + arguments, not collapsed)
+        // with a spinner while the tool executes. The result (B) is inserted
+        // as a separate item when the call finishes (see ToolCallEnded).
         string header = BuildToolCallHeader(toolName, invocation);
-        MarkdownTextItem toolResultItem = new MarkdownTextItem(header, MarkdownTextItem.MessageType.functionCallReturn);
-        // Style this item like the other tool-call entries (collapsed,
-        // tool-call color). This is the single display of the tool result:
-        // completeWork must not also insert a command item for the same
-        // functionCallReturn response, otherwise the tool result shows
-        // twice (see toolResultItemCreated).
-        toolResultItem.TextColor = commandColor;
-        toolResultItem.Collapsed = true;
+        MarkdownTextItem toolCallItem = new MarkdownTextItem(header, MarkdownTextItem.MessageType.toolCall);
+        // Show the tool call as a normal, expanded message in the completion
+        // color: it is the LLM's action, so it uses the LLM icon (MessageType
+        // .toolCall) and is never collapsed.
+        toolCallItem.TextColor = completeColor;
+        toolCallItem.Collapsed = false;
 
-        // Insert the tool-result item at the end of the message list
-        // (Items.Count - 1 keeps the input item last).
+        // Insert the tool-call item directly ABOVE the currently streaming
+        // result item when requested (native API tool calls): the call belongs
+        // before the answer that follows it. Otherwise append at the end of the
+        // list (Items.Count - 1 keeps the input item last).
         int insertIndex = Items.Count - 1;
 
         if (insertAboveResult && lastResultItem != null)
         {
-            // Native (API) tool call: the tool call and the final answer of
-            // the same LLM turn stream into one result item. Insert the
-            // tool-result item directly ABOVE that result item so the tool
-            // call appears above the answer (chronological order), matching
-            // the message-based tool-call layout.
             int resultIndex = Items.IndexOf(lastResultItem);
             if (resultIndex >= 0)
             {
@@ -710,18 +708,13 @@ public partial class ChatControl : UserControl
             }
         }
 
-        Items.Insert(insertIndex, toolResultItem);
-        lastToolResultItem = toolResultItem;
-        toolResultItemCreated = true;
+        Items.Insert(insertIndex, toolCallItem);
+        lastToolCallItem = toolCallItem;
 
-        toolCallHeaders[toolResultItem] = header;
-        if (!string.IsNullOrEmpty(toolName))
-        {
-            toolCallNames[toolResultItem] = toolName;
-        }
+        toolCallHeaders[toolCallItem] = header;
         if (newCallId.Length > 0)
         {
-            pendingToolCallItems[newCallId] = toolResultItem;
+            pendingToolCallItems[newCallId] = toolCallItem;
         }
 
         if (autoScroll)
@@ -729,8 +722,8 @@ public partial class ChatControl : UserControl
             ChatScrollViewer?.ScrollToEnd();
         }
 
-        toolResultItem.ShowSpinnerDirect(true);
-        MarkSpinnerRunning(toolResultItem);
+        toolCallItem.ShowSpinnerDirect(true);
+        MarkSpinnerRunning(toolCallItem);
     }
 
     /// <summary>
@@ -759,22 +752,14 @@ public partial class ChatControl : UserControl
     }
 
     /// <summary>
-    /// Update the displayed invocation (arguments) of a running tool-result item
-    /// while keeping the result text that may already be shown. Must run on the
-    /// UI thread.
+    /// Update the displayed invocation (arguments) of a running tool-call item
+    /// (A). Must run on the UI thread.
     /// </summary>
     private void SetToolCallInvocation(MarkdownTextItem item, string? toolName, string invocation)
     {
-        string? name = toolName;
-        if (string.IsNullOrEmpty(name) && !toolCallNames.TryGetValue(item, out name))
-        {
-            name = null;
-        }
-        string header = BuildToolCallHeader(name, invocation);
+        string header = BuildToolCallHeader(toolName, invocation);
         toolCallHeaders[item] = header;
-
-        string? result = toolCallResults.TryGetValue(item, out string? r) ? r : null;
-        item.SetTextDirect(header + (string.IsNullOrEmpty(result) ? "" : "```\n" + result + "\n```\n"));
+        item.SetTextDirect(header);
     }
 
     /// <summary>
@@ -851,23 +836,24 @@ public partial class ChatControl : UserControl
         // text directly here since we are already on the UI thread.
         void Apply()
         {
-            // Resolve the item belonging to this call id first so parallel tool
-            // calls finish their own item instead of the most recent one.
-            MarkdownTextItem? target = null;
+            // Resolve the tool-call item (A) belonging to this call id first so
+            // parallel tool calls finish their own item instead of the most
+            // recent one.
+            MarkdownTextItem? callItem = null;
             string key = callId ?? "";
             if (key.Length > 0)
             {
                 if (pendingToolCallItems.TryGetValue(key, out MarkdownTextItem? byId))
                 {
-                    target = byId;
+                    callItem = byId;
                 }
                 pendingToolCallItems.Remove(key);
             }
-            if (target == null)
+            if (callItem == null)
             {
-                target = lastToolResultItem;
+                callItem = lastToolCallItem;
             }
-            if (target == null)
+            if (callItem == null)
             {
                 // Nothing to finish (e.g. the item was already released by an
                 // abort). Make sure no spinner is left behind anyway.
@@ -875,18 +861,39 @@ public partial class ChatControl : UserControl
                 return;
             }
 
-            // Always hide the spinner: this is the one place that guarantees the
-            // running state is cleared when a tool call finishes.
-            target.ShowSpinnerDirect(false);
-            toolResultItemsWithSpinner.Remove(target);
+            // Hide the spinner on the tool-call item (A): the call itself is
+            // done. The result is shown in a separate item below (B).
+            callItem.ShowSpinnerDirect(false);
+            toolResultItemsWithSpinner.Remove(callItem);
 
-            if (!string.IsNullOrEmpty(result))
+            // Insert the tool-result item (B) directly BELOW the tool-call item
+            // (A) so the call and its result are two independent chat items in
+            // chronological order.
+            int callIndex = Items.IndexOf(callItem);
+            int insertIndex = callIndex >= 0 ? callIndex + 1 : Items.Count - 1;
+
+            string resultBody = string.IsNullOrEmpty(result)
+                ? ""
+                : "```\n" + result + "\n```\n";
+            MarkdownTextItem resultItem =
+                new MarkdownTextItem(resultBody, MarkdownTextItem.MessageType.functionCallReturn);
+            resultItem.TextColor = commandColor;
+            // Tool results can be long: keep the tool-result item collapsible
+            // (default expanded) so the user can fold a huge log.
+            resultItem.Collapsed = false;
+
+            Items.Insert(insertIndex, resultItem);
+            lastToolResultItem = resultItem;
+            toolResultItemCreated = true;
+
+            if (key.Length > 0)
             {
-                toolCallResults[target] = result;
-                string header = toolCallHeaders.TryGetValue(target, out string? h) ? h : "";
-                // Recompose so the invocation stays above the result instead of
-                // being appended after it.
-                target.SetTextDirect(header + "```\n" + result + "\n```\n");
+                pendingToolResultItems[key] = resultItem;
+            }
+
+            if (autoScroll)
+            {
+                ChatScrollViewer?.ScrollToEnd();
             }
 
             if (isToolCallInProgress && toolResultItemsWithSpinner.Count == 0)
@@ -1049,30 +1056,34 @@ public partial class ChatControl : UserControl
                 // LLM turn: everything streamed before the tool call belongs to
                 // its own chat message and must not keep growing above the tool
                 // call. Split the streaming item here (on the UI thread, before
-                // the tool-result item is inserted) so the tool call starts a
+                // the tool-call item is inserted) so the tool call starts a
                 // fresh response item for the answer that follows it.
                 SplitStreamedResponseBeforeToolCall(e.ToolName);
 
-                // Start a fresh tool-result item for each tool call.
-                lastToolResultItem = null;
+                // Start a fresh tool-call item (A) for each tool call.
+                lastToolCallItem = null;
             }
 
             ToolCallStarted(e.ToolName, insertAboveResult: true, invocation: e.Invocation, callId: e.CallId);
+        }
+        else
+        {
+            // Create the tool-result item (B) as a separate chat item below the
+            // tool-call item (A), and hide the spinner on (A). The call is
+            // resolved by its id, so parallel tool calls each finish their own
+            // items. The pending call reference is dropped when this was the
+            // last running call.
+            ToolCallEnded(e.Result, e.CallId);
+
+            // Track the result item (B) so completeWork can apply the footer.
             if (lastToolResultItem != null && !nativeToolResultItems.Contains(lastToolResultItem))
             {
                 nativeToolResultItems.Add(lastToolResultItem);
             }
-        }
-        else
-        {
-            // Append the result text and hide the spinner. The item of this call
-            // is resolved by its id, so parallel tool calls each finish their own
-            // item. The pending reference is dropped only when it belonged to
-            // this call, letting the next call start a fresh item.
-            ToolCallEnded(e.Result, e.CallId);
+
             if (pendingToolCallItems.Count == 0)
             {
-                lastToolResultItem = null;
+                lastToolCallItem = null;
             }
         }
     }
@@ -1138,6 +1149,7 @@ public partial class ChatControl : UserControl
         // notification cannot split (or append to) a detached item.
         streamingResultItem = null;
         splitResponseItems.Clear();
+        lastToolCallItem = null;
         lastToolResultItem = null;
         nativeToolResultItems.Clear();
         lastResultItem = null;
@@ -1146,9 +1158,8 @@ public partial class ChatControl : UserControl
         // no spinner reference is kept on a detached item.
         toolResultItemsWithSpinner.Clear();
         pendingToolCallItems.Clear();
+        pendingToolResultItems.Clear();
         toolCallHeaders.Clear();
-        toolCallResults.Clear();
-        toolCallNames.Clear();
         isToolCallInProgress = false;
 
         // Start from base prompt if agent is set
@@ -1532,9 +1543,10 @@ public partial class ChatControl : UserControl
 
         // Create and display command item.
         // For a tool-call turn (functionCallReturn) the tool result is already
-        // displayed by the item inserted in ToolCallStarted (see
-        // toolResultItemCreated). Inserting the command item here as well would
-        // show the same tool result twice, so it is skipped in that case.
+        // displayed by the separate tool-result item (B) inserted in
+        // ToolCallEnded (see toolResultItemCreated). Inserting the command item
+        // here as well would show the same tool result twice, so it is skipped
+        // in that case.
         inputItem.TextEditor.Text = "";
         if (messageType == MarkdownTextItem.MessageType.functionCallReturn && toolResultItemCreated)
         {

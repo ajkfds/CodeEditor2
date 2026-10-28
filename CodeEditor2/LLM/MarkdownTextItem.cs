@@ -15,7 +15,12 @@ namespace CodeEditor2.LLM
         {
             command,
             responce,
-            functionCallReturn
+            functionCallReturn,
+            /// <summary>
+            /// LLM tool/invocation call itself (A). Displayed with the LLM icon
+            /// and never collapsed, separate from the tool result (B).
+            /// </summary>
+            toolCall
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD101:Avoid unsupported async delegates", Justification = "<保留中>")]
@@ -35,6 +40,10 @@ namespace CodeEditor2.LLM
                         break;
                     case MessageType.functionCallReturn:
                         image.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/hummer.svg", Avalonia.Media.Colors.Gray);
+                        break;
+                    case MessageType.toolCall:
+                        // The tool call is the LLM's own action: use the LLM icon.
+                        image.Source = AjkAvaloniaLibs.Libs.Icons.GetSvgBitmap("CodeEditor2/Assets/Icons/ai.svg", Avalonia.Media.Colors.YellowGreen);
                         break;
                 }
                 int? leftSize = 50;
