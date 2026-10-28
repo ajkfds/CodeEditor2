@@ -21,6 +21,10 @@ namespace CodeEditor2.LLM.Tools
 
         [Description("""
             Request to get a definition of the library type name. 
+            Note: there is a size limit on the returned build log. If the log exceeds the limit,
+            a warning is prepended and only the beginning (first part) of the log is returned;
+            the tail is truncated. In that case, build only the affected project with -clp:ErrorsOnly
+            (or run `dotnet build <project> -clp:ErrorsOnly`) to narrow the output.
             """)]
         public async Task<string> Run()
         {
@@ -30,7 +34,8 @@ namespace CodeEditor2.LLM.Tools
 
                 string result = await RunDotnetBuildAsync(project.RootPath);
 
-                return result;
+                // 出力サイズ上限 (LLMTool.MaxOutputBytes) を適用。超過時はアラート + 前側のみ返す
+                return LimitOutput(result, "build_dotnet");
             }
             catch (UnauthorizedAccessException)
             {

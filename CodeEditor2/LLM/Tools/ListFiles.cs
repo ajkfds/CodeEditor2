@@ -46,6 +46,9 @@ namespace CodeEditor2.LLM.Tools
         [Description("""
             Request to list files and directories within the specified directory. 
             If recursive is true, it will list all files and directories recursively.
+            Note: there is a size limit on the returned listing. If it exceeds the limit,
+            a warning is prepended and only the beginning (first part) of the listing is returned;
+            the tail is truncated. In that case, list a narrower path or disable recursive listing.
             """)]
         public string Run(
         [Description("The path of the directory to list contents for (relative to the project root directory)")]
@@ -74,6 +77,10 @@ namespace CodeEditor2.LLM.Tools
                 var sb = new StringBuilder();
                 sb.AppendLine($"Listing files in '{path}':");
 
+                // 内部スキャン上限: 大量エントリでもメモリを肥大させないよう、
+                // 上限バイトの 2 倍を超えた時点で列挙を打ち切る (最終的な切り詰めは LimitOutput が行う)。
+                int scanLimitChars = MaxOutputBytes * 2;
+
                 // 2. ファイルとディレクトリの取得
                 var options = new EnumerationOptions
                 {
@@ -86,18 +93,24 @@ namespace CodeEditor2.LLM.Tools
                 var entries = Directory.EnumerateFileSystemEntries(targetPath, "*", options)
                     .Where(entry => !ExcludedDirectories.Any(ex => entry.Contains(Path.DirectorySeparatorChar + ex + Path.DirectorySeparatorChar) || entry.EndsWith(Path.DirectorySeparatorChar + ex)));
 
+                bool scanTruncated = false;
                 foreach (var entry in entries)
                 {
                     // ルートディレクトリからの相対パスに変換して表示
                     string relativePath = Path.GetRelativePath(project.RootPath, entry);
                     bool isDir = Directory.Exists(entry);
                     sb.AppendLine($"{(isDir ? "[DIR] " : "[FILE]")} {relativePath}");
-                    if (sb.Length > 20000) break;
+                    if (sb.Length > scanLimitChars) { scanTruncated = true; break; }
                 }
 
-                return sb.Length > 20000
-                    ? sb.ToString().Substring(0, 20000) + "\n... (Listing truncated due to size)"
-                    : sb.ToString();
+                // 出力サイズ上限 (LLMTool.MaxOutputBytes) を適用。超過時はアラート + 前側のみ返す
+                string limited = LimitOutput(sb.ToString(), "list_files");
+                if (scanTruncated && !limited.Contains("[WARNING]"))
+                {
+                    // 走査打ち切りが起きたが LimitOutput の閾値には届かなかった場合の注記
+                    limited += "\n... (Listing truncated due to size)";
+                }
+                return limited;
             }
             catch (Exception ex)
             {

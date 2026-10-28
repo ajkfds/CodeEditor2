@@ -21,6 +21,9 @@ namespace CodeEditor2.LLM.Tools
 
         [Description("""
             Request to get a definition of the library type name. 
+            Note: there is a size limit on the returned definition. If it exceeds the limit,
+            a warning is prepended and only the beginning (first part) of the definition is returned;
+            the tail is truncated.
             """)]
         public string Run(
             [Description("The library path name")] string library_type_name)
@@ -36,7 +39,8 @@ namespace CodeEditor2.LLM.Tools
                     return $"Error: Library definition not found for '{library_type_name}'.";
                 }
 
-                return result;
+                // 出力サイズ上限 (LLMTool.MaxOutputBytes) を適用。超過時はアラート + 前側のみ返す
+                return LimitOutput(result, "get_lib_definition");
             }
             catch (UnauthorizedAccessException)
             {

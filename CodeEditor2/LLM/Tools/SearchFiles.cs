@@ -87,7 +87,12 @@ namespace CodeEditor2.LLM.Tools
                 var results = new StringBuilder();
                 var searchRegex = new Regex(regex, RegexOptions.Multiline | RegexOptions.Compiled);
 
+                // 内部スキャン上限: どれだけマッチしてもメモリを肥大させないよう、
+                // 上限バイトの 2 倍を超えた時点で走査を打ち切る (最終的な切り詰めは LimitOutput が行う)。
+                int scanLimitChars = MaxOutputBytes * 2;
+
                 // 3. 検索の実行
+                bool scanTruncated = false;
                 foreach (var file in files)
                 {
                     // バイナリファイル等を避けるための簡易チェック（必要に応じて拡張）
@@ -114,15 +119,24 @@ namespace CodeEditor2.LLM.Tools
                         }
                     }
 
-                    // 結果が長すぎる場合は制限
-                    if (results.Length > 1500)
+                    // 走査打ち切り (メモリ保護)
+                    if (results.Length > scanLimitChars)
                     {
-                        results.AppendLine("... Search truncated: too many results. Please refine your regex or path.");
-                        return results.ToString();
+                        scanTruncated = true;
+                        break;
                     }
                 }
 
-                return results.Length > 0 ? results.ToString() : "No matches found.";
+                if (results.Length == 0) return "No matches found.";
+
+                // 出力サイズ上限 (LLMTool.MaxOutputBytes) を適用。超過時はアラート + 前側のみ返す
+                string limited = LimitOutput(results.ToString(), "search_files");
+                if (scanTruncated && !limited.Contains("[WARNING]"))
+                {
+                    // 走査打ち切りが起きたが LimitOutput の閾値には届かなかった場合の注記
+                    limited += "\n... Search truncated: too many results. Please refine your regex or path.";
+                }
+                return limited;
             }
             catch (Exception ex)
             {
