@@ -289,6 +289,42 @@ namespace CodeEditor2.Data
             return relativePath;
         }
 
+        /// <summary>
+        /// Get the item (file or folder) for the specified relative path by walking the Items tree.
+        /// The relative path is split into segments and each segment is resolved through the
+        /// child Items collection starting from this project (root item), so the target
+        /// file/folder is obtained even when it is deeply nested.
+        /// Both '/' and the platform directory separator are accepted as separators
+        /// (relative paths are stored with '/' in some places, e.g. VerilogFile.RelativePath).
+        /// Returns null when any segment of the path does not exist in the item tree.
+        /// パスを分解してItems経路を辿り、対象のファイル/フォルダを取得する。
+        /// </summary>
+        /// <param name="relativePath">relative path from the project root</param>
+        /// <returns>the item at the path, or null if not found</returns>
+        public override Item? GetItem(string relativePath)
+        {
+            if (string.IsNullOrEmpty(relativePath)) return this;
+
+            // Split on both separators and drop empty segments (handles "a//b", leading/trailing separators)
+            string[] segments = relativePath.Split(
+                new char[] { '/', '\\', System.IO.Path.DirectorySeparatorChar },
+                StringSplitOptions.RemoveEmptyEntries);
+
+            Item current = this;
+            foreach (string segment in segments)
+            {
+                // "." means the current item, nothing to move
+                if (segment == ".") continue;
+                // climbing above the project root is not supported
+                if (segment == "..") return null;
+
+                if (!current.Items.TryGetValue(segment, out Item? item)) return null;
+                if (item == null) return null;
+                current = item;
+            }
+            return current;
+        }
+
 
         // file system watcher ////////////////////////////////////////////////////////////////////////////
         // detect file change and raise events
