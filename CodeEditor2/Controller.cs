@@ -124,6 +124,16 @@ namespace CodeEditor2
             }
         }
 
+        public static Data.Item? GetItem(string id)
+        {
+            if (!id.Contains(System.IO.Path.DirectorySeparatorChar)) return null;
+            string projectName = id.Substring(0, id.IndexOf(System.IO.Path.DirectorySeparatorChar));
+            string relativePath = id.Substring(projectName.Length + 1);
+            if (!Global.Projects.ContainsKey(projectName)) return null;
+            Data.Project project = Global.Projects[projectName];
+            return project.GetItemHierarchy(relativePath);
+        }
+
 
         /// <summary>
         /// 指定したダイアログをmainWindowの中央に表示します。

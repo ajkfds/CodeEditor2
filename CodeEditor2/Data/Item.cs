@@ -40,7 +40,7 @@ namespace CodeEditor2.Data
         {
             get
             {
-                return RelativePath;
+                return Project.Name + System.IO.Path.DirectorySeparatorChar + RelativePath;
             }
             set
             {
