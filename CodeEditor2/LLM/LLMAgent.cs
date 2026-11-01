@@ -375,17 +375,20 @@ namespace CodeEditor2.LLM
             sb.AppendLine("# Tools");
             sb.AppendLine("");
 
-            sb.AppendLine("Accepted tool call formats: the XML format shown in each tool's Usage below, or the DeepSeek DSML format:");
-            sb.AppendLine("```xml");
-            sb.AppendLine("<｜DSML｜tool_calls>");
-            sb.AppendLine("<｜DSML｜invoke name=\"func_name\">");
-            sb.AppendLine("<｜DSML｜parameter name=\"param1\" string=\"true\">value</｜DSML｜parameter>");
-            sb.AppendLine("<｜DSML｜parameter name=\"param2\" string=\"false\">42</｜DSML｜parameter>");
-            sb.AppendLine("</｜DSML｜invoke>");
-            sb.AppendLine("</｜DSML｜tool_calls>");
-            sb.AppendLine("```");
-            sb.AppendLine("The `string` attribute of a DSML parameter is optional. When using the DSML format you may still attach an `id` attribute to the invoke element (`<｜DSML｜invoke name=\"func_name\" id=\"call_001\">`).");
-            sb.AppendLine("");
+            if (UseDSML)
+            {
+                sb.AppendLine("Accepted tool call formats: the XML format shown in each tool's Usage below, or the DeepSeek DSML format:");
+                sb.AppendLine("```xml");
+                sb.AppendLine("<｜DSML｜tool_calls>");
+                sb.AppendLine("<｜DSML｜invoke name=\"func_name\">");
+                sb.AppendLine("<｜DSML｜parameter name=\"param1\" string=\"true\">value</｜DSML｜parameter>");
+                sb.AppendLine("<｜DSML｜parameter name=\"param2\" string=\"false\">42</｜DSML｜parameter>");
+                sb.AppendLine("</｜DSML｜invoke>");
+                sb.AppendLine("</｜DSML｜tool_calls>");
+                sb.AppendLine("```");
+                sb.AppendLine("The `string` attribute of a DSML parameter is optional. When using the DSML format you may still attach an `id` attribute to the invoke element (`<｜DSML｜invoke name=\"func_name\" id=\"call_001\">`).");
+                sb.AppendLine("");
+            }
 
             if (UseToolCallId)
             {
