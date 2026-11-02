@@ -364,11 +364,10 @@ namespace CodeEditor2.Data
         /// Gets the code document asynchronously.
         /// </summary>
         /// <returns>A task that represents the asynchronous operation. The task result contains the code document.</returns>
-        public virtual Task<CodeEditor.CodeDocument> GetCodeDocumentAsync()
+        public virtual Task<CodeEditor.CodeDocument?> GetCodeDocumentAsync()
         {
             PostStatusCheck();
             CodeDocument? doc = CodeDocument;
-            if (doc == null) throw new Exception();
             return Task.FromResult(doc);
         }
 

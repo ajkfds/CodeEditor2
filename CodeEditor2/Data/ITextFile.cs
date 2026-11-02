@@ -45,7 +45,7 @@ namespace CodeEditor2.Data
 
         // textFile
         CodeDocument? CodeDocument { get; }
-        Task<CodeEditor.CodeDocument> GetCodeDocumentAsync();
+        Task<CodeEditor.CodeDocument?> GetCodeDocumentAsync();
         bool IsCodeDocumentCashed { get; }
 
         CodeEditor.ParsedDocument? ParsedDocument { get; set; }
