@@ -85,36 +85,36 @@ namespace CodeEditor2
             await dialogShowSemaphore.WaitAsync();
             try
             {
-                if (rootWindow.WindowState == WindowState.Maximized)
+                //if (rootWindow.WindowState == WindowState.Maximized)
                 {
                     // 最大化時は Position がフレーム原点や負のオフセットを指すため
                     // 手動中央配置計算が実表示領域と乖離する。CenterOwner に任せる。
                     dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 }
-                else
-                {
-                    // dialog.Width/Heightが設定されていない場合、ActualWidth/ActualHeightを使用
-                    double dialogWidth = dialog.Width > 0 ? dialog.Width : dialog.Bounds.Width;
-                    double dialogHeight = dialog.Height > 0 ? dialog.Height : dialog.Bounds.Height;
+                //else
+                //{
+                //    // dialog.Width/Heightが設定されていない場合、ActualWidth/ActualHeightを使用
+                //    double dialogWidth = dialog.Width > 0 ? dialog.Width : dialog.Bounds.Width;
+                //    double dialogHeight = dialog.Height > 0 ? dialog.Height : dialog.Bounds.Height;
 
-                    // それでも0の場合はデフォルト値を設定
-                    if (dialogWidth <= 0) dialogWidth = rootWindow.Bounds.Width * 0.8;
-                    if (dialogHeight <= 0) dialogHeight = rootWindow.Bounds.Height * 0.8;
+                //    // それでも0の場合はデフォルト値を設定
+                //    if (dialogWidth <= 0) dialogWidth = rootWindow.Bounds.Width * 0.8;
+                //    if (dialogHeight <= 0) dialogHeight = rootWindow.Bounds.Height * 0.8;
 
-                    // mainWindowの中央に配置。
-                    // Position はデバイスピクセル (PixelPoint)、Bounds/Width は DIP のため、
-                    // DPIスケール (RenderScaling) を反映して単位を合わせる。
-                    // (混在計算だと DPI 100% 以外の環境で中央からずれ、画面外に出て
-                    //  OS/WM が強制再配置し「別の場所に出る」原因になる)
-                    double scaling = rootWindow.RenderScaling;
-                    double mainWindowPixelWidth = rootWindow.Bounds.Width * scaling;
-                    double mainWindowPixelHeight = rootWindow.Bounds.Height * scaling;
-                    double dialogPixelWidth = dialogWidth * scaling;
-                    double dialogPixelHeight = dialogHeight * scaling;
-                    int x = (int)(rootWindow.Position.X + (mainWindowPixelWidth - dialogPixelWidth) / 2);
-                    int y = (int)(rootWindow.Position.Y + (mainWindowPixelHeight - dialogPixelHeight) / 2);
-                    dialog.Position = new PixelPoint(x, y);
-                }
+                //    // mainWindowの中央に配置。
+                //    // Position はデバイスピクセル (PixelPoint)、Bounds/Width は DIP のため、
+                //    // DPIスケール (RenderScaling) を反映して単位を合わせる。
+                //    // (混在計算だと DPI 100% 以外の環境で中央からずれ、画面外に出て
+                //    //  OS/WM が強制再配置し「別の場所に出る」原因になる)
+                //    double scaling = rootWindow.RenderScaling;
+                //    double mainWindowPixelWidth = rootWindow.Bounds.Width * scaling;
+                //    double mainWindowPixelHeight = rootWindow.Bounds.Height * scaling;
+                //    double dialogPixelWidth = dialogWidth * scaling;
+                //    double dialogPixelHeight = dialogHeight * scaling;
+                //    int x = (int)(rootWindow.Position.X + (mainWindowPixelWidth - dialogPixelWidth) / 2);
+                //    int y = (int)(rootWindow.Position.Y + (mainWindowPixelHeight - dialogPixelHeight) / 2);
+                //    dialog.Position = new PixelPoint(x, y);
+                //}
 
                 await dialog.ShowDialog(rootWindow);
             }
