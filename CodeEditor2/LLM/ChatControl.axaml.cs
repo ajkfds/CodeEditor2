@@ -474,8 +474,70 @@ public partial class ChatControl : UserControl
     /// <summary>
     /// Input acceptable flag
     /// Acts as reentrant lock
+    /// <para>
+    /// Every write goes through <see cref="InputAcceptable"/> so the visual
+    /// state of the input area (see <see cref="ApplyInputAcceptableVisual"/>)
+    /// always matches whether Send is currently accepted or not.
+    /// </para>
     /// </summary>
-    bool inputAcceptable = true;
+    private bool inputAcceptableValue = true;
+
+    /// <summary>
+    /// True while a new user command may be sent.
+    /// Setting it updates the background of the input area: the normal dark
+    /// gray while input is accepted, and a deep dark green while it is locked
+    /// (a turn / tool call is running), so the user can tell at a glance that
+    /// Send would be ignored.
+    /// </summary>
+    bool InputAcceptable
+    {
+        get => inputAcceptableValue;
+        set
+        {
+            if (inputAcceptableValue == value) return;
+            inputAcceptableValue = value;
+            ApplyInputAcceptableVisual(value);
+        }
+    }
+
+    /// <summary>
+    /// Background of the input editor while input is accepted (the usual dark
+    /// gray, matching the default TextEditor background).
+    /// </summary>
+    private static readonly Avalonia.Media.IBrush InputAcceptableBackground =
+        new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 40, 40, 40));
+
+    /// <summary>
+    /// Background of the input editor while input is NOT accepted (a deeper
+    /// dark green), so the locked state is obvious without looking at Send.
+    /// </summary>
+    private static readonly Avalonia.Media.IBrush InputLockedBackground =
+        new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 0, 70, 30));
+
+    /// <summary>
+    /// Apply the background color of the input editor for the current
+    /// accept/reject state. Safe to call from any thread (marshals to the UI
+    /// thread), because <see cref="InputAcceptable"/> is also written from
+    /// streaming / background paths.
+    /// </summary>
+    private void ApplyInputAcceptableVisual(bool acceptable)
+    {
+        void Apply()
+        {
+            inputItem.TextEditor.Background = acceptable
+                ? InputAcceptableBackground
+                : InputLockedBackground;
+        }
+
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            Apply();
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(Apply);
+        }
+    }
 
     /// <summary>
     /// Cancellation token source
@@ -1146,7 +1208,7 @@ public partial class ChatControl : UserControl
         // Clear は「中断してやり直す」ための復旧経路でもある。実行中の turn が
         // 何らかの理由で inputAcceptable を false のまま残していても、ここで
         // 必ず復帰させる (そうしないと Clear 後も Send が効かなくなる)。
-        inputAcceptable = true;
+        InputAcceptable = true;
 
         // Reset the per-turn tool-call id counter whenever the chat is reset,
         // so the very next user turn starts fresh from call_000.
@@ -1187,7 +1249,7 @@ public partial class ChatControl : UserControl
     private async Task UserComplete(string command, MarkdownTextItem.MessageType messageType = MarkdownTextItem.MessageType.command)
     {
         // Ignore if input is not acceptable
-        if (!inputAcceptable) return;
+        if (!InputAcceptable) return;
 
         try
         {
@@ -1234,7 +1296,7 @@ public partial class ChatControl : UserControl
             // Abort 後も必ず入力受付を復帰させる。ここが false のまま残ると
             // UserComplete 冒頭のガードで Send が黙って捨てられ、
             // 「次のコマンドを送信できなくなる」症状になる。
-            inputAcceptable = true;
+            InputAcceptable = true;
         }
     }
 
@@ -1476,7 +1538,11 @@ public partial class ChatControl : UserControl
         // loop (reported as "next operation proceeds before the function call
         // finishes"). Holding the lock here keeps inputAcceptable == false
         // until every tool call of this turn has completed.
-        inputAcceptable = false;
+        InputAcceptable = false;
+
+        // A new turn starts: the "consecutive empty replies" streak only makes
+        // sense within one turn, so restart it here.
+        consecutiveEmptyResponseCount = 0;
 
         try
         {
@@ -1490,7 +1556,7 @@ public partial class ChatControl : UserControl
             // interrupted by a cancellation never raises its finish notification,
             // so the spinner is cleared here unconditionally.
             StopAllToolCallSpinnersSafe();
-            inputAcceptable = true;
+            InputAcceptable = true;
         }
     }
 
