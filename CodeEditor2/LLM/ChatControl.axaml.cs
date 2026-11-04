@@ -1354,6 +1354,103 @@ public partial class ChatControl : UserControl
     }
 
     /// <summary>
+    /// Text sent to the LLM when it answered with no content at all, asking it
+    /// to continue. Displayed as a normal command item so the user can see that
+    /// the continuation was requested automatically.
+    /// </summary>
+    private const string ContinueCommand = "つづけて";
+
+    /// <summary>
+    /// Maximum number of consecutive content-less LLM replies that are answered
+    /// automatically with <see cref="ContinueCommand"/>.
+    /// <para>
+    /// The first empty reply is retried once ("つづけて"). A second empty reply
+    /// in a row returns control to the user instead of asking again, so a model
+    /// that never produces any content cannot create an endless loop.
+    /// </para>
+    /// </summary>
+    private const int MaxConsecutiveEmptyResponses = 2;
+
+    /// <summary>
+    /// Number of empty LLM replies that followed each other without any content
+    /// in between. Reset when a reply with content arrives and at the start of
+    /// every user turn (see <see cref="completeWithFunctionCall"/>).
+    /// </summary>
+    private int consecutiveEmptyResponseCount = 0;
+
+    /// <summary>
+    /// True when the LLM reply carries no content at all: null, whitespace only,
+    /// or the legacy "blank" marker that was written when nothing was streamed.
+    /// </summary>
+    private static bool IsEmptyResponse(string? response)
+    {
+        if (response == null) return true;
+        string trimmed = response.Trim();
+        if (trimmed.Length == 0) return true;
+        // Legacy marker ("blank") used to be written into the item when the LLM
+        // streamed nothing. It is not real content either.
+        if (string.Equals(trimmed, "blank", StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
+    }
+
+    /// <summary>
+    /// Run one LLM call and transparently recover from an empty reply.
+    /// <para>
+    /// When the LLM returns no content, the "waiting ..." placeholder has
+    /// already been cleared (see <see cref="completeWork"/>), so the turn would
+    /// otherwise simply end with an empty message and give control back to the
+    /// user. Instead the LLM is asked to continue by sending
+    /// <see cref="ContinueCommand"/> as the next turn. This is done only once in
+    /// a row: the second consecutive empty reply returns null (turn finished)
+    /// so the user gets the control back and no endless loop can occur.
+    /// </para>
+    /// </summary>
+    /// <returns>
+    /// The reply text, or null when the turn has to end (cancellation, empty
+    /// reply twice in a row, or a failed call).
+    /// </returns>
+    private async Task<string?> completeHandlingEmptyReply(
+        string command, IList<AITool>? tools,
+        CancellationToken cancellationToken,
+        MarkdownTextItem.MessageType messageType)
+    {
+        string? result = await complete(command, tools, cancellationToken, messageType);
+
+        while (result != null && IsEmptyResponse(result))
+        {
+            consecutiveEmptyResponseCount++;
+
+            if (consecutiveEmptyResponseCount >= MaxConsecutiveEmptyResponses)
+            {
+                // Do not ask again: a model that keeps answering nothing would
+                // otherwise loop forever. Return control to the user.
+                CodeEditor2.Controller.AppendLog(
+                    $"The LLM returned no content {consecutiveEmptyResponseCount} times in a row. Returning control to you.",
+                    Avalonia.Media.Colors.Orange);
+                return null;
+            }
+
+            CodeEditor2.Controller.AppendLog(
+                "The LLM returned no content. Asking it to continue automatically...",
+                Avalonia.Media.Colors.Yellow);
+
+            // Ask the LLM to continue. This is sent as a normal turn so the
+            // chat shows what was requested.
+            hashHistory.Add(getHash(ContinueCommand));
+            result = await complete(ContinueCommand, tools, cancellationToken,
+                MarkdownTextItem.MessageType.command);
+        }
+
+        if (result != null && !IsEmptyResponse(result))
+        {
+            // A reply with content arrived: the streak is broken.
+            consecutiveEmptyResponseCount = 0;
+        }
+
+        return result;
+    }
+
+    /// <summary>
     /// Execute interaction with LLM, calling tools as needed
     /// Attempts retry from different perspective if agent is in a loop
     /// </summary>
@@ -1417,7 +1514,10 @@ public partial class ChatControl : UserControl
 
         // Add hash of command
         hashHistory.Add(getHash(command));
-        result = await complete(command, tools, cancellationToken, messageType);
+        // completeHandlingEmptyReply transparently asks the LLM to continue
+        // ("つづけて") when it returns no content at all, so the user is not left
+        // with an empty reply. A second empty reply in a row ends the turn.
+        result = await completeHandlingEmptyReply(command, tools, cancellationToken, messageType);
         if (result == null) return;
         hashHistory.Add(getHash(result));
 
@@ -1452,7 +1552,7 @@ public partial class ChatControl : UserControl
             // inserting a duplicate command item for the same tool result.
             ClearToolResultItem();
 
-            result = await complete(functioncallCommand, tools, cancellationToken, MarkdownTextItem.MessageType.functionCallReturn);
+            result = await completeHandlingEmptyReply(functioncallCommand, tools, cancellationToken, MarkdownTextItem.MessageType.functionCallReturn);
             if (result == null) return;
             hashHistory.Add(getHash(result));
 
@@ -1716,11 +1816,12 @@ public partial class ChatControl : UserControl
                         }, DispatcherPriority.Render); // Immediate reflection at Render priority
                     }
                 }
-                if (timerActivate)
-                {
-                    timerActivate = false;
-                    await (streamingResultItem ?? resultItem).SetText("blank");
-                }
+                // Nothing at all was streamed. Remembered here because the
+                // placeholder may only be cleared AFTER the progress timer has
+                // been stopped: a still-running tick would repaint
+                // "waiting ... 12.3s" over the cleared item.
+                bool noContentStreamed = timerActivate;
+                timerActivate = false;
 
                 // Stop the progress timer only now: it kept refreshing the
                 // per-item elapsed time until the stream ended, so the item that
@@ -1731,6 +1832,16 @@ public partial class ChatControl : UserControl
                 timerCancellationTokenSource.Cancel();
                 await displayTimerTask;
                 stopwatch.Stop();
+
+                // Clear the "waiting ... 12.3s" placeholder so it does not stay
+                // visible once the turn ended without content and control returns
+                // to the user. completeHandlingEmptyReply decides what happens
+                // next (ask the LLM to continue, or hand the control back after
+                // the second empty reply in a row).
+                if (noContentStreamed)
+                {
+                    await (streamingResultItem ?? resultItem).SetText("");
+                }
 
                 // Record how long this turn took, then append the informational
                 // footer line (token usage + elapsed time). The footer lives
@@ -1746,6 +1857,23 @@ public partial class ChatControl : UserControl
                     finalItem.TextColor = completeColor;
                     ApplyInfoMessage(finalItem, infoLine);
                     lastResultItem = finalItem;
+
+                    // The LLM returned no content at all: the item is an empty
+                    // message (its "waiting ..." placeholder was cleared above).
+                    // Drop it from the chat so no empty bubble is left behind;
+                    // completeHandlingEmptyReply asks the LLM to continue (or
+                    // ends the turn after the second empty reply in a row).
+                    if (finalItem.IsShowingPlaceholder == false && finalItem.Text.Trim().Length == 0)
+                    {
+                        Items.Remove(finalItem);
+                        // Keep lastResultItem pointing at a live item so a later
+                        // tool call of the next turn can still insert above the
+                        // message it belongs to.
+                        lastResultItem = splitResponseItems.Count > 0
+                            ? splitResponseItems[splitResponseItems.Count - 1]
+                            : null;
+                    }
+
                     await SaveMessagesAsync();
                 });
 
