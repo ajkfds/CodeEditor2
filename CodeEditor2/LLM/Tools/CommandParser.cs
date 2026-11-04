@@ -32,6 +32,11 @@ namespace CodeEditor2.LLM.Tools
 
             foreach (var chain in chains)
             {
+                // Abort はキャンセルとして呼び出し元 (tool loop) に伝播させる。
+                // ここで "Canceled" を返して正常終了扱いにすると、tool call が
+                // 成功したものとして扱われ、次の入力が受け付けられない状態が残る。
+                cancellationToken.ThrowIfCancellationRequested();
+
                 // 前のコマンドの結果に基づく実行判定
                 if (chain.NextSeparator == SeparatorType.And && lastExitCode != 0) break;
                 // (必要に応じて SeparatorType.Or の実装も可能)
@@ -41,7 +46,7 @@ namespace CodeEditor2.LLM.Tools
                 finalOutput.Append(output);
                 lastExitCode = exitCode;
 
-                if (cancellationToken.IsCancellationRequested) return "Canceled";
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (chain.NextSeparator == SeparatorType.None) break;
             }
@@ -115,6 +120,9 @@ namespace CodeEditor2.LLM.Tools
             // 順序を保つため、ConcurrentQueue を使用
             var errorLogs = new System.Collections.Concurrent.ConcurrentQueue<string>();
 
+            // キャンセル時に未観測の faulted タスクを残さないよう、finally から参照する
+            Task<string>? stdoutTask = null;
+
             try
             {
                 Stream previousOutputStream = null;
@@ -182,15 +190,22 @@ namespace CodeEditor2.LLM.Tools
 
                 var lastProc = processes.Last();
 
-                // 最後のプロセスの stdout 読み込みとプロセス終了を並行して実行
-                string finalStdout = await lastProc.StandardOutput.ReadToEndAsync();
+                // 最後のプロセスの stdout 読み込みとプロセス終了を並行して実行。
+                // ReadToEndAsync 自体はキャンセル非対応のため、WaitAsync(token) で
+                // 待機だけをキャンセル可能にする。キャンセル時は finally が
+                // プロセスツリーを Kill するので、読み取りタスクも自然に終了する。
+                // (以前はここで無条件に待機していたため、Abort しても
+                //  コマンドが終了するまで tool call が返らず、次の Send が
+                //  受け付けられない状態が残っていた)
+                stdoutTask = lastProc.StandardOutput.ReadToEndAsync();
+                string finalStdout = await stdoutTask.WaitAsync(cancellationToken);
 
                 foreach (var proc in processes)
                 {
-                    await proc.WaitForExitAsync();
+                    await proc.WaitForExitAsync(cancellationToken);
                 }
 
-                await Task.WhenAll(backgroundTasks);
+                await Task.WhenAll(backgroundTasks).WaitAsync(cancellationToken);
 
                 var exitCode = lastProc.ExitCode;
                 var combinedError = string.Join("\n", errorLogs);
@@ -218,6 +233,21 @@ namespace CodeEditor2.LLM.Tools
                     finally
                     {
                         proc.Dispose();
+                    }
+                }
+
+                // キャンセルで WaitAsync を抜けた場合、stdout 読み取りタスクは
+                // プロセス Kill 後に終了する。未観測例外 (UnobservedTaskException)
+                // を残さないよう、ここで完了を待って例外を握りつぶす。
+                if (stdoutTask != null)
+                {
+                    try
+                    {
+                        await stdoutTask;
+                    }
+                    catch
+                    {
+                        // プロセス Kill による読み取り中断は無視
                     }
                 }
             }

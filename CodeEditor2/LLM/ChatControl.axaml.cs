@@ -1143,6 +1143,11 @@ public partial class ChatControl : UserControl
         // Create new cancellation token
         cancellationTokenSource = new CancellationTokenSource();
 
+        // Clear は「中断してやり直す」ための復旧経路でもある。実行中の turn が
+        // 何らかの理由で inputAcceptable を false のまま残していても、ここで
+        // 必ず復帰させる (そうしないと Clear 後も Send が効かなくなる)。
+        inputAcceptable = true;
+
         // Reset the per-turn tool-call id counter whenever the chat is reset,
         // so the very next user turn starts fresh from call_000.
         nextToolCallIdCounter = 0;
@@ -1217,8 +1222,18 @@ public partial class ChatControl : UserControl
             // Execute command with tool calls
             await completeWithFunctionCall(commandWithHint, tools, cancellationToken, messageType);
         }
+        catch (OperationCanceledException)
+        {
+            // Abort による中断は正常な操作なので、エラーとして扱わない。
+            // (以前はここで例外が SendButton_Click まで抜け、赤いエラーログが
+            //  出ていた。中断自体は inputAcceptable の復帰で完了する)
+            CodeEditor2.Controller.AppendLog("Operation cancelled", Avalonia.Media.Colors.Yellow);
+        }
         finally
         {
+            // Abort 後も必ず入力受付を復帰させる。ここが false のまま残ると
+            // UserComplete 冒頭のガードで Send が黙って捨てられ、
+            // 「次のコマンドを送信できなくなる」症状になる。
             inputAcceptable = true;
         }
     }

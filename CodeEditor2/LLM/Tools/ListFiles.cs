@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace CodeEditor2.LLM.Tools
 {
@@ -54,7 +55,8 @@ namespace CodeEditor2.LLM.Tools
         [Description("The path of the directory to list contents for (relative to the project root directory)")]
         string path,
         [Description("Whether to list files recursively. Use true for recursive listing, false or omit for top-level only.")]
-        string recursive = "false")
+        string recursive = "false",
+        CancellationToken cancellationToken = default)
         {
             try
             {
@@ -96,6 +98,9 @@ namespace CodeEditor2.LLM.Tools
                 bool scanTruncated = false;
                 foreach (var entry in entries)
                 {
+                    // Abort で列挙を即座に打ち切る (深い再帰列挙中でも tool call が返る)
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     // ルートディレクトリからの相対パスに変換して表示
                     string relativePath = Path.GetRelativePath(project.RootPath, entry);
                     bool isDir = Directory.Exists(entry);
@@ -111,6 +116,11 @@ namespace CodeEditor2.LLM.Tools
                     limited += "\n... (Listing truncated due to size)";
                 }
                 return limited;
+            }
+            catch (OperationCanceledException)
+            {
+                // Abort はキャンセルとして tool loop に伝播させる (他 tool と同一方針)
+                throw;
             }
             catch (Exception ex)
             {

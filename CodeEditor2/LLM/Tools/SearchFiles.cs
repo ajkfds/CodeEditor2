@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CodeEditor2.LLM.Tools
@@ -56,7 +57,8 @@ namespace CodeEditor2.LLM.Tools
         [Description("""
             Glob pattern to filter files (e.g., '*.ts' for TypeScript files). If not provided, it will search all files (*).
             """)]
-        string file_pattern
+        string file_pattern,
+        CancellationToken cancellationToken
         )
         {
             try
@@ -95,10 +97,14 @@ namespace CodeEditor2.LLM.Tools
                 bool scanTruncated = false;
                 foreach (var file in files)
                 {
+                    // Abort で走査を即座に打ち切る (大量ファイルの検索中でも
+                    // tool call が返り、次の入力が受け付けられるようにする)
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     // バイナリファイル等を避けるための簡易チェック（必要に応じて拡張）
                     if (IsBinaryFile(file)) continue;
 
-                    var lines = await System.IO.File.ReadAllLinesAsync(file);
+                    var lines = await System.IO.File.ReadAllLinesAsync(file, cancellationToken);
                     for (int i = 0; i < lines.Length; i++)
                     {
                         if (searchRegex.IsMatch(lines[i]))
@@ -137,6 +143,11 @@ namespace CodeEditor2.LLM.Tools
                     limited += "\n... Search truncated: too many results. Please refine your regex or path.";
                 }
                 return limited;
+            }
+            catch (OperationCanceledException)
+            {
+                // Abort はキャンセルとして tool loop に伝播させる (他 tool と同一方針)
+                throw;
             }
             catch (Exception ex)
             {

@@ -257,6 +257,15 @@ namespace CodeEditor2.LLM
                             toolResultForDisplay = s_ret;
                         }
                     }
+                    catch (OperationCanceledException)
+                    {
+                        // Abort はキャンセルとして呼び出し元 (ChatControl) に伝播させる。
+                        // ここでエラー文字列に変換して正常終了扱いにすると、中断した
+                        // はずの tool call が成功したものとして扱われ、次の入力が
+                        // 受け付けられない状態 (inputAcceptable == false のまま) が残る。
+                        // finally でスピナー停止 / ToolCallEnded は実行される。
+                        throw;
+                    }
                     catch (Exception ex)
                     {
                         string errorText = $"Error: failed to parse or execute function call '{match.Groups["tool"].Value}': {ex.GetType().Name}: {ex.Message}\n--- matched block ---\n{match.Value}";

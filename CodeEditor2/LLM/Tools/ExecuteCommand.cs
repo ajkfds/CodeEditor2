@@ -90,6 +90,14 @@ namespace CodeEditor2.LLM.Tools
                 // 出力サイズ上限 (LLMTool.MaxOutputBytes) を適用。超過時はアラート + 前側のみ返す
                 return LimitOutput(result, "execute_command");
             }
+            catch (OperationCanceledException)
+            {
+                // Abort はキャンセルとして tool loop に伝播させる。
+                // ここで文字列を返して正常終了扱いにすると、中断したはずの
+                // tool call が成功したものとして扱われ、次の入力が受け付け
+                // られない状態 (inputAcceptable == false のまま) が残る。
+                throw;
+            }
             catch (UnauthorizedAccessException)
             {
                 return "Error: Access to the path is denied.";
