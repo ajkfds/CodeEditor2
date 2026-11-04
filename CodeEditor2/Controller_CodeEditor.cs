@@ -164,6 +164,12 @@ namespace CodeEditor2
 
             public static async Task<Data.TextFile?> GetTextFileAsync()
             {
+                // Headless host (LSP server / unit tests): there is no code view
+                // and no dispatcher loop running, so InvokeAsync would never
+                // complete and the caller would hang forever. Report "no file
+                // open" instead.
+                if (Global.codeView == null) return null;
+
                 if (!Dispatcher.UIThread.CheckAccess())
                 {
                     await Dispatcher.UIThread.InvokeAsync(() =>

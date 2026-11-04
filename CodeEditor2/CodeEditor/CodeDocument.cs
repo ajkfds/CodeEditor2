@@ -452,6 +452,11 @@ namespace CodeEditor2.CodeEditor
                 document.ExitReadLock();
             }
 
+            // Headless host (LSP server / unit tests): there is no code view, and
+            // no dispatcher loop to run a posted callback, so the folding markers
+            // simply have no target to update.
+            if (Global.codeView == null) return;
+
             if (Dispatcher.UIThread.CheckAccess())
             {
                 if (Global.codeView.TextFile != null && Global.codeView.TextFile.CodeDocument == this)

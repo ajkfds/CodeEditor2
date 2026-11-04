@@ -91,6 +91,10 @@ namespace CodeEditor2
             }
             public static async Task<CodeEditor2.NavigatePanel.NavigatePanelNode?> GetSelectedNodeAsync()
             {
+                // Headless host (LSP server / unit tests): no navigate view and
+                // no dispatcher loop, so InvokeAsync would never complete.
+                if (Global.navigateView == null) return null;
+
                 return await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     return Global.navigateView.GetSelectedNode();
