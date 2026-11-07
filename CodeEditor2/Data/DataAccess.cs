@@ -43,6 +43,10 @@ namespace CodeEditor2.Data
                 {
                     return await getFileTextAsync(project, relativePath, false); // directly read from file without using cache
                 }
+                catch( System.IO.FileNotFoundException ex )
+                {
+                    Controller.AppendLog(ex);
+                }
                 catch (Exception ex)
                 {
                     Controller.AppendLog(ex);
