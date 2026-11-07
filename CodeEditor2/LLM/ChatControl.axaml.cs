@@ -512,7 +512,7 @@ public partial class ChatControl : UserControl
     /// dark green), so the locked state is obvious without looking at Send.
     /// </summary>
     private static readonly Avalonia.Media.IBrush InputLockedBackground =
-        new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 0, 70, 30));
+        new Avalonia.Media.SolidColorBrush(new Avalonia.Media.Color(255, 20, 40, 20));
 
     /// <summary>
     /// Apply the background color of the input editor for the current
