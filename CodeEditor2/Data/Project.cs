@@ -33,7 +33,19 @@ namespace CodeEditor2.Data
         }
 
         public Dictionary<string, ProjectProperty> ProjectProperties = new Dictionary<string, ProjectProperty>();
-        public required string RootPath { get; init; }
+        /// <summary>
+        /// Root folder the project's relative paths are resolved against.
+        ///
+        /// <para>
+        /// Settable (not init-only) because a headless host learns the root
+        /// AFTER the project object exists: the LSP server creates its project
+        /// before <c>initialize</c> delivers the workspace folders, so an
+        /// init-only value stayed at a placeholder and every
+        /// <see cref="GetAbsolutePath"/> / <see cref="GetRelativePath"/> call
+        /// produced a path under the wrong directory.
+        /// </para>
+        /// </summary>
+        public required string RootPath { get; set; }
 
         public bool LocalFileCasheEnable { get; set; } = false;
         public string LocalFileCashePath { get; set; } = @"c:\temp";
