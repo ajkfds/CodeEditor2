@@ -682,20 +682,16 @@ public partial class ChatControl : UserControl
     {
         isToolCallInProgress = true;
 
-        // The insertion of the tool-result item MUST happen synchronously with
-        // respect to the caller. The caller (LLMAgent) returns from
-        // ParseResponceAsync right after ToolCallEnded/ClearToolResultItem, and
-        // completeWithFunctionCallCore immediately calls complete() for the next
-        // LLM turn - which inserts the completion items via completeWork.
+        // The insertion of the tool-result item MUST happen synchronously with respect to the caller.
+        // The caller (LLMAgent) returns from ParseResponceAsync right after ToolCallEnded/ClearToolResultItem, and
+        // completeWithFunctionCallCore immediately calls complete() for the next LLM turn - which inserts the completion items via completeWork.
         //
-        // Previously this method used Dispatcher.UIThread.Post (a deferred,
-        // fire-and-forget enqueue). When the UI thread was busy, the enqueue
-        // could be processed AFTER completeWork had already inserted the next
+        // Previously this method used Dispatcher.UIThread.Post (a deferred, fire-and-forget enqueue).
+        // When the UI thread was busy, the enqueue could be processed AFTER completeWork had already inserted the next
         // completion's items, making the tool result (and its spinner) appear
         // *below* the next LLM response - the "reversed order" symptom.
-        //
-        // Using CheckAccess + Invoke guarantees the item is in Items before this
-        // method returns, no matter which thread called it.
+
+        // Using CheckAccess + Invoke guarantees the item is in Items before this method returns, no matter which thread called it.
         if (Dispatcher.UIThread.CheckAccess())
         {
             ApplyToolCallStarted(toolName, insertAboveResult, invocation, callId);
@@ -743,10 +739,8 @@ public partial class ChatControl : UserControl
             return;
         }
 
-        // Create and insert the tool-call item (A) right away so the call
-        // itself is visible (LLM icon, tool name + arguments, not collapsed)
-        // with a spinner while the tool executes. The result (B) is inserted
-        // as a separate item when the call finishes (see ToolCallEnded).
+        // Create and insert the tool-call item (A) right away so the call itself is visible (LLM icon, tool name + arguments, not collapsed)
+        // with a spinner while the tool executes. The result (B) is inserted as a separate item when the call finishes (see ToolCallEnded).
         string header = BuildToolCallHeader(toolName, invocation);
         MarkdownTextItem toolCallItem = new MarkdownTextItem(header, MarkdownTextItem.MessageType.toolCall);
         // Show the tool call as a normal, expanded message in the completion
@@ -789,28 +783,17 @@ public partial class ChatControl : UserControl
     }
 
     /// <summary>
-    /// Build the header line of a tool-result item: the tool name followed by
-    /// the invocation arguments (when known). The arguments are shown in a fenced
-    /// block so the call itself is readable in the chat.
+    /// Builds the header of a tool-call item.
     /// </summary>
+    /// <remarks>
+    /// The arguments are not dumped as raw JSON: <see cref="ToolCallHeaderFormatter"/>
+    /// renders the few arguments that matter for each known tool (for
+    /// <c>replace_in_file</c> that is the path and the SEARCH/REPLACE diff), and
+    /// falls back to the raw JSON for a tool it does not know.
+    /// </remarks>
     private static string BuildToolCallHeader(string? toolName, string? invocation)
     {
-        if (string.IsNullOrEmpty(toolName) && string.IsNullOrEmpty(invocation))
-        {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        if (!string.IsNullOrEmpty(toolName))
-        {
-            sb.Append("**Tool call: ").Append(toolName).Append("**");
-        }
-        if (!string.IsNullOrEmpty(invocation))
-        {
-            sb.Append("\n\n```json\n").Append(invocation).Append("\n```");
-        }
-        sb.Append("\n\n");
-        return sb.ToString();
+        return ToolCallHeaderFormatter.Build(toolName, invocation);
     }
 
     /// <summary>
