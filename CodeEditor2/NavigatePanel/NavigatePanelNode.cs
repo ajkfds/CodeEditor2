@@ -209,6 +209,27 @@ namespace CodeEditor2.NavigatePanel
         public static Action<ContextMenu>? CustomizeNavigateNodeContextMenu;
         public static Action<ContextMenu>? CustomizeSpecificNodeContextMenu;
 
+        /// <summary>
+        /// Builds the whole context menu for a node, replacing the built-in rows.
+        ///
+        /// <para>
+        /// A language plugin installs this once (see
+        /// <c>pluginVerilog.NavigatePanel.NavigateNodeMenuRenderer</c>) so its menu
+        /// is driven by a single catalog instead of the inline rows below plus the
+        /// <see cref="CustomizeNavigateNodeContextMenu"/> subscriptions. Both the
+        /// desktop menu and the VS Code node menu then come from the same
+        /// declaration, which is what stops the two from drifting apart.
+        /// </para>
+        ///
+        /// <para>
+        /// It lives here (rather than the plugin calling into this class) because
+        /// CodeEditor2 must not depend on a plugin: the dependency runs the other
+        /// way. When nothing is installed the built-in rows below are used
+        /// unchanged, so a host without the Verilog plugin behaves as before.
+        /// </para>
+        /// </summary>
+        public static Action<ContextMenu, NavigatePanelNode>? CreateContextMenuRows;
+
         protected virtual Action<ContextMenu>? customizeSpecificNodeContextMenu => CustomizeSpecificNodeContextMenu;
         // Context Menu
         //public virtual void CustomizeContextMenu(ContextMenu contextMenu)
@@ -220,6 +241,13 @@ namespace CodeEditor2.NavigatePanel
             // re-generate context menu
             ContextMenu contextMenu = Controller.NavigatePanel.GetContextMenu();
             contextMenu.Items.Clear();
+
+            Action<ContextMenu, NavigatePanelNode>? rows = CreateContextMenuRows;
+            if (rows != null)
+            {
+                rows(contextMenu, this);
+                return;
+            }
 
             {
                 MenuItem menuItem_Add = CodeEditor2.Global.CreateMenuItem(

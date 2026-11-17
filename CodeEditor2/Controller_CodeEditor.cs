@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using CodeEditor2.CodeEditor.PopupMenu;
 using CodeEditor2.Views;
@@ -34,6 +35,28 @@ namespace CodeEditor2
                 else
                 {
                     await Global.codeView.SetTextFileAsync(textFile, parseEntry);
+                }
+            }
+
+            /// <summary>
+            /// Copies text to the clipboard through the editor view, which owns
+            /// the TopLevel. A plugin cannot reach the main window directly, so
+            /// it goes through this helper (used by the navigate-node menu's
+            /// "Copy Path" / "Copy Instance Path" rows).
+            /// </summary>
+            public static async Task SetClipboardTextAsync(string text)
+            {
+                if (string.IsNullOrEmpty(text)) return;
+                if (!Dispatcher.UIThread.CheckAccess())
+                {
+                    await Dispatcher.UIThread.InvokeAsync(async () => await SetClipboardTextAsync(text));
+                    return;
+                }
+
+                var topLevel = TopLevel.GetTopLevel(Global.mainWindow);
+                if (topLevel?.Clipboard is { } clipboard)
+                {
+                    await clipboard.SetTextAsync(text);
                 }
             }
 
