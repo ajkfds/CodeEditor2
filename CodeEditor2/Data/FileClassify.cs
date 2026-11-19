@@ -8,21 +8,32 @@ namespace CodeEditor2.Data
         public FileClassify(Project project)
         {
             this.project = project;
-            AbsolutePath = project.GetAbsolutePath(".fileClassify");
-
-            if (System.IO.File.Exists(AbsolutePath)) loadFile();
+            Refresh();
         }
         private Project project;
         public string AbsolutePath
         {
             get; private set;
-        }
+        } = string.Empty;
 
-        public void Reload()
+        /// <summary>
+        /// Re-resolves the path and re-reads the file, tolerating a missing one.
+        /// </summary>
+        /// <remarks>
+        /// The path depends on <see cref="Project.RootPath"/>, which a headless
+        /// host learns only after <c>initialize</c> - long after this object was
+        /// constructed. Without a re-resolve the classification silently stayed
+        /// empty in the LSP host (the editor happened to be fine because its
+        /// project is created with the root already known).
+        /// </remarks>
+        public void Refresh()
         {
             commands.Clear();
-            loadFile();
+            AbsolutePath = project.GetAbsolutePath(".fileClassify");
+            if (System.IO.File.Exists(AbsolutePath)) loadFile();
         }
+
+        public void Reload() => Refresh();
 
         private List<Item> commands = new List<Item>();
         private void loadFile()

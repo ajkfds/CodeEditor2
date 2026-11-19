@@ -35,7 +35,8 @@ namespace CodeEditor2.Data
         public Dictionary<string, ProjectProperty> ProjectProperties = new Dictionary<string, ProjectProperty>();
         /// <summary>
         /// Root folder the project's relative paths are resolved against.
-        ///
+        /// </summary>
+        /// <remarks>
         /// <para>
         /// Settable (not init-only) because a headless host learns the root
         /// AFTER the project object exists: the LSP server creates its project
@@ -44,8 +45,27 @@ namespace CodeEditor2.Data
         /// <see cref="GetAbsolutePath"/> / <see cref="GetRelativePath"/> call
         /// produced a path under the wrong directory.
         /// </para>
-        /// </summary>
-        public required string RootPath { get; set; }
+        /// <para>
+        /// Changing the root re-reads <c>.fileClassify</c>: the file is resolved
+        /// against the root, so the one loaded at construction time (against the
+        /// placeholder) is the wrong file, or none at all. Without this the
+        /// classification was silently empty in the LSP host, and a file that
+        /// should be parsed as, say, a Verilog header was parsed as a plain
+        /// Verilog file.
+        /// </para>
+        /// </remarks>
+        public required string RootPath
+        {
+            get => rootPath;
+            set
+            {
+                if (string.Equals(rootPath, value, StringComparison.OrdinalIgnoreCase)) return;
+                rootPath = value;
+                FileClassify?.Refresh();
+            }
+        }
+
+        private string rootPath = string.Empty;
 
         public bool LocalFileCasheEnable { get; set; } = false;
         public string LocalFileCashePath { get; set; } = @"c:\temp";
