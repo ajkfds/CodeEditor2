@@ -246,23 +246,6 @@ namespace CodeEditor2.NavigatePanel
             if (rows != null)
             {
                 rows(contextMenu, this);
-
-                // The catalog covers the rows the editor used to build inline,
-                // but NOT the contributions other plugins make through the
-                // static customization events: the simulation plugins add
-                // "IcarusVerilog > Run Simulation" / "Vivado > ...", the AI
-                // plugin adds "Add > ai chat", and the host adds the LLM rows.
-                // Returning early here silently dropped all of them, so the
-                // legacy hooks are still invoked - after the catalog rows and
-                // behind a separator, so they read as additions rather than as
-                // part of the built-in list.
-                int catalogItemCount = contextMenu.Items.Count;
-                customizeSpecificNodeContextMenu?.Invoke(contextMenu);
-                CustomizeNavigateNodeContextMenu?.Invoke(contextMenu);
-                if (contextMenu.Items.Count != catalogItemCount)
-                {
-                    contextMenu.Items.Insert(catalogItemCount, new Separator());
-                }
                 return;
             }
 
